@@ -1,11 +1,21 @@
 # Members area setup
 
 An invite-only area for the SINAGLIKHA HR 201 files. People sign in with an email and
-password. Only people an administrator invites can get in. Files are kept in private storage
-(not in GitHub) and are only handed out to signed-in members.
+password. Only people a Senior manager invites can get in. Files are kept in private storage
+(not in GitHub) and are only handed out to signed-in Senior managers.
+
+## Who can do what
+| Role | Files (view, download, upload, new folder, delete) | People (invite, deactivate, reactivate, delete) | Set roles | Visible in the People list |
+|---|---|---|---|---|
+| **Senior manager** | Yes, everything | Yes, for other Senior managers | No | Yes |
+| **Administrator** (the owner) | Yes, everything | Yes, for everyone | Yes | **No, hidden** |
+
+Everyone who is invited starts as a Senior manager. The Administrator account is the owner's:
+it is hidden from the People list, so no Senior manager can see it, deactivate it, delete it
+or change its role. There are no other roles.
 
 You'll set up three things: **Supabase** (logins and file storage), the **site settings**
-(two values in `members/config.js`), and **Vercel** (so admins can send invitations from the
+(two values in `members/config.js`), and **Vercel** (so Senior managers can send invitations from the
 website). Allow about 20 minutes.
 
 > The code was tested against a simulated Supabase, not a real project, so expect to fix a
@@ -28,8 +38,14 @@ website). Allow about 20 minutes.
 3. You should see "Success". Running it again later is safe.
 
 This creates the people list, a private storage bucket called `library`, and the rules:
-- any active member can **view and download**,
-- only **admins** can **upload and delete**.
+- every active **Senior manager** (and the Administrator) can **view, download, upload, create folders and delete**,
+- nobody else can do anything.
+
+**Before you press Run, edit one line.** Near the top, in the block marked `EDIT THIS`, replace
+`YOUR-ADMIN-EMAIL@example.com` with the email you sign in with. Do this only in the Supabase SQL
+editor, not in the file on GitHub. If your project already has accounts from the old Member/Admin
+setup, this one run also converts them: everybody becomes a Senior manager, and the email you typed
+becomes the hidden Administrator. If that email isn't found, it stops without changing anything.
 
 ### 3. Make sign-up invite-only
 1. Open **Authentication**, then **Sign In / Providers** (the wording changes between Supabase versions).
@@ -69,7 +85,7 @@ per file. Keep `MAX_UPLOAD_MB` in `members/config.js` at or below it.
 
 ---
 
-## Part B. Create the first admin (you)
+## Part B. Create the first account (the hidden Administrator, you)
 1. Supabase: **Authentication**, then **Users**, then **Add user**, then **Send invitation**.
    Enter your own email.
 2. Open the email and click the link. It opens `/members/` (or the home page, which sends you on)
@@ -79,9 +95,11 @@ per file. Keep `MAX_UPLOAD_MB` in `members/config.js` at or below it.
 3. In **SQL Editor** run (use your email):
 
    ```sql
-   update public.profiles set role = 'admin', active = true where email = 'you@example.com';
+   update public.profiles set role = 'admin', hidden = true, active = true where email = 'you@example.com';
    ```
-4. Reload the members page. You should now see **Upload files**, **New folder**, and a **People** tab.
+   (If you already ran the full `schema.sql` with your email in the `EDIT THIS` block, this is done for you.)
+4. Reload the members page. You should see **Upload files**, **New folder**, and a **People** tab.
+   Your own account won't be listed in the People tab. That is intended.
 
 ---
 
@@ -101,7 +119,7 @@ needs the server function in `api/invite.js`, which runs on Vercel.
    | `SITE_URL` | your site address with no trailing slash, for example `https://sinaglikha-website.vercel.app` |
 
 3. **Redeploy** so the variables take effect: **Deployments**, open the latest one, **⋯**, **Redeploy**.
-4. **Test it:** sign in as an admin, open **People**, and invite a second email address you own.
+4. **Test it:** sign in, open **People**, and invite a second email address you own.
    The invitation email should arrive within a minute. If you see "Invites are not set up on the
    server yet", one of the variables is missing or you haven't redeployed.
 
@@ -137,17 +155,17 @@ want a separate sender.
 ## Everyday use
 - **Invite someone:** Members area, **People**, enter their email, **Send invitation**. They
   click the link in the email and choose a password.
-- **Make someone an admin:** People tab, change **Member** to **Admin**.
+- **Roles:** everyone you invite is a **Senior manager** with full file access and can invite and
+  manage other Senior managers. Only the hidden Administrator can change a role (People tab, role menu).
 - **Remove access:** People tab, **Deactivate** (instant). The account moves out of the main list
   into **Show deactivated accounts**, where you can **Reactivate** it or **Delete** it for good.
   Deleting frees the email so the person can be invited again. You can't delete yourself, and you
   must deactivate an account before deleting it. If an account has uploaded files, Supabase won't
   delete it, so keep it deactivated. Deleting from the website needs the Vercel settings from Part C.
 - **Add files:** open **Files**, then **Upload files**, or drag files onto the list. Use **New folder** to organize.
-- **Let every member upload:** see the optional block at the bottom of `supabase/schema.sql`.
 
 ## What this does and doesn't protect
-- Only invited people can sign in. Everyone who is active sees **every** file. There are no
+- Only invited people can sign in. Every active Senior manager sees and can change **every** file. There are no
   per-folder permissions yet.
 - Files are never stored in GitHub. Download links expire after two minutes.
 - Don't upload real employee records (HR 201) unless your team has approved where they're stored
@@ -164,7 +182,9 @@ want a separate sender.
 | "SUPABASE_URL contains a key" | You pasted a key into the URL line. Put the Project URL (`https://….supabase.co`) there. |
 | Invitation link says "expired" | The address isn't in **Redirect URLs** (step A4), or an email scanner already opened the link. Send a new invitation. |
 | Signed in but "This account isn't active" | The account has no profile row or was deactivated. Re-run `schema.sql`, or check the People tab. |
-| No Upload button | Your role isn't `admin` yet (step B3). |
+| No Upload button | The account isn't an active Senior manager or Administrator. Re-run `schema.sql` (with the owner email edited), or reactivate it from the People tab. |
+| `schema.sql` stops with "The owner email … was not found" | The email in the `EDIT THIS` block doesn't match your account. Fix it in the SQL editor and run again. Nothing was changed. |
+| My own account doesn't appear in People | By design: the Administrator account is hidden. |
 | "Email rate limit exceeded" or "Too many emails were sent recently" | Supabase's built-in sender only allows about 2 emails an hour. Wait an hour, or set up your own sender (Part D). |
 | "Couldn't send the invitation" | One of the four Vercel variables is missing, or you haven't redeployed. |
 | "In-site invitations only work on the Vercel version" | You're on GitHub Pages. Invite from the Supabase dashboard, or use the Vercel address. |

@@ -164,6 +164,7 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 @media (hover:hover) and (pointer:fine){.btn-warn:hover{background:#B91C1C;color:#fff}}
 .person .row-text{flex:1 1 220px}
 .person select{width:auto;padding:10px 12px}
+.role-tag{font-size:.85rem;font-weight:600;color:var(--brown);background:var(--cream);border-radius:999px;padding:7px 13px;white-space:nowrap}
 
 /* dialog */
 dialog{border:0;padding:0;border-radius:26px;width:min(460px,100% - 32px);background:var(--paper);color:var(--ink);box-shadow:0 40px 80px -20px rgba(43,33,28,.5)}
@@ -232,7 +233,7 @@ dialog[open]{animation:pop .5s var(--ease)}
     <div class="card">
       <span class="eyebrow">Setup needed</span>
       <h2>The members area isn't connected yet</h2>
-      <p class="lead">An administrator needs to add the Supabase project details to <code>members/config.js</code>. The steps are in <code>docs/members-setup.md</code>.</p>
+      <p class="lead">Someone needs to add the Supabase project details to <code>members/config.js</code>. The steps are in <code>docs/members-setup.md</code>.</p>
       <a class="btn btn-ghost" href="../">Back to website</a>
     </div>
   </section>
@@ -252,7 +253,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <button class="btn btn-primary" type="submit" id="btn-login">Sign in</button>
         <button class="link" type="button" id="btn-forgot">Forgot your password?</button>
       </div>
-      <p class="fine">No account yet? Ask an administrator to invite you.</p>
+      <p class="fine">No account yet? Ask a Senior manager to invite you.</p>
     </form>
   </section>
 
@@ -272,7 +273,7 @@ dialog[open]{animation:pop .5s var(--ease)}
     <div class="card">
       <span class="eyebrow">No access</span>
       <h2>This account isn't active</h2>
-      <p class="lead">You're signed in, but you don't have access to the members area. Please ask an administrator to check your account.</p>
+      <p class="lead">You're signed in, but you don't have access to the members area. Please ask a Senior manager to check your account.</p>
       <button class="btn btn-ghost" type="button" id="btn-denied-out">Sign out</button>
     </div>
   </section>
@@ -280,7 +281,7 @@ dialog[open]{animation:pop .5s var(--ease)}
   <section id="view-app" hidden>
     <div class="app-head">
       <div>
-        <span class="eyebrow">Members only</span>
+        <span class="eyebrow">Senior managers only</span>
         <h1>HR 201 Files</h1>
       </div>
       <div class="tabs" role="tablist" id="tabs" aria-label="Sections" data-pos="0" hidden>
@@ -304,8 +305,8 @@ dialog[open]{animation:pop .5s var(--ease)}
             <input id="search" type="search" placeholder="Search all files and folders" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
             <ul class="suggest" id="suggest" role="listbox" aria-label="Suggestions" hidden></ul>
           </div>
-          <button class="btn btn-ghost btn-sm admin-only" id="btn-folder" type="button" hidden>New folder</button>
-          <button class="btn btn-primary btn-sm admin-only" id="btn-upload" type="button" hidden>Upload files</button>
+          <button class="btn btn-ghost btn-sm manager-only" id="btn-folder" type="button" hidden>New folder</button>
+          <button class="btn btn-primary btn-sm manager-only" id="btn-upload" type="button" hidden>Upload files</button>
           <input type="file" id="file-input" multiple hidden>
         </div>
       </div>
@@ -314,13 +315,13 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="empty" id="empty" hidden></p>
         <div class="busy" id="busy" hidden role="status">Loading…</div>
       </div>
-      <p class="fine">Everyone with an active account can see every file here, so only invite people who should have access.</p>
+      <p class="fine">All Senior managers can see and manage every file here, so only invite people who should have that access.</p>
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
       <form class="card invite" id="form-invite" novalidate>
         <h2>Invite someone</h2>
-        <p class="lead">They'll get an email with a link to set a password. Only people you invite can sign in.</p>
+        <p class="lead">They'll join as a Senior manager, with full access to every file. They get an email with a link to set a password, and only people you invite can sign in.</p>
         <div class="invite-grid">
           <div class="field"><label for="i-email">Email</label><input id="i-email" type="email" inputmode="email" autocomplete="off" required></div>
           <div class="field"><label for="i-name">Name (optional)</label><input id="i-name" type="text" autocomplete="off" maxlength="80"></div>

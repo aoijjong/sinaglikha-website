@@ -2,8 +2,9 @@
   POST /api/remove-user   { "id": "<account id>" }
 
   Permanently deletes a DEACTIVATED account so the email can be invited again.
-  Only a signed-in, active admin may call it. Safety rules:
+  Only a signed-in, active Senior manager or administrator may call it. Safety rules:
     - you can't delete yourself,
+    - a Senior manager can only delete Senior managers; hidden accounts can't be deleted here,
     - the account must already be deactivated (deactivate first, then delete),
     - the account's profile row disappears with it automatically.
 
@@ -55,18 +56,20 @@ module.exports = async function handler(req, res) {
 
   const lookup = async (id) => {
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(id)}&select=role,active,email`,
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(id)}&select=role,active,email,hidden`,
       { headers: svc() }
     );
     const rows = r.ok ? await r.json() : [];
     return rows[0] || null;
   };
 
-  // 2. Are they an active admin? (checked with the secret key, not trusted from the browser)
+  // 2. Are they an active administrator or Senior manager? (checked with the secret key,
+  //    not trusted from the browser)
+  let me;
   try {
-    const me = await lookup(callerId);
-    if (!me || me.role !== 'admin' || me.active !== true) {
-      return send(res, 403, { error: 'Only administrators can remove accounts.' });
+    me = await lookup(callerId);
+    if (!me || me.active !== true || (me.role !== 'admin' && me.role !== 'senior_manager')) {
+      return send(res, 403, { error: 'Only Senior managers can remove accounts.' });
     }
   } catch {
     return send(res, 502, { error: 'Could not check your permissions.' });
@@ -86,7 +89,11 @@ module.exports = async function handler(req, res) {
   // 4. The target must exist and already be deactivated
   try {
     const target = await lookup(id);
-    if (!target) return send(res, 404, { error: 'That account was not found.' });
+    // Hidden accounts, and (for a Senior manager) anyone who isn't a Senior manager, are
+    // answered exactly like a missing account so their existence isn't revealed.
+    if (!target || target.hidden === true || (me.role !== 'admin' && target.role !== 'senior_manager')) {
+      return send(res, 404, { error: 'That account was not found.' });
+    }
     if (target.active !== false) {
       return send(res, 409, { error: 'Deactivate this account first, then delete it.' });
     }

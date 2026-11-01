@@ -1,7 +1,8 @@
 /*
   POST /api/invite   { "email": "person@example.com", "name": "Optional name" }
 
-  Sends an invitation email. Only a signed-in, active admin may call it.
+  Sends an invitation email. Only a signed-in, active Senior manager (or administrator) may call it.
+  Invited people always start as Senior managers.
   The Supabase service key stays on the server (Vercel environment variables);
   it is never sent to the browser. No npm packages are needed.
 
@@ -64,8 +65,8 @@ module.exports = async function handler(req, res) {
     );
     const rows = prof.ok ? await prof.json() : [];
     const me = rows[0];
-    if (!me || me.role !== 'admin' || me.active !== true) {
-      return send(res, 403, { error: 'Only administrators can send invitations.' });
+    if (!me || me.active !== true || (me.role !== 'admin' && me.role !== 'senior_manager')) {
+      return send(res, 403, { error: 'Only Senior managers can send invitations.' });
     }
   } catch {
     return send(res, 502, { error: 'Could not check your permissions.' });

@@ -90,7 +90,7 @@
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' }
   });
 
-  var state = { session: null, profile: null, isAdmin: false, path: [], entries: [], filter: '' };
+  var state = { session: null, profile: null, isAdmin: false, canUse: false, path: [], entries: [], filter: '' };
 
   /* ---------- small helpers ---------- */
   function prefix() { return state.path.length ? state.path.join('/') + '/' : ''; }
@@ -174,18 +174,19 @@
       .eq('id', session.user.id)
       .maybeSingle();
     var p = res.data;
-    if (res.error || !p || !p.active) {
+    if (res.error || !p || !p.active || (p.role !== 'admin' && p.role !== 'senior_manager')) {
       state.profile = null;
       show('denied');
       return;
     }
     state.profile = p;
-    state.isAdmin = p.role === 'admin';
+    state.isAdmin = p.role === 'admin';   // the hidden owner: also sets roles
+    state.canUse = true;                   // every Senior manager and the owner: all file and people functions
     var who = $('#who');
     who.textContent = p.full_name || p.email || '';
     who.hidden = !who.textContent;
-    $$('.admin-only').forEach(function (el) { el.hidden = !state.isAdmin; });
-    $('#tabs').hidden = !state.isAdmin;
+    $$('.manager-only').forEach(function (el) { el.hidden = !state.canUse; });
+    $('#tabs').hidden = !state.canUse;
     setTab('library');
     show('app');
     state.path = [];
@@ -200,6 +201,8 @@
     state.session = null;
     state.profile = null;
     state.isAdmin = false;
+    state.canUse = false;
+    people = [];
     $('#form-login').reset();
     note($('#login-msg'), '');
     show('auth');
@@ -210,7 +213,7 @@
 
     if (linkError) {
       show('auth');
-      note($('#login-msg'), 'That link has expired or was already used. Sign in, use "Forgot your password?", or ask an administrator for a new invitation.', 'bad');
+      note($('#login-msg'), 'That link has expired or was already used. Sign in, use "Forgot your password?", or ask a Senior manager for a new invitation.', 'bad');
       history.replaceState(null, '', location.pathname);
       return;
     }
@@ -262,7 +265,7 @@
       return;
     }
     await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-    note(msg, 'If that email belongs to a member, a reset link is on its way.', 'ok');
+    note(msg, 'If that email belongs to an account, a reset link is on its way.', 'ok');
   });
 
   $('#form-password').addEventListener('submit', async function (e) {
@@ -360,7 +363,7 @@
 
   function rowHtml(e) {
     var n = esc(e.name);
-    var del = state.isAdmin
+    var del = state.canUse
       ? '<button class="icon-btn danger" type="button" data-act="delete" aria-label="Delete ' + (e.folder ? 'folder ' : '') + n + '">' + ICON_TRASH + '</button>'
       : '';
     if (e.folder) {
@@ -383,7 +386,7 @@
     $('#rows').innerHTML = items.map(rowHtml).join('');
     var empty = $('#empty');
     if (!state.entries.length) {
-      empty.textContent = state.isAdmin
+      empty.textContent = state.canUse
         ? 'This folder is empty. Upload files or drag them here.'
         : 'This folder is empty.';
       empty.hidden = false;
@@ -680,9 +683,9 @@
     }
   });
 
-  /* ---------- upload and new folder (admins) ---------- */
+  /* ---------- upload and new folder ---------- */
   async function uploadFiles(files) {
-    if (!state.isAdmin || !files.length) return;
+    if (!state.canUse || !files.length) return;
     var ok = 0, failed = [];
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
@@ -713,7 +716,7 @@
   var drop = $('#drop');
   ['dragenter', 'dragover'].forEach(function (ev) {
     drop.addEventListener(ev, function (e) {
-      if (!state.isAdmin) return;
+      if (!state.canUse) return;
       e.preventDefault();
       drop.classList.add('drag');
     });
@@ -722,7 +725,7 @@
     drop.addEventListener(ev, function () { drop.classList.remove('drag'); });
   });
   drop.addEventListener('drop', function (e) {
-    if (!state.isAdmin) return;
+    if (!state.canUse) return;
     e.preventDefault();
     uploadFiles(Array.prototype.slice.call(e.dataTransfer.files));
   });
@@ -751,9 +754,16 @@
     await loadFolder();
   });
 
-  /* ---------- people (admins) ---------- */
+  /* ---------- people (Senior managers; only the owner sets roles) ---------- */
   var people = [];
   var showInactive = false;
+
+  function roleControl(p, label, me) {
+    if (!state.isAdmin) return '<span class="role-tag">' + (p.role === 'admin' ? 'Administrator' : 'Senior manager') + '</span>';
+    return '<select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
+      '<option value="senior_manager"' + (p.role === 'senior_manager' ? ' selected' : '') + '>Senior manager</option>' +
+      '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Administrator</option></select>';
+  }
 
   function personRow(p) {
     var me = p.id === state.session.user.id;
@@ -765,10 +775,7 @@
     return '<li class="row person" data-id="' + esc(p.id) + '" data-email="' + esc(p.email || '') + '">' +
       '<div class="row-text"><span class="row-name">' + label + (me ? ' (you)' : '') + '</span>' +
       '<span class="row-meta">' + esc(p.email || '') + (p.active ? '' : ' · Deactivated') + '</span></div>' +
-      '<select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
-      '<option value="member"' + (p.role === 'member' ? ' selected' : '') + '>Member</option>' +
-      '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Admin</option></select>' +
-      actions + '</li>';
+      roleControl(p, label, me) + actions + '</li>';
   }
 
   function renderPeople() {
@@ -787,11 +794,12 @@
   }
 
   async function loadPeople() {
-    if (!state.isAdmin) return;
+    if (!state.canUse) return;
     var list = $('#people');
     if (!people.length) list.innerHTML = '<li class="empty">Loading…</li>';
     var res = await sb.from('profiles')
       .select('id,email,full_name,role,active,created_at')
+      .eq('hidden', false)
       .order('created_at', { ascending: true });
     if (res.error) {
       list.innerHTML = '<li class="empty">Couldn\'t load the list.</li>';
