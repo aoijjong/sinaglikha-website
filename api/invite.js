@@ -8,7 +8,8 @@
   Environment variables (set in Vercel -> Project -> Settings -> Environment Variables):
     SUPABASE_URL                e.g. https://abcdxyz.supabase.co
     SUPABASE_ANON_KEY           the public anon key
-    SUPABASE_SERVICE_ROLE_KEY   the secret service_role key (server only)
+    SUPABASE_SERVICE_ROLE_KEY   the secret key (server only): the legacy service_role key
+                                or the newer sb_secret_ key, either works
     SITE_URL                    e.g. https://your-site.vercel.app   (optional)
 */
 
@@ -31,6 +32,14 @@ module.exports = async function handler(req, res) {
     return send(res, 500, { error: 'Invites are not set up on the server yet.' });
   }
 
+  // Headers for calls made with the secret key. The older service_role key is a JWT and goes
+  // in both headers; the newer sb_secret_ key is not a JWT and goes only in `apikey`.
+  const svc = (extra) => Object.assign(
+    { apikey: SUPABASE_SERVICE_ROLE_KEY },
+    /^sb_secret_/.test(SUPABASE_SERVICE_ROLE_KEY) ? {} : { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+    extra
+  );
+
   // 1. Who is calling?
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
   if (!token) return send(res, 401, { error: 'Please sign in again.' });
@@ -51,7 +60,7 @@ module.exports = async function handler(req, res) {
   try {
     const prof = await fetch(
       `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=role,active`,
-      { headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+      { headers: svc() }
     );
     const rows = prof.ok ? await prof.json() : [];
     const me = rows[0];
@@ -82,11 +91,7 @@ module.exports = async function handler(req, res) {
       `${SUPABASE_URL}/auth/v1/invite?redirect_to=${encodeURIComponent(redirectTo)}`,
       {
         method: 'POST',
-        headers: {
-          apikey: SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json'
-        },
+        headers: svc({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ email, data: { full_name: name } })
       }
     );

@@ -97,10 +97,13 @@ needs the server function in `api/invite.js`, which runs on Vercel.
    |---|---|
    | `SUPABASE_URL` | the Project URL from step A5 |
    | `SUPABASE_ANON_KEY` | the anon key from step A5 |
-   | `SUPABASE_SERVICE_ROLE_KEY` | the **service_role** key (Project Settings, API). Secret. |
-   | `SITE_URL` | your site address, for example `https://sinaglikha.vercel.app` |
+   | `SUPABASE_SERVICE_ROLE_KEY` | the **secret** key (Project Settings, API Keys): either the legacy `service_role` key or the newer `sb_secret_…` key. Secret. Switch on Vercel's **Sensitive** option for it. |
+   | `SITE_URL` | your site address with no trailing slash, for example `https://sinaglikha-website.vercel.app` |
 
-3. **Redeploy** so the variables take effect.
+3. **Redeploy** so the variables take effect: **Deployments**, open the latest one, **⋯**, **Redeploy**.
+4. **Test it:** sign in as an admin, open **People**, and invite a second email address you own.
+   The invitation email should arrive within a minute. If you see "Invites are not set up on the
+   server yet", one of the variables is missing or you haven't redeployed.
 
 ---
 
