@@ -22,6 +22,18 @@ Edit the `CONFIG` block near the bottom of `index.html`:
 
 Anything left empty shows as "To be provided". Nothing is invented.
 
+## Members area (invite-only document library)
+
+`/members/` is a private library for the team. Sign-in and files run on Supabase, and admins can
+invite people from the site through a small Vercel function.
+
+- `members/` the sign-in page and file library (`config.js` holds the two Supabase settings)
+- `api/invite.js` sends invitations (admins only; runs on Vercel)
+- `supabase/schema.sql` creates the people list, the private `library` bucket, and the access rules
+- `docs/members-setup.md` step-by-step setup
+
+Never commit the Supabase `service_role` key. It belongs only in Vercel's environment variables.
+
 ## Photos
 
 The photos are free-to-use Unsplash images, loaded directly from `images.unsplash.com`, so the page needs an internet
