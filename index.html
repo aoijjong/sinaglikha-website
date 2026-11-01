@@ -411,6 +411,53 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
 
+/* touch devices: press feedback that mirrors the desktop hover.
+   Pressing responds quickly; letting go eases back at the normal slow pace. */
+@media (hover:none){
+  a,button,summary,.op,.cell,.facet,.dteam,.member,.btile,.val-list li{-webkit-tap-highlight-color:transparent}
+
+  .btn-primary:active{box-shadow:0 18px 30px -12px rgba(206,32,32,.7);transition-duration:.2s}
+  .btn-light:active{background:#fff;color:var(--brown);transition-duration:.2s}
+  .btn-ghost:active{background:var(--brown);color:var(--paper);transition-duration:.2s}
+  .btn:active .icon{transform:translateX(4px);transition-duration:.25s}
+
+  .btile:active .art{transform:translateY(-4px);box-shadow:var(--shadow-lg);transition-duration:.25s}
+  .btile:active .art img{transform:scale(1.06);transition-duration:.4s}
+
+  .op:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);transition-duration:.25s}
+  .op:active img{transform:scale(1.07);transition-duration:.5s}
+  .op:active h3,.op:active p{transform:translateY(-4px);transition-duration:.3s}
+
+  .cell:active{background:#fff;transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);transition-duration:.25s}
+  .cell:active .num{transform:scale(1.08);transform-origin:left;transition-duration:.3s}
+
+  .facet:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);border-color:rgba(206,32,32,.25);transition-duration:.25s}
+  .facet:active::after{transform:none;transition-duration:.4s}
+  .facet:active .f-icon{transform:scale(1.08) rotate(-5deg);transition-duration:.3s}
+  .facet:active .f-go .icon{transform:translateX(6px);transition-duration:.3s}
+
+  .dteam:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);background:#fff;transition-duration:.25s}
+  .dteam:active::before{transform:none;transition-duration:.4s}
+  .dteam:active .dt-ic{background:var(--grad);color:#fff;transform:scale(1.08) rotate(-4deg);transition-duration:.3s}
+  .dteam:active .dt-go .icon{transform:translateX(5px);transition-duration:.3s}
+  .member:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);transition-duration:.25s}
+
+  .val-list li:active h3{color:#B3261E;transform:translateX(8px);transition-duration:.25s}
+  .val-list li:active p{transform:translateX(8px);transition-duration:.25s}
+  .val-list li:active::after{width:100%;transition-duration:.4s}
+  .val-list li.in::after{width:100%;transition-duration:1.2s;transition-delay:.35s}
+
+  .mvp:active>img,.hr-compose:active .hr-photo img{transform:scale(1.04);transition-duration:.8s}
+  .more summary:active{background:rgba(255,255,255,.16);transition-duration:.2s}
+  .more.dark summary:active{background:var(--brown);color:#fff;transition-duration:.2s}
+  .social a:active{background:var(--brown);color:#fff;transform:translateY(-2px);transition-duration:.2s}
+  .role:active{background:#fff;box-shadow:var(--shadow);transform:translateX(4px);transition-duration:.2s}
+  .deliv li:active{background:#fff;border-color:rgba(206,32,32,.35);transform:translateY(-2px);transition-duration:.2s}
+  .foot-col a:active,.foot-col button:active{color:#B3261E;transform:translateX(5px);transition-duration:.2s}
+  .nav-list a:active{background:linear-gradient(90deg,rgba(248,238,174,.7),transparent);color:#B3261E;transition-duration:.2s}
+  .dlg-close:active{background:var(--brown);color:#fff;transition-duration:.2s}
+}
+
 /* tablet */
 @media (max-width:1100px){
   .dept-grid{grid-template-columns:repeat(3,1fr)}
