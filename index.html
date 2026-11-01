@@ -451,9 +451,11 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .hero-strip li{gap:14px}
   .hero-strip li:nth-child(n+4){display:none}
 
-  .brand-tiles{grid-template-columns:1fr 1fr;gap:12px}
-  .btile:first-child{grid-column:1/-1}
-  .btile:first-child .art{aspect-ratio:16/9}
+  .brand-tiles{grid-template-columns:1fr;gap:12px}
+  .btile{display:grid;grid-template-columns:92px 1fr;gap:16px;align-items:center;padding:12px;border-radius:24px;background:rgba(255,255,255,.7);border:1px solid var(--line)}
+  .btile .art{border-radius:18px}
+  .btile .art.mark img{width:76%}
+  .btile figcaption{margin:0;font-size:.95rem}
 
   .ops{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin-inline:calc(-1 * var(--gutter));padding:4px var(--gutter) 14px;scroll-padding-inline:var(--gutter);scrollbar-width:none}
   .ops::-webkit-scrollbar{display:none}
