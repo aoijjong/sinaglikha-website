@@ -138,6 +138,9 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .invite-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
 .invite-grid .field{margin:0}
 .person{flex-wrap:wrap;padding:14px 16px;gap:10px 14px}
+.toggle-row{justify-content:center;padding:14px 16px}
+.btn-warn{border-color:#B91C1C;color:#B91C1C}
+@media (hover:hover) and (pointer:fine){.btn-warn:hover{background:#B91C1C;color:#fff}}
 .person .row-text{flex:1 1 220px}
 .person select{width:auto;padding:10px 12px}
 
@@ -295,7 +298,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="msg" id="invite-msg" role="alert" hidden style="margin-top:14px"></p>
       </form>
       <div class="list-card"><ul class="rows" id="people"></ul></div>
-      <p class="fine">Deactivating someone removes their access to the files right away. To delete an account completely, use Supabase → Authentication → Users.</p>
+      <p class="fine">Deactivating someone removes their access to the files right away and moves them out of this list. Open "Show deactivated accounts" to reactivate or delete them.</p>
     </div>
   </section>
 </main>

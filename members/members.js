@@ -567,10 +567,44 @@
   });
 
   /* ---------- people (admins) ---------- */
+  var people = [];
+  var showInactive = false;
+
+  function personRow(p) {
+    var me = p.id === state.session.user.id;
+    var label = esc(p.full_name || p.email || 'Unnamed');
+    var actions = p.active
+      ? '<button class="btn btn-ghost btn-sm" type="button" data-act="toggle"' + (me ? ' disabled' : '') + '>Deactivate</button>'
+      : '<button class="btn btn-ghost btn-sm" type="button" data-act="toggle">Reactivate</button>' +
+        '<button class="btn btn-ghost btn-sm btn-warn" type="button" data-act="delete">Delete</button>';
+    return '<li class="row person" data-id="' + esc(p.id) + '" data-email="' + esc(p.email || '') + '">' +
+      '<div class="row-text"><span class="row-name">' + label + (me ? ' (you)' : '') + '</span>' +
+      '<span class="row-meta">' + esc(p.email || '') + (p.active ? '' : ' · Deactivated') + '</span></div>' +
+      '<select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
+      '<option value="member"' + (p.role === 'member' ? ' selected' : '') + '>Member</option>' +
+      '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Admin</option></select>' +
+      actions + '</li>';
+  }
+
+  function renderPeople() {
+    var active = people.filter(function (p) { return p.active; });
+    var inactive = people.filter(function (p) { return !p.active; });
+    var html = active.map(personRow).join('');
+    if (!people.length) html = '<li class="empty">No accounts yet.</li>';
+    if (inactive.length) {
+      html += '<li class="row toggle-row"><button class="link" type="button" data-act="toggle-inactive">' +
+        (showInactive ? 'Hide' : 'Show') + ' deactivated accounts (' + inactive.length + ')</button></li>';
+      if (showInactive) html += inactive.map(personRow).join('');
+    } else {
+      showInactive = false;
+    }
+    $('#people').innerHTML = html;
+  }
+
   async function loadPeople() {
     if (!state.isAdmin) return;
     var list = $('#people');
-    list.innerHTML = '<li class="empty">Loading…</li>';
+    if (!people.length) list.innerHTML = '<li class="empty">Loading…</li>';
     var res = await sb.from('profiles')
       .select('id,email,full_name,role,active,created_at')
       .order('created_at', { ascending: true });
@@ -578,25 +612,41 @@
       list.innerHTML = '<li class="empty">Couldn\'t load the list.</li>';
       return;
     }
-    list.innerHTML = (res.data || []).map(function (p) {
-      var me = p.id === state.session.user.id;
-      var label = esc(p.full_name || p.email || 'Unnamed');
-      return '<li class="row person" data-id="' + esc(p.id) + '">' +
-        '<div class="row-text"><span class="row-name">' + label + (me ? ' (you)' : '') + '</span>' +
-        '<span class="row-meta">' + esc(p.email || '') + (p.active ? '' : ' · Deactivated') + '</span></div>' +
-        '<select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
-        '<option value="member"' + (p.role === 'member' ? ' selected' : '') + '>Member</option>' +
-        '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Admin</option></select>' +
-        '<button class="btn btn-ghost btn-sm" type="button" data-act="toggle"' + (me ? ' disabled' : '') + '>' +
-        (p.active ? 'Deactivate' : 'Reactivate') + '</button></li>';
-    }).join('') || '<li class="empty">No accounts yet.</li>';
+    people = res.data || [];
+    renderPeople();
   }
 
-  async function updateProfile(id, patch) {
+  async function updateProfile(id, patch, okMessage) {
     var res = await sb.from('profiles').update(patch).eq('id', id).select('id').maybeSingle();
     if (res.error || !res.data) { toast("Couldn't save that change.", 'bad'); return false; }
-    toast('Saved.', 'ok');
+    toast(okMessage || 'Saved.', 'ok');
     return true;
+  }
+
+  async function removeAccount(id, email) {
+    var ok = await ask({
+      title: 'Delete this account?',
+      text: (email || 'This account') + ' will be removed for good and can be invited again later. Files they uploaded stay in the library.',
+      ok: 'Delete',
+      danger: true
+    });
+    if (!ok) return;
+    try {
+      var cur = await sb.auth.getSession();
+      var token = cur.data.session && cur.data.session.access_token;
+      var res = await fetch('../api/remove-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ id: id })
+      });
+      var body = {};
+      try { body = await res.json(); } catch (x) { /* not JSON */ }
+      if (res.ok) toast('Account deleted.', 'ok');
+      else toast(body.error || 'Deleting accounts only works on the Vercel version of the website. Use Supabase, then Authentication, then Users instead.', 'bad');
+    } catch (err) {
+      toast("Couldn't reach the server. Check your connection and try again.", 'bad');
+    }
+    loadPeople();
   }
 
   $('#people').addEventListener('change', async function (e) {
@@ -607,20 +657,26 @@
   });
 
   $('#people').addEventListener('click', async function (e) {
-    var btn = e.target.closest('button[data-act="toggle"]');
+    var btn = e.target.closest('button[data-act]');
     if (!btn) return;
+    var act = btn.dataset.act;
+    if (act === 'toggle-inactive') { showInactive = !showInactive; renderPeople(); return; }
     var li = btn.closest('li');
+    if (act === 'delete') { await removeAccount(li.dataset.id, li.dataset.email); return; }
+    if (act !== 'toggle') return;
+
     var activate = btn.textContent.trim() === 'Reactivate';
     if (!activate) {
       var ok = await ask({
         title: 'Deactivate this account?',
-        text: 'They will lose access to the files right away. You can reactivate them later.',
+        text: 'They will lose access to the files right away. You can reactivate or delete them later.',
         ok: 'Deactivate',
         danger: true
       });
       if (!ok) return;
     }
-    await updateProfile(li.dataset.id, { active: activate });
+    await updateProfile(li.dataset.id, { active: activate },
+      activate ? 'Account reactivated.' : "Deactivated. You'll find them under \"Show deactivated accounts\".");
     loadPeople();
   });
 

@@ -138,8 +138,11 @@ want a separate sender.
 - **Invite someone:** Members area, **People**, enter their email, **Send invitation**. They
   click the link in the email and choose a password.
 - **Make someone an admin:** People tab, change **Member** to **Admin**.
-- **Remove access:** People tab, **Deactivate** (instant). To delete the account completely use
-  Supabase, **Authentication**, **Users**.
+- **Remove access:** People tab, **Deactivate** (instant). The account moves out of the main list
+  into **Show deactivated accounts**, where you can **Reactivate** it or **Delete** it for good.
+  Deleting frees the email so the person can be invited again. You can't delete yourself, and you
+  must deactivate an account before deleting it. If an account has uploaded files, Supabase won't
+  delete it, so keep it deactivated. Deleting from the website needs the Vercel settings from Part C.
 - **Add files:** open **Files**, then **Upload files**, or drag files onto the list. Use **New folder** to organize.
 - **Let every member upload:** see the optional block at the bottom of `supabase/schema.sql`.
 
