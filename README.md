@@ -22,6 +22,11 @@ Edit the `CONFIG` block near the bottom of `index.html`:
 
 Anything left empty shows as "To be provided". Nothing is invented.
 
+## Photos
+
+The photos are free-to-use Unsplash images, loaded directly from `images.unsplash.com`, so the page needs an internet
+connection to show them. To use your own photos, save them in `assets/` and replace the matching `<img src="...">` in `index.html`.
+
 ## Notes
 
 - Employee (HR 201) records are confidential and must never be committed to this repository.
