@@ -365,6 +365,7 @@
 
   function render() {
     renderCrumbs();
+    $('#btn-back').hidden = !state.path.length;
     var q = state.filter.trim().toLowerCase();
     var items = state.entries.filter(function (e) { return !q || e.name.toLowerCase().indexOf(q) !== -1; });
     $('#rows').innerHTML = items.map(rowHtml).join('');
@@ -386,6 +387,14 @@
     var b = e.target.closest('[data-go]');
     if (!b || b.getAttribute('aria-current')) return;
     state.path = state.path.slice(0, Number(b.dataset.go));
+    state.filter = '';
+    $('#search').value = '';
+    loadFolder();
+  });
+
+  $('#btn-back').addEventListener('click', function () {
+    if (!state.path.length) return;
+    state.path.pop();
     state.filter = '';
     $('#search').value = '';
     loadFolder();
