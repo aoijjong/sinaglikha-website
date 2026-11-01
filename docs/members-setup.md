@@ -107,6 +107,33 @@ needs the server function in `api/invite.js`, which runs on Vercel.
 
 ---
 
+## Part D. Your own email sender (do this before inviting a real group)
+Supabase's built-in email sender is for testing only. It allows roughly **2 emails per hour for the
+whole project**, so invitations and password resets quickly show "email rate limit exceeded".
+Connect your own sender once and the limit goes away. Gmail works well for a small team and is free:
+
+1. **Get a Gmail app password.** In your Google account: **Security**, turn on **2-Step Verification**,
+   then search for **App passwords**, create one named `Supabase`, and copy the 16-character password.
+2. **Add it to Supabase.** Open **Authentication**, then **Emails** (or **Project Settings**, then
+   **Authentication**), find **SMTP Settings**, switch on **Enable custom SMTP**, and fill in:
+
+   | Field | Value |
+   |---|---|
+   | Sender email | your Gmail address |
+   | Sender name | `SINAGLIKHA` |
+   | Host | `smtp.gmail.com` |
+   | Port | `465` |
+   | Username | your Gmail address |
+   | Password | the 16-character app password |
+
+   Save it.
+3. **Raise the limit.** Open **Authentication**, then **Rate Limits**, and set the emails-per-hour
+   limit to something like 30.
+
+Gmail allows about 500 emails a day, which is plenty here. Invitations sometimes land in spam at
+first, so ask people to check there. Brevo (300 emails a day free) is a good alternative if you
+want a separate sender.
+
 ## Everyday use
 - **Invite someone:** Members area, **People**, enter their email, **Send invitation**. They
   click the link in the email and choose a password.
@@ -135,6 +162,7 @@ needs the server function in `api/invite.js`, which runs on Vercel.
 | Invitation link says "expired" | The address isn't in **Redirect URLs** (step A4), or an email scanner already opened the link. Send a new invitation. |
 | Signed in but "This account isn't active" | The account has no profile row or was deactivated. Re-run `schema.sql`, or check the People tab. |
 | No Upload button | Your role isn't `admin` yet (step B3). |
+| "Email rate limit exceeded" or "Too many emails were sent recently" | Supabase's built-in sender only allows about 2 emails an hour. Wait an hour, or set up your own sender (Part D). |
 | "Couldn't send the invitation" | One of the four Vercel variables is missing, or you haven't redeployed. |
 | "In-site invitations only work on the Vercel version" | You're on GitHub Pages. Invite from the Supabase dashboard, or use the Vercel address. |
 | Upload says "already exists" | A file with that name is in the folder. Rename it or delete the old one. |

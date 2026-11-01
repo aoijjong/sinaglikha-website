@@ -98,6 +98,11 @@ module.exports = async function handler(req, res) {
     if (!invite.ok) {
       const detail = await invite.json().catch(() => ({}));
       const message = detail.msg || detail.message || detail.error_description || 'Could not send the invitation.';
+      if (invite.status === 429 || /rate limit/i.test(message)) {
+        return send(res, 429, {
+          error: 'Too many emails were sent recently. Supabase\'s built-in email service only allows a couple per hour. Wait about an hour and try again, or set up your own email service (see the setup guide).'
+        });
+      }
       return send(res, invite.status === 422 ? 409 : 400, { error: message });
     }
   } catch {
