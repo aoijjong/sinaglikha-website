@@ -306,12 +306,14 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 @media (hover:hover) and (pointer:fine){.deliv li:hover{transform:translateY(-3px);background:#fff;border-color:rgba(206,32,32,.35)}}
 .tp-note{margin-top:22px;font-size:.88rem;color:var(--muted)}
 
-.rec-strip{margin-top:clamp(22px,3vw,34px);display:flex;align-items:center;gap:18px;padding:20px 24px;border-radius:24px;background:rgba(255,255,255,.7);border:1px solid var(--line);transition:transform 0.72s var(--ease),box-shadow 0.72s var(--ease)}
-.rec-strip .lockbox{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--grad);color:#fff;flex:none;box-shadow:0 10px 22px -10px rgba(206,32,32,.55)}
-.rec-strip .lockbox .icon{width:24px;height:24px}
-.rec-strip h3{font-size:1.25rem}
-.rec-strip p{color:var(--muted);font-size:.97rem;margin-top:2px}
-@media (hover:hover) and (pointer:fine){.rec-strip:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}}
+.rec-wrap{margin-top:clamp(52px,7vw,88px)}
+.rec-strip{display:flex;align-items:center;gap:22px;padding:clamp(22px,3vw,32px) clamp(22px,3vw,38px);border-radius:28px;background:var(--soft-warm);border:1.5px dashed rgba(74,46,34,.32)}
+.rec-strip .lockbox{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--brown);color:var(--yellow);flex:none}
+.rec-strip .lockbox .icon{width:26px;height:26px}
+.rec-strip .rec-text{flex:1 1 220px}
+.rec-strip h3{font-size:clamp(1.3rem,2.2vw,1.6rem)}
+.rec-strip p{color:#5A4538;font-size:.98rem;margin-top:4px;max-width:60ch}
+.rec-tag{flex:none;padding:8px 16px;border-radius:999px;border:1.5px solid var(--brown);font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
 
 /* team */
 .team-title{font-size:1.4rem;margin-bottom:18px}
@@ -499,7 +501,10 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .dlg-foot .btn{flex:1;padding:13px 10px}
   .dlg-foot .nm{display:none}
   .dlg-foot .dir{display:inline}
-  .rec-strip{align-items:flex-start;padding:18px;gap:14px}
+  .rec-strip{align-items:flex-start;padding:20px;gap:16px;border-radius:24px}
+  .rec-strip .lockbox{width:46px;height:46px}
+  .rec-strip .rec-text{flex:1 1 0;min-width:0}
+  .rec-tag{display:none}
 
   .dept-grid{grid-template-columns:1fr;gap:10px}
   .dteam{flex-direction:row;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;display:grid;grid-template-columns:auto 1fr auto}
@@ -790,11 +795,15 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     <div class="facet-grid" id="facet-grid"></div>
     <noscript><p>Please enable JavaScript to explore the five HR departments.</p></noscript>
 
-    <div class="rec-strip reveal" id="hr201">
-      <div class="lockbox"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
-      <div>
-        <h3>HR 201 files stay confidential.</h3>
-        <p>Employee records are kept in one organized system, shared only with authorized HR staff, and never published on this site.</p>
+    <div class="rec-wrap reveal" id="hr201">
+      <span class="eyebrow">Records and privacy</span>
+      <div class="rec-strip">
+        <div class="lockbox"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
+        <div class="rec-text">
+          <h3>HR 201 files stay confidential.</h3>
+          <p>Employee records are kept in one organized system, shared only with authorized HR staff, and never published on this site.</p>
+        </div>
+        <span class="rec-tag">Confidential</span>
       </div>
     </div>
   </div>
