@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SINAGLIKHA | Bringing Light to Every Possibility</title>
+<meta name="description" content="SINAGLIKHA is a Filipino solar energy company making practical, sustainable solar solutions accessible to households and businesses, with people-centered human resource management.">
+<meta name="theme-color" content="#FFFDF6">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SINAGLIKHA | Bringing Light to Every Possibility">
+<meta property="og:description" content="Filipino solar energy solutions and people-centered human resource management.">
+<meta property="og:image" content="assets/sinaglikha-banner.jpg">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+
+<style>
+:root{
+  --fire-a:#FFCB1B; --fire-b:#CE2020;
+  --yellow:#F8EEAE; --paper:#FFFDF6; --tint:#FBF4D0;
+  --ink:#2B211C; --brown:#4A2E22; --muted:#66554B;
+  --line:rgba(74,46,34,.14);
+  --grad:linear-gradient(135deg,#CE2020 0%,#E8701A 58%,#FFCB1B 100%);
+  --grad-text:linear-gradient(100deg,#CE2020 0%,#E0601A 100%);
+  --grad-btn:linear-gradient(135deg,#C21E1E 0%,#DE5A14 100%);
+  --radius:20px;
+  --shadow:0 1px 2px rgba(74,46,34,.06),0 14px 34px -14px rgba(74,46,34,.22);
+  --header-h:76px;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --weave:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' fill='none' stroke='%23E6D47F' stroke-width='1.2'%3E%3Ccircle cx='0' cy='0' r='48'/%3E%3Ccircle cx='96' cy='0' r='48'/%3E%3Ccircle cx='0' cy='96' r='48'/%3E%3Ccircle cx='96' cy='96' r='48'/%3E%3Ccircle cx='48' cy='48' r='48'/%3E%3Cpath d='M0 48H96' stroke-width='.8'/%3E%3C/svg%3E");
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 8px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.65;-webkit-font-smoothing:antialiased}
+body:has(dialog[open]){overflow:hidden}
+img,svg{max-width:100%;display:block}
+img{height:auto}
+a{color:inherit}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.12;margin:0;color:var(--brown);letter-spacing:-.01em}
+p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+:focus-visible{outline:3px solid #CE2020;outline-offset:3px;border-radius:6px}
+.icon{width:1.5em;height:1.5em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:12px;top:-60px;background:var(--brown);color:#fff;padding:10px 16px;border-radius:10px;z-index:200;text-decoration:none;font-weight:600}
+.skip:focus{top:12px}
+
+.container{width:min(1200px,100% - clamp(40px,8vw,80px));margin-inline:auto}
+section{position:relative;padding-block:clamp(72px,10vw,128px)}
+.tint{background:var(--tint)}
+.weave::before{content:"";position:absolute;inset:0;background:var(--weave);opacity:.55;pointer-events:none;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 85%);mask-image:linear-gradient(180deg,#000 0%,transparent 85%)}
+.weave>.container{position:relative}
+
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B3361A;margin-bottom:18px}
+.eyebrow::before{content:"";width:34px;height:3px;border-radius:3px;background:var(--grad)}
+.sec-head{max-width:760px;margin-bottom:clamp(36px,5vw,64px)}
+.sec-head h2{font-size:clamp(2rem,4.2vw,3.25rem)}
+.sec-head p{margin-top:18px;color:var(--muted);font-size:1.125rem}
+.sec-head.center{text-align:center;margin-inline:auto}
+.sec-head.center .eyebrow{justify-content:center}
+.grad-text{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font:inherit;font-weight:700;font-size:.97rem;line-height:1;padding:16px 26px;border-radius:999px;border:2px solid transparent;text-decoration:none;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s,color .2s}
+.btn .icon{width:1.15em;height:1.15em;transition:transform .2s}
+.btn-primary{background:var(--grad-btn);color:#fff;box-shadow:0 10px 24px -10px rgba(206,32,32,.65)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 28px -12px rgba(206,32,32,.7)}
+.btn-primary:hover .icon{transform:translateX(3px)}
+.btn-ghost{border-color:var(--brown);color:var(--brown);background:transparent}
+.btn-ghost:hover{background:var(--brown);color:var(--paper)}
+.btn-sm{padding:12px 20px;font-size:.88rem}
+.nav-cta{white-space:nowrap}
+
+/* header */
+.site-header{position:sticky;top:0;z-index:100;height:var(--header-h);background:rgba(255,253,246,.9);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid transparent;transition:border-color .25s,box-shadow .25s}
+.site-header.scrolled{border-color:var(--line);box-shadow:0 8px 24px -18px rgba(74,46,34,.35)}
+.site-header .container{width:min(1400px,100% - 48px)}
+.header-inner{height:100%;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:block;flex:none}
+.brand img{height:42px;width:auto}
+.nav-list{display:flex;align-items:center;gap:2px}
+.nav-list a{display:block;white-space:nowrap;padding:9px 10px;border-radius:999px;font-size:.84rem;font-weight:600;text-decoration:none;color:var(--ink);position:relative;transition:color .2s,background .2s}
+.nav-list a:hover{background:rgba(248,238,174,.7)}
+.nav-list a[aria-current="true"]{color:#B3261E}
+.nav-list a[aria-current="true"]::after{content:"";position:absolute;left:12px;right:12px;bottom:3px;height:2px;border-radius:2px;background:var(--grad)}
+.nav-cta{display:none}
+.nav-toggle{display:none;width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--brown);cursor:pointer;align-items:center;justify-content:center}
+.nav-toggle .icon{width:24px;height:24px}
+.nav-toggle .i-close{display:none}
+.nav-toggle[aria-expanded="true"] .i-close{display:block}
+.nav-toggle[aria-expanded="true"] .i-menu{display:none}
+.nav-list .ls{display:none}
+.menu-cta{display:none}
+
+@media (min-width:1180px){
+  .nav-list .lf{display:none}.nav-list .ls{display:inline}
+}
+@media (min-width:1400px){
+  .nav-cta{display:inline-flex}
+}
+@media (max-width:1179.98px){
+  .nav-toggle{display:inline-flex}
+  .primary-nav{position:fixed;left:0;right:0;top:var(--header-h);background:var(--paper);border-bottom:1px solid var(--line);box-shadow:0 30px 40px -30px rgba(74,46,34,.4);padding:14px clamp(20px,5vw,40px) 26px;max-height:calc(100svh - var(--header-h));overflow:auto;transform:translateY(-12px);opacity:0;visibility:hidden;transition:opacity .22s,transform .22s,visibility .22s}
+  .primary-nav.open{opacity:1;transform:none;visibility:visible}
+  .nav-list{flex-direction:column;align-items:stretch;gap:0}
+  .nav-list a{padding:15px 6px;border-radius:0;border-bottom:1px solid var(--line);font-size:1.02rem}
+  .nav-list a[aria-current="true"]::after{display:none}
+  .nav-list a[aria-current="true"]{color:#B3261E;background:linear-gradient(90deg,rgba(248,238,174,.7),transparent)}
+  .menu-cta{display:flex;margin-top:22px}
+}
+
+/* hero */
+.hero{padding-top:clamp(40px,6vw,80px);padding-bottom:clamp(56px,8vw,110px);overflow:hidden;background:radial-gradient(1200px 520px at 85% -10%,rgba(255,203,27,.28),transparent 60%),var(--paper)}
+.hero::before{content:"";position:absolute;inset:0;background:var(--weave);opacity:.7;pointer-events:none;-webkit-mask-image:linear-gradient(115deg,transparent 18%,#000 100%);mask-image:linear-gradient(115deg,transparent 18%,#000 100%)}
+.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(32px,5vw,72px);align-items:center;position:relative}
+.hero-logo{width:min(380px,82%);margin-bottom:clamp(28px,4vw,44px)}
+.hero h1{font-size:clamp(2.5rem,5.6vw,4.6rem);letter-spacing:-.02em}
+.hero .lead{margin-top:26px;font-size:clamp(1.05rem,1.5vw,1.2rem);color:var(--muted);max-width:56ch}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:36px}
+.hero-art{position:relative;width:min(100%,520px);margin-inline:auto}
+.hero-art svg{width:100%;height:auto;filter:drop-shadow(0 30px 40px rgba(74,46,34,.18))}
+.rays{transform-box:fill-box;transform-origin:center;animation:spin 90s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sun-glow{animation:pulse 6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.scroll-cue{position:absolute;left:0;bottom:-10px}
+
+/* intro + preview */
+.intro-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(32px,6vw,88px);align-items:start}
+.intro-grid h2{font-size:clamp(1.9rem,3.8vw,3rem)}
+.intro-copy p{color:var(--muted);font-size:1.125rem}
+.intro-copy p+p{margin-top:18px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:clamp(40px,6vw,72px)}
+.tile{display:flex;flex-direction:column;gap:12px;padding:22px;border-radius:var(--radius);background:#fff;border:1px solid var(--line);text-decoration:none;position:relative;transition:transform .25s,box-shadow .25s,border-color .25s}
+.tile:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:rgba(206,32,32,.35)}
+.tile .icon{color:#C8321A;width:28px;height:28px}
+.tile strong{font-family:var(--serif);font-size:1.15rem;font-weight:600;color:var(--brown)}
+.tile span{font-size:.92rem;color:var(--muted);line-height:1.5}
+.tile .go{position:absolute;right:18px;top:20px;width:20px;height:20px;color:var(--muted);opacity:0;transform:translateX(-4px);transition:.25s}
+.tile:hover .go{opacity:1;transform:none}
+
+/* about */
+.about-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(36px,6vw,88px);align-items:start}
+.about-copy p{color:var(--muted)}
+.about-copy p+p{margin-top:18px}
+.commit{display:grid;gap:14px;margin-top:30px}
+.commit li{display:flex;gap:14px;align-items:flex-start;font-weight:500;color:var(--ink)}
+.commit .icon{color:#C8321A;margin-top:3px;width:1.25em;height:1.25em}
+.activities{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;counter-reset:act}
+.activity{padding:28px;border-radius:var(--radius);background:#fff;border:1px solid var(--line);position:relative;counter-increment:act}
+.activity::after{content:"0" counter(act);position:absolute;right:22px;top:18px;font-family:var(--serif);font-size:1.5rem;color:rgba(74,46,34,.18);font-weight:600}
+.chip{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:var(--tint);color:#C8321A;margin-bottom:20px;transition:background .25s,color .25s}
+.chip .icon{width:26px;height:26px}
+.activity:hover .chip,.value:hover .chip,.objective:hover .chip{background:var(--grad);color:#fff}
+.activity h3{font-size:1.2rem;margin-bottom:10px;font-family:var(--sans);font-weight:700;letter-spacing:0}
+.activity p{font-size:.97rem;color:var(--muted);line-height:1.6}
+.sun-strip{margin-top:clamp(40px,6vw,72px);border-radius:28px;background:var(--grad);color:#fff;padding:clamp(28px,5vw,56px);position:relative;overflow:hidden;display:flex;gap:28px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.sun-strip p{font-family:var(--serif);font-size:clamp(1.35rem,2.6vw,2.1rem);line-height:1.25;max-width:26ch;position:relative;font-weight:500}
+.sun-strip svg{position:absolute;right:-60px;top:50%;translate:0 -50%;width:340px;opacity:.28}
+.sun-strip .btn{position:relative;background:var(--paper);color:var(--brown)}
+.sun-strip .btn:hover{background:#fff;transform:translateY(-2px)}
+
+/* mission vision */
+.mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.5vw,28px)}
+.mv{border-radius:28px;padding:clamp(30px,4.5vw,56px);position:relative;overflow:hidden;min-height:340px;display:flex;flex-direction:column}
+.mv .label{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:.8rem;margin-bottom:26px}
+.mv .label .icon{width:26px;height:26px}
+.mv h3{font-size:clamp(1.9rem,3vw,2.5rem);margin-bottom:22px}
+.mv p{font-size:clamp(1.08rem,1.5vw,1.25rem);line-height:1.6;position:relative}
+.mv svg.deco{position:absolute;right:-30px;bottom:-40px;width:280px;pointer-events:none}
+.mv.mission{background:linear-gradient(150deg,#BE1D1D 0%,#D8501A 100%);color:#fff}
+.mv.mission h3{color:#fff}
+.mv.mission svg.deco{opacity:.22}
+.mv.vision{background:var(--yellow);color:var(--ink);border:1px solid rgba(74,46,34,.1)}
+.mv.vision .label{color:#9C2A10}
+.mv.vision svg.deco{opacity:.55;color:#fff}
+
+/* objectives */
+.obj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.objective{padding:30px;border-radius:var(--radius);background:var(--paper);border:1px solid var(--line);display:flex;flex-direction:column;gap:14px;transition:transform .25s,box-shadow .25s}
+.objective:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.objective .top{display:flex;justify-content:space-between;align-items:flex-start}
+.objective .num{font-family:var(--serif);font-size:2.6rem;line-height:1;font-weight:600;color:transparent;background:var(--grad-text);-webkit-background-clip:text;background-clip:text}
+.objective h3{font-family:var(--sans);font-weight:700;font-size:1.18rem;letter-spacing:0}
+.objective p{color:var(--muted);font-size:.98rem}
+.objective .chip{margin:0;width:46px;height:46px}
+
+/* values */
+.val-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.value{padding:32px;border-radius:var(--radius);background:#fff;border:1px solid var(--line);position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s}
+.value::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform .35s}
+.value:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.value:hover::before{transform:none}
+.value h3{font-size:1.55rem;margin-bottom:10px}
+.value p{color:var(--muted);font-size:.99rem}
+
+/* hr */
+.hr-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.5vw,28px)}
+.hr-card{padding:clamp(28px,4vw,44px);border-radius:28px;background:#fff;border:1px solid var(--line);position:relative;overflow:hidden}
+.hr-card h3{font-size:1.7rem;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.hr-card h3 .chip{margin:0;width:48px;height:48px}
+.hr-card p{color:var(--muted);font-size:1.06rem}
+.hr-intro{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,5vw,72px);align-items:center;margin-bottom:clamp(36px,5vw,56px)}
+.hr-intro p{color:var(--muted);font-size:1.125rem}
+.pillar-list{display:flex;flex-wrap:wrap;gap:10px}
+.pillar-list a{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border-radius:999px;background:#fff;border:1px solid var(--line);font-weight:600;font-size:.9rem;text-decoration:none;color:var(--brown);transition:.2s}
+.pillar-list a:hover{background:var(--brown);color:var(--paper);border-color:var(--brown)}
+.pillar-list .icon{width:18px;height:18px;color:#C8321A}
+.pillar-list a:hover .icon{color:var(--yellow)}
+
+/* facets */
+.facet-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
+.facet{grid-column:span 2;background:#fff;border:1px solid var(--line);border-radius:24px;padding:30px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;--accent:#CE2020}
+.facet:nth-child(n+4){grid-column:span 3}
+.facet::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent)}
+.facet:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
+.facet .f-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.facet .f-icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,#fff)}
+.facet .f-icon .icon{width:28px;height:28px}
+.facet .f-letter{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--muted);letter-spacing:.06em}
+.facet h3{font-size:1.5rem;margin-bottom:12px}
+.facet .ov{color:var(--muted);font-size:.99rem}
+.facet ul.mini{margin:18px 0 24px;display:grid;gap:8px}
+.facet ul.mini li{display:flex;gap:10px;font-size:.92rem;line-height:1.45;align-items:flex-start}
+.facet ul.mini .icon{width:17px;height:17px;margin-top:2px;color:var(--accent)}
+.facet .btn{margin-top:auto;align-self:flex-start;border-color:var(--accent);color:var(--accent);background:transparent}
+.facet .btn:hover{background:var(--accent);color:#fff}
+.facet .btn:hover .icon{transform:translateX(3px)}
+.f1{--accent:#B91C1C}.f2{--accent:#C2410C}.f3{--accent:#B45309}.f4{--accent:#A16207}.f5{--accent:#9A3412}
+
+dialog{border:0;padding:0;border-radius:28px;width:min(820px,100% - 32px);max-height:calc(100svh - 40px);background:var(--paper);color:var(--ink);box-shadow:0 40px 80px -20px rgba(43,33,28,.55);overflow:hidden}
+dialog::backdrop{background:rgba(43,33,28,.6);backdrop-filter:blur(3px)}
+dialog[open]{animation:pop .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.dlg{display:flex;flex-direction:column;max-height:calc(100svh - 40px)}
+.dlg-head{padding:32px 36px 24px;background:var(--tint);position:relative;border-bottom:1px solid var(--line);--accent:#CE2020}
+.dlg-head .f-icon{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;background:#fff;color:var(--accent);margin-bottom:18px;box-shadow:var(--shadow)}
+.dlg-head .f-icon .icon{width:30px;height:30px}
+.dlg-head .eyebrow{margin-bottom:10px}
+.dlg-head h3{font-size:clamp(1.6rem,3vw,2.2rem);padding-right:48px}
+.dlg-close{position:absolute;right:20px;top:20px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--brown);cursor:pointer;display:grid;place-items:center}
+.dlg-close:hover{background:var(--brown);color:#fff}
+.dlg-body{padding:28px 36px;overflow:auto}
+.dlg-body .ov{font-size:1.1rem;color:var(--ink)}
+.dlg-body .more{margin-top:14px;color:var(--muted)}
+.dlg-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:28px}
+.dlg-cols h4{font-family:var(--sans);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#9C2A10;margin-bottom:14px}
+.dlg-cols li{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.97rem;line-height:1.45}
+.dlg-cols li .icon{width:18px;height:18px;margin-top:2px;color:#C8321A}
+.dlg-note{margin-top:22px;font-size:.88rem;color:var(--muted);padding:14px 16px;border-radius:14px;background:rgba(248,238,174,.45)}
+.dlg-foot{display:flex;justify-content:space-between;gap:12px;padding:18px 36px;border-top:1px solid var(--line);background:#fff;flex-wrap:wrap}
+.dlg-foot .btn{padding:12px 18px;font-size:.88rem}
+.dlg-foot .dir{display:none}
+
+/* location */
+.loc-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(24px,4vw,56px);align-items:stretch}
+.info-list{display:grid;gap:22px;margin-top:8px}
+.info-list li{display:flex;gap:16px;align-items:flex-start}
+.info-list .chip{margin:0;width:48px;height:48px;flex:none}
+.info-list dt{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#9C2A10}
+.info-list dd{margin:2px 0 0;font-size:1.05rem}
+.tbd{color:var(--muted);font-style:italic}
+.map-box{border-radius:28px;overflow:hidden;border:1px solid var(--line);background:var(--tint);min-height:380px;position:relative;box-shadow:var(--shadow)}
+.map-box iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.map-ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px}
+.map-ph svg.grid{position:absolute;inset:0;width:100%;height:100%}
+.map-ph .card{position:relative;background:rgba(255,253,246,.94);border:1px solid var(--line);padding:26px 28px;border-radius:20px;max-width:340px;box-shadow:var(--shadow)}
+.map-ph .pin{width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#fff}
+.map-ph .pin .icon{width:28px;height:28px}
+.map-ph strong{font-family:var(--serif);font-size:1.25rem;color:var(--brown);display:block;margin-bottom:6px}
+.map-ph span{color:var(--muted);font-size:.95rem;line-height:1.5;display:block}
+.dir-btn{margin-top:28px}
+
+/* team */
+.team-group+.team-group{margin-top:clamp(44px,6vw,72px)}
+.team-group h3{font-size:1.5rem;display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.team-group h3 small{font-family:var(--sans);font-size:.8rem;font-weight:600;letter-spacing:.04em;color:var(--muted)}
+.team-group h3::after{content:"";flex:1;min-width:40px;height:1px;background:var(--line)}
+.team-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.member{background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;text-align:center;transition:transform .25s,box-shadow .25s}
+.member:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.member.is-ph{border-style:dashed;background:rgba(255,255,255,.7)}
+.avatar{width:104px;height:104px;border-radius:50%;margin:0 auto 18px;background:var(--yellow);display:grid;place-items:center;color:#B3361A;overflow:hidden;border:4px solid #fff;box-shadow:0 0 0 2px rgba(206,32,32,.25)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar .icon{width:46px;height:46px}
+.member h4{font-family:var(--sans);font-size:1.08rem;font-weight:700;letter-spacing:0;color:var(--ink)}
+.member .role{color:#9C2A10;font-weight:600;font-size:.92rem;margin-top:2px}
+.member .dept{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:999px;background:var(--tint);font-size:.78rem;font-weight:600;color:var(--brown)}
+.member .bio{margin-top:12px;font-size:.92rem;color:var(--muted);line-height:1.55}
+.ph-tag{display:inline-block;margin-top:12px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+
+/* hr201 */
+.rec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.rec{padding:26px;border-radius:var(--radius);background:#fff;border:1px solid var(--line);display:flex;gap:16px}
+.rec .chip{margin:0;width:46px;height:46px}
+.rec h3{font-family:var(--sans);font-size:1.05rem;font-weight:700;letter-spacing:0;margin-bottom:6px}
+.rec p{font-size:.93rem;color:var(--muted);line-height:1.55}
+.hr201-layout{display:grid;grid-template-columns:1fr;gap:28px}
+.practices{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+.practices li{display:flex;gap:12px;align-items:flex-start;font-weight:500;font-size:.98rem}
+.practices .icon{color:#C8321A;width:1.2em;height:1.2em;margin-top:3px}
+.notice{display:flex;gap:18px;padding:26px 28px;border-radius:22px;background:var(--brown);color:#F7EBD9}
+.notice .icon{color:var(--fire-a);width:34px;height:34px;margin-top:2px}
+.notice strong{display:block;font-family:var(--serif);font-size:1.25rem;color:#fff;margin-bottom:6px;font-weight:600}
+.notice p{font-size:.98rem;color:#EADBC6}
+.notice a{color:var(--fire-a);font-weight:600}
+
+/* contact */
+.contact-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(28px,5vw,72px);align-items:start}
+.form-card{background:#fff;border:1px solid var(--line);border-radius:28px;padding:clamp(24px,4vw,44px);box-shadow:var(--shadow)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.field{margin-bottom:18px}
+.field label{display:block;font-weight:600;font-size:.92rem;margin-bottom:7px;color:var(--brown)}
+.field input,.field textarea{width:100%;font:inherit;color:var(--ink);padding:14px 16px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);transition:border-color .2s,box-shadow .2s}
+.field textarea{min-height:150px;resize:vertical}
+.field input:focus,.field textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15)}
+.field [aria-invalid="true"]{border-color:#B91C1C;background:#FFF5F3}
+.err{display:none;color:#B91C1C;font-size:.86rem;margin-top:6px;font-weight:500}
+.field [aria-invalid="true"]~.err{display:block}
+.form-status{margin-top:18px;padding:14px 16px;border-radius:14px;font-size:.95rem;display:none}
+.form-status.show{display:block}
+.form-status.ok{background:#EAF6EC;color:#1E5B2B}
+.form-status.info{background:rgba(248,238,174,.6);color:var(--brown)}
+.form-status.bad{background:#FDECEA;color:#8F1D1D}
+.social{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.social a{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:.9rem;text-decoration:none}
+.social a:hover{background:var(--brown);color:#fff}
+
+/* footer */
+.site-footer{background:var(--tint);border-top:1px solid var(--line);padding-top:clamp(56px,8vw,96px);position:relative;overflow:hidden}
+.site-footer::before{content:"";position:absolute;inset:0;background:var(--weave);opacity:.6;pointer-events:none;-webkit-mask-image:linear-gradient(0deg,#000,transparent 80%);mask-image:linear-gradient(0deg,#000,transparent 80%)}
+.foot-grid{position:relative;display:grid;grid-template-columns:1.5fr 1fr 1fr 1.1fr;gap:clamp(28px,4vw,56px)}
+.foot-brand img{width:min(320px,100%);margin-bottom:20px}
+.foot-brand p{color:var(--muted);font-size:.97rem;max-width:40ch}
+.foot-col h4{font-family:var(--sans);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:#9C2A10;margin-bottom:16px}
+.foot-col li+li{margin-top:9px}
+.foot-col a,.foot-col button{color:var(--ink);text-decoration:none;font:inherit;font-size:.96rem;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.foot-col a:hover,.foot-col button:hover{color:#B3261E;text-decoration:underline;text-underline-offset:4px}
+.foot-col p{font-size:.96rem}
+.foot-bottom{position:relative;margin-top:clamp(40px,6vw,64px);padding-block:24px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between;font-size:.88rem;color:var(--muted)}
+.foot-bottom a{color:var(--brown);font-weight:600}
+.foot-bar{height:6px;background:var(--grad);position:relative}
+
+/* reveal */
+.js .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.js .reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .js .reveal{opacity:1;transform:none;transition:none}
+  .rays,.sun-glow{animation:none}
+  *{transition-duration:.01ms!important}
+  dialog[open]{animation:none}
+}
+
+/* responsive */
+@media (max-width:1000px){
+  .hero-grid,.intro-grid,.about-grid,.hr-intro,.loc-grid,.contact-grid{grid-template-columns:1fr}
+  .hero-art{width:min(100%,380px);margin-top:12px}
+  .hero-logo{width:min(340px,80%)}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .obj-grid,.val-grid,.rec-grid{grid-template-columns:repeat(2,1fr)}
+  .facet-grid{grid-template-columns:repeat(2,1fr)}
+  .facet,.facet:nth-child(n+4){grid-column:span 1}
+  .facet:last-child{grid-column:1/-1}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .practices{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  body{font-size:1rem}
+  :root{--header-h:68px}
+  .brand img{height:36px}
+  .mv-grid,.hr-grid,.activities,.form-row,.dlg-cols{grid-template-columns:1fr}
+  .tiles,.obj-grid,.val-grid,.rec-grid,.facet-grid,.foot-grid{grid-template-columns:1fr}
+  .facet:last-child{grid-column:auto}
+  .mv{min-height:0}
+  .hero-actions .btn{flex:1 1 100%}
+  .sun-strip svg{display:none}
+  .sun-strip .btn{width:100%}
+
+  section{padding-block:60px}
+  .sec-head{margin-bottom:32px}
+  .notice{flex-direction:column;gap:12px;padding:22px}
+  .form-card{border-radius:22px}
+  .hr-card,.mv{border-radius:22px}
+
+  .team-cards{grid-template-columns:1fr;gap:12px}
+  .member{display:grid;grid-template-columns:72px 1fr;column-gap:16px;align-items:center;text-align:left;padding:16px}
+  .member .avatar{grid-row:1 / span 6;width:72px;height:72px;margin:0;border-width:3px}
+  .member .avatar .icon{width:32px;height:32px}
+  .member .dept{justify-self:start}
+
+  .foot-col a,.foot-col button{display:inline-block;padding:9px 0}
+  .foot-col li+li{margin-top:0}
+  .foot-bottom{flex-direction:column}
+
+  dialog{border-radius:22px;max-height:calc(100dvh - 24px)}
+  .dlg{max-height:calc(100dvh - 24px)}
+  .dlg-head{padding:18px 22px 16px;display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:center}
+  .dlg-head .f-icon{width:46px;height:46px;border-radius:14px;margin:0;grid-row:1 / span 2}
+  .dlg-head .f-icon .icon{width:24px;height:24px}
+  .dlg-head .eyebrow{margin:0 0 2px;font-size:.68rem;gap:8px}
+  .dlg-head .eyebrow::before{width:20px}
+  .dlg-head h3{font-size:1.3rem;padding-right:46px;grid-column:2}
+  .dlg-close{right:10px;top:10px}
+  .dlg-body{padding:20px 22px}
+  .dlg-body .ov{font-size:1.02rem}
+  .dlg-cols{gap:22px;margin-top:22px}
+  .dlg-foot{padding:12px 16px;flex-wrap:nowrap}
+  .dlg-foot .btn{flex:1;padding:13px 10px}
+  .dlg-foot .nm{display:none}
+  .dlg-foot .dir{display:inline}
+}
+</style>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="m23 6-9.5 9.5-5-5L1 18M17 6h6v6"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-userplus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M5 21h14M4 7h16"/><path d="m4 7-3 8a3.5 3.5 0 0 0 6 0L4 7zM20 7l-3 8a3.5 3.5 0 0 0 6 0l-3-8z"/></symbol>
+    <symbol id="i-brief" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></symbol>
+
+    <!-- sun-ray decoration, reused -->
+    <symbol id="d-rays" viewBox="-100 -100 200 200">
+      <g stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none">
+        <circle r="38" stroke-width="4"/>
+        <path d="M0 -56V-92M0 56V92M-56 0H-92M56 0H92M-40 -40l-26 -26M40 -40l26 -26M-40 40l-26 26M40 40l26 26"/>
+        <path d="M-21 -52l-9 -30M21 -52l9 -30M-21 52l-9 30M21 52l9 30M-52 -21l-30 -9M-52 21l-30 9M52 -21l30 -9M52 21l30 9" stroke-width="3.5"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="site-header" id="top">
+  <div class="container header-inner">
+    <a class="brand" href="#home" aria-label="SINAGLIKHA, Bringing Light to Every Possibility — home">
+      <img src="assets/sinaglikha-logo.png" alt="SINAGLIKHA — Bringing Light to Every Possibility" width="1487" height="251">
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+      <svg class="icon i-menu" aria-hidden="true"><use href="#i-menu"/></svg>
+      <svg class="icon i-close" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
+
+    <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+      <ul class="nav-list">
+        <li><a href="#home" data-s="home">Home</a></li>
+        <li><a href="#about" data-s="about"><span class="lf">About Us</span><span class="ls">About</span></a></li>
+        <li><a href="#mission-vision" data-s="mission-vision"><span class="lf">Our Mission &amp; Vision</span><span class="ls">Mission &amp; Vision</span></a></li>
+        <li><a href="#objectives" data-s="objectives">Objectives</a></li>
+        <li><a href="#values" data-s="values"><span class="lf">Core Values</span><span class="ls">Values</span></a></li>
+        <li><a href="#hr" data-s="hr"><span class="lf">Human Resources</span><span class="ls">HR</span></a></li>
+        <li><a href="#facets" data-s="facets"><span class="lf">Our HR Facets</span><span class="ls">HR Facets</span></a></li>
+        <li><a href="#location" data-s="location">Location</a></li>
+        <li><a href="#team" data-s="team"><span class="lf">Our Team</span><span class="ls">Team</span></a></li>
+        <li><a href="#contact" data-s="contact"><span class="lf">Contact Us</span><span class="ls">Contact</span></a></li>
+      </ul>
+      <a class="btn btn-primary menu-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </nav>
+
+    <a class="btn btn-primary btn-sm nav-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" id="home" data-nav="home" aria-labelledby="hero-title">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <img class="hero-logo" src="assets/sinaglikha-logo.png" alt="SINAGLIKHA logo with the tagline Bringing Light to Every Possibility" width="1487" height="251">
+      <h1 id="hero-title">Powering a Brighter Future, <span class="grad-text">One Possibility at a Time.</span></h1>
+      <p class="lead">SINAGLIKHA is committed to making practical and sustainable solar energy solutions more accessible to Filipino households and businesses. Through innovation, quality, and responsible energy practices, we aim to transform sunlight into opportunities for a brighter future.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#intro">Explore SINAGLIKHA <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-ghost" href="#team">Meet Our Team</a>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 560 560" role="img" focusable="false">
+        <defs>
+          <linearGradient id="archBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6CC"/><stop offset="1" stop-color="#F8EEAE"/></linearGradient>
+          <radialGradient id="sunG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFCB1B"/><stop offset=".55" stop-color="#F08A1C"/><stop offset="1" stop-color="#CE2020"/></radialGradient>
+          <linearGradient id="rayG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFCB1B"/><stop offset="1" stop-color="#E8701A"/></linearGradient>
+          <linearGradient id="panelG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A3A52"/><stop offset="1" stop-color="#2E2230"/></linearGradient>
+          <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <linearGradient id="hillG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8701A"/><stop offset="1" stop-color="#CE2020"/></linearGradient>
+          <pattern id="weaveP" width="64" height="64" patternUnits="userSpaceOnUse">
+            <g fill="none" stroke="#E6D47F" stroke-width="1.1"><circle cx="0" cy="0" r="32"/><circle cx="64" cy="0" r="32"/><circle cx="0" cy="64" r="32"/><circle cx="64" cy="64" r="32"/><circle cx="32" cy="32" r="32"/><path d="M0 32H64" stroke-width=".7"/></g>
+          </pattern>
+          <clipPath id="archClip"><path d="M40 540V260A240 240 0 0 1 520 260V540Z"/></clipPath>
+        </defs>
+
+        <path d="M40 540V260A240 240 0 0 1 520 260V540Z" fill="url(#archBg)"/>
+        <g clip-path="url(#archClip)">
+          <rect width="560" height="560" fill="url(#weaveP)" opacity=".8"/>
+          <g class="sun-glow"><circle cx="280" cy="268" r="170" fill="#FFCB1B" opacity=".22"/><circle cx="280" cy="268" r="130" fill="#FFCB1B" opacity=".25"/></g>
+          <g class="rays" stroke="url(#rayG)" stroke-linecap="round" stroke-width="9" fill="none">
+            <g transform="translate(280 268)">
+              <path d="M0 -128V-176" transform="rotate(0)"/><path d="M0 -128V-160" transform="rotate(18)"/>
+              <path d="M0 -128V-176" transform="rotate(36)"/><path d="M0 -128V-160" transform="rotate(54)"/>
+              <path d="M0 -128V-176" transform="rotate(72)"/><path d="M0 -128V-160" transform="rotate(90)"/>
+              <path d="M0 -128V-176" transform="rotate(108)"/><path d="M0 -128V-160" transform="rotate(126)"/>
+              <path d="M0 -128V-176" transform="rotate(144)"/><path d="M0 -128V-160" transform="rotate(162)"/>
+              <path d="M0 -128V-176" transform="rotate(180)"/><path d="M0 -128V-160" transform="rotate(198)"/>
+              <path d="M0 -128V-176" transform="rotate(216)"/><path d="M0 -128V-160" transform="rotate(234)"/>
+              <path d="M0 -128V-176" transform="rotate(252)"/><path d="M0 -128V-160" transform="rotate(270)"/>
+              <path d="M0 -128V-176" transform="rotate(288)"/><path d="M0 -128V-160" transform="rotate(306)"/>
+              <path d="M0 -128V-176" transform="rotate(324)"/><path d="M0 -128V-160" transform="rotate(342)"/>
+            </g>
+          </g>
+          <circle cx="280" cy="268" r="104" fill="url(#sunG)"/>
+
+          <!-- hills -->
+          <path d="M0 430Q120 380 250 412T560 396V560H0Z" fill="url(#hillG)"/>
+          <path d="M0 470Q150 430 300 456T560 440V560H0Z" fill="#B71C1C" opacity=".9"/>
+
+          <!-- house with solar roof -->
+          <g>
+            <path d="M150 385 205 318H355L410 385Z" fill="url(#panelG)"/>
+            <g stroke="#F8EEAE" stroke-width="1.4" opacity=".85">
+              <path d="M177.5 351.5H382.5"/>
+              <path d="M242.5 318 203 385M280 318 280 385M317.5 318 357 385"/>
+              <path d="M205 318 150 385M355 318 410 385" stroke-width="2.4"/>
+            </g>
+            <path d="M150 385 205 318H355L410 385Z" fill="url(#sheen)"/>
+            <path d="M143 389H417" stroke="#4A2E22" stroke-width="7" stroke-linecap="round"/>
+            <rect x="166" y="392" width="228" height="84" fill="#FFFDF6"/>
+            <rect x="166" y="392" width="228" height="6" fill="#F8EEAE"/>
+            <rect x="256" y="414" width="48" height="62" rx="4" fill="#4A2E22"/>
+            <rect x="188" y="414" width="44" height="36" rx="3" fill="#FFCB1B"/><path d="M210 414V450M188 432H232" stroke="#FFFDF6" stroke-width="3"/>
+            <rect x="328" y="414" width="44" height="36" rx="3" fill="#FFCB1B"/><path d="M350 414V450M328 432H372" stroke="#FFFDF6" stroke-width="3"/>
+          </g>
+          <path d="M0 500Q140 470 280 490T560 478V560H0Z" fill="#8F1717"/>
+        </g>
+        <path d="M40 540V260A240 240 0 0 1 520 260V540Z" fill="none" stroke="#4A2E22" stroke-opacity=".15" stroke-width="2"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- INTRO -->
+<section id="intro" data-nav="home" aria-labelledby="intro-title">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="reveal">
+        <span class="eyebrow">Welcome to SINAGLIKHA</span>
+        <h2 id="intro-title">Sunlight is a possibility. We make it practical.</h2>
+      </div>
+      <div class="intro-copy reveal" style="--d:.1s">
+        <p>SINAGLIKHA is a Filipino solar energy company that manufactures, assembles, and distributes solar energy solutions for households and businesses. We pair dependable products with people-centered management, because lasting energy access is built by capable, motivated people.</p>
+        <p>This website is also the official home of our Human Resource Management simulation, showing how SINAGLIKHA attracts, develops, engages, rewards, and protects the people who bring light to every possibility.</p>
+      </div>
+    </div>
+
+    <div class="tiles" aria-label="Explore the website">
+      <a class="tile reveal" href="#about"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><strong>About Us</strong><span>What we make, assemble, and deliver.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" style="--d:.05s" href="#mission-vision"><svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg><strong>Mission &amp; Vision</strong><span>Where we are headed, and why.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" style="--d:.1s" href="#objectives"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg><strong>Objectives</strong><span>Six goals that guide our work.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" href="#values"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg><strong>Core Values</strong><span>The culture behind the company.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" style="--d:.05s" href="#hr"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><strong>Human Resources</strong><span>How we invest in our people.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" style="--d:.1s" href="#facets"><svg class="icon" aria-hidden="true"><use href="#i-brief"/></svg><strong>Our HR Facets</strong><span>The five HR departments.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" href="#location"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><strong>Location</strong><span>Where to find us.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" style="--d:.05s" href="#team"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><strong>Our Team</strong><span>The people behind SINAGLIKHA.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="tile reveal" style="--d:.1s" href="#contact"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><strong>Contact Us</strong><span>Reach out to our team.</span><svg class="icon go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="tint weave" id="about" data-nav="about" aria-labelledby="about-title">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-copy reveal">
+        <span class="eyebrow">About Us</span>
+        <h2 id="about-title" style="font-size:clamp(2rem,4.2vw,3.25rem);margin-bottom:24px">Solar energy built for Filipino homes and businesses.</h2>
+        <p>SINAGLIKHA is a solar energy company that works across the solar value chain, from producing photovoltaic cells to assembling modules and bringing affordable systems to the people who need them.</p>
+        <p>Our name and our identity draw on Filipino creativity and warmth. We believe reliable, sustainable energy should feel within reach for families, entrepreneurs, and communities, and we organize our work, and our people, around that belief.</p>
+        <ul class="commit">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span><strong>Practical.</strong> Solutions designed around real household and business needs.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span><strong>Reliable.</strong> Quality assurance and support that stand behind every system.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span><strong>Sustainable.</strong> Renewable energy and responsible consumption, together.</span></li>
+        </ul>
+      </div>
+
+      <div class="activities">
+        <article class="activity reveal">
+          <div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg></div>
+          <h3>PV Cell Manufacturing</h3>
+          <p>Production and manufacturing of photovoltaic (PV) solar cells.</p>
+        </article>
+        <article class="activity reveal" style="--d:.08s">
+          <div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg></div>
+          <h3>Module Assembly</h3>
+          <p>Assembly of solar cells into high-efficiency solar modules.</p>
+        </article>
+        <article class="activity reveal" style="--d:.16s">
+          <div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg></div>
+          <h3>Sales &amp; Distribution</h3>
+          <p>Sale and distribution of affordable solar panels and sustainable energy solutions.</p>
+        </article>
+        <article class="activity reveal" style="--d:.24s">
+          <div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-tool"/></svg></div>
+          <h3>Quality &amp; Support</h3>
+          <p>Quality assurance, maintenance, and support services for solar energy systems.</p>
+        </article>
+      </div>
+    </div>
+
+    <div class="sun-strip reveal">
+      <svg aria-hidden="true" viewBox="-100 -100 200 200"><use href="#d-rays" style="color:#fff"/></svg>
+      <p>Our people turn sunlight into opportunity.</p>
+      <a class="btn" href="#hr">See how we invest in them <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION & VISION -->
+<section id="mission-vision" data-nav="mission-vision" aria-labelledby="mv-title">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Our Mission &amp; Vision</span>
+      <h2 id="mv-title">What we do today, and where it leads.</h2>
+    </div>
+    <div class="mv-grid">
+      <article class="mv mission reveal">
+        <div class="label"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg> Our Mission</div>
+        <h3>Company Mission</h3>
+        <p>“To make solar energy accessible and practical for Filipino households and businesses by providing affordable, reliable, and sustainable solar solutions while promoting renewable energy awareness and responsible consumption.”</p>
+        <svg class="deco" aria-hidden="true" viewBox="-100 -100 200 200"><use href="#d-rays" style="color:#fff"/></svg>
+      </article>
+      <article class="mv vision reveal" style="--d:.1s">
+        <div class="label"><svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg> Our Vision</div>
+        <h3>Company Vision</h3>
+        <p>“To create a future where every Filipino has equitable access to solar energy, empowering individuals, families, and businesses to improve their lives, pursue opportunities, and meet their energy needs sustainably.”</p>
+        <svg class="deco" aria-hidden="true" viewBox="-100 -100 200 200"><use href="#d-rays" style="color:#fff"/></svg>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- OBJECTIVES -->
+<section class="tint" id="objectives" data-nav="objectives" aria-labelledby="obj-title">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Company Objectives</span>
+      <h2 id="obj-title">Six objectives that guide our work.</h2>
+    </div>
+    <div class="obj-grid">
+      <article class="objective reveal"><div class="top"><span class="num">01</span><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg></div></div><h3>Improve Energy Accessibility</h3><p>Make practical and affordable solar energy solutions available to Filipino households and businesses.</p></article>
+      <article class="objective reveal" style="--d:.06s"><div class="top"><span class="num">02</span><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg></div></div><h3>Promote Sustainability</h3><p>Encourage renewable energy adoption and responsible energy consumption.</p></article>
+      <article class="objective reveal" style="--d:.12s"><div class="top"><span class="num">03</span><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg></div></div><h3>Maintain Product Quality</h3><p>Uphold quality assurance and reliability in solar cell manufacturing, module assembly, and energy solutions.</p></article>
+      <article class="objective reveal"><div class="top"><span class="num">04</span><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-bulb"/></svg></div></div><h3>Drive Innovation</h3><p>Continuously explore ways to improve solar energy products, processes, and customer solutions.</p></article>
+      <article class="objective reveal" style="--d:.06s"><div class="top"><span class="num">05</span><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg></div></div><h3>Build Customer Trust</h3><p>Provide dependable products, transparent communication, and responsive service.</p></article>
+      <article class="objective reveal" style="--d:.12s"><div class="top"><span class="num">06</span><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg></div></div><h3>Develop Our People</h3><p>Build a capable, engaged, ethical, and motivated workforce through effective human resource management.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- CORE VALUES -->
+<section id="values" data-nav="values" aria-labelledby="val-title">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">Core Values</span>
+      <h2 id="val-title">The values that shape how we work.</h2>
+      <p>Six commitments that guide our decisions, our products, and the way we treat each other.</p>
+    </div>
+    <div class="val-grid">
+      <article class="value reveal"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg></div><h3>Sustainability</h3><p>We promote responsible energy practices and make decisions that support a cleaner and more sustainable future.</p></article>
+      <article class="value reveal" style="--d:.06s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-bulb"/></svg></div><h3>Innovation</h3><p>We embrace new ideas, continuous improvement, and practical solutions that make solar energy more accessible.</p></article>
+      <article class="value reveal" style="--d:.12s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg></div><h3>Integrity</h3><p>We act honestly, uphold ethical standards, and build trust through transparency and accountability.</p></article>
+      <article class="value reveal"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg></div><h3>Nurturing</h3><p>We value our employees, customers, and communities by encouraging growth, collaboration, and mutual respect.</p></article>
+      <article class="value reveal" style="--d:.06s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg></div><h3>Agility</h3><p>We adapt to changing needs, respond proactively to challenges, and continuously improve our products and services.</p></article>
+      <article class="value reveal" style="--d:.12s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-trend"/></svg></div><h3>Growth</h3><p>We pursue continuous development, shared success, and opportunities that empower both people and the organization.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- HUMAN RESOURCES -->
+<section class="tint weave" id="hr" data-nav="hr" aria-labelledby="hr-title">
+  <div class="container">
+    <div class="hr-intro">
+      <div class="reveal">
+        <span class="eyebrow">Human Resource Management</span>
+        <h2 id="hr-title" style="font-size:clamp(2rem,4.2vw,3.25rem);margin-bottom:22px">Our people are the light behind the product.</h2>
+        <p>At SINAGLIKHA, employees are an essential part of the company’s success. The Human Resource Management Department supports organizational performance through effective recruitment, employee development, engagement, rewards, and legal compliance.</p>
+      </div>
+      <div class="reveal" style="--d:.1s">
+        <p style="font-weight:600;color:var(--brown);margin-bottom:14px;font-size:1rem">Five facets, one workforce</p>
+        <div class="pillar-list">
+          <a href="#facets" data-facet="staffing"><svg class="icon" aria-hidden="true"><use href="#i-userplus"/></svg>Staffing &amp; Recruitment</a>
+          <a href="#facets" data-facet="training"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Training &amp; Development</a>
+          <a href="#facets" data-facet="engagement"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg>Employee Engagement</a>
+          <a href="#facets" data-facet="rewards"><svg class="icon" aria-hidden="true"><use href="#i-award"/></svg>Total Rewards</a>
+          <a href="#facets" data-facet="legal"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg>Legal Compliance</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hr-grid">
+      <article class="hr-card reveal">
+        <h3><span class="chip"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></span>HR Mission</h3>
+        <p>“To attract, develop, support, and retain capable employees by providing fair, inclusive, and employee-centered human resource practices that contribute to organizational effectiveness and sustainable growth.”</p>
+      </article>
+      <article class="hr-card reveal" style="--d:.1s">
+        <h3><span class="chip"><svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg></span>HR Vision</h3>
+        <p>“To build a competent, engaged, empowered, and values-driven workforce where every employee has the opportunity to grow, contribute, and help SINAGLIKHA bring light to every possibility.”</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HR FACETS -->
+<section id="facets" data-nav="facets" aria-labelledby="facets-title">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Our HR Facets</span>
+      <h2 id="facets-title">The Five Facets of Human Resource Management</h2>
+      <p>Each department plays a distinct role in building a capable, engaged, and well-supported workforce. Select a facet to see its responsibilities and deliverables.</p>
+    </div>
+    <div class="facet-grid" id="facet-grid"></div>
+    <noscript><p>Please enable JavaScript to explore the five HR facets.</p></noscript>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section class="tint" id="location" data-nav="location" aria-labelledby="loc-title">
+  <div class="container">
+    <div class="loc-grid">
+      <div class="reveal">
+        <span class="eyebrow">Location</span>
+        <h2 id="loc-title" style="font-size:clamp(2rem,4.2vw,3.25rem);margin-bottom:28px">Find SINAGLIKHA.</h2>
+        <dl class="info-list" id="loc-info"></dl>
+        <div id="loc-cta"></div>
+      </div>
+      <div class="map-box reveal" id="map-box" style="--d:.1s"></div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team" data-nav="team" aria-labelledby="team-title">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Our Team</span>
+      <h2 id="team-title">Meet the people behind SINAGLIKHA.</h2>
+      <p>Company leadership and the members of our five HR departments, working together to bring light to every possibility.</p>
+    </div>
+    <div id="team-root"></div>
+  </div>
+</section>
+
+<!-- HR 201 -->
+<section class="tint weave" id="hr201" data-nav="hr" aria-labelledby="hr201-title">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow">HR 201 Files &amp; Documentation</span>
+      <h2 id="hr201-title">Organized records, handled with care.</h2>
+      <p>The HR 201 file is the employee documentation and records-management component of our HR simulation. It keeps each employee’s employment records in one consistent, organized place.</p>
+    </div>
+    <div class="hr201-layout">
+      <div class="rec-grid">
+        <article class="rec reveal"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-folder"/></svg></div><div><h3>Employment &amp; Onboarding</h3><p>Application, hiring, and onboarding documentation.</p></div></article>
+        <article class="rec reveal" style="--d:.06s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-trend"/></svg></div><div><h3>Performance &amp; Development</h3><p>Appraisals, evaluations, and employee development records.</p></div></article>
+        <article class="rec reveal" style="--d:.12s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-award"/></svg></div><div><h3>Benefits &amp; Rewards</h3><p>Benefits and other authorized HR documents.</p></div></article>
+        <article class="rec reveal"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></div><div><h3>Training Records</h3><p>Attendance, learning activities, and training evaluations.</p></div></article>
+        <article class="rec reveal" style="--d:.06s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg></div><div><h3>Policies &amp; Acknowledgments</h3><p>Company policies, guidelines, and employee acknowledgments.</p></div></article>
+        <article class="rec reveal" style="--d:.12s"><div class="chip"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg></div><div><h3>Compliance Documents</h3><p>Workplace rules, procedures, and labor standards documentation.</p></div></article>
+      </div>
+
+      <div class="reveal">
+        <h3 style="font-size:1.4rem;margin:12px 0 18px">File organization practices</h3>
+        <ul class="practices">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>One consistent folder structure for every employee file</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Clear document categories and descriptive file naming</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Access limited to authorized HR personnel</li>
+        </ul>
+      </div>
+
+      <aside class="notice reveal" aria-label="Confidentiality notice">
+        <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+        <div>
+          <strong>Employee records are confidential.</strong>
+          <p>This public website shows general information only. Personal details, identification numbers, addresses, medical, payroll, and signature records are never published here. Approved, non-confidential sample documents may be listed on this page once supplied; any actual 201 files are kept in authorized, access-controlled storage. For questions, please <a href="#contact">contact us</a>.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" data-nav="contact" aria-labelledby="contact-title">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="reveal">
+        <span class="eyebrow">Contact Us</span>
+        <h2 id="contact-title" style="font-size:clamp(2rem,4.2vw,3.25rem);margin-bottom:22px">Let’s start a conversation.</h2>
+        <p style="color:var(--muted);margin-bottom:30px">Questions about SINAGLIKHA, our solar solutions, or our HR program? Send us a message.</p>
+        <dl class="info-list" id="contact-info"></dl>
+        <div style="margin-top:26px">
+          <p style="font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#9C2A10;margin-bottom:10px">Follow us</p>
+          <div class="social" id="social"></div>
+        </div>
+      </div>
+
+      <div class="form-card reveal" style="--d:.1s">
+        <form id="contact-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="f-name">Name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="e-name">
+              <p class="err" id="e-name">Please enter your name.</p>
+            </div>
+            <div class="field">
+              <label for="f-email">Email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="e-email">
+              <p class="err" id="e-email">Please enter a valid email address.</p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-subject">Subject</label>
+            <input id="f-subject" name="subject" type="text" required aria-describedby="e-subject">
+            <p class="err" id="e-subject">Please add a subject.</p>
+          </div>
+          <div class="field">
+            <label for="f-message">Message</label>
+            <textarea id="f-message" name="message" required minlength="10" aria-describedby="e-message"></textarea>
+            <p class="err" id="e-message">Please write a message of at least 10 characters.</p>
+          </div>
+          <button class="btn btn-primary" type="submit">Send message <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="assets/sinaglikha-logo.png" alt="SINAGLIKHA — Bringing Light to Every Possibility" width="1487" height="251" loading="lazy">
+        <p>A Filipino solar energy company making practical, sustainable solar solutions more accessible to households and businesses, with people at the center.</p>
+      </div>
+      <nav class="foot-col" aria-label="Quick links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#mission-vision">Mission &amp; Vision</a></li>
+          <li><a href="#objectives">Objectives</a></li>
+          <li><a href="#values">Core Values</a></li>
+          <li><a href="#hr">Human Resources</a></li>
+          <li><a href="#hr201">HR 201 Files</a></li>
+          <li><a href="#location">Location</a></li>
+          <li><a href="#team">Our Team</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </nav>
+      <nav class="foot-col" aria-label="HR facets">
+        <h4>The Five HR Facets</h4>
+        <ul id="foot-facets"></ul>
+      </nav>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <ul id="foot-contact"></ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="year">2026</span> SINAGLIKHA. All rights reserved.</span>
+      <span>Employee records are confidential and are not published on this site. <a href="#hr201">Privacy notice</a></span>
+    </div>
+  </div>
+  <div class="foot-bar" aria-hidden="true"></div>
+</footer>
+
+<!-- facet dialog -->
+<dialog id="facet-dialog" aria-labelledby="dlg-title">
+  <div class="dlg">
+    <div class="dlg-head" id="dlg-head">
+      <button class="dlg-close" type="button" aria-label="Close" id="dlg-close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+      <div class="f-icon" id="dlg-icon"></div>
+      <span class="eyebrow" id="dlg-eyebrow"></span>
+      <h3 id="dlg-title"></h3>
+    </div>
+    <div class="dlg-body" id="dlg-body"></div>
+    <div class="dlg-foot">
+      <button class="btn btn-ghost" type="button" id="dlg-prev"><svg class="icon" aria-hidden="true"><use href="#i-left"/></svg><span class="nm"></span><span class="dir">Previous</span></button>
+      <button class="btn btn-ghost" type="button" id="dlg-next"><span class="nm"></span><span class="dir">Next</span><svg class="icon" aria-hidden="true"><use href="#i-right"/></svg></button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+/* ============================================================
+   EDIT HERE — approved company information.
+   Anything left empty shows as "To be provided" on the page and
+   nothing is invented. Fill these in when official details exist.
+   ============================================================ */
+const CONFIG = {
+  location: {
+    address: "",        // complete street address
+    cityProvince: "",   // city and province
+    hours: "",          // office hours, if applicable
+    mapQuery: ""        // e.g. the full address; enables the embedded map + "Get Directions"
+  },
+  contact: {
+    email: "",
+    phone: "",
+    social: []          // e.g. [{ label: "Facebook", url: "https://..." }]
+  },
+  // Optional: a form service URL (e.g. Formspree). If empty, the form uses
+  // the company email (mailto) when set, otherwise it clearly says nothing was sent.
+  formEndpoint: "",
+
+  // Team: replace the placeholders with approved names, positions, photos, and bios.
+  // photo: path to an image file, e.g. "assets/team/juan.jpg"
+  team: {
+    leadership: [
+      { name: "Name to be provided", role: "Position to be provided", dept: "Company Leadership", photo: "", bio: "" },
+      { name: "Name to be provided", role: "Position to be provided", dept: "Company Leadership", photo: "", bio: "" }
+    ],
+    departments: {
+      staffing:   [{ name: "Name to be provided", role: "Position to be provided", photo: "", bio: "" }],
+      training:   [{ name: "Name to be provided", role: "Position to be provided", photo: "", bio: "" }],
+      engagement: [{ name: "Name to be provided", role: "Position to be provided", photo: "", bio: "" }],
+      rewards:    [{ name: "Name to be provided", role: "Position to be provided", photo: "", bio: "" }],
+      legal:      [{ name: "Name to be provided", role: "Position to be provided", photo: "", bio: "" }]
+    }
+  }
+};
+
+const FACETS = [
+  { key:"staffing", n:"A", name:"Staffing and Recruitment", icon:"i-userplus",
+    overview:"Finds and brings in the right people. The department identifies workforce needs, attracts qualified applicants, manages applications, and supports selection and onboarding.",
+    more:"A clear, fair hiring process gives every applicant a consistent experience and helps SINAGLIKHA place capable people where they can contribute most.",
+    resp:["Identifying workforce needs and defining roles","Attracting qualified applicants","Managing job applications","Conducting screening and interviews","Supporting employee selection and onboarding"],
+    deliv:["Job postings and job descriptions","Job application forms","Applicant screening and evaluation tools","Interview questions and scorecards","Recruitment and selection documentation"] },
+  { key:"training", n:"B", name:"Training and Development", icon:"i-book",
+    overview:"Helps employees learn and grow. The department identifies learning needs, organizes training programs, builds competencies, and supports professional growth.",
+    more:"Investing in skills keeps our workforce prepared for changing solar technology, customer needs, and career opportunities.",
+    resp:["Identifying employee learning needs","Planning and organizing training programs","Developing employee competencies","Evaluating training effectiveness","Supporting professional growth"],
+    deliv:["Training needs analysis","Training plans and materials","Learning and development programs","Training evaluation forms","Employee development plans"] },
+  { key:"engagement", n:"C", name:"Employee Engagement", icon:"i-chat",
+    overview:"Keeps people connected and motivated. The department promotes participation, communication, collaboration, well-being, and a positive organizational culture.",
+    more:"Engaged employees care about their work and each other. This department listens to feedback and turns it into activities and improvements.",
+    resp:["Promoting employee participation","Strengthening workplace communication","Encouraging motivation and collaboration","Supporting employee well-being","Nurturing a positive organizational culture"],
+    deliv:["Employee engagement surveys","Employee activities and events","Communication initiatives","Team-building programs","Employee feedback and engagement reports"] },
+  { key:"rewards", n:"D", name:"Total Rewards", icon:"i-award",
+    overview:"Recognizes and rewards contribution. The department supports fair compensation, employee benefits, performance management, incentives, and recognition.",
+    more:"A transparent rewards system links effort and results to fair pay, benefits, and recognition, helping SINAGLIKHA attract and retain talent.",
+    resp:["Supporting fair compensation structures","Administering employee benefits","Managing performance appraisal","Designing incentives","Recognizing employee achievements"],
+    deliv:["Compensation and benefits proposals","Performance appraisal forms and evaluation matrices","Performance management systems","Incentive plans","Employee recognition and rewards programs"] },
+  { key:"legal", n:"E", name:"Legal Compliance", icon:"i-scale",
+    overview:"Keeps HR practice fair and lawful. The department supports compliance with applicable Philippine labor laws, employment policies, workplace standards, and ethical HR practices.",
+    more:"Clear policies and sound documentation protect both employees and the company, and give everyone a shared understanding of workplace expectations.",
+    resp:["Aligning HR policies with applicable Philippine labor laws","Preparing and maintaining employment documentation","Monitoring labor standards","Establishing workplace rules and procedures","Promoting ethical HR practices"],
+    deliv:["HR policies and employee guidelines","Employment documentation","Compliance checklists","Workplace rules and procedures","Labor standards monitoring documents"],
+    note:"This describes the department’s role within our HR simulation. No legal certification or verified compliance is claimed." }
+];
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const ico = (id, cls = "") => `<svg class="icon ${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const tbd = t => `<span class="tbd">${t}</span>`;
+
+/* ---------- header / nav ---------- */
+const header = $(".site-header");
+const toggle = $(".nav-toggle");
+const nav = $("#primary-nav");
+function setMenu(open) {
+  nav.classList.toggle("open", open);
+  toggle.setAttribute("aria-expanded", open);
+  toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+}
+toggle.addEventListener("click", () => setMenu(toggle.getAttribute("aria-expanded") !== "true"));
+nav.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && nav.classList.contains("open")) { setMenu(false); toggle.focus(); } });
+matchMedia("(min-width:1180px)").addEventListener("change", e => { if (e.matches) setMenu(false); });
+const onScroll = () => header.classList.toggle("scrolled", scrollY > 8);
+addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+/* active section highlighting */
+const links = $$(".nav-list a[data-s]");
+const sections = $$("section[data-nav]");
+function updateActive() {
+  const probe = scrollY + innerHeight * 0.35;
+  let current = sections[0];
+  sections.forEach(s => { if (s.offsetTop <= probe) current = s; });
+  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) current = sections[sections.length - 1];
+  links.forEach(a => {
+    if (a.dataset.s === current.dataset.nav) a.setAttribute("aria-current", "true");
+    else a.removeAttribute("aria-current");
+  });
+}
+addEventListener("scroll", updateActive, { passive: true }); addEventListener("resize", updateActive); updateActive();
+
+/* ---------- reveal on scroll ---------- */
+const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+}), { threshold: .12, rootMargin: "0px 0px -6% 0px" }) : null;
+$$(".reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
+
+/* ---------- facets ---------- */
+$("#facet-grid").innerHTML = FACETS.map((f, i) => `
+  <article class="facet f${i + 1} reveal" style="--d:${(i % 3) * .07}s">
+    <div class="f-top"><div class="f-icon">${ico(f.icon)}</div><span class="f-letter">FACET ${f.n}</span></div>
+    <h3>${esc(f.name)}</h3>
+    <p class="ov">${esc(f.overview)}</p>
+    <ul class="mini">${f.resp.slice(0, 3).map(r => `<li>${ico("i-check")}<span>${esc(r)}</span></li>`).join("")}</ul>
+    <button class="btn btn-sm" type="button" data-facet="${f.key}" aria-haspopup="dialog" aria-label="Learn more about ${esc(f.name)}">Learn more ${ico("i-arrow")}</button>
+  </article>`).join("");
+$$("#facet-grid .reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
+
+$("#foot-facets").innerHTML = FACETS.map(f => `<li><button type="button" data-facet="${f.key}">${esc(f.name)}</button></li>`).join("");
+
+const dlg = $("#facet-dialog");
+let current = 0;
+function renderFacet(i) {
+  current = (i + FACETS.length) % FACETS.length;
+  const f = FACETS[current];
+  const prev = FACETS[(current + FACETS.length - 1) % FACETS.length];
+  const next = FACETS[(current + 1) % FACETS.length];
+  $("#dlg-head").className = "dlg-head f" + (current + 1);
+  $("#dlg-icon").innerHTML = ico(f.icon);
+  $("#dlg-eyebrow").textContent = "HR Facet " + f.n;
+  $("#dlg-title").textContent = f.name;
+  $("#dlg-body").innerHTML = `
+    <p class="ov">${esc(f.overview)}</p>
+    <p class="more">${esc(f.more)}</p>
+    <div class="dlg-cols">
+      <div><h4>Primary responsibilities</h4><ul>${f.resp.map(r => `<li>${ico("i-check")}<span>${esc(r)}</span></li>`).join("")}</ul></div>
+      <div><h4>Examples of deliverables</h4><ul>${f.deliv.map(r => `<li>${ico("i-file")}<span>${esc(r)}</span></li>`).join("")}</ul></div>
+    </div>
+    ${f.note ? `<p class="dlg-note">${esc(f.note)}</p>` : ""}`;
+  $("#dlg-prev .nm").textContent = prev.name;
+  $("#dlg-next .nm").textContent = next.name;
+  $("#dlg-prev").setAttribute("aria-label", "Previous facet: " + prev.name);
+  $("#dlg-next").setAttribute("aria-label", "Next facet: " + next.name);
+  $("#dlg-body").scrollTop = 0;
+}
+function openFacet(key) {
+  const i = FACETS.findIndex(f => f.key === key);
+  if (i < 0) return;
+  renderFacet(i);
+  if (!dlg.open) dlg.showModal();
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-facet]");
+  if (!t) return;
+  if (t.tagName === "A") { e.preventDefault(); $("#facets").scrollIntoView(); }
+  openFacet(t.dataset.facet);
+});
+$("#dlg-close").addEventListener("click", () => dlg.close());
+$("#dlg-prev").addEventListener("click", () => renderFacet(current - 1));
+$("#dlg-next").addEventListener("click", () => renderFacet(current + 1));
+dlg.addEventListener("click", e => {            // click on backdrop closes
+  const r = dlg.getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
+});
+
+/* ---------- location ---------- */
+(function () {
+  const L = CONFIG.location, C = CONFIG.contact;
+  const rows = [
+    ["i-pin", "Address", L.address],
+    ["i-pin", "City & Province", L.cityProvince],
+    ["i-clock", "Office Hours", L.hours],
+    ["i-mail", "Official Contact", [C.email, C.phone].filter(Boolean).join(" · ")]
+  ];
+  $("#loc-info").innerHTML = rows.map(([i, k, v]) => `
+    <li><span class="chip">${ico(i)}</span><div><dt>${k}</dt><dd>${v ? esc(v) : tbd("To be provided")}</dd></div></li>`).join("");
+
+  const box = $("#map-box");
+  if (L.mapQuery) {
+    const q = encodeURIComponent(L.mapQuery);
+    box.innerHTML = `<iframe title="Map showing the SINAGLIKHA location" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=${q}&output=embed"></iframe>`;
+    $("#loc-cta").innerHTML = `<a class="btn btn-primary dir-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${q}">Get Directions ${ico("i-arrow")}</a>`;
+  } else {
+    box.innerHTML = `
+      <div class="map-ph">
+        <svg class="grid" aria-hidden="true" preserveAspectRatio="xMidYMid slice" viewBox="0 0 600 420">
+          <rect width="600" height="420" fill="#FBF4D0"/>
+          <g stroke="#E6D47F" stroke-width="2" fill="none">
+            <path d="M-20 90C120 70 220 150 360 120S540 60 640 100"/><path d="M-20 250C100 230 200 300 330 270S520 210 640 260"/>
+            <path d="M120 -20C140 90 90 200 150 300S200 400 190 440"/><path d="M400 -20C380 100 440 180 410 280S460 400 450 440"/>
+          </g>
+          <g stroke="#EFE3A3" stroke-width="10" stroke-linecap="round" fill="none"><path d="M-20 180H640"/><path d="M290 -20V440"/></g>
+        </svg>
+        <div class="card">
+          <div class="pin">${ico("i-pin")}</div>
+          <strong>Location to be confirmed</strong>
+          <span>The map and directions will appear here once SINAGLIKHA’s approved address is provided.</span>
+        </div>
+      </div>`;
+  }
+})();
+
+/* ---------- team ---------- */
+(function () {
+  const T = CONFIG.team;
+  const card = (m, dept) => {
+    const ph = /to be provided/i.test(m.name);
+    return `<article class="member reveal ${ph ? "is-ph" : ""}">
+      <div class="avatar">${m.photo ? `<img src="${esc(m.photo)}" alt="Portrait of ${esc(m.name)}" loading="lazy">` : ico("i-user")}</div>
+      <h4>${ph ? tbd(esc(m.name)) : esc(m.name)}</h4>
+      <p class="role">${esc(m.role)}</p>
+      <span class="dept">${esc(m.dept || dept)}</span>
+      ${m.bio ? `<p class="bio">${esc(m.bio)}</p>` : ""}
+      ${ph ? `<span class="ph-tag">Placeholder</span>` : ""}
+    </article>`;
+  };
+  let html = `<div class="team-group"><h3>Company Leadership</h3><div class="team-cards">${T.leadership.map(m => card(m, "Company Leadership")).join("")}</div></div>`;
+  html += `<div class="team-group"><h3>HR Department Members <small>Five HR facets</small></h3></div>`;
+  FACETS.forEach(f => {
+    const list = T.departments[f.key] || [];
+    html += `<div class="team-group"><h3 style="font-size:1.2rem">${esc(f.name)}</h3><div class="team-cards">${list.map(m => card(m, f.name)).join("")}</div></div>`;
+  });
+  $("#team-root").innerHTML = html;
+  $$("#team-root .reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
+})();
+
+/* ---------- contact + footer ---------- */
+(function () {
+  const C = CONFIG.contact, L = CONFIG.location;
+  const val = (v, href) => v ? (href ? `<a href="${esc(href)}">${esc(v)}</a>` : esc(v)) : tbd("To be provided");
+  const addr = [L.address, L.cityProvince].filter(Boolean).join(", ");
+  $("#contact-info").innerHTML = [
+    ["i-mail", "Email", val(C.email, C.email && "mailto:" + C.email)],
+    ["i-phone", "Phone", val(C.phone, C.phone && "tel:" + C.phone.replace(/[^\d+]/g, ""))],
+    ["i-pin", "Address", addr ? esc(addr) : tbd("To be provided")]
+  ].map(([i, k, v]) => `<li><span class="chip">${ico(i)}</span><div><dt>${k}</dt><dd>${v}</dd></div></li>`).join("");
+
+  $("#social").innerHTML = C.social.length
+    ? C.social.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join("")
+    : `<span class="tbd">Official social media links to be provided.</span>`;
+
+  $("#foot-contact").innerHTML = `
+    <li>${C.email ? `<a href="mailto:${esc(C.email)}">${esc(C.email)}</a>` : tbd("Email to be provided")}</li>
+    <li>${C.phone ? `<a href="tel:${esc(C.phone.replace(/[^\d+]/g, ""))}">${esc(C.phone)}</a>` : tbd("Phone to be provided")}</li>
+    <li>${addr ? esc(addr) : tbd("Address to be provided")}</li>`;
+
+  $("#year").textContent = new Date().getFullYear();
+})();
+
+/* ---------- contact form ---------- */
+(function () {
+  const form = $("#contact-form"), status = $("#form-status");
+  const rules = {
+    name: v => v.trim().length > 1,
+    email: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()),
+    subject: v => v.trim().length > 1,
+    message: v => v.trim().length >= 10
+  };
+  const check = el => {
+    const ok = rules[el.name](el.value);
+    el.setAttribute("aria-invalid", String(!ok));
+    return ok;
+  };
+  $$("input,textarea", form).forEach(el => {
+    el.addEventListener("blur", () => { if (el.value || el.getAttribute("aria-invalid")) check(el); });
+    el.addEventListener("input", () => { if (el.getAttribute("aria-invalid") === "true") check(el); });
+  });
+  const say = (cls, msg) => { status.className = "form-status show " + cls; status.textContent = msg; };
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const fields = $$("input,textarea", form);
+    const bad = fields.filter(el => !check(el));
+    if (bad.length) { bad[0].focus(); say("bad", "Please fix the highlighted fields and try again."); return; }
+    const data = Object.fromEntries(new FormData(form));
+
+    if (CONFIG.formEndpoint) {
+      try {
+        const res = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(data) });
+        if (!res.ok) throw new Error(res.status);
+        say("ok", "Thank you. Your message has been sent.");
+        form.reset(); fields.forEach(el => el.removeAttribute("aria-invalid"));
+      } catch {
+        say("bad", "Sorry, your message could not be sent. Please try again later.");
+      }
+    } else if (CONFIG.contact.email) {
+      location.href = `mailto:${CONFIG.contact.email}?subject=${encodeURIComponent(data.subject)}&body=${encodeURIComponent(data.message + "\n\n— " + data.name + " (" + data.email + ")")}`;
+      say("info", "Your email app should now open with your message ready. It has not been sent until you send it from there.");
+    } else {
+      say("info", "Your message looks good, but this form is not connected to an inbox yet, so nothing was sent. Please use the official contact details once they are published.");
+    }
+  });
+})();
+</script>
+</body>
+</html>
