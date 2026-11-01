@@ -113,8 +113,8 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .crumbs .sep{color:var(--muted)}
 @media (hover:hover) and (pointer:fine){.crumbs button:not([aria-current]):hover{background:var(--cream)}}
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.search{position:relative;width:240px}
-.search input{height:44px;padding:0 16px;line-height:1.2}
+.search{position:relative;width:290px}
+.search input{height:44px;padding:0 16px;line-height:1.2;text-overflow:ellipsis}
 .suggest{position:absolute;top:calc(100% + 8px);right:0;width:min(440px,calc(100vw - 40px));z-index:40;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:6px;max-height:360px;overflow:auto;animation:rise .35s var(--ease)}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}}
 .suggest li{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:14px;cursor:pointer;transition:background .3s}
@@ -311,7 +311,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <div class="tools">
           <div class="search" id="search-box">
             <label class="sr-only" for="search">Search all files and folders</label>
-            <input id="search" type="search" placeholder="Search all files and folders" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
+            <input id="search" type="search" placeholder="Search files and folders" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
             <ul class="suggest" id="suggest" role="listbox" aria-label="Suggestions" hidden></ul>
           </div>
           <button class="btn btn-ghost btn-sm manager-only" id="btn-folder" type="button" hidden>New folder</button>
