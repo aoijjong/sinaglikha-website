@@ -324,13 +324,14 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .tp-note{margin-top:22px;font-size:.88rem;color:var(--muted)}
 
 .rec-wrap{margin-top:clamp(52px,7vw,88px)}
-.rec-strip{display:flex;align-items:center;gap:22px;padding:clamp(22px,3vw,32px) clamp(22px,3vw,38px);border-radius:28px;background:var(--soft-warm);border:1.5px dashed rgba(74,46,34,.32)}
-.rec-strip .lockbox{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--brown);color:var(--yellow);flex:none}
+.rec-strip{display:flex;align-items:center;gap:22px;margin-top:18px;padding:22px clamp(22px,3vw,30px);border-radius:26px;background:#fff;border:1px solid rgba(74,46,34,.12);position:relative;overflow:hidden}
+.rec-strip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--grad)}
+.rec-strip .lockbox{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.55);flex:none}
 .rec-strip .lockbox .icon{width:26px;height:26px}
 .rec-strip .rec-text{flex:1 1 220px}
 .rec-strip h3{font-size:clamp(1.3rem,2.2vw,1.6rem)}
-.rec-strip p{color:#5A4538;font-size:.98rem;margin-top:4px;max-width:60ch}
-.rec-tag{flex:none;padding:8px 16px;border-radius:999px;border:1.5px solid var(--brown);font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
+.rec-strip p{color:var(--muted);font-size:.98rem;margin-top:4px;max-width:60ch}
+.rec-tag{flex:none;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(74,46,34,.3);font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
 
 /* team */
 .team-title{font-size:1.4rem;margin-bottom:18px}
@@ -567,8 +568,8 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .dlg-foot .btn{flex:1;padding:13px 10px}
   .dlg-foot .nm{display:none}
   .dlg-foot .dir{display:inline}
-  .rec-strip{align-items:flex-start;padding:20px;gap:16px;border-radius:24px}
-  .rec-strip .lockbox{width:46px;height:46px}
+  .rec-strip{align-items:flex-start;padding:18px 20px 18px 24px;gap:16px;border-radius:24px}
+  .rec-strip .lockbox{width:46px;height:46px;border-radius:15px}
   .rec-strip .rec-text{flex:1 1 0;min-width:0}
   .rec-tag{display:none}
 
