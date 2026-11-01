@@ -5,13 +5,13 @@ password. Only people a Senior manager invites can get in. Files are kept in pri
 (not in GitHub) and are only handed out to signed-in Senior managers.
 
 ## Who can do what
-| Role | Files (view, download, upload, new folder, delete) | People (invite, deactivate, reactivate, delete) | Set roles | Visible in the People list |
+| Role | Files (view, download, upload, new folder, delete) | Accounts (invite, deactivate, reactivate, delete) | Set roles | Visible in the accounts list |
 |---|---|---|---|---|
 | **Senior manager** | Yes, everything | Yes, for other Senior managers | No | Yes |
 | **Administrator** (the owner) | Yes, everything | Yes, for everyone | Yes | **No, hidden** |
 
 Everyone who is invited starts as a Senior manager. The Administrator account is the owner's:
-it is hidden from the People list, so no Senior manager can see it, deactivate it, delete it
+it is hidden from the accounts list, so no Senior manager can see it, deactivate it, delete it
 or change its role. There are no other roles.
 
 You'll set up three things: **Supabase** (logins and file storage), the **site settings**
@@ -99,12 +99,12 @@ per file. Keep `MAX_UPLOAD_MB` in `members/config.js` at or below it.
    ```
    (If you already ran the full `schema.sql` with your email in the `EDIT THIS` block, this is done for you.)
 4. Reload the members page. You should see **Upload files**, **New folder**, and a **People** tab.
-   Your own account won't be listed in the People tab. That is intended.
+   Your own account won't be listed in the Accounts tab. That is intended.
 
 ---
 
 ## Part C. Vercel (needed only for inviting from the website)
-Signing in and the HR 201 files work on any host. **Sending invitations from the People tab**
+Signing in and the HR 201 files work on any host. **Sending invitations from the Accounts tab**
 needs the server function in `api/invite.js`, which runs on Vercel.
 (You can always invite from the Supabase dashboard instead.)
 
@@ -119,7 +119,7 @@ needs the server function in `api/invite.js`, which runs on Vercel.
    | `SITE_URL` | your site address with no trailing slash, for example `https://sinaglikha-website.vercel.app` |
 
 3. **Redeploy** so the variables take effect: **Deployments**, open the latest one, **⋯**, **Redeploy**.
-4. **Test it:** sign in, open **People**, and invite a second email address you own.
+4. **Test it:** sign in, open **Accounts**, and invite a second email address you own.
    The invitation email should arrive within a minute. If you see "Invites are not set up on the
    server yet", one of the variables is missing or you haven't redeployed.
 
@@ -153,11 +153,11 @@ first, so ask people to check there. Brevo (300 emails a day free) is a good alt
 want a separate sender.
 
 ## Everyday use
-- **Invite someone:** Members area, **People**, enter their email, **Send invitation**. They
+- **Invite someone:** Members area, **Accounts**, enter their email, **Send invitation**. They
   click the link in the email and choose a password.
 - **Roles:** everyone you invite is a **Senior manager** with full file access and can invite and
-  manage other Senior managers. Only the hidden Administrator can change a role (People tab, role menu).
-- **Remove access:** People tab, **Deactivate** (instant). The account moves out of the main list
+  manage other Senior managers. Only the hidden Administrator can change a role (Accounts tab, role menu).
+- **Remove access:** Accounts tab, **Deactivate** (instant). The account moves out of the main list
   into **Show deactivated accounts**, where you can **Reactivate** it or **Delete** it for good.
   Deleting frees the email so the person can be invited again. You can't delete yourself, and you
   must deactivate an account before deleting it. If an account has uploaded files, Supabase won't
@@ -181,10 +181,10 @@ want a separate sender.
 | Clicked the invitation but wasn't asked for a password | Usually a wrong `SUPABASE_URL` in `config.js` (the page now warns about this), or the link was already used. Fix the URL, then use **Forgot your password?** on `/members/`. |
 | "SUPABASE_URL contains a key" | You pasted a key into the URL line. Put the Project URL (`https://….supabase.co`) there. |
 | Invitation link says "expired" | The address isn't in **Redirect URLs** (step A4), or an email scanner already opened the link. Send a new invitation. |
-| Signed in but "This account isn't active" | The account has no profile row or was deactivated. Re-run `schema.sql`, or check the People tab. |
-| No Upload button | The account isn't an active Senior manager or Administrator. Re-run `schema.sql` (with the owner email edited), or reactivate it from the People tab. |
+| Signed in but "This account isn't active" | The account has no profile row or was deactivated. Re-run `schema.sql`, or check the Accounts tab. |
+| No Upload button | The account isn't an active Senior manager or Administrator. Re-run `schema.sql` (with the owner email edited), or reactivate it from the Accounts tab. |
 | `schema.sql` stops with "The owner email … was not found" | The email in the `EDIT THIS` block doesn't match your account. Fix it in the SQL editor and run again. Nothing was changed. |
-| My own account doesn't appear in People | By design: the Administrator account is hidden. |
+| My own account doesn't appear in the accounts list | By design: the Administrator account is hidden. |
 | "Email rate limit exceeded" or "Too many emails were sent recently" | Supabase's built-in sender only allows about 2 emails an hour. Wait an hour, or set up your own sender (Part D). |
 | "Couldn't send the invitation" | One of the four Vercel variables is missing, or you haven't redeployed. |
 | "In-site invitations only work on the Vercel version" | You're on GitHub Pages. Invite from the Supabase dashboard, or use the Vercel address. |

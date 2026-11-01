@@ -129,7 +129,7 @@ grant execute on function public.can_use_repository()  to authenticated;
 -- 5. New accounts. Only INVITED accounts start out active, and they start as Senior manager.
 --    Someone who signs themselves up (if sign-ups were ever left on) stays inactive and sees
 --    "This account isn't active". Accounts made with "Add user -> Create new user" aren't
---    invitations either; activate those from the People tab.
+--    invitations either; activate those from the Accounts tab.
 -- ---------------------------------------------------------------------------
 create or replace function public.handle_new_user()
 returns trigger

@@ -98,7 +98,7 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 /* library */
 .app-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
 .app-head h1{font-size:clamp(2rem,4.4vw,3.2rem)}
-/* sliding switch: the dark thumb glides between Files and People */
+/* sliding switch: the dark thumb glides between Files and Accounts */
 .tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:#fff;border:1px solid var(--line);min-width:236px;box-shadow:inset 0 1px 3px rgba(74,46,34,.07)}
 .tab-thumb{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / 2);border-radius:999px;background:var(--brown);box-shadow:0 8px 16px -8px rgba(74,46,34,.6);transition:transform .65s cubic-bezier(.3,1.2,.4,1)}
 .tabs[data-pos="1"] .tab-thumb{transform:translateX(100%)}
@@ -296,7 +296,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <div class="tabs" role="tablist" id="tabs" aria-label="Sections" data-pos="0" hidden>
         <span class="tab-thumb" aria-hidden="true"></span>
         <button class="tab" role="tab" id="tab-library" aria-selected="true" aria-controls="panel-library" tabindex="0" type="button">Files</button>
-        <button class="tab" role="tab" id="tab-people" aria-selected="false" aria-controls="panel-people" tabindex="-1" type="button">People</button>
+        <button class="tab" role="tab" id="tab-people" aria-selected="false" aria-controls="panel-people" tabindex="-1" type="button">Accounts</button>
       </div>
     </div>
 
@@ -338,7 +338,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         </div>
         <p class="msg" id="invite-msg" role="alert" hidden style="margin-top:14px"></p>
       </form>
-      <div class="list-head"><h2>People</h2><span id="people-count"></span></div>
+      <div class="list-head"><h2>Senior manager accounts</h2><span id="people-count"></span></div>
       <div class="list-card"><ul class="rows" id="people"></ul></div>
     </div>
   </section>
