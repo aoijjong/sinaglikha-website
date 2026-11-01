@@ -195,6 +195,8 @@
   }
 
   function resetToSignIn() {
+    index = null;
+    indexPromise = null;
     state.session = null;
     state.profile = null;
     state.isAdmin = false;
@@ -293,12 +295,22 @@
     var lib = name === 'library';
     $('#tab-library').setAttribute('aria-selected', String(lib));
     $('#tab-people').setAttribute('aria-selected', String(!lib));
+    $('#tab-library').tabIndex = lib ? 0 : -1;
+    $('#tab-people').tabIndex = lib ? -1 : 0;
+    $('#tabs').dataset.pos = lib ? '0' : '1';
     $('#panel-library').hidden = !lib;
     $('#panel-people').hidden = lib;
     if (!lib) loadPeople();
   }
   $('#tab-library').addEventListener('click', function () { setTab('library'); });
   $('#tab-people').addEventListener('click', function () { setTab('people'); });
+  $('#tabs').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    var goPeople = e.key === 'ArrowRight' || e.key === 'End';
+    setTab(goPeople ? 'people' : 'library');
+    $(goPeople ? '#tab-people' : '#tab-library').focus();
+  });
 
   /* ---------- library ---------- */
   function setBusy(text) {
@@ -376,7 +388,7 @@
         : 'This folder is empty.';
       empty.hidden = false;
     } else if (!items.length) {
-      empty.textContent = 'No files match "' + $('#search').value.trim() + '".';
+      empty.textContent = 'Nothing in this folder matches "' + $('#search').value.trim() + '". Choose a suggestion to jump to another folder.';
       empty.hidden = false;
     } else {
       empty.hidden = true;
@@ -400,7 +412,177 @@
     loadFolder();
   });
 
-  $('#search').addEventListener('input', function (e) { state.filter = e.target.value; render(); });
+  /* ---------- search suggestions (across every folder) ---------- */
+  var index = null, indexPromise = null;
+  var sug = { items: [], active: -1 };
+
+  function dirtyIndex() { index = null; indexPromise = null; }
+
+  async function walk(folder, depth, out) {
+    var res = await sb.storage.from(BUCKET).list(folder, { limit: 1000, sortBy: { column: 'name', order: 'asc' } });
+    if (res.error) throw res.error;
+    var subs = [];
+    (res.data || []).forEach(function (e) {
+      if (!e.name || e.name.charAt(0) === '.') return;
+      var p = folder ? folder + '/' + e.name : e.name;
+      if (!e.id) {
+        out.push({ name: e.name, path: p, dir: folder, folder: true });
+        if (depth < 8) subs.push(p);
+      } else {
+        out.push({ name: e.name, path: p, dir: folder, folder: false });
+      }
+    });
+    for (var i = 0; i < subs.length && out.length < 5000; i++) await walk(subs[i], depth + 1, out);
+  }
+
+  function ensureIndex() {
+    if (index) return Promise.resolve(index);
+    if (!indexPromise) {
+      indexPromise = (async function () {
+        var out = [];
+        try { await walk('', 0, out); } catch (e) { indexPromise = null; throw e; }
+        index = out;
+        return out;
+      })();
+    }
+    return indexPromise;
+  }
+
+  function scoreOf(name, token) {
+    var n = name.toLowerCase(), i = n.indexOf(token);
+    if (i < 0) return -1;
+    if (i === 0) return 3;
+    return /[\s._\-(]/.test(n.charAt(i - 1)) ? 2 : 1;
+  }
+
+  function highlight(text, tokens) {
+    var low = text.toLowerCase(), on = [];
+    for (var k = 0; k < text.length; k++) on.push(false);
+    tokens.forEach(function (t) {
+      var i = low.indexOf(t);
+      while (i !== -1) {
+        for (var j = i; j < i + t.length; j++) on[j] = true;
+        i = low.indexOf(t, i + t.length);
+      }
+    });
+    var out = '', open = false;
+    for (var c = 0; c < text.length; c++) {
+      if (on[c] && !open) { out += '<mark>'; open = true; }
+      if (!on[c] && open) { out += '</mark>'; open = false; }
+      out += esc(text.charAt(c));
+    }
+    return out + (open ? '</mark>' : '');
+  }
+
+  function closeSuggest() {
+    $('#suggest').hidden = true;
+    $('#search').setAttribute('aria-expanded', 'false');
+    $('#search').removeAttribute('aria-activedescendant');
+    sug.items = [];
+    sug.active = -1;
+  }
+
+  function setActive(i) {
+    sug.active = i;
+    $$('#suggest li[role="option"]').forEach(function (li, n) {
+      var on = n === i;
+      li.setAttribute('aria-selected', String(on));
+      if (on) {
+        $('#search').setAttribute('aria-activedescendant', li.id);
+        li.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
+
+  async function updateSuggest() {
+    var raw = $('#search').value.trim();
+    var q = raw.toLowerCase();
+    var box = $('#suggest');
+    if (!q) { closeSuggest(); return; }
+    var tokens = q.split(/\s+/).filter(Boolean);
+    box.hidden = false;
+    $('#search').setAttribute('aria-expanded', 'true');
+    if (!index) box.innerHTML = '<li class="snote" role="presentation">Searching all folders…</li>';
+
+    var data;
+    try { data = await ensureIndex(); }
+    catch (err) { box.innerHTML = '<li class="snote" role="presentation">Couldn\'t search all folders.</li>'; return; }
+    if ($('#search').value.trim().toLowerCase() !== q) return; // the text changed while we were loading
+
+    var hits = [];
+    data.forEach(function (item) {
+      var s0 = scoreOf(item.name, tokens[0]);
+      if (s0 < 0) return;
+      for (var t = 1; t < tokens.length; t++) if (item.name.toLowerCase().indexOf(tokens[t]) < 0) return;
+      hits.push({ item: item, score: s0 });
+    });
+    hits.sort(function (a, b) {
+      return b.score - a.score ||
+        (a.item.folder === b.item.folder ? 0 : a.item.folder ? -1 : 1) ||
+        a.item.name.localeCompare(b.item.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
+    sug.items = hits.slice(0, 8).map(function (h) { return h.item; });
+    sug.active = -1;
+
+    if (!sug.items.length) {
+      box.innerHTML = '<li class="snote" role="presentation">No files or folders match "' + esc(raw) + '".</li>';
+      return;
+    }
+    box.innerHTML = sug.items.map(function (it, i) {
+      var where = ['HR 201'].concat(it.dir ? it.dir.split('/') : []).join(' / ');
+      return '<li id="sg-' + i + '" role="option" aria-selected="false" data-i="' + i + '">' +
+        '<span class="sico' + (it.folder ? ' folder' : '') + '">' + (it.folder ? ICON_FOLDER : esc(extOf(it.name))) + '</span>' +
+        '<span class="stxt"><span class="sname">' + highlight(it.name, tokens) + '</span>' +
+        '<span class="spath">' + esc(it.folder ? 'Folder in ' + where : where) + '</span></span></li>';
+    }).join('');
+  }
+
+  async function chooseSuggestion(item) {
+    closeSuggest();
+    $('#search').value = '';
+    state.filter = '';
+    state.path = item.folder ? item.path.split('/') : (item.dir ? item.dir.split('/') : []);
+    await loadFolder();
+    if (!item.folder) {
+      var row = $$('#rows li.row').filter(function (li) { return li.dataset.name === item.name; })[0];
+      if (row) {
+        row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        row.classList.add('flash');
+        setTimeout(function () { row.classList.remove('flash'); }, 3000);
+      }
+    }
+  }
+
+  $('#search').addEventListener('input', function (e) {
+    state.filter = e.target.value;
+    render();
+    updateSuggest();
+  });
+  $('#search').addEventListener('focus', function () {
+    ensureIndex().catch(function () { /* will report when the person types */ });
+    if (this.value.trim()) updateSuggest();
+  });
+  $('#search').addEventListener('keydown', function (e) {
+    var box = $('#suggest');
+    if (box.hidden) {
+      if (e.key === 'ArrowDown' && this.value.trim()) { e.preventDefault(); updateSuggest(); }
+      return;
+    }
+    var n = sug.items.length;
+    if (e.key === 'ArrowDown' && n) { e.preventDefault(); setActive((sug.active + 1) % n); }
+    else if (e.key === 'ArrowUp' && n) { e.preventDefault(); setActive(sug.active <= 0 ? n - 1 : sug.active - 1); }
+    else if (e.key === 'Enter' && sug.active >= 0) { e.preventDefault(); chooseSuggestion(sug.items[sug.active]); }
+    else if (e.key === 'Escape') { e.preventDefault(); closeSuggest(); }
+    else if (e.key === 'Tab') { closeSuggest(); }
+  });
+  $('#suggest').addEventListener('mousedown', function (e) { e.preventDefault(); });
+  $('#suggest').addEventListener('click', function (e) {
+    var li = e.target.closest('li[data-i]');
+    if (li) chooseSuggestion(sug.items[Number(li.dataset.i)]);
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#search-box')) closeSuggest();
+  });
 
   async function signedUrl(name, download) {
     var res = await sb.storage.from(BUCKET).createSignedUrl(prefix() + name, 120, download ? { download: name } : undefined);
@@ -475,6 +657,7 @@
     } catch (err) {
       toast("Couldn't delete that. You may not have permission.", 'bad');
     }
+    dirtyIndex();
     await loadFolder();
   }
 
@@ -516,6 +699,7 @@
     if (ok && !failed.length) toast(ok === 1 ? 'File uploaded.' : ok + ' files uploaded.', 'ok');
     else if (ok) toast(ok + ' uploaded. Not uploaded: ' + failed.join(', '), 'bad');
     else toast('Nothing uploaded: ' + failed.join(', '), 'bad');
+    dirtyIndex();
     await loadFolder();
   }
 
@@ -563,6 +747,7 @@
     var res = await sb.storage.from(BUCKET).upload(prefix() + clean + '/.keep', new Blob([' '], { type: 'text/plain' }), { upsert: false });
     setBusy('');
     if (res.error) toast("Couldn't create the folder.", 'bad'); else toast('Folder created.', 'ok');
+    dirtyIndex();
     await loadFolder();
   });
 

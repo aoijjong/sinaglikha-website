@@ -98,10 +98,13 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 /* library */
 .app-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
 .app-head h1{font-size:clamp(2rem,4.4vw,3.2rem)}
-.tabs{display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(255,255,255,.8);border:1px solid var(--line)}
-.tab{border:0;background:none;padding:10px 20px;border-radius:999px;font-weight:700;font-size:.9rem;color:var(--muted);cursor:pointer;transition:background .4s,color .4s}
-.tab[aria-selected="true"]{background:var(--brown);color:var(--paper)}
-@media (hover:hover) and (pointer:fine){.tab[aria-selected="false"]:hover{background:var(--cream);color:var(--brown)}}
+/* sliding switch: the dark thumb glides between Files and People */
+.tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:#fff;border:1px solid var(--line);min-width:236px;box-shadow:inset 0 1px 3px rgba(74,46,34,.07)}
+.tab-thumb{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / 2);border-radius:999px;background:var(--brown);box-shadow:0 8px 16px -8px rgba(74,46,34,.6);transition:transform .65s cubic-bezier(.3,1.2,.4,1)}
+.tabs[data-pos="1"] .tab-thumb{transform:translateX(100%)}
+.tab{position:relative;z-index:1;border:0;background:none;padding:11px 20px;border-radius:999px;font-weight:700;font-size:.9rem;color:var(--muted);cursor:pointer;text-align:center;transition:color .45s}
+.tab[aria-selected="true"]{color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.tab[aria-selected="false"]:hover{color:var(--brown)}}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;margin-bottom:14px}
 .path-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-weight:600;font-size:.95rem}
@@ -110,8 +113,23 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .crumbs .sep{color:var(--muted)}
 @media (hover:hover) and (pointer:fine){.crumbs button:not([aria-current]):hover{background:var(--cream)}}
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.search{width:220px}
+.search{position:relative;width:240px}
 .search input{height:44px;padding:0 16px;line-height:1.2}
+.suggest{position:absolute;top:calc(100% + 8px);right:0;width:min(440px,calc(100vw - 40px));z-index:40;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:6px;max-height:360px;overflow:auto;animation:rise .35s var(--ease)}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+.suggest li{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:14px;cursor:pointer;transition:background .3s}
+.suggest li[aria-selected="true"]{background:var(--cream)}
+.suggest .sico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--cream);color:#C8321A;font-size:.62rem;font-weight:700}
+.suggest .sico.folder{background:var(--soft-warm);color:var(--brown)}
+.suggest .sico .icon{width:18px;height:18px}
+.suggest .stxt{display:flex;flex-direction:column;min-width:0}
+.suggest .sname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.suggest .spath{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.suggest mark{background:rgba(255,203,27,.5);color:inherit;border-radius:4px;padding:0 1px}
+.suggest .snote{padding:14px 12px;color:var(--muted);font-size:.92rem;cursor:default}
+@media (hover:hover) and (pointer:fine){.suggest li:not(.snote):hover{background:var(--cream)}}
+.row.flash{animation:flash 2.8s ease}
+@keyframes flash{0%,55%{background:#FFF0B0}100%{background:transparent}}
 .toolbar .btn{min-height:44px;padding:0 20px}
 .crumbs button{min-height:40px;display:inline-flex;align-items:center}
 .list-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;position:relative;transition:box-shadow .5s var(--ease),border-color .4s}
@@ -171,6 +189,7 @@ dialog[open]{animation:pop .5s var(--ease)}
   .lock{margin-bottom:8px;width:52px;height:52px}
   .invite-grid{grid-template-columns:1fr}
   .search{width:100%;flex:1 1 100%}
+  .suggest{left:0;right:0;width:auto}
   .tools{width:100%}
   .who{display:none}
 }
@@ -264,9 +283,10 @@ dialog[open]{animation:pop .5s var(--ease)}
         <span class="eyebrow">Members only</span>
         <h1>HR 201 Files</h1>
       </div>
-      <div class="tabs" role="tablist" id="tabs" aria-label="Sections" hidden>
-        <button class="tab" role="tab" id="tab-library" aria-selected="true" aria-controls="panel-library" type="button">Files</button>
-        <button class="tab" role="tab" id="tab-people" aria-selected="false" aria-controls="panel-people" type="button">People</button>
+      <div class="tabs" role="tablist" id="tabs" aria-label="Sections" data-pos="0" hidden>
+        <span class="tab-thumb" aria-hidden="true"></span>
+        <button class="tab" role="tab" id="tab-library" aria-selected="true" aria-controls="panel-library" tabindex="0" type="button">Files</button>
+        <button class="tab" role="tab" id="tab-people" aria-selected="false" aria-controls="panel-people" tabindex="-1" type="button">People</button>
       </div>
     </div>
 
@@ -279,7 +299,11 @@ dialog[open]{animation:pop .5s var(--ease)}
           <nav class="crumbs" id="crumbs" aria-label="Folder path"></nav>
         </div>
         <div class="tools">
-          <label class="search"><span class="sr-only">Search this folder</span><input id="search" type="search" placeholder="Search this folder" autocomplete="off"></label>
+          <div class="search" id="search-box">
+            <label class="sr-only" for="search">Search all files and folders</label>
+            <input id="search" type="search" placeholder="Search all files and folders" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
+            <ul class="suggest" id="suggest" role="listbox" aria-label="Suggestions" hidden></ul>
+          </div>
           <button class="btn btn-ghost btn-sm admin-only" id="btn-folder" type="button" hidden>New folder</button>
           <button class="btn btn-primary btn-sm admin-only" id="btn-upload" type="button" hidden>Upload files</button>
           <input type="file" id="file-input" multiple hidden>
