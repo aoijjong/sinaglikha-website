@@ -49,7 +49,11 @@ revoke all on function public.is_admin()  from public, anon;
 grant execute on function public.is_member() to authenticated;
 grant execute on function public.is_admin()  to authenticated;
 
--- Every new account (invited from the dashboard or the website) gets a profile.
+-- Every new account gets a profile, but only INVITED accounts start out active.
+-- Someone who signs themselves up (if sign-ups were ever left on) gets an inactive
+-- profile and sees "This account isn't active" until an admin activates them.
+-- Accounts made with "Add user -> Create new user" aren't invitations either; activate
+-- those by hand (see the last lines of this file).
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -57,8 +61,13 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, full_name)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data ->> 'full_name', ''))
+  insert into public.profiles (id, email, full_name, active)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data ->> 'full_name', ''),
+    new.invited_at is not null
+  )
   on conflict (id) do nothing;
   return new;
 end;
@@ -135,5 +144,5 @@ create policy "library: admins delete"
 
 -- ---------------------------------------------------------------------------
 -- AFTER your own account exists, make yourself the first admin:
---   update public.profiles set role = 'admin' where email = 'you@example.com';
+--   update public.profiles set role = 'admin', active = true where email = 'you@example.com';
 -- ---------------------------------------------------------------------------

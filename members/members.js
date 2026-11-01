@@ -53,6 +53,33 @@
   var configured = cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY &&
     !/^YOUR_/.test(cfg.SUPABASE_URL) && !/^YOUR_/.test(cfg.SUPABASE_ANON_KEY);
   if (!configured) { show('setup'); return; }
+  /* Catch the common copy-and-paste mistakes with a clear message. */
+  function configProblem() {
+    var url = String(cfg.SUPABASE_URL), key = String(cfg.SUPABASE_ANON_KEY);
+    if (!/^https:\/\//i.test(url)) {
+      return /^(sb_|eyJ)/.test(url)
+        ? 'SUPABASE_URL contains a key. It should be the Project URL, like https://yourproject.supabase.co.'
+        : 'SUPABASE_URL should start with https:// and look like https://yourproject.supabase.co.';
+    }
+    if (/^sb_secret_/.test(key)) {
+      return 'The key in config.js is a secret key. Remove it right away and use the public anon or publishable key.';
+    }
+    if (key.split('.').length === 3) {
+      try {
+        var claims = JSON.parse(atob(key.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (claims.role === 'service_role') {
+          return 'The key in config.js is the secret service_role key. Remove it right away, then use the public anon key.';
+        }
+      } catch (e) { /* not readable; let Supabase judge it */ }
+    }
+    return '';
+  }
+  var problem = configProblem();
+  if (problem) {
+    show('setup');
+    $('#view-setup .lead').textContent = problem;
+    return;
+  }
   if (!window.supabase || !window.supabase.createClient) {
     show('setup');
     $('#view-setup .lead').textContent = "The sign-in library couldn't load. Check your internet connection and reload.";

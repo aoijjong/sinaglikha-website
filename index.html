@@ -16,6 +16,15 @@
 <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js')</script>
+<script>
+/* Invitation and password-reset emails can land on the home page. Send them on to the
+   members page, keeping the link details, so the person can set a password. */
+(function () {
+  var h = location.hash;
+  if (/access_token=/.test(h) && /type=(invite|recovery)/.test(h)) location.replace('members/' + h);
+  else if (/error_code=|error_description=/.test(h) && /error=/.test(h)) location.replace('members/' + h);
+})();
+</script>
 
 <style>
 :root{

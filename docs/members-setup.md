@@ -33,8 +33,9 @@ This creates the people list, a private storage bucket called `library`, and the
 
 ### 3. Make sign-up invite-only
 1. Open **Authentication**, then **Sign In / Providers** (the wording changes between Supabase versions).
-2. Turn **off** "Allow new users to sign up". This is the most important switch. With it off,
-   nobody can create an account on their own.
+2. Turn **off** "Allow new users to sign up" and **save**. This is the most important switch. With
+   it off, nobody can create an account on their own. (Even if it's left on, accounts that weren't
+   invited start out inactive and can't see any files.)
 3. Under the Email provider set the **minimum password length to 10** and keep
    **Confirm email** on.
 
@@ -51,7 +52,13 @@ Invitation and password-reset links only work for addresses on this list.
 1. Open **Project Settings**, then **API** (or **API Keys**).
 2. Copy the **Project URL** and the **anon / public** key.
 3. Open `members/config.js` and replace `YOUR_SUPABASE_URL` and `YOUR_SUPABASE_ANON_KEY`.
+   - `SUPABASE_URL` is the **Project URL**: it starts with `https://` and ends with `.supabase.co`.
+     It is **not** a key.
+   - `SUPABASE_ANON_KEY` is the long key that starts with `eyJ` (from the **Legacy API keys** tab),
+     or the `sb_publishable_…` key.
 4. Commit and push that file.
+
+If you paste a key into the URL line, the members page now tells you so instead of failing quietly.
 
 > The **anon** key is designed to be public, so it is fine in the repository. The
 > **service_role** key is a secret. Never put it in `config.js` or anywhere in GitHub.
@@ -65,11 +72,14 @@ per file. Keep `MAX_UPLOAD_MB` in `members/config.js` at or below it.
 ## Part B. Create the first admin (you)
 1. Supabase: **Authentication**, then **Users**, then **Add user**, then **Send invitation**.
    Enter your own email.
-2. Open the email and click the link. It opens `/members/` and asks you to **set a password**.
+2. Open the email and click the link. It opens `/members/` (or the home page, which sends you on)
+   and asks you to **set a password**. Each link works once. If you already used it, or you weren't
+   asked for a password, go to `/members/`, type your email, and choose **Forgot your password?**.
+   The email that sends lets you set one.
 3. In **SQL Editor** run (use your email):
 
    ```sql
-   update public.profiles set role = 'admin' where email = 'you@example.com';
+   update public.profiles set role = 'admin', active = true where email = 'you@example.com';
    ```
 4. Reload the members page. You should now see **Upload files**, **New folder**, and a **People** tab.
 
@@ -117,6 +127,8 @@ needs the server function in `api/invite.js`, which runs on Vercel.
 | Problem | Likely cause and fix |
 |---|---|
 | "The members area isn't connected yet" | `members/config.js` still has the placeholder values. |
+| Clicked the invitation but wasn't asked for a password | Usually a wrong `SUPABASE_URL` in `config.js` (the page now warns about this), or the link was already used. Fix the URL, then use **Forgot your password?** on `/members/`. |
+| "SUPABASE_URL contains a key" | You pasted a key into the URL line. Put the Project URL (`https://….supabase.co`) there. |
 | Invitation link says "expired" | The address isn't in **Redirect URLs** (step A4), or an email scanner already opened the link. Send a new invitation. |
 | Signed in but "This account isn't active" | The account has no profile row or was deactivated. Re-run `schema.sql`, or check the People tab. |
 | No Upload button | Your role isn't `admin` yet (step B3). |
