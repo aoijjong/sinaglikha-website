@@ -337,7 +337,7 @@
   }
 
   function renderCrumbs() {
-    var html = '<button type="button" data-go="0"' + (state.path.length ? '' : ' aria-current="true"') + '>Library</button>';
+    var html = '<button type="button" data-go="0"' + (state.path.length ? '' : ' aria-current="true"') + '>HR 201</button>';
     state.path.forEach(function (seg, i) {
       var last = i === state.path.length - 1;
       html += '<span class="sep" aria-hidden="true">/</span><button type="button" data-go="' + (i + 1) + '"' +
@@ -605,7 +605,7 @@
     if (!activate) {
       var ok = await ask({
         title: 'Deactivate this account?',
-        text: 'They will lose access to the library right away. You can reactivate them later.',
+        text: 'They will lose access to the files right away. You can reactivate them later.',
         ok: 'Deactivate',
         danger: true
       });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Members | SINAGLIKHA</title>
+<title>HR 201 Files | SINAGLIKHA</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFDF6">
 <link rel="icon" type="image/png" href="../assets/favicon.png">
@@ -211,7 +211,7 @@ dialog[open]{animation:pop .5s var(--ease)}
     <div class="auth-intro">
       <span class="lock" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
       <h1>Members area</h1>
-      <p>Private documents for the SINAGLIKHA team. Access is by invitation only.</p>
+      <p>HR 201 files for the SINAGLIKHA HR team. Access is by invitation only.</p>
     </div>
     <form class="card" id="form-login" novalidate>
       <h2>Sign in</h2>
@@ -250,11 +250,11 @@ dialog[open]{animation:pop .5s var(--ease)}
   <section id="view-app" hidden>
     <div class="app-head">
       <div>
-        <span class="eyebrow">Members</span>
-        <h1>Document library</h1>
+        <span class="eyebrow">Members only</span>
+        <h1>HR 201 Files</h1>
       </div>
       <div class="tabs" role="tablist" id="tabs" aria-label="Sections" hidden>
-        <button class="tab" role="tab" id="tab-library" aria-selected="true" aria-controls="panel-library" type="button">Library</button>
+        <button class="tab" role="tab" id="tab-library" aria-selected="true" aria-controls="panel-library" type="button">Files</button>
         <button class="tab" role="tab" id="tab-people" aria-selected="false" aria-controls="panel-people" type="button">People</button>
       </div>
     </div>
@@ -274,7 +274,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="empty" id="empty" hidden></p>
         <div class="busy" id="busy" hidden role="status">Loading…</div>
       </div>
-      <p class="fine">Everyone with an active account can see every file in this library.</p>
+      <p class="fine">Everyone with an active account can see every file here, so only invite people who should have access.</p>
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
@@ -289,7 +289,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="msg" id="invite-msg" role="alert" hidden style="margin-top:14px"></p>
       </form>
       <div class="list-card"><ul class="rows" id="people"></ul></div>
-      <p class="fine">Deactivating someone removes their access to the library right away. To delete an account completely, use Supabase → Authentication → Users.</p>
+      <p class="fine">Deactivating someone removes their access to the files right away. To delete an account completely, use Supabase → Authentication → Users.</p>
     </div>
   </section>
 </main>

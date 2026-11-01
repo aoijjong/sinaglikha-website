@@ -1,6 +1,6 @@
 # Members area setup
 
-An invite-only document library for the SINAGLIKHA team. People sign in with an email and
+An invite-only area for the SINAGLIKHA HR 201 files. People sign in with an email and
 password. Only people an administrator invites can get in. Files are kept in private storage
 (not in GitHub) and are only handed out to signed-in members.
 
@@ -86,7 +86,7 @@ per file. Keep `MAX_UPLOAD_MB` in `members/config.js` at or below it.
 ---
 
 ## Part C. Vercel (needed only for inviting from the website)
-Signing in and the file library work on any host. **Sending invitations from the People tab**
+Signing in and the HR 201 files work on any host. **Sending invitations from the People tab**
 needs the server function in `api/invite.js`, which runs on Vercel.
 (You can always invite from the Supabase dashboard instead.)
 
@@ -140,7 +140,7 @@ want a separate sender.
 - **Make someone an admin:** People tab, change **Member** to **Admin**.
 - **Remove access:** People tab, **Deactivate** (instant). To delete the account completely use
   Supabase, **Authentication**, **Users**.
-- **Add files:** open **Library**, then **Upload files**, or drag files onto the list. Use **New folder** to organize.
+- **Add files:** open **Files**, then **Upload files**, or drag files onto the list. Use **New folder** to organize.
 - **Let every member upload:** see the optional block at the bottom of `supabase/schema.sql`.
 
 ## What this does and doesn't protect
