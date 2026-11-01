@@ -112,10 +112,17 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .nav-toggle .i-close{display:none}
 .nav-toggle[aria-expanded="true"] .i-close{display:block}
 .nav-toggle[aria-expanded="true"] .i-menu{display:none}
-.menu-cta{display:none}
+.menu-cta,.menu-members{display:none}
+.header-actions{display:flex;align-items:center;gap:10px}
+.members-link{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:50%;border:1.5px solid var(--line);color:var(--brown);text-decoration:none;transition:background 0.4s,color 0.4s,border-color 0.4s,transform 0.4s var(--ease)}
+.members-link .icon{width:21px;height:21px}
+.members-link:active{transform:scale(.92)}
+@media (hover:hover) and (pointer:fine){.members-link:hover{background:var(--brown);color:var(--paper);border-color:var(--brown)}}
 @media (min-width:1200px){
-  .nav-cta{display:inline-flex}
   .nav-list a{font-size:.9rem;padding:9px 14px}
+}
+@media (min-width:1300px){
+  .nav-cta{display:inline-flex}
 }
 @media (max-width:999.98px){
   .nav-toggle{display:inline-flex}
@@ -126,6 +133,7 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
   .nav-list a::after{display:none}
   .nav-list a[aria-current="true"]{color:#B3261E;background:linear-gradient(90deg,rgba(248,238,174,.7),transparent)}
   .menu-cta{display:flex;margin-top:22px}
+  .menu-members{display:flex;margin-top:12px}
 }
 
 /* hero */
@@ -454,6 +462,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .deliv li:active{background:#fff;border-color:rgba(206,32,32,.35);transform:translateY(-2px);transition-duration:.2s}
   .foot-col a:active,.foot-col button:active{color:#B3261E;transform:translateX(5px);transition-duration:.2s}
   .nav-list a:active{background:linear-gradient(90deg,rgba(248,238,174,.7),transparent);color:#B3261E;transition-duration:.2s}
+  .members-link:active{background:var(--brown);color:var(--paper);border-color:var(--brown);transition-duration:.2s}
   .dlg-close:active{background:var(--brown);color:#fff;transition-duration:.2s}
 }
 
@@ -488,6 +497,8 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   body{font-size:1rem}
   :root{--header-h:66px}
   .brand img{height:34px}
+  .header-actions{gap:8px}
+  .members-link,.nav-toggle{width:42px;height:42px}
   section{padding-block:56px}
   .sec-head{margin-bottom:26px}
   .hero{min-height:86svh}
@@ -570,6 +581,17 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .foot-brand,.foot-col:last-child{grid-column:1/-1}
   .foot-bottom{flex-direction:column;gap:8px}
 }
+
+/* small phones: keep the logo, Members icon and menu button on one line */
+@media (max-width:420px){
+  .brand img{height:30px}
+  .header-inner{gap:10px}
+}
+@media (max-width:340px){
+  .brand img{height:26px}
+  .header-actions{gap:6px}
+  .members-link,.nav-toggle{width:40px;height:40px}
+}
 </style>
 </head>
 
@@ -632,11 +654,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
       <img src="assets/sinaglikha-logo.png" alt="SINAGLIKHA — Bringing Light to Every Possibility" width="1487" height="251">
     </a>
 
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
-      <svg class="icon i-menu" aria-hidden="true"><use href="#i-menu"/></svg>
-      <svg class="icon i-close" aria-hidden="true"><use href="#i-x"/></svg>
-    </button>
-
     <nav class="primary-nav" id="primary-nav" aria-label="Primary">
       <ul class="nav-list">
         <li><a href="#home" data-s="home">Home</a></li>
@@ -647,9 +664,17 @@ dialog[open]{animation:pop 0.96s var(--ease)}
         <li><a href="#contact" data-s="contact">Contact Us</a></li>
       </ul>
       <a class="btn btn-primary menu-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="btn btn-ghost menu-members" href="members/">Members login</a>
     </nav>
 
-    <a class="btn btn-primary btn-sm nav-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    <div class="header-actions">
+      <a class="btn btn-primary btn-sm nav-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="members-link" href="members/" aria-label="Members login" title="Members login"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <svg class="icon i-menu" aria-hidden="true"><use href="#i-menu"/></svg>
+        <svg class="icon i-close" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -933,6 +958,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
           <li><a href="#hr">Human Resources</a></li>
           <li><a href="#team">Our Team</a></li>
           <li><a href="#contact">Contact Us</a></li>
+          <li><a href="members/">Members login</a></li>
         </ul>
       </nav>
       <nav class="foot-col" aria-label="HR departments">

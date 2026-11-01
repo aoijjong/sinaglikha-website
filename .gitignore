@@ -1,0 +1,6 @@
+# Secrets and local files: never commit these
+.env
+.env.*
+.vercel
+node_modules
+*.log

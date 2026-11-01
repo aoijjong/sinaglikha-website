@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Members | SINAGLIKHA</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFDF6">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#F8EEAE; --paper:#FFFDF6; --cream:#FBF3CB;
+  --ink:#2B211C; --brown:#4A2E22; --muted:#66554B; --line:rgba(74,46,34,.14);
+  --grad:linear-gradient(135deg,#CE2020 0%,#E8701A 58%,#FFCB1B 100%);
+  --grad-btn:linear-gradient(135deg,#C21E1E 0%,#DE5A14 100%);
+  --soft-warm:linear-gradient(150deg,#FFF4C9 0%,#FCD9A0 60%,#F8BE8E 100%);
+  --shadow:0 1px 2px rgba(74,46,34,.06),0 14px 34px -14px rgba(74,46,34,.22);
+  --shadow-lg:0 2px 4px rgba(74,46,34,.06),0 28px 50px -22px rgba(120,50,20,.38);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scrollbar-gutter:stable;-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(60% 40% at 85% 0%,rgba(255,203,27,.18),transparent 70%),radial-gradient(50% 40% at 0% 100%,rgba(248,238,174,.6),transparent 70%),var(--paper)}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.12;margin:0;color:var(--brown);letter-spacing:-.015em}
+p{margin:0}
+ul{list-style:none;margin:0;padding:0}
+button,input,select{font:inherit}
+a{color:inherit}
+img,svg{display:block;max-width:100%}
+:focus-visible{outline:3px solid #CE2020;outline-offset:3px;border-radius:8px}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:12px;top:-60px;background:var(--brown);color:#fff;padding:10px 16px;border-radius:10px;z-index:200;text-decoration:none;font-weight:600}
+.skip:focus{top:12px}
+.wrap{width:min(1100px,100% - 2 * clamp(20px,4vw,40px));margin-inline:auto}
+.icon{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,253,246,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px}
+.brand img{height:38px;width:auto}
+.top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.who{font-size:.88rem;font-weight:600;color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:.95rem;line-height:1;padding:14px 22px;border-radius:999px;border:2px solid transparent;text-decoration:none;cursor:pointer;transition:transform .5s var(--ease),box-shadow .5s var(--ease),background .4s,color .4s,border-color .4s}
+.btn:active{transform:scale(.96)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.btn-sm{padding:10px 16px;font-size:.86rem}
+.btn-primary{background:var(--grad-btn);color:#fff;box-shadow:0 10px 24px -10px rgba(206,32,32,.65)}
+.btn-ghost{border-color:var(--brown);color:var(--brown);background:transparent}
+.btn-danger{background:#B91C1C;color:#fff}
+@media (hover:hover) and (pointer:fine){
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 30px -12px rgba(206,32,32,.7)}
+  .btn-ghost:hover{background:var(--brown);color:var(--paper)}
+  .btn-danger:hover{transform:translateY(-2px)}
+}
+.link{background:none;border:0;padding:0;color:#B3261E;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+
+main{flex:1;padding-block:clamp(28px,5vw,64px)}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B3361A;margin-bottom:12px}
+.eyebrow::before{content:"";width:34px;height:3px;border-radius:3px;background:var(--grad)}
+.center{display:grid;place-items:center;min-height:40vh}
+.spinner{width:44px;height:44px;border-radius:50%;border:4px solid var(--cream);border-top-color:#E8701A;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* cards and forms */
+.card{background:#fff;border:1px solid var(--line);border-radius:28px;padding:clamp(24px,4vw,40px);box-shadow:var(--shadow)}
+.card h2{font-size:1.7rem;margin-bottom:18px}
+.card .lead{color:var(--muted);margin:-6px 0 18px}
+.field{margin-bottom:16px}
+.field label{display:block;font-weight:600;font-size:.92rem;margin-bottom:7px;color:var(--brown)}
+.field input,.field select,.search input,.row select{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);transition:border-color .4s,box-shadow .4s,background .4s}
+.field input:focus,.search input:focus,.row select:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
+.msg{margin:0 0 14px;padding:12px 14px;border-radius:14px;font-size:.93rem;background:rgba(248,238,174,.6);color:var(--brown)}
+.msg.bad{background:#FDECEA;color:#8F1D1D}
+.msg.ok{background:#EAF6EC;color:#1E5B2B}
+.fine{margin-top:14px;font-size:.88rem;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:6px}
+
+/* sign-in layout */
+.auth{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:stretch;max-width:980px;margin-inline:auto}
+.auth-intro{border-radius:28px;padding:clamp(28px,5vw,52px);background:var(--soft-warm);border:1px solid rgba(74,46,34,.08);display:flex;flex-direction:column;justify-content:flex-end;gap:14px;min-height:300px}
+.lock{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--brown);color:var(--yellow);margin-bottom:auto}
+.lock .icon{width:28px;height:28px}
+.auth-intro h1{font-size:clamp(2.2rem,4.6vw,3.4rem)}
+.auth-intro p{color:#5A4538;max-width:32ch}
+.narrow{max-width:520px;margin-inline:auto}
+
+/* library */
+.app-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
+.app-head h1{font-size:clamp(2rem,4.4vw,3.2rem)}
+.tabs{display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(255,255,255,.8);border:1px solid var(--line)}
+.tab{border:0;background:none;padding:10px 20px;border-radius:999px;font-weight:700;font-size:.9rem;color:var(--muted);cursor:pointer;transition:background .4s,color .4s}
+.tab[aria-selected="true"]{background:var(--brown);color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.tab[aria-selected="false"]:hover{background:var(--cream);color:var(--brown)}}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;margin-bottom:14px}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-weight:600;font-size:.95rem}
+.crumbs button{background:none;border:0;padding:6px 10px;border-radius:999px;color:var(--brown);cursor:pointer;font-weight:600;transition:background .4s}
+.crumbs button[aria-current="true"]{background:var(--cream);cursor:default}
+.crumbs .sep{color:var(--muted)}
+@media (hover:hover) and (pointer:fine){.crumbs button:not([aria-current]):hover{background:var(--cream)}}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.search{width:220px}
+.search input{padding:11px 14px}
+.list-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;position:relative;transition:box-shadow .5s var(--ease),border-color .4s}
+.list-card.drag{border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15)}
+.rows{display:block}
+.row{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-top:1px solid var(--line);transition:background .4s}
+.row:first-child{border-top:0}
+@media (hover:hover) and (pointer:fine){.row:hover{background:rgba(251,243,203,.45)}}
+.row-main{flex:1;min-width:0;display:flex;align-items:center;gap:14px;background:none;border:0;padding:8px;border-radius:16px;text-align:left;cursor:pointer;color:inherit}
+.ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--cream);color:#C8321A;font-size:.68rem;font-weight:700;letter-spacing:.04em}
+.ico.folder{background:var(--soft-warm);color:var(--brown)}
+.row-text{display:flex;flex-direction:column;min-width:0}
+.row-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-meta{font-size:.85rem;color:var(--muted)}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:0;background:none;color:var(--brown);display:grid;place-items:center;cursor:pointer;flex:none;transition:background .4s,color .4s,transform .5s var(--ease)}
+.icon-btn:active{transform:scale(.9)}
+@media (hover:hover) and (pointer:fine){
+  .icon-btn:hover{background:var(--cream)}
+  .icon-btn.danger:hover{background:#FDECEA;color:#B91C1C}
+}
+.empty{padding:44px 20px;text-align:center;color:var(--muted)}
+.busy{position:absolute;inset:0;background:rgba(255,253,246,.7);display:grid;place-items:center;font-weight:600;color:var(--brown);z-index:2}
+
+/* people */
+.invite{margin-bottom:18px}
+.invite h2{font-size:1.4rem}
+.invite-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+.invite-grid .field{margin:0}
+.person{flex-wrap:wrap;padding:14px 16px;gap:10px 14px}
+.person .row-text{flex:1 1 220px}
+.person select{width:auto;padding:10px 12px}
+
+/* dialog */
+dialog{border:0;padding:0;border-radius:26px;width:min(460px,100% - 32px);background:var(--paper);color:var(--ink);box-shadow:0 40px 80px -20px rgba(43,33,28,.5)}
+dialog::backdrop{background:rgba(43,33,28,.5)}
+dialog[open]{animation:pop .5s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.985)}}
+#modal-form{padding:clamp(22px,4vw,32px)}
+#modal-form h2{font-size:1.5rem;margin-bottom:10px}
+#modal-form p#m-text{color:var(--muted);margin-bottom:14px}
+#modal-form .actions{justify-content:flex-end;margin-top:18px}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,24px);max-width:min(560px,calc(100% - 32px));padding:14px 20px;border-radius:18px;background:var(--brown);color:#FFF6E3;font-weight:600;font-size:.94rem;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .5s,transform .6s var(--ease);z-index:300}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.bad{background:#8F1D1D}
+.toast.ok{background:#1E5B2B}
+
+.foot{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;padding-block:22px;border-top:1px solid var(--line);font-size:.86rem;color:var(--muted)}
+.foot a{color:var(--brown);font-weight:600}
+
+@media (max-width:820px){
+  .auth{grid-template-columns:1fr}
+  .auth-intro{min-height:0;gap:10px}
+  .lock{margin-bottom:8px;width:52px;height:52px}
+  .invite-grid{grid-template-columns:1fr}
+  .search{width:100%;flex:1 1 100%}
+  .tools{width:100%}
+  .who{display:none}
+}
+@media (max-width:560px){
+  .top-right .btn-ghost[href]{display:none}
+  .row-main{gap:12px}
+  .ico{width:40px;height:40px}
+  .tools .btn{flex:1}
+  .app-head{align-items:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="../" aria-label="SINAGLIKHA, back to the website"><img src="../assets/sinaglikha-logo.png" alt="SINAGLIKHA" width="1487" height="251"></a>
+    <div class="top-right">
+      <span class="who" id="who" hidden></span>
+      <a class="btn btn-ghost btn-sm" href="../">Back to website</a>
+      <button class="btn btn-ghost btn-sm" id="btn-signout" type="button" hidden>Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <noscript><p class="msg bad">The members area needs JavaScript. Please turn it on and reload.</p></noscript>
+
+  <section id="view-loading" class="center" aria-live="polite">
+    <div class="spinner" role="status"><span class="sr-only">Loading</span></div>
+  </section>
+
+  <section id="view-setup" class="narrow" hidden>
+    <div class="card">
+      <span class="eyebrow">Setup needed</span>
+      <h2>The members area isn't connected yet</h2>
+      <p class="lead">An administrator needs to add the Supabase project details to <code>members/config.js</code>. The steps are in <code>docs/members-setup.md</code>.</p>
+      <a class="btn btn-ghost" href="../">Back to website</a>
+    </div>
+  </section>
+
+  <section id="view-auth" class="auth" hidden>
+    <div class="auth-intro">
+      <span class="lock" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+      <h1>Members area</h1>
+      <p>Private documents for the SINAGLIKHA team. Access is by invitation only.</p>
+    </div>
+    <form class="card" id="form-login" novalidate>
+      <h2>Sign in</h2>
+      <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" inputmode="email" required></div>
+      <div class="field"><label for="l-pass">Password</label><input id="l-pass" type="password" autocomplete="current-password" required></div>
+      <p class="msg" id="login-msg" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" id="btn-login">Sign in</button>
+        <button class="link" type="button" id="btn-forgot">Forgot your password?</button>
+      </div>
+      <p class="fine">No account yet? Ask an administrator to invite you.</p>
+    </form>
+  </section>
+
+  <section id="view-password" class="narrow" hidden>
+    <form class="card" id="form-password" novalidate>
+      <span class="eyebrow">Welcome</span>
+      <h2>Set your password</h2>
+      <p class="lead">Choose a password with at least 10 characters. You'll use it with your email to sign in.</p>
+      <div class="field"><label for="p-new">New password</label><input id="p-new" type="password" autocomplete="new-password" required></div>
+      <div class="field"><label for="p-confirm">Confirm password</label><input id="p-confirm" type="password" autocomplete="new-password" required></div>
+      <p class="msg" id="password-msg" role="alert" hidden></p>
+      <button class="btn btn-primary" type="submit" id="btn-password">Save password</button>
+    </form>
+  </section>
+
+  <section id="view-denied" class="narrow" hidden>
+    <div class="card">
+      <span class="eyebrow">No access</span>
+      <h2>This account isn't active</h2>
+      <p class="lead">You're signed in, but you don't have access to the members area. Please ask an administrator to check your account.</p>
+      <button class="btn btn-ghost" type="button" id="btn-denied-out">Sign out</button>
+    </div>
+  </section>
+
+  <section id="view-app" hidden>
+    <div class="app-head">
+      <div>
+        <span class="eyebrow">Members</span>
+        <h1>Document library</h1>
+      </div>
+      <div class="tabs" role="tablist" id="tabs" aria-label="Sections" hidden>
+        <button class="tab" role="tab" id="tab-library" aria-selected="true" aria-controls="panel-library" type="button">Library</button>
+        <button class="tab" role="tab" id="tab-people" aria-selected="false" aria-controls="panel-people" type="button">People</button>
+      </div>
+    </div>
+
+    <div id="panel-library" role="tabpanel" aria-labelledby="tab-library">
+      <div class="toolbar">
+        <nav class="crumbs" id="crumbs" aria-label="Folder path"></nav>
+        <div class="tools">
+          <label class="search"><span class="sr-only">Search this folder</span><input id="search" type="search" placeholder="Search this folder" autocomplete="off"></label>
+          <button class="btn btn-ghost btn-sm admin-only" id="btn-folder" type="button" hidden>New folder</button>
+          <button class="btn btn-primary btn-sm admin-only" id="btn-upload" type="button" hidden>Upload files</button>
+          <input type="file" id="file-input" multiple hidden>
+        </div>
+      </div>
+      <div class="list-card" id="drop">
+        <ul class="rows" id="rows"></ul>
+        <p class="empty" id="empty" hidden></p>
+        <div class="busy" id="busy" hidden role="status">Loading…</div>
+      </div>
+      <p class="fine">Everyone with an active account can see every file in this library.</p>
+    </div>
+
+    <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
+      <form class="card invite" id="form-invite" novalidate>
+        <h2>Invite someone</h2>
+        <p class="lead">They'll get an email with a link to set a password. Only people you invite can sign in.</p>
+        <div class="invite-grid">
+          <div class="field"><label for="i-email">Email</label><input id="i-email" type="email" inputmode="email" autocomplete="off" required></div>
+          <div class="field"><label for="i-name">Name (optional)</label><input id="i-name" type="text" autocomplete="off" maxlength="80"></div>
+          <button class="btn btn-primary" type="submit" id="btn-invite">Send invitation</button>
+        </div>
+        <p class="msg" id="invite-msg" role="alert" hidden style="margin-top:14px"></p>
+      </form>
+      <div class="list-card"><ul class="rows" id="people"></ul></div>
+      <p class="fine">Deactivating someone removes their access to the library right away. To delete an account completely, use Supabase → Authentication → Users.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <span>© <span id="year">2026</span> SINAGLIKHA. Members area.</span>
+  <a href="../">Back to website</a>
+</footer>
+
+<dialog id="modal" aria-labelledby="m-title">
+  <form id="modal-form" novalidate>
+    <h2 id="m-title"></h2>
+    <p id="m-text" hidden></p>
+    <div class="field" id="m-field" hidden>
+      <label id="m-label" for="m-input"></label>
+      <input id="m-input" type="text" maxlength="60" autocomplete="off">
+    </div>
+    <p class="msg bad" id="m-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="m-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="m-ok">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="members.js"></script>
+</body>
+</html>
