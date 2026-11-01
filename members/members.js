@@ -759,10 +759,10 @@
   var showInactive = false;
 
   function roleControl(p, label, me) {
-    if (!state.isAdmin) return '<span class="role-tag">' + (p.role === 'admin' ? 'Administrator' : 'Senior manager') + '</span>';
-    return '<select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
+    if (!state.isAdmin) return '<div class="pfield"><span class="plabel">Role</span><span class="role-tag">' + (p.role === 'admin' ? 'Administrator' : 'Senior manager') + '</span></div>';
+    return '<label class="pfield"><span class="plabel">Role</span><select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
       '<option value="senior_manager"' + (p.role === 'senior_manager' ? ' selected' : '') + '>Senior manager</option>' +
-      '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Administrator</option></select>';
+      '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Administrator</option></select></label>';
   }
 
   function personRow(p) {
@@ -774,8 +774,9 @@
         '<button class="btn btn-ghost btn-sm btn-warn" type="button" data-act="delete">Delete</button>';
     return '<li class="row person" data-id="' + esc(p.id) + '" data-email="' + esc(p.email || '') + '">' +
       '<div class="row-text"><span class="row-name">' + label + (me ? ' (you)' : '') + '</span>' +
-      '<span class="row-meta">' + esc(p.email || '') + (p.active ? '' : ' · Deactivated') + '</span></div>' +
-      roleControl(p, label, me) + actions + '</li>';
+      '<span class="row-meta">' + (p.full_name ? esc(p.email || '') : 'No name added') + '</span></div>' +
+      '<div class="pfield"><span class="plabel">Status</span><span class="status ' + (p.active ? 'on' : 'off') + '">' + (p.active ? 'Active' : 'Deactivated') + '</span></div>' +
+      roleControl(p, label, me) + '<div class="pactions">' + actions + '</div></li>';
   }
 
   function renderPeople() {
@@ -791,6 +792,7 @@
       showInactive = false;
     }
     $('#people').innerHTML = html;
+    $('#people-count').textContent = active.length + (active.length === 1 ? ' active account' : ' active accounts');
   }
 
   async function loadPeople() {

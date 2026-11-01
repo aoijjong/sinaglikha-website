@@ -164,6 +164,15 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 @media (hover:hover) and (pointer:fine){.btn-warn:hover{background:#B91C1C;color:#fff}}
 .person .row-text{flex:1 1 220px}
 .person select{width:auto;padding:10px 12px}
+.list-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:26px 4px 12px}
+.list-head h2{font-size:1.4rem}
+.list-head span{font-size:.88rem;color:var(--muted)}
+.pfield{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.plabel{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.status{font-size:.85rem;font-weight:600;border-radius:999px;padding:7px 13px;white-space:nowrap}
+.status.on{background:#E3F3E4;color:#1E6B2A}
+.status.off{background:#F1E6E2;color:#8A3B2B}
+.pactions{display:flex;gap:8px;align-items:center;margin-left:auto}
 .role-tag{font-size:.85rem;font-weight:600;color:var(--brown);background:var(--cream);border-radius:999px;padding:7px 13px;white-space:nowrap}
 
 /* dialog */
@@ -329,8 +338,8 @@ dialog[open]{animation:pop .5s var(--ease)}
         </div>
         <p class="msg" id="invite-msg" role="alert" hidden style="margin-top:14px"></p>
       </form>
+      <div class="list-head"><h2>People</h2><span id="people-count"></span></div>
       <div class="list-card"><ul class="rows" id="people"></ul></div>
-      <p class="fine">Deactivating someone removes their access to the files right away and moves them out of this list. Open "Show deactivated accounts" to reactivate or delete them.</p>
     </div>
   </section>
 </main>
