@@ -94,16 +94,13 @@ section{position:relative;padding-block:clamp(72px,10vw,128px)}
 .nav-toggle .i-close{display:none}
 .nav-toggle[aria-expanded="true"] .i-close{display:block}
 .nav-toggle[aria-expanded="true"] .i-menu{display:none}
-.nav-list .ls{display:none}
 .menu-cta{display:none}
 
-@media (min-width:1180px){
-  .nav-list .lf{display:none}.nav-list .ls{display:inline}
-}
-@media (min-width:1400px){
+@media (min-width:1200px){
   .nav-cta{display:inline-flex}
+  .nav-list a{font-size:.9rem;padding:9px 14px}
 }
-@media (max-width:1179.98px){
+@media (max-width:999.98px){
   .nav-toggle{display:inline-flex}
   .primary-nav{position:fixed;left:0;right:0;top:var(--header-h);background:var(--paper);border-bottom:1px solid var(--line);box-shadow:0 30px 40px -30px rgba(74,46,34,.4);padding:14px clamp(20px,5vw,40px) 26px;max-height:calc(100svh - var(--header-h));overflow:auto;transform:translateY(-12px);opacity:0;visibility:hidden;transition:opacity .22s,transform .22s,visibility .22s}
   .primary-nav.open{opacity:1;transform:none;visibility:visible}
@@ -486,15 +483,11 @@ dialog[open]{animation:pop .28s cubic-bezier(.2,.8,.2,1)}
     <nav class="primary-nav" id="primary-nav" aria-label="Primary">
       <ul class="nav-list">
         <li><a href="#home" data-s="home">Home</a></li>
-        <li><a href="#about" data-s="about"><span class="lf">About Us</span><span class="ls">About</span></a></li>
-        <li><a href="#mission-vision" data-s="mission-vision"><span class="lf">Our Mission &amp; Vision</span><span class="ls">Mission &amp; Vision</span></a></li>
-        <li><a href="#objectives" data-s="objectives">Objectives</a></li>
-        <li><a href="#values" data-s="values"><span class="lf">Core Values</span><span class="ls">Values</span></a></li>
-        <li><a href="#hr" data-s="hr"><span class="lf">Human Resources</span><span class="ls">HR</span></a></li>
-        <li><a href="#facets" data-s="facets"><span class="lf">Our HR Facets</span><span class="ls">HR Facets</span></a></li>
-        <li><a href="#location" data-s="location">Location</a></li>
-        <li><a href="#team" data-s="team"><span class="lf">Our Team</span><span class="ls">Team</span></a></li>
-        <li><a href="#contact" data-s="contact"><span class="lf">Contact Us</span><span class="ls">Contact</span></a></li>
+        <li><a href="#about" data-s="about">About Us</a></li>
+        <li><a href="#mission-vision" data-s="mission-vision">Mission &amp; Vision</a></li>
+        <li><a href="#hr" data-s="hr">Human Resources</a></li>
+        <li><a href="#team" data-s="team">Our Team</a></li>
+        <li><a href="#contact" data-s="contact">Contact Us</a></li>
       </ul>
       <a class="btn btn-primary menu-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
     </nav>
@@ -682,7 +675,7 @@ dialog[open]{animation:pop .28s cubic-bezier(.2,.8,.2,1)}
 </section>
 
 <!-- OBJECTIVES -->
-<section class="tint" id="objectives" data-nav="objectives" aria-labelledby="obj-title">
+<section class="tint" id="objectives" data-nav="mission-vision" aria-labelledby="obj-title">
   <div class="container">
     <div class="sec-head reveal">
       <span class="eyebrow">Company Objectives</span>
@@ -700,7 +693,7 @@ dialog[open]{animation:pop .28s cubic-bezier(.2,.8,.2,1)}
 </section>
 
 <!-- CORE VALUES -->
-<section id="values" data-nav="values" aria-labelledby="val-title">
+<section id="values" data-nav="mission-vision" aria-labelledby="val-title">
   <div class="container">
     <div class="sec-head center reveal">
       <span class="eyebrow">Core Values</span>
@@ -753,7 +746,7 @@ dialog[open]{animation:pop .28s cubic-bezier(.2,.8,.2,1)}
 </section>
 
 <!-- HR FACETS -->
-<section id="facets" data-nav="facets" aria-labelledby="facets-title">
+<section id="facets" data-nav="hr" aria-labelledby="facets-title">
   <div class="container">
     <div class="sec-head reveal">
       <span class="eyebrow">Our HR Facets</span>
@@ -766,7 +759,7 @@ dialog[open]{animation:pop .28s cubic-bezier(.2,.8,.2,1)}
 </section>
 
 <!-- LOCATION -->
-<section class="tint" id="location" data-nav="location" aria-labelledby="loc-title">
+<section class="tint" id="location" data-nav="contact" aria-labelledby="loc-title">
   <div class="container">
     <div class="loc-grid">
       <div class="reveal">
@@ -1022,7 +1015,7 @@ function setMenu(open) {
 toggle.addEventListener("click", () => setMenu(toggle.getAttribute("aria-expanded") !== "true"));
 nav.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && nav.classList.contains("open")) { setMenu(false); toggle.focus(); } });
-matchMedia("(min-width:1180px)").addEventListener("change", e => { if (e.matches) setMenu(false); });
+matchMedia("(min-width:1000px)").addEventListener("change", e => { if (e.matches) setMenu(false); });
 const onScroll = () => header.classList.toggle("scrolled", scrollY > 8);
 addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
