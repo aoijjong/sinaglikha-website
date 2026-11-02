@@ -181,8 +181,7 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 @media (hover:hover) and (pointer:fine){.back:hover{background:var(--cream)}}
 .pf-photo{display:flex;align-items:center;gap:22px;margin-bottom:24px}
 .pf-avatar{width:104px;height:104px;border-radius:50%;flex:none;overflow:hidden;display:grid;place-items:center;background:var(--soft-warm);color:var(--brown);font-family:var(--serif);font-size:2.3rem;border:3px solid #fff;box-shadow:var(--shadow)}
-.pf-photo-actions{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
-.pf-photo-actions .fine{margin:0}
+.pf-photo-actions{display:flex;flex-direction:column;align-items:stretch;gap:10px}
 .field input[readonly]{background:#F4F0E8;border-color:rgba(74,46,34,.14);color:var(--muted);cursor:default}
 .field .fine{margin:8px 0 0}
 #form-profile .actions{gap:10px}
@@ -426,8 +425,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <div class="pf-avatar" id="pf-avatar" aria-hidden="true"></div>
         <div class="pf-photo-actions">
           <button class="btn btn-ghost btn-sm" type="button" id="pf-upload">Upload photo</button>
-          <button class="link" type="button" id="pf-remove" hidden>Remove photo</button>
-          <p class="fine">JPG or PNG. It's cropped to a square.</p>
+          <button class="btn btn-ghost btn-sm" type="button" id="pf-remove" hidden>Remove photo</button>
         </div>
         <input type="file" id="pf-file" accept="image/*" hidden>
       </div>
