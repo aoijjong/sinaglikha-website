@@ -223,6 +223,17 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 #item-form .field input:focus,#item-form .field textarea:focus,#item-form .field select:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
 #item-form .actions{justify-content:flex-end;margin-top:14px}
 
+/* phones: compact sign-in intro, one-row toolbars, dialogs that scroll */
+@media (max-width:700px){
+  .auth{gap:16px}
+  .auth-intro{min-height:0;padding:18px 20px;flex-direction:row;align-items:center;gap:16px;border-radius:22px}
+  .auth-mark{width:54px;height:54px;margin:0;flex:none}
+  .auth-intro h1{font-size:1.45rem}
+  .auth-intro p{display:none}
+  .toolbar .tools{width:100%;flex-wrap:nowrap}
+  .toolbar .tools .search{flex:1 1 auto;width:auto;min-width:0}
+}
+dialog:not(.viewer){max-height:calc(100dvh - 24px);overflow-y:auto}
 /* sign-in choice: Senior Manager or Employee */
 .who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
 .who-switch>*{text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:background .4s,color .4s}
@@ -512,7 +523,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 
     <div id="panel-employees" role="tabpanel" aria-labelledby="tab-employees" hidden>
       <div class="ph">
-        <div class="ph-main"><h2>Employees</h2><p class="sub" id="em-sub">People who sign in to the Employee Portal with their ID and a PIN.</p></div>
+        <div class="ph-main"><p class="sub" id="em-sub" style="font-size:1rem">People who sign in to the Employee Portal with their ID and a PIN.</p></div>
         <div class="ph-actions">
           <div class="sbox"><i data-icon="search"></i><input id="em-search" type="search" placeholder="Search" aria-label="Search by name or ID" autocomplete="off"></div>
           <button class="ib" id="em-import" type="button" aria-label="Import a CSV file" data-tip="Import a CSV file"><i data-icon="fileUp"></i></button>
@@ -531,7 +542,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 
     <div id="panel-records" role="tabpanel" aria-labelledby="tab-records" hidden>
       <div class="ph">
-        <div class="ph-main"><h2>Restricted Records</h2><p class="sub">Every time one is opened, uploaded or deleted, it is written to the activity log.</p></div>
+        <div class="ph-main"><p class="sub" style="font-size:1rem">Every time one is opened, uploaded or deleted, it is written to the activity log.</p></div>
         <div class="ph-actions">
           <div class="sbox"><i data-icon="search"></i><input id="rc-search" type="search" placeholder="Search" aria-label="Search by title or employee" autocomplete="off"></div>
           <button class="ib solid" id="rc-add" type="button" aria-label="Upload a record" data-tip="Upload a record"><i data-icon="upload"></i></button>

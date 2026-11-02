@@ -89,7 +89,9 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .panel-h h2{font-size:1.2rem}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px}
 .sec{font-size:1.4rem;margin:26px 0 12px}
-.items .lrow{padding-inline:12px}
+.items .lrow{padding-inline:12px;flex-wrap:nowrap}
+.items .lmain{flex:1 1 auto}
+.items .lname{white-space:normal;overflow-wrap:anywhere}
 .items .none{padding:14px 20px 18px;color:var(--muted);font-size:.95rem}
 .lgo{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-right:6px}
 .ldesc{font-size:.88rem;color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -168,7 +170,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 
   <section id="v-home" hidden>
     <div class="hello" style="margin-bottom:18px"><h1 id="h-hello"></h1><p id="h-sub"></p></div>
-    <div class="ph" style="margin-bottom:20px"><div class="sbox" style="width:100%"><i data-icon="search"></i><input id="q" type="search" placeholder="Search announcements and department pages" aria-label="Search the portal" autocomplete="off"></div></div>
+    <div class="ph" style="margin-bottom:20px"><div class="sbox" style="width:100%"><i data-icon="search"></i><input id="q" type="search" placeholder="Search the portal" aria-label="Search the portal" autocomplete="off"></div></div>
     <p class="msg bad" id="h-err" role="alert" hidden></p>
     <div id="home-main">
       <div class="grid2">
