@@ -9,8 +9,8 @@
 
   var $ = function (s) { return document.querySelector(s); };
   var I = window.SngIcon, IB = window.SngIconButton;
-  var VIEWS = ['loading', 'signin', 'activate', 'home', 'dept', 'profile'];
-  var SIGNED_IN = ['home', 'dept', 'profile'];
+  var VIEWS = ['loading', 'signin', 'activate', 'home', 'dept', 'learn', 'forum', 'profile'];
+  var SIGNED_IN = ['home', 'dept', 'learn', 'forum', 'profile'];
   var DEPTS = [
     ['staffing', 'Staffing and Recruitment', 'users'], ['training', 'Training and Development', 'book'], ['engagement', 'Employee Engagement', 'chat'],
     ['rewards', 'Total Rewards', 'award'], ['legal', 'Legal Compliance', 'scale']
@@ -200,6 +200,7 @@
     renderEvaluations();
     loadRecords();
     loadAttendance();
+    loadMore();
   }
 
   /* ---------- evaluations: links to the forms that are open today ---------- */
@@ -272,6 +273,206 @@
   }
   $('#att-in').addEventListener('click', function () { punch('in'); });
   $('#att-out').addEventListener('click', function () { punch('out'); });
+
+  /* ---------- learning ---------- */
+  var learn = { courses: [], course: null, modules: [] };
+
+  function bar(done, total) {
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    return '<span class="bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span>';
+  }
+  function progressText(done, total) {
+    return total ? done + ' of ' + total + (total === 1 ? ' module' : ' modules') + ' complete' : 'No modules yet';
+  }
+
+  async function loadMore() {
+    var l = await call('GET', '/api/employee-learning');
+    learn.courses = l.ok && Array.isArray(l.data.courses) ? l.data.courses : [];
+    var f = await call('GET', '/api/employee-forum');
+    forum.cats = f.ok && Array.isArray(f.data.categories) ? f.data.categories : [];
+    var html = '';
+    if (learn.courses.length) {
+      var done = learn.courses.reduce(function (n, c) { return n + c.done; }, 0), total = learn.courses.reduce(function (n, c) { return n + c.total; }, 0);
+      html += '<button class="dcard" type="button" data-go="learn"><span class="di">' + I('book') + '</span><span class="dt"><b>Learning</b><span class="dm">' +
+        esc(learn.courses.length + (learn.courses.length === 1 ? ' course' : ' courses') + ' · ' + done + ' of ' + total + ' complete') + '</span></span>' + I('chevron', 'go') + '</button>';
+    }
+    if (forum.cats.length) {
+      html += '<button class="dcard" type="button" data-go="forum"><span class="di">' + I('chat') + '</span><span class="dt"><b>Employee Forum</b><span class="dm">Ask, share and chat with your colleagues</span></span>' + I('chevron', 'go') + '</button>';
+    }
+    $('#more-cards').innerHTML = html;
+    $('#more-sec').hidden = !html;
+  }
+
+  function renderCourses() {
+    learn.course = null;
+    $('#learn-title').textContent = 'Learning';
+    $('#learn-body').innerHTML = learn.courses.length ? learn.courses.map(function (c) {
+      return '<button class="dcard" type="button" data-course="' + esc(c.id) + '" style="width:100%;margin-bottom:12px"><span class="di">' + I('book') + '</span><span class="dt"><b>' + esc(c.title) +
+        '</b>' + (c.description ? '<span class="dm">' + esc(c.description) + '</span>' : '') + bar(c.done, c.total) + '<span class="dm">' + esc(progressText(c.done, c.total)) + '</span></span>' + I('chevron', 'go') + '</button>';
+    }).join('') : '<div class="es"><span class="eic">' + I('book') + '</span><b>No courses yet</b><p>Courses from Training and Development will appear here.</p></div>';
+  }
+
+  async function openLearning() {
+    show('learn');
+    $('#learn-body').innerHTML = '<p class="fine">Loading…</p>';
+    var l = await call('GET', '/api/employee-learning');
+    if (l.status === 401) { show('signin'); return; }
+    learn.courses = l.ok && Array.isArray(l.data.courses) ? l.data.courses : [];
+    renderCourses();
+  }
+
+  function renderCourse() {
+    var c = learn.course, done = learn.modules.filter(function (m) { return m.done; }).length;
+    $('#learn-title').textContent = c.title;
+    $('#learn-body').innerHTML = (c.description ? '<p class="fine" style="margin-bottom:12px">' + esc(c.description) + '</p>' : '') +
+      '<div class="panel" style="padding:16px 20px;margin-bottom:14px">' + bar(done, learn.modules.length) + '<p class="fine" style="margin-top:8px">' + esc(progressText(done, learn.modules.length)) + '. Only you can see your progress.</p></div>' +
+      '<div class="panel"><ul class="items">' + (learn.modules.length ? learn.modules.map(function (m) {
+        return '<li class="lrow"><button class="ib ' + (m.done ? 'good' : '') + '" type="button" data-toggle="' + esc(m.id) + '" aria-label="' + (m.done ? 'Mark as not done' : 'Mark as done') + '" data-tip="' + (m.done ? 'Mark as not done' : 'Mark as done') + '"' +
+          (m.done ? ' style="color:#1E6B2A"' : '') + '>' + I(m.done ? 'checkCircle' : 'circle') + '</button>' +
+          '<button class="lmain" type="button" data-module="' + esc(m.id) + '" aria-label="Open ' + esc(m.title) + '"><span class="lico">' + (m.kind === 'link' ? I('link') : I('file')) + '</span><span class="ltext"><span class="lname">' + esc(m.title) + '</span>' +
+          (m.description ? '<span class="ldesc">' + esc(m.description) + '</span>' : '') + '</span></button>' + I('external', 'lgo') + '</li>';
+      }).join('') : '<li class="none">No modules in this course yet.</li>') + '</ul></div>';
+  }
+
+  async function openCourse(id) {
+    $('#learn-body').innerHTML = '<p class="fine">Loading…</p>';
+    var r = await call('GET', '/api/employee-learning?course=' + encodeURIComponent(id));
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { toast(r.data.error || "Couldn't open that course."); renderCourses(); return; }
+    learn.course = r.data.course;
+    learn.modules = r.data.modules || [];
+    renderCourse();
+  }
+
+  async function toggleModule(id) {
+    var m = learn.modules.filter(function (x) { return x.id === id; })[0];
+    if (!m) return;
+    var r = await call('POST', '/api/employee-learning', { action: m.done ? 'undo' : 'done', module_id: id });
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { toast(r.data.error || "Couldn't save that."); return; }
+    m.done = !m.done;
+    var c = learn.courses.filter(function (x) { return x.id === learn.course.id; })[0];
+    if (c) c.done = learn.modules.filter(function (x) { return x.done; }).length;
+    renderCourse();
+  }
+
+  /* ---------- the employee forum ---------- */
+  var forum = { cats: [], cat: null, thread: null };
+
+  function text(s) { return esc(s).replace(/\n/g, '<br>'); }
+  function ago(iso) {
+    var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.round(s / 60) + ' min ago';
+    if (s < 86400) return Math.round(s / 3600) + ' h ago';
+    return fmtDate(iso);
+  }
+
+  function renderCats() {
+    forum.cat = null; forum.thread = null;
+    $('#forum-title').textContent = 'Employee Forum';
+    $('#forum-body').innerHTML = '<p class="fine" style="margin-bottom:12px">Be kind and keep it work-friendly. Posts show your name. There are no private messages, and moderators can hide or remove posts.</p>' +
+      (forum.cats.length ? forum.cats.map(function (c) {
+        return '<button class="dcard" type="button" data-cat="' + esc(c.id) + '" style="width:100%;margin-bottom:12px"><span class="di">' + I('chat') + '</span><span class="dt"><b>' + esc(c.name) + '</b>' +
+          (c.description ? '<span class="dm">' + esc(c.description) + '</span>' : '') + '<span class="dm">' + c.threads + (c.threads === 1 ? ' thread' : ' threads') + '</span></span>' + I('chevron', 'go') + '</button>';
+      }).join('') : '<div class="es"><span class="eic">' + I('chat') + '</span><b>The forum is quiet</b><p>No categories are open yet.</p></div>');
+  }
+
+  async function openForum() {
+    show('forum');
+    $('#forum-body').innerHTML = '<p class="fine">Loading…</p>';
+    var f = await call('GET', '/api/employee-forum');
+    if (f.status === 401) { show('signin'); return; }
+    forum.cats = f.ok && Array.isArray(f.data.categories) ? f.data.categories : [];
+    renderCats();
+  }
+
+  async function openCat(id) {
+    $('#forum-body').innerHTML = '<p class="fine">Loading…</p>';
+    var r = await call('GET', '/api/employee-forum?category=' + encodeURIComponent(id));
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { toast(r.data.error || "Couldn't open that category."); renderCats(); return; }
+    forum.cat = r.data.category; forum.thread = null;
+    $('#forum-title').textContent = r.data.category.name;
+    $('#forum-body').innerHTML = '<div class="ph" style="margin-bottom:12px"><div class="ph-main"><p class="fine">' + esc(r.data.category.description || '') + '</p></div><div class="ph-actions">' +
+      IB('plus', 'Start a new thread', { 'data-newthread': '1' }, 'solid') + '</div></div>' +
+      '<form class="card" id="f-thread" hidden novalidate style="padding:20px"><div class="field"><label for="t-title">Title</label><input id="t-title" type="text" maxlength="120" autocomplete="off"></div>' +
+      '<div class="field"><label for="t-body">What do you want to say?</label><textarea id="t-body" maxlength="2000" rows="5"></textarea></div>' +
+      '<p class="msg bad" id="t-msg" role="alert" hidden></p><div class="actions" style="flex-direction:row;justify-content:flex-end"><button class="btn btn-ghost btn-sm" type="button" id="t-cancel">Cancel</button><button class="btn btn-primary btn-sm" type="submit" id="t-ok">Post</button></div></form>' +
+      '<div class="panel"><ul class="items">' + (r.data.threads.length ? r.data.threads.map(function (t) {
+        return '<li class="lrow"><button class="lmain" type="button" data-thread="' + esc(t.id) + '"><span class="lico">' + I(t.locked ? 'lock' : 'chat') + '</span><span class="ltext"><span class="lname">' + esc(t.title) + '</span>' +
+          '<span class="lmeta">' + esc(t.author + ' · ' + t.replies + (t.replies === 1 ? ' reply' : ' replies') + ' · ' + ago(t.last_post_at)) + '</span><span class="ldesc">' + esc(t.preview) + '</span></span></button>' + I('chevron', 'lgo') + '</li>';
+      }).join('') : '<li class="none">No threads yet. Be the first to start one.</li>') + '</ul></div>';
+  }
+
+  function postHtml(p, kind) {
+    return '<div class="post"><div class="post-h"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span>' +
+      (p.mine ? '' : IB('flag', 'Report to a moderator', { 'data-report': kind, 'data-id': p.id })) + '</div><p>' + text(p.body) + '</p></div>';
+  }
+
+  async function openThread(id) {
+    $('#forum-body').innerHTML = '<p class="fine">Loading…</p>';
+    var r = await call('GET', '/api/employee-forum?thread=' + encodeURIComponent(id));
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { toast(r.data.error || "Couldn't open that thread."); if (forum.cat) openCat(forum.cat.id); else renderCats(); return; }
+    forum.cat = r.data.category; forum.thread = r.data.thread;
+    var t = r.data.thread;
+    $('#forum-title').textContent = t.title;
+    $('#forum-body').innerHTML = '<p class="fine" style="margin-bottom:10px">In ' + esc(r.data.category.name) + (t.locked ? ' · Locked' : '') + '</p>' +
+      postHtml({ id: t.id, author: t.author, mine: t.mine, created_at: t.created_at, body: t.body }, 'thread') +
+      r.data.posts.map(function (p) { return postHtml(p, 'post'); }).join('') +
+      (t.locked ? '<p class="msg" style="margin-top:12px">This thread is locked, so it cannot take new replies.</p>' :
+        '<form class="card" id="f-reply" novalidate style="padding:20px;margin-top:12px"><div class="field"><label for="r-body">Your reply</label><textarea id="r-body" maxlength="2000" rows="4"></textarea></div>' +
+        '<p class="msg bad" id="r-msg" role="alert" hidden></p><div class="actions" style="flex-direction:row;justify-content:flex-end"><button class="btn btn-primary btn-sm" type="submit" id="r-ok">Reply</button></div></form>');
+  }
+
+  async function forumPost(payload, msgSel, btnSel, done) {
+    note(msgSel, '');
+    var btn = $(btnSel);
+    btn.disabled = true;
+    var r = await call('POST', '/api/employee-forum', payload);
+    btn.disabled = false;
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { note(msgSel, r.data.error || "Couldn't post that."); return; }
+    done(r.data);
+  }
+
+  async function sendReport(kind, id) {
+    if (!window.confirm('Report this to a moderator? They will take a look.')) return;
+    var payload = { action: 'report' };
+    payload[kind === 'thread' ? 'thread_id' : 'post_id'] = id;
+    var r = await call('POST', '/api/employee-forum', payload);
+    toast(r.ok ? 'Thank you. A moderator will take a look.' : (r.data.error || "Couldn't send that report."));
+  }
+
+  document.addEventListener('submit', function (e) {
+    if (e.target.id === 'f-thread') {
+      e.preventDefault();
+      forumPost({ action: 'thread', category_id: forum.cat.id, title: $('#t-title').value, body: $('#t-body').value }, '#t-msg', '#t-ok', function (d) { toast('Posted.'); openThread(d.id); });
+    } else if (e.target.id === 'f-reply') {
+      e.preventDefault();
+      forumPost({ action: 'reply', thread_id: forum.thread.id, body: $('#r-body').value }, '#r-msg', '#r-ok', function () { toast('Reply posted.'); openThread(forum.thread.id); });
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-go]'))) { if (t.dataset.go === 'learn') openLearning(); else if (t.dataset.go === 'forum') openForum(); }
+    else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course);
+    else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
+    else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
+    else if ((t = e.target.closest('[data-cat]'))) openCat(t.dataset.cat);
+    else if ((t = e.target.closest('[data-thread]'))) openThread(t.dataset.thread);
+    else if (e.target.closest('[data-newthread]')) { $('#f-thread').hidden = false; $('#t-title').focus(); }
+    else if (e.target.closest('#t-cancel')) $('#f-thread').hidden = true;
+    else if ((t = e.target.closest('[data-report]'))) sendReport(t.dataset.report, t.dataset.id);
+  });
+  $('#learn-back').addEventListener('click', function () { if (learn.course) renderCourses(); else { show('home'); loadMore(); } });
+  $('#forum-back').addEventListener('click', function () {
+    if (forum.thread && forum.cat) openCat(forum.cat.id);
+    else if (forum.cat) renderCats();
+    else { show('home'); loadMore(); }
+  });
 
   /* the employee's own compensation records, if Total Rewards has uploaded any */
   async function loadRecords() {

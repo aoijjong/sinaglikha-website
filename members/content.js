@@ -26,7 +26,7 @@
   var KIND_ICON = { document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms for employees'] };
+  var SPECIAL = { lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms for employees'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 

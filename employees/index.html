@@ -89,6 +89,15 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .panel-h h2{font-size:1.2rem}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px}
 .sec{font-size:1.4rem;margin:26px 0 12px}
+.bar{display:block;height:8px;border-radius:999px;background:var(--cream);overflow:hidden;margin:6px 0 2px}
+.bar i{display:block;height:100%;background:var(--grad-btn);border-radius:999px}
+.post{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow)}
+.post-h{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem}
+.post-h b{color:var(--brown);font-size:.95rem}
+.post-h .ib{margin-left:auto;width:34px;height:34px}
+.post p{margin-top:6px;overflow-wrap:anywhere}
+.field textarea{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;resize:vertical}
+.field textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
 .att{padding:6px 22px 18px}
 .att-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .att-now b{font-family:var(--serif);font-weight:400;font-size:2.4rem;line-height:1;color:var(--brown)}
@@ -196,6 +205,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
         <ul class="items" id="att-recent"></ul>
       </div>
       <div class="panel" id="eval-panel" style="margin-bottom:16px" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>My evaluations</h2></div><ul class="items" id="evals"></ul></div>
+      <div id="more-sec" hidden><div class="dgrid" id="more-cards" style="margin-bottom:16px"></div></div>
       <div class="grid2">
         <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="chat"></i></span><h2>Announcements</h2></div><ul class="items" id="ann"></ul></div>
         <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="calendar"></i></span><h2>Latest daily activity</h2></div><ul class="items" id="today"></ul></div>
@@ -213,6 +223,22 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
       <div><h1 id="dept-name" style="font-size:clamp(1.7rem,4vw,2.4rem)"></h1><p class="fine">Everything published for employees in this department.</p></div>
     </div>
     <div id="dept-body"></div>
+  </section>
+
+  <section id="v-learn" hidden>
+    <div class="back-row">
+      <button class="ib line" id="learn-back" type="button" aria-label="Go back" data-tip="Go back"><i data-icon="back"></i></button>
+      <h1 id="learn-title" style="font-size:clamp(1.7rem,4vw,2.4rem)">Learning</h1>
+    </div>
+    <div id="learn-body"></div>
+  </section>
+
+  <section id="v-forum" hidden>
+    <div class="back-row">
+      <button class="ib line" id="forum-back" type="button" aria-label="Go back" data-tip="Go back"><i data-icon="back"></i></button>
+      <h1 id="forum-title" style="font-size:clamp(1.7rem,4vw,2.4rem)">Employee Forum</h1>
+    </div>
+    <div id="forum-body"></div>
   </section>
 
   <section id="v-profile" class="narrow" hidden>

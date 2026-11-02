@@ -228,3 +228,7 @@ want a separate sender.
 | An employee can't time in or out, or the Attendance panel is missing | The panel only appears once `supabase/phase2.sql` has been run. Time in and time out follow Philippine time (UTC+8), allow one of each per day, and a second try is refused. Staffing and Recruitment can correct a record from the Attendance Tracker. |
 | The Attendance Tracker says "Staffing and Recruitment only" | By design: only Staffing and Recruitment Senior Managers and the Administrator can review attendance. |
 | An evaluation form doesn't show in the employee portal | It must be switched on (not Hidden) and today must be inside its open and close dates. Dates use Philippine time. |
+| Learning or the Employee Forum says "Not set up yet" | `supabase/phase3.sql` hasn't been run. Paste it into the Supabase SQL editor (after the earlier files) and run it. |
+| Employees don't see a course | A course stays hidden until a manager publishes it (the eye icon in the Learning Management System screen). It must also have at least one module to show progress. |
+| The Employee Forum card says "Employee Engagement only" | By design: Employee Engagement Senior Managers and the Administrator moderate the forum. Check the person's department in the Accounts tab. |
+| An employee says they can't post in the forum | The thread may be locked, the category closed, or they posted more than 5 times in 10 minutes. Hidden threads and posts never show to employees. |
