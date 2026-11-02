@@ -965,8 +965,7 @@
     $('#pf-role').textContent = p.role === 'admin' ? 'Administrator' : 'Senior manager';
     $('#pf-since').textContent = fmtDate(p.created_at) || 'Not available';
     note($('#profile-msg'), '');
-    note($('#newpass-msg'), '');
-    $('#form-newpass').reset();
+    resetPasswordForm();
     paintPhoto();
   }
   function openProfile() {
@@ -1040,28 +1039,78 @@
     toast('Profile saved.', 'ok');
   });
 
+  /* ---------- password form: an error under each field, and show/hide on every field ---------- */
+  var PW_FIELDS = ['np-current', 'np-new', 'np-confirm'];
+
+  function fieldError(id, msg) {
+    var input = $('#' + id), err = $('#' + id + '-err');
+    err.textContent = msg || '';
+    err.hidden = !msg;
+    input.closest('.field').classList.toggle('invalid', !!msg);
+    input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  }
+  function setPwVisible(btn, show) {
+    var input = $('#' + btn.dataset.for);
+    input.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-pressed', String(show));
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    btn.title = show ? 'Hide password' : 'Show password';
+  }
+  function resetPasswordForm() {
+    $('#form-newpass').reset();
+    PW_FIELDS.forEach(function (id) { fieldError(id, ''); });
+    $$('.pw-toggle').forEach(function (b) { setPwVisible(b, false); });
+    note($('#newpass-msg'), '');
+  }
+
+  $$('.pw-toggle').forEach(function (btn) {
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); });   // keep the keyboard and cursor in the field
+    btn.addEventListener('click', function () {
+      setPwVisible(btn, btn.getAttribute('aria-pressed') !== 'true');
+    });
+  });
+  PW_FIELDS.forEach(function (id) {
+    $('#' + id).addEventListener('input', function () { fieldError(id, ''); note($('#newpass-msg'), ''); });
+  });
+
   $('#form-newpass').addEventListener('submit', async function (e) {
     e.preventDefault();
     var cur = $('#np-current').value, a = $('#np-new').value, b = $('#np-confirm').value;
     var msg = $('#newpass-msg'), btn = $('#np-save');
-    if (!cur) { note(msg, 'Enter your current password.', 'bad'); $('#np-current').focus(); return; }
-    if (a.length < 10) { note(msg, 'Use at least 10 characters.', 'bad'); return; }
-    if (a !== b) { note(msg, "The two passwords don't match.", 'bad'); return; }
-    if (a === cur) { note(msg, 'Choose a password that is different from your current one.', 'bad'); return; }
-    btn.disabled = true;
     note(msg, '');
+
+    /* check every field at once, so each one says what is wrong with it */
+    var errs = {};
+    if (!cur) errs['np-current'] = 'Enter your current password.';
+    if (!a) errs['np-new'] = 'Enter a new password.';
+    else if (a.length < 10) errs['np-new'] = 'Use at least 10 characters.';
+    else if (cur && a === cur) errs['np-new'] = 'Choose a password that is different from your current one.';
+    if (!b) errs['np-confirm'] = 'Confirm your new password.';
+    else if (a && b !== a) errs['np-confirm'] = "The two passwords don't match.";
+    var first = null;
+    PW_FIELDS.forEach(function (id) {
+      fieldError(id, errs[id]);
+      if (errs[id] && !first) first = id;
+    });
+    if (first) { $('#' + first).focus(); return; }
+
+    btn.disabled = true;
     /* Prove it's really them first: sign in again with the current password. */
     var check = await sb.auth.signInWithPassword({ email: state.profile.email, password: cur });
     if (check.error || !check.data || !check.data.session) {
       btn.disabled = false;
-      note(msg, "Your current password isn't right.", 'bad');
+      fieldError('np-current', "Your current password isn't right.");
       $('#np-current').focus();
       return;
     }
     var res = await sb.auth.updateUser({ password: a });
     btn.disabled = false;
-    if (res.error) { note(msg, res.error.message || "Couldn't update the password. Try again.", 'bad'); return; }
-    $('#form-newpass').reset();
+    if (res.error) {
+      fieldError('np-new', res.error.message || "Couldn't update the password. Try again.");
+      $('#np-new').focus();
+      return;
+    }
+    resetPasswordForm();
     note(msg, 'Password updated.', 'ok');
     toast('Password updated.', 'ok');
   });

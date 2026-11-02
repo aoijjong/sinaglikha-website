@@ -186,6 +186,15 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .field input[readonly]{background:#F4F0E8;border-color:rgba(74,46,34,.14);color:var(--muted);cursor:default}
 .field .fine{margin:8px 0 0}
 #profile-msg,#newpass-msg{margin:14px 0 0}
+.pw{position:relative}
+.pw input{padding-right:50px}
+.pw-toggle{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:50%;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0;transition:background .4s,color .4s}
+.pw-toggle .off,.pw-toggle[aria-pressed="true"] .on{display:none}
+.pw-toggle[aria-pressed="true"] .off{display:block}
+.pw-toggle[aria-pressed="true"]{color:#B3261E}
+@media (hover:hover) and (pointer:fine){.pw-toggle:hover{background:var(--cream);color:var(--brown)}}
+.field-err{margin:7px 0 0;font-size:.86rem;font-weight:600;color:#B91C1C}
+.field.invalid input{border-color:#B91C1C;box-shadow:0 0 0 3px rgba(185,28,28,.12)}
 #form-profile .actions{flex-wrap:nowrap;justify-content:flex-start;gap:10px}
 #form-profile .actions .btn{padding:10px 14px;min-width:128px}
 .pf-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:4px 0 22px}
@@ -452,9 +461,30 @@ dialog[open]{animation:pop .5s var(--ease)}
     <form class="card" id="form-newpass" novalidate>
       <h2>Password</h2>
       <p class="lead">Enter your current password, then choose a new one with at least 10 characters.</p>
-      <div class="field"><label for="np-current">Current password</label><input id="np-current" type="password" autocomplete="current-password"></div>
-      <div class="field"><label for="np-new">New password</label><input id="np-new" type="password" autocomplete="new-password"></div>
-      <div class="field"><label for="np-confirm">Confirm new password</label><input id="np-confirm" type="password" autocomplete="new-password"></div>
+      <div class="field">
+        <label for="np-current">Current password</label>
+        <div class="pw">
+          <input id="np-current" type="password" autocomplete="current-password" aria-describedby="np-current-err">
+          <button class="pw-toggle" type="button" data-for="np-current" aria-pressed="false" aria-label="Show password" title="Show password"><svg class="icon on" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon off" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg></button>
+        </div>
+        <p class="field-err" id="np-current-err" role="alert" hidden></p>
+      </div>
+      <div class="field">
+        <label for="np-new">New password</label>
+        <div class="pw">
+          <input id="np-new" type="password" autocomplete="new-password" aria-describedby="np-new-err">
+          <button class="pw-toggle" type="button" data-for="np-new" aria-pressed="false" aria-label="Show password" title="Show password"><svg class="icon on" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon off" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg></button>
+        </div>
+        <p class="field-err" id="np-new-err" role="alert" hidden></p>
+      </div>
+      <div class="field">
+        <label for="np-confirm">Confirm new password</label>
+        <div class="pw">
+          <input id="np-confirm" type="password" autocomplete="new-password" aria-describedby="np-confirm-err">
+          <button class="pw-toggle" type="button" data-for="np-confirm" aria-pressed="false" aria-label="Show password" title="Show password"><svg class="icon on" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon off" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg></button>
+        </div>
+        <p class="field-err" id="np-confirm-err" role="alert" hidden></p>
+      </div>
       <button class="btn btn-ghost btn-sm" type="submit" id="np-save">Update password</button>
       <p class="msg" id="newpass-msg" role="alert" hidden></p>
     </form>
