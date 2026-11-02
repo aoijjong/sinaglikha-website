@@ -162,6 +162,10 @@ want a separate sender.
   list shows "No name added". This needs the latest `supabase/schema.sql` to have been run once
   (it adds the photo column and the `set_my_profile` function). If you see "Saving isn't set up
   yet", run it again in the Supabase SQL editor.
+- **Preview a PDF:** tap a PDF in the file list and it opens in a full-screen viewer on the same
+  page: scroll through the pages, zoom with **+** and **-** (or the keyboard), and download from the
+  top bar. Other file types still open in a new tab. The viewer uses the open-source pdf.js library,
+  loaded from a CDN the first time a PDF is opened, so it needs an internet connection.
 - **Roles:** everyone you invite is a **Senior manager** with full file access and can invite and
   manage other Senior managers. Only the hidden Administrator can change a role (Accounts tab, role menu).
 - **Remove access:** Accounts tab, **Deactivate** (instant). The account moves out of the main list

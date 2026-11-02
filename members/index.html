@@ -217,6 +217,25 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .no-name{color:var(--muted);font-weight:500}
 .role-tag{font-size:.85rem;font-weight:600;color:var(--brown);background:var(--cream);border-radius:999px;padding:7px 13px;white-space:nowrap}
 
+/* PDF viewer */
+body:has(.viewer[open]){overflow:hidden}
+.viewer{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#33261F;color:var(--ink);overflow:hidden}
+.viewer[open]{display:flex;flex-direction:column;animation:none}
+.viewer::backdrop{background:#33261F}
+.v-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);flex:none}
+.v-title{flex:1 1 180px;min-width:0;font-weight:700;color:var(--brown);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v-zoomgrp,.v-actions{display:flex;align-items:center;gap:4px}
+.v-count{font-size:.84rem;color:var(--muted);min-width:5.6em;margin-right:6px;text-align:right}
+.v-zoom{min-width:60px;height:34px;padding:0 10px;border:1.5px solid rgba(74,46,34,.28);border-radius:999px;background:#fff;font-weight:700;font-size:.82rem;color:var(--brown);cursor:pointer}
+.icon-btn[disabled]{opacity:.35;cursor:not-allowed}
+.v-body{position:relative;flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:#33261F}
+.v-body:focus-visible{outline-offset:-3px}
+.v-pages{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:18px}
+.v-sheet{flex:none;margin-inline:auto;position:relative;background:#fff;box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
+.v-sheet canvas{display:block;width:100%;height:100%}
+.v-state{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:14px;padding:24px;text-align:center;font-weight:600;color:#FFF6E3;pointer-events:none}
+.v-state .spinner{border-color:rgba(255,246,227,.25);border-top-color:#FFCB1B}
+
 /* dialog */
 dialog{border:0;padding:0;border-radius:26px;width:min(460px,100% - 32px);background:var(--paper);color:var(--ink);box-shadow:0 40px 80px -20px rgba(43,33,28,.5)}
 dialog::backdrop{background:rgba(43,33,28,.5)}
@@ -250,6 +269,12 @@ dialog[open]{animation:pop .5s var(--ease)}
   .brand img{height:34px}
 }
 @media (max-width:560px){
+  .v-bar{padding:8px 10px}
+  .v-title{order:1}
+  .v-actions{order:2}
+  .v-zoomgrp{order:3;width:100%;justify-content:flex-end}
+  .v-count{margin-right:auto;text-align:left}
+  .v-pages{padding:12px 10px}
   .top-in{gap:10px}
   .top-right{flex-wrap:nowrap;gap:8px}
   .avatar{width:38px;height:38px}
@@ -494,6 +519,26 @@ dialog[open]{animation:pop .5s var(--ease)}
 <footer class="wrap foot">
   <span>© <span id="year">2026</span> SINAGLIKHA. HR 201 Files.</span>
 </footer>
+
+<dialog id="viewer" class="viewer" aria-labelledby="v-title">
+  <div class="v-bar">
+    <div class="v-title" id="v-title"></div>
+    <div class="v-zoomgrp">
+      <span class="v-count" id="v-count" aria-live="polite"></span>
+      <button class="icon-btn" type="button" id="v-zoom-out" aria-label="Zoom out" title="Zoom out"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+      <button class="v-zoom" type="button" id="v-zoom-reset" aria-label="Fit to width" title="Fit to width">100%</button>
+      <button class="icon-btn" type="button" id="v-zoom-in" aria-label="Zoom in" title="Zoom in"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+    <div class="v-actions">
+      <button class="icon-btn" type="button" id="v-download" aria-label="Download" title="Download" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+      <button class="icon-btn" type="button" id="v-close" aria-label="Close preview" title="Close" autofocus><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+  </div>
+  <div class="v-body" id="v-body" tabindex="0">
+    <div class="v-state" id="v-state" role="status"></div>
+    <div class="v-pages" id="v-pages"></div>
+  </div>
+</dialog>
 
 <dialog id="modal" aria-labelledby="m-title">
   <form id="modal-form" novalidate>

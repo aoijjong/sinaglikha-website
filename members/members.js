@@ -262,6 +262,7 @@
   }
 
   function resetToSignIn() {
+    if ($('#viewer').open) $('#viewer').close();
     index = null;
     indexPromise = null;
     state.session = null;
@@ -440,7 +441,7 @@
     }
     var meta = [fmtSize(e.size), fmtDate(e.updated)].filter(Boolean).join(' · ');
     return '<li class="row" data-name="' + n + '" data-kind="file">' +
-      '<button class="row-main" type="button" data-act="preview" title="Open in a new tab"><span class="ico">' + esc(extOf(e.name)) + '</span>' +
+      '<button class="row-main" type="button" data-act="preview" title="' + (isPdf(e.name) ? 'Preview' : 'Open in a new tab') + '"><span class="ico">' + esc(extOf(e.name)) + '</span>' +
       '<span class="row-text"><span class="row-name">' + n + '</span><span class="row-meta">' + esc(meta) + '</span></span></button>' +
       '<button class="icon-btn" type="button" data-act="download" aria-label="Download ' + n + '">' + ICON_DOWN + '</button>' + del + '</li>';
   }
@@ -660,7 +661,224 @@
     return res.data.signedUrl;
   }
 
+  function isPdf(name) { return /\.pdf$/i.test(name); }
+
+  /* ---------- PDF viewer ----------
+     PDFs open in a full-screen viewer on this page. The file is fetched with the person's own
+     sign-in (so the same storage rules apply), then drawn page by page with pdf.js. The library
+     is only downloaded the first time a PDF is opened, and is pinned to an exact file (SRI). */
+  var PDFJS_BASE = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/';
+  var PDFJS_SRI = 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e';
+  var ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
+  var pdfjsReady = null;
+  var V = { token: 0, name: '', blob: null, doc: null, zoom: 2, pages: [], io: null, ticking: false };
+
+  function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfjsReady) {
+      pdfjsReady = new Promise(function (resolve, reject) {
+        var sc = document.createElement('script');
+        sc.src = PDFJS_BASE + 'pdf.min.js';
+        sc.integrity = PDFJS_SRI;
+        sc.crossOrigin = 'anonymous';
+        sc.onload = function () {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + 'pdf.worker.min.js';
+          resolve(window.pdfjsLib);
+        };
+        sc.onerror = function () { pdfjsReady = null; reject(new Error('The PDF viewer could not load')); };
+        document.head.appendChild(sc);
+      });
+    }
+    return pdfjsReady;
+  }
+
+  function vMessage(text, loading) {
+    var box = $('#v-state');
+    box.innerHTML = (loading ? '<div class="spinner" aria-hidden="true"></div>' : '') + (text ? '<p>' + esc(text) + '</p>' : '');
+    box.hidden = !text;
+  }
+
+  function vReset() {
+    V.token++;
+    if (V.io) { V.io.disconnect(); V.io = null; }
+    V.pages.forEach(function (p) { if (p.task) { try { p.task.cancel(); } catch (e) { /* already done */ } } });
+    if (V.doc) { try { V.doc.destroy(); } catch (e) { /* already gone */ } }
+    V.doc = null;
+    V.blob = null;
+    V.pages = [];
+    $('#v-pages').innerHTML = '';
+    $('#v-count').textContent = '';
+    $('#v-download').disabled = true;
+  }
+
+  function vZoomLabel() {
+    $('#v-zoom-reset').textContent = Math.round(ZOOMS[V.zoom] * 100) + '%';
+    $('#v-zoom-out').disabled = V.zoom <= 0;
+    $('#v-zoom-in').disabled = V.zoom >= ZOOMS.length - 1;
+  }
+
+  function vUnrender(p) {
+    if (p.task) { try { p.task.cancel(); } catch (e) { /* already done */ } p.task = null; }
+    p.canvas.width = 0;
+    p.canvas.height = 0;
+    p.drawnW = 0;
+  }
+
+  async function vRender(p) {
+    var cssW = p.cssW;
+    if (p.drawnW === cssW || p.drawing === cssW) return;
+    var token = V.token;
+    p.drawing = cssW;
+    if (p.task) { try { p.task.cancel(); } catch (e) { /* already done */ } }
+    try {
+      var page = await V.doc.getPage(p.num);
+      if (token !== V.token) return;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(dpr, 4096 / cssW, 4096 / p.cssH);   // keep the drawing a sane size on very large pages
+      var vp = page.getViewport({ scale: (cssW / p.baseW) * dpr });
+      var canvas = p.canvas;
+      canvas.width = Math.floor(vp.width);
+      canvas.height = Math.floor(vp.height);
+      p.task = page.render({ canvasContext: canvas.getContext('2d'), viewport: vp });
+      await p.task.promise;
+      p.drawnW = cssW;
+    } catch (err) {
+      /* a cancelled draw (zoomed or scrolled away) is expected; anything else leaves the page blank */
+    } finally {
+      if (p.drawing === cssW) p.drawing = 0;
+    }
+  }
+
+  function vLayout() {
+    var body = $('#v-body'), avail = Math.max(160, body.clientWidth - (window.innerWidth <= 560 ? 20 : 36));
+    var w = avail * ZOOMS[V.zoom];
+    V.pages.forEach(function (p) {
+      p.cssW = Math.round(w);
+      p.cssH = Math.round(w * p.baseH / p.baseW);
+      p.box.style.width = p.cssW + 'px';
+      p.box.style.height = p.cssH + 'px';
+      if (p.drawnW && p.drawnW !== p.cssW) vUnrender(p);
+      if (p.visible) vRender(p);
+    });
+    vZoomLabel();
+  }
+
+  function vSetZoom(i) {
+    i = Math.max(0, Math.min(ZOOMS.length - 1, i));
+    if (i === V.zoom) return;
+    var body = $('#v-body'), ratio = body.scrollTop / (body.scrollHeight || 1);
+    V.zoom = i;
+    vLayout();
+    body.scrollTop = ratio * body.scrollHeight;
+    vCount();
+  }
+
+  function vCount() {
+    if (!V.pages.length) return;
+    var body = $('#v-body'), top = body.getBoundingClientRect().top + body.clientHeight * 0.35, cur = V.pages.length;
+    for (var i = 0; i < V.pages.length; i++) {
+      if (V.pages[i].box.getBoundingClientRect().bottom > top) { cur = i + 1; break; }
+    }
+    $('#v-count').textContent = V.pages.length === 1 ? '1 page' : 'Page ' + cur + ' of ' + V.pages.length;
+  }
+
+  async function openViewer(name) {
+    var path = prefix() + name, dlg = $('#viewer');
+    vReset();
+    var token = V.token;
+    V.name = name;
+    V.zoom = 2;
+    $('#v-title').textContent = name;
+    $('#v-title').title = name;
+    vZoomLabel();
+    vMessage('Opening…', true);
+    if (!dlg.open) dlg.showModal();
+    $('#v-body').scrollTop = 0;
+    try {
+      var res = await sb.storage.from(BUCKET).download(path);
+      if (res.error || !res.data) throw new Error('download');
+      if (token !== V.token) return;
+      V.blob = res.data;
+      $('#v-download').disabled = false;
+    } catch (err) {
+      if (token === V.token) vMessage("Couldn't open this file. You may not have permission.");
+      return;
+    }
+    try {
+      var lib = await loadPdfJs();
+      var buf = await V.blob.arrayBuffer();
+      var doc = await lib.getDocument({ data: buf }).promise;
+      if (token !== V.token) { doc.destroy(); return; }
+      V.doc = doc;
+      var holder = $('#v-pages'), frag = document.createDocumentFragment();
+      for (var n = 1; n <= doc.numPages; n++) {
+        var page = await doc.getPage(n);
+        if (token !== V.token) return;
+        var vp = page.getViewport({ scale: 1 });
+        var box = document.createElement('div');
+        box.className = 'v-sheet';
+        box.setAttribute('role', 'img');
+        box.setAttribute('aria-label', 'Page ' + n + ' of ' + doc.numPages);
+        var canvas = document.createElement('canvas');
+        box.appendChild(canvas);
+        frag.appendChild(box);
+        V.pages.push({ num: n, box: box, canvas: canvas, baseW: vp.width, baseH: vp.height, cssW: 0, cssH: 0, drawnW: 0, drawing: 0, task: null, visible: false });
+      }
+      holder.appendChild(frag);
+      V.io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          var p = V.pages.filter(function (x) { return x.box === en.target; })[0];
+          if (!p) return;
+          p.visible = en.isIntersecting;
+          if (en.isIntersecting) vRender(p); else vUnrender(p);
+        });
+      }, { root: $('#v-body'), rootMargin: '1200px 0px' });
+      V.pages.forEach(function (p) { V.io.observe(p.box); });
+      vMessage('');
+      vLayout();
+      vCount();
+    } catch (err) {
+      if (token !== V.token) return;
+      vMessage(err && err.name === 'PasswordException'
+        ? "This PDF is password-protected, so it can't be previewed. Download it to open it."
+        : "This PDF couldn't be displayed. You can still download it.");
+    }
+  }
+
+  $('#viewer').addEventListener('close', vReset);
+  $('#v-close').addEventListener('click', function () { $('#viewer').close(); });
+  $('#v-zoom-in').addEventListener('click', function () { vSetZoom(V.zoom + 1); });
+  $('#v-zoom-out').addEventListener('click', function () { vSetZoom(V.zoom - 1); });
+  $('#v-zoom-reset').addEventListener('click', function () { vSetZoom(2); });
+  $('#v-download').addEventListener('click', function () {
+    if (!V.blob) return;
+    var url = URL.createObjectURL(V.blob), a = document.createElement('a');
+    a.href = url;
+    a.download = V.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  });
+  $('#v-body').addEventListener('scroll', function () {
+    if (V.ticking) return;
+    V.ticking = true;
+    requestAnimationFrame(function () { V.ticking = false; vCount(); });
+  }, { passive: true });
+  window.addEventListener('resize', function () {
+    if (!$('#viewer').open || !V.pages.length) return;
+    clearTimeout(V.resizeTimer);
+    V.resizeTimer = setTimeout(function () { vLayout(); vCount(); }, 150);
+  });
+  $('#viewer').addEventListener('keydown', function (e) {
+    if (e.target.closest && e.target.closest('input,textarea,select')) return;
+    if (e.key === '+' || e.key === '=') { e.preventDefault(); vSetZoom(V.zoom + 1); }
+    else if (e.key === '-' || e.key === '_') { e.preventDefault(); vSetZoom(V.zoom - 1); }
+    else if (e.key === '0') { e.preventDefault(); vSetZoom(2); }
+  });
+
   async function preview(name) {
+    if (isPdf(name)) { openViewer(name); return; }
     var w = window.open('about:blank', '_blank');
     try {
       var url = await signedUrl(name, false);
