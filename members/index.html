@@ -243,6 +243,12 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 #item-form .actions{justify-content:flex-end;margin-top:14px}
 @media (max-width:640px){.cm-side{margin-left:0;width:100%;padding:0 8px 6px}.cm-acts{width:100%}.cm-acts .btn{flex:1}}
 
+/* sign-in choice: Senior Manager or Employee */
+.who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
+.who-switch>*{text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:background .4s,color .4s}
+.who-switch [aria-current="true"]{background:var(--brown);color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
+
 /* employee directory */
 .em-select{padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);min-height:44px}
 .chip.e-active{background:#E3F3E4;color:#1E6B2A}
@@ -416,6 +422,10 @@ dialog[open]{animation:pop .5s var(--ease)}
       <p>For SINAGLIKHA Senior Managers. Access is by invitation only.</p>
     </div>
     <form class="card" id="form-login" novalidate>
+      <div class="who-switch" role="group" aria-label="Who is signing in">
+        <span aria-current="true">Senior Manager</span>
+        <a href="../employees/">Employee</a>
+      </div>
       <h2>Sign In</h2>
       <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" inputmode="email" required></div>
       <div class="field"><label for="l-pass">Password</label><input id="l-pass" type="password" autocomplete="current-password" required></div>

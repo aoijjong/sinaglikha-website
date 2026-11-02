@@ -75,6 +75,10 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .facts dd{margin:0;font-weight:600;color:var(--brown)}
 .soon{border:1.5px dashed rgba(74,46,34,.3);border-radius:18px;padding:16px 18px;color:var(--muted);font-size:.95rem;margin-bottom:22px}
 .row-btns{display:flex;flex-wrap:wrap;gap:10px}
+.who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
+.who-switch>*{text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:background .4s,color .4s}
+.who-switch [aria-current="true"]{background:var(--brown);color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
 .dash-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px;margin-bottom:18px}
 .dash-head .hello{margin:0}
 .search{margin-bottom:22px}
@@ -121,6 +125,10 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 
   <section id="v-signin" class="narrow" hidden>
     <form class="card" id="f-signin" novalidate>
+      <div class="who-switch" role="group" aria-label="Who is signing in">
+        <a href="../members/">Senior Manager</a>
+        <span aria-current="true">Employee</span>
+      </div>
       <span class="eyebrow">Employee Portal</span>
       <h1>Welcome Back</h1>
       <p class="lead">Sign in with your Employee ID and your PIN.</p>
@@ -137,6 +145,10 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 
   <section id="v-activate" class="narrow" hidden>
     <form class="card" id="f-activate" novalidate>
+      <div class="who-switch" role="group" aria-label="Who is signing in">
+        <a href="../members/">Senior Manager</a>
+        <span aria-current="true">Employee</span>
+      </div>
       <span class="eyebrow">First Time Here</span>
       <h1>Choose Your PIN</h1>
       <p class="lead">Use the Employee ID and activation code Staffing and Recruitment gave you, then pick a 6-digit PIN that only you know.</p>
