@@ -185,8 +185,8 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .pf-photo-actions .btn{flex:1 1 auto;padding:10px 14px}
 .field input[readonly]{background:#F4F0E8;border-color:rgba(74,46,34,.14);color:var(--muted);cursor:default}
 .field .fine{margin:8px 0 0}
-#form-profile .actions{flex-direction:column;align-items:center;gap:10px}
-#form-profile .actions .btn{padding:10px 14px;min-width:200px}
+#form-profile .actions{flex-wrap:nowrap;justify-content:center;gap:10px}
+#form-profile .actions .btn{padding:10px 14px}
 .pf-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:4px 0 22px}
 .pf-facts dt{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .pf-facts dd{margin:0;font-weight:600;color:var(--brown)}
@@ -266,6 +266,10 @@ dialog[open]{animation:pop .5s var(--ease)}
   .person .pactions{margin-left:0}
   .person.is-off .pactions{grid-column:1/-1}
   .person .pactions .btn{flex:1;min-height:42px}
+}
+@media (max-width:380px){
+  #form-profile .actions{gap:8px}
+  #form-profile .actions .btn{padding:10px 10px;font-size:.82rem}
 }
 @media (max-width:420px){
   .brand img{height:30px}
