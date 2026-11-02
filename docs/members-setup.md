@@ -217,3 +217,7 @@ want a separate sender.
 | Upload says "already exists" | A file with that name is in the folder. Rename it or delete the old one. |
 | The Content tab says "isn't set up in the database yet" | `supabase/content_manager.sql` hasn't been run. Paste it into the Supabase SQL editor (after `schema.sql`) and run it. |
 | Content upload says "file type not allowed" | Only PDF, images, Word, Excel, PowerPoint, text and CSV files are accepted. |
+| The Employees tab says "isn't set up in the database yet" | `supabase/employees.sql` hasn't been run. Paste it into the Supabase SQL editor (after `schema.sql`) and run it. |
+| Issuing a code says "not set up on the server yet" | The Vercel variable `EMPLOYEE_SESSION_SECRET` is missing (any random string of 32 or more characters, marked Sensitive), or you haven't redeployed since adding it. |
+| An employee is "Locked" | Five wrong PINs lock sign-in for 15 minutes. A new code from Staffing and Recruitment clears it at once. |
+| An employee lost their PIN | Nobody can read a PIN. Choose **Reset PIN** on their row in the Employees tab to issue a new activation code. |

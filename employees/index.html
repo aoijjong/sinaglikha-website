@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employee Portal | SINAGLIKHA</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFDF6">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#F8EEAE; --paper:#FFFDF6; --cream:#FBF3CB;
+  --ink:#2B211C; --brown:#4A2E22; --muted:#66554B; --line:rgba(74,46,34,.14);
+  --grad:linear-gradient(135deg,#CE2020 0%,#E8701A 58%,#FFCB1B 100%);
+  --grad-btn:linear-gradient(135deg,#C21E1E 0%,#DE5A14 100%);
+  --soft-warm:linear-gradient(150deg,#FFF4C9 0%,#FCD9A0 60%,#F8BE8E 100%);
+  --shadow:0 1px 2px rgba(74,46,34,.06),0 14px 34px -14px rgba(74,46,34,.22);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --serif:'DM Serif Display',Georgia,'Times New Roman',serif;
+  --sans:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--paper)}
+body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(60% 40% at 85% 0%,rgba(255,203,27,.18),transparent 70%),radial-gradient(50% 40% at 0% 100%,rgba(248,238,174,.6),transparent 70%),var(--paper)}
+h1,h2{font-family:var(--serif);font-weight:400;line-height:1.12;margin:0;color:var(--brown);letter-spacing:-.015em}
+p{margin:0}
+button,input{font:inherit}
+img,svg{display:block;max-width:100%}
+:focus-visible{outline:3px solid #CE2020;outline-offset:3px;border-radius:8px}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{width:min(1000px,100% - 2 * clamp(20px,4vw,40px));margin-inline:auto}
+.top{position:sticky;top:0;z-index:20;background:rgba(255,253,246,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:75px}
+.brand img{height:36px;width:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:.95rem;line-height:1;padding:14px 22px;border-radius:999px;border:2px solid transparent;cursor:pointer;white-space:nowrap;transition:transform .5s var(--ease),background .4s,color .4s}
+.btn:active{transform:scale(.96)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.btn-primary{background:var(--grad-btn);color:#fff;box-shadow:0 10px 24px -10px rgba(206,32,32,.65)}
+.btn-ghost{border-color:var(--brown);color:var(--brown);background:transparent}
+.btn-sm{padding:10px 16px;font-size:.86rem}
+@media (hover:hover) and (pointer:fine){.btn-primary:hover{transform:translateY(-3px)}.btn-ghost:hover{background:var(--brown);color:var(--paper)}}
+.link{background:none;border:0;padding:4px 2px;color:#B3261E;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+main{flex:1;padding-block:clamp(28px,5vw,64px)}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.86rem;font-weight:700;letter-spacing:.05em;color:#B3361A;margin-bottom:12px}
+.eyebrow::before{content:"";width:34px;height:3px;border-radius:3px;background:var(--grad)}
+.center{display:grid;place-items:center;min-height:40vh}
+.spinner{width:44px;height:44px;border-radius:50%;border:4px solid var(--cream);border-top-color:#E8701A;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{background:#fff;border:1px solid var(--line);border-radius:28px;padding:clamp(24px,4vw,40px);box-shadow:var(--shadow)}
+.card h1{font-size:clamp(1.9rem,4vw,2.6rem);margin-bottom:10px}
+.card .lead{color:var(--muted);margin:0 0 20px}
+.narrow{max-width:520px;margin-inline:auto}
+.field{margin-bottom:16px}
+.field label{display:block;font-weight:600;font-size:.92rem;margin-bottom:7px;color:var(--brown)}
+.field input{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);transition:border-color .4s,box-shadow .4s,background .4s}
+.field input:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
+.field input.pin{letter-spacing:.4em;font-weight:700;text-align:center;font-size:1.2rem}
+.field .fine{margin-top:6px}
+.fine{font-size:.88rem;color:var(--muted)}
+.msg{margin:0 0 14px;padding:12px 14px;border-radius:14px;font-size:.93rem;background:rgba(248,238,174,.6);color:var(--brown)}
+.msg.bad{background:#FDECEA;color:#8F1D1D}
+.msg.ok{background:#EAF6EC;color:#1E5B2B}
+.actions{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px}
+.actions .btn{min-width:220px}
+.hello{display:flex;align-items:center;gap:16px;margin-bottom:22px}
+.av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--soft-warm);color:var(--brown);font-family:var(--serif);font-size:1.6rem;flex:none}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:0 0 22px}
+.facts dt{font-size:.8rem;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+.facts dd{margin:0;font-weight:600;color:var(--brown)}
+.soon{border:1.5px dashed rgba(74,46,34,.3);border-radius:18px;padding:16px 18px;color:var(--muted);font-size:.95rem;margin-bottom:22px}
+.row-btns{display:flex;flex-wrap:wrap;gap:10px}
+.foot{padding-block:22px;font-size:.88rem;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--brown);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:.93rem;opacity:0;pointer-events:none;transition:opacity .4s,transform .5s var(--ease);z-index:60;max-width:min(92vw,420px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:520px){.facts{grid-template-columns:1fr}.brand img{height:28px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="../" aria-label="SINAGLIKHA, back to the website"><img src="../assets/sinaglikha-logo-notag.png" alt="SINAGLIKHA" width="1487" height="212"></a>
+    <button class="btn btn-ghost btn-sm" id="btn-out" type="button" hidden>Sign Out</button>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <section id="v-loading" class="center" aria-live="polite"><div class="spinner" role="status"><span class="sr-only">Loading</span></div></section>
+
+  <section id="v-signin" class="narrow" hidden>
+    <form class="card" id="f-signin" novalidate>
+      <span class="eyebrow">Employee Portal</span>
+      <h1>Welcome Back</h1>
+      <p class="lead">Sign in with your Employee ID and your PIN.</p>
+      <div class="field"><label for="s-no">Employee ID</label><input id="s-no" type="text" inputmode="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
+      <div class="field"><label for="s-pin">PIN</label><input id="s-pin" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <p class="msg bad" id="s-msg" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" id="s-ok">Sign In</button>
+        <button class="link" type="button" id="to-activate">First time here?</button>
+      </div>
+      <p class="fine" style="text-align:center;margin-top:16px">Lost your PIN? Ask Staffing and Recruitment for a new activation code.</p>
+    </form>
+  </section>
+
+  <section id="v-activate" class="narrow" hidden>
+    <form class="card" id="f-activate" novalidate>
+      <span class="eyebrow">First Time Here</span>
+      <h1>Choose Your PIN</h1>
+      <p class="lead">Use the Employee ID and activation code Staffing and Recruitment gave you, then pick a 6-digit PIN that only you know.</p>
+      <div class="field"><label for="a-no">Employee ID</label><input id="a-no" type="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
+      <div class="field"><label for="a-code">Activation Code</label><input id="a-code" type="text" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" maxlength="10"></div>
+      <div class="field"><label for="a-pin">New PIN</label><input id="a-pin" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><p class="fine">Six digits. Avoid easy ones like 123456 or your ID number.</p></div>
+      <div class="field"><label for="a-pin2">Repeat PIN</label><input id="a-pin2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <p class="msg bad" id="a-msg" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" id="a-ok">Save PIN and Sign In</button>
+        <button class="link" type="button" id="to-signin">Back to sign in</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="v-home" class="narrow" hidden>
+    <div class="card">
+      <span class="eyebrow">Employee Portal</span>
+      <div class="hello"><div class="av" id="h-av" aria-hidden="true"></div><div><h1 id="h-name" style="font-size:1.8rem;margin:0"></h1><p class="fine" id="h-pos"></p></div></div>
+      <dl class="facts"><div><dt>Employee ID</dt><dd id="h-no"></dd></div></dl>
+      <p class="soon">Announcements, your department pages and your attendance will appear here as they are published. You can sign in and change your PIN now.</p>
+      <div class="row-btns">
+        <button class="btn btn-ghost btn-sm" type="button" id="to-pin">Change My PIN</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="h-out">Sign Out</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-pin" class="narrow" hidden>
+    <form class="card" id="f-pin" novalidate>
+      <span class="eyebrow">My PIN</span>
+      <h1>Change Your PIN</h1>
+      <p class="lead">Changing your PIN signs you out on your other devices.</p>
+      <div class="field"><label for="p-cur">Current PIN</label><input id="p-cur" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <div class="field"><label for="p-new">New PIN</label><input id="p-new" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <div class="field"><label for="p-new2">Repeat New PIN</label><input id="p-new2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <p class="msg bad" id="p-msg" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" id="p-ok">Save New PIN</button>
+        <button class="link" type="button" id="p-back">Back</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<footer class="wrap foot"><span>© <span id="year">2026</span> SINAGLIKHA. Employee Portal.</span></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="portal.js"></script>
+</body>
+</html>

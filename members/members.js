@@ -251,13 +251,15 @@
   /* What the signed-in person can open. The 201 Files are for the Administrator and for Senior
      Managers of Staffing and Recruitment and Legal Compliance. Everyone keeps the Content and
      Accounts tabs. */
-  var TAB_TITLES = { library: '201 Files', content: 'Content Manager', people: 'Accounts' };
+  var TAB_TITLES = { library: '201 Files', content: 'Content Manager', employees: 'Employee Directory', people: 'Accounts' };
   function applyAccess() {
     var files = state.canUse && state.can201;
     $$('.manager-only').forEach(function (el) { el.hidden = !files; });
     $('#tab-library').hidden = !files;
     $('#tabs').hidden = false;
-    $('#tabs').style.setProperty('--n', files ? '3' : '2');
+    /* The Employee Directory is for the Administrator and Staffing and Recruitment. */
+    $('#tab-employees').hidden = !(state.canUse && (state.isAdmin || (state.profile && state.profile.department === 'staffing')));
+    $('#tabs').style.setProperty('--n', String(visibleTabs().length));
     $('#pf-back-text').textContent = 'Back';
     $('#dept-note').hidden = !(state.deptKnown && !state.isAdmin && !state.profile.department);
   }
@@ -302,6 +304,7 @@
     index = null;
     indexPromise = null;
     if (window.MembersContent) window.MembersContent.reset();
+    if (window.MembersEmployees) window.MembersEmployees.reset();
     state.session = null;
     state.profile = null;
     state.isAdmin = false;
@@ -401,7 +404,7 @@
   $('#btn-denied-out').addEventListener('click', function () { sb.auth.signOut(); });
 
   /* ---------- tabs ---------- */
-  var TAB_NAMES = ['library', 'content', 'people'];
+  var TAB_NAMES = ['library', 'content', 'employees', 'people'];
   function visibleTabs() { return TAB_NAMES.filter(function (n) { return !$('#tab-' + n).hidden; }); }
   function setTab(name) {
     var open = visibleTabs();
@@ -416,6 +419,7 @@
     $('#app-title').textContent = TAB_TITLES[name];
     if (name === 'people') loadPeople();
     if (name === 'content' && window.MembersContent) window.MembersContent.open();
+    if (name === 'employees' && window.MembersEmployees) window.MembersEmployees.open();
   }
   TAB_NAMES.forEach(function (n) {
     $('#tab-' + n).addEventListener('click', function () { setTab(n); });

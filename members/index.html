@@ -243,6 +243,33 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 #item-form .actions{justify-content:flex-end;margin-top:14px}
 @media (max-width:640px){.cm-side{margin-left:0;width:100%;padding:0 8px 6px}.cm-acts{width:100%}.cm-acts .btn{flex:1}}
 
+/* employee directory */
+.em-select{padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);min-height:44px}
+.chip.e-active{background:#E3F3E4;color:#1E6B2A}
+.chip.e-pending{background:#FFF0B0;color:#6B4E00}
+.chip.e-locked,.chip.e-inactive,.chip.e-expired{background:#F1E6E2;color:#8A3B2B}
+.chip.e-none{background:#EFEAE4;color:#5A4538}
+#emp-form{padding:clamp(22px,4vw,32px)}
+#emp-form h2{font-size:1.5rem;margin-bottom:14px}
+#emp-form .actions{justify-content:flex-end;margin-top:14px}
+.slips{width:min(760px,100% - 32px);padding:clamp(20px,4vw,32px)}
+.sl-head h2{font-size:1.5rem;margin-bottom:8px}
+.sl-warn{background:#FFF0B0;color:#5A4200;border-radius:14px;padding:12px 14px;font-size:.93rem;margin-bottom:16px}
+.sl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:18px}
+.sl-card{border:1.5px dashed rgba(74,46,34,.4);border-radius:16px;padding:14px 16px;break-inside:avoid;background:#fff}
+.sl-card b{display:block;font-size:.8rem;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.sl-card .sl-id{font-size:1.1rem;font-weight:700;color:var(--brown)}
+.sl-card .sl-name{font-size:.92rem;color:var(--muted);margin-bottom:8px}
+.sl-card .sl-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.35rem;font-weight:700;letter-spacing:.08em;color:var(--ink)}
+.sl-card .sl-exp{font-size:.8rem;color:var(--muted);margin-top:6px}
+.slips .actions{justify-content:flex-end}
+@media print{
+  .top,main,footer,.toast,#modal,#item-dlg,#emp-dlg,.skip{display:none!important}
+  .no-print{display:none!important}
+  dialog.slips[open]{position:static;width:100%;max-width:none;box-shadow:none;background:#fff;padding:0;animation:none}
+  .sl-grid{grid-template-columns:repeat(2,1fr)}
+}
+
 /* PDF viewer */
 body:has(.viewer[open]){overflow:hidden}
 .viewer{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#33261F;color:var(--ink);overflow:hidden}
@@ -432,6 +459,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <span class="tab-thumb" aria-hidden="true"></span>
         <button class="tab" role="tab" id="tab-library" aria-selected="true" aria-controls="panel-library" tabindex="0" type="button">201 Files</button>
         <button class="tab" role="tab" id="tab-content" aria-selected="false" aria-controls="panel-content" tabindex="-1" type="button">Content</button>
+        <button class="tab" role="tab" id="tab-employees" aria-selected="false" aria-controls="panel-employees" tabindex="-1" type="button" hidden>Employees</button>
         <button class="tab" role="tab" id="tab-people" aria-selected="false" aria-controls="panel-people" tabindex="-1" type="button">Accounts</button>
       </div>
     </div>
@@ -500,6 +528,31 @@ dialog[open]{animation:pop .5s var(--ease)}
         <div class="busy" id="cm-busy" hidden role="status">Loading…</div>
       </div>
       <p class="fine">Any Senior Manager can add and change content in every deliverable. Publishing is what makes an item visible to its audience. The 201 Files are separate and are never shown here.</p>
+    </div>
+
+    <div id="panel-employees" role="tabpanel" aria-labelledby="tab-employees" hidden>
+      <div class="toolbar">
+        <div class="tools">
+          <div class="search">
+            <label class="sr-only" for="em-search">Search employees</label>
+            <input id="em-search" type="search" placeholder="Search by name or ID" autocomplete="off">
+          </div>
+          <label class="sr-only" for="em-show">Which employees to show</label>
+          <select id="em-show" class="em-select"><option value="current">Current employees</option><option value="all">Everyone</option><option value="inactive">Inactive only</option></select>
+        </div>
+        <div class="tools">
+          <button class="btn btn-ghost btn-sm" id="em-import" type="button">Import CSV</button>
+          <button class="btn btn-ghost btn-sm" id="em-bulk" type="button">Codes for everyone without a PIN</button>
+          <button class="btn btn-primary btn-sm" id="em-add" type="button">Add Employee</button>
+          <input type="file" id="em-file" accept=".csv,text/csv" hidden>
+        </div>
+      </div>
+      <div class="list-card">
+        <ul class="rows" id="em-rows"></ul>
+        <p class="empty" id="em-empty" hidden></p>
+        <div class="busy" id="em-busy" hidden role="status">Loading…</div>
+      </div>
+      <p class="fine">Employees sign in at the Employee Portal with their Employee ID and a 6-digit PIN they choose themselves. An activation code works once and expires after 7 days. Nobody, including the Administrator, can read a PIN. A new code is also how you reset a lost or locked PIN.</p>
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
@@ -644,11 +697,38 @@ dialog[open]{animation:pop .5s var(--ease)}
   </form>
 </dialog>
 
+<dialog id="emp-dlg" aria-labelledby="em-title">
+  <form id="emp-form" novalidate>
+    <h2 id="em-title">Add Employee</h2>
+    <div class="field"><label for="em-no">Employee ID</label><input id="em-no" type="text" maxlength="8" placeholder="SNG-0001" autocomplete="off" autocapitalize="characters"></div>
+    <div class="field"><label for="em-name">Full Name</label><input id="em-name" type="text" maxlength="120" autocomplete="off"></div>
+    <div class="field"><label for="em-pos">Position</label><input id="em-pos" type="text" maxlength="120" autocomplete="off"></div>
+    <p class="msg bad" id="em-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="em-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="em-ok">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="slips-dlg" class="slips" aria-labelledby="sl-title">
+  <div class="sl-head no-print">
+    <h2 id="sl-title">Activation Slips</h2>
+    <p class="sl-warn">These codes are shown only now. Print them or write them down before you close this window. They can't be shown again; issue new ones if you lose them.</p>
+  </div>
+  <div class="sl-grid" id="sl-grid"></div>
+  <div class="actions no-print">
+    <button class="btn btn-primary btn-sm" type="button" id="sl-print">Print Slips</button>
+    <button class="btn btn-ghost btn-sm" type="button" id="sl-close">Close and Clear</button>
+  </div>
+</dialog>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="members.js"></script>
 <script src="content.js"></script>
+<script src="employees.js"></script>
 </body>
 </html>
