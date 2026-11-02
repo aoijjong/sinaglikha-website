@@ -251,17 +251,41 @@ dialog:not(.viewer){max-height:calc(100dvh - 24px);overflow-y:auto}
 .an-files li span{display:flex;align-items:center;gap:8px;min-width:0;overflow-wrap:anywhere}
 .an-files li .icon{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .an-files li .ib{width:34px;height:34px}
-#att-form,#ev-form,#lc-form,#lm-form,#fc-form{padding:clamp(22px,4vw,32px)}
+#att-form,#sc-form,#ee-body,#lc-form,#lm-form,#fc-form{padding:clamp(22px,4vw,32px)}
 #lc-form h2,#lm-form h2,#fc-form h2{font-size:1.5rem;margin-bottom:14px}
 #lc-form .field input,#lm-form .field input,#lm-form .field select,#fc-form .field input{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
 #lc-form .field textarea,#lm-form .field textarea{width:100%;min-height:72px;resize:vertical;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
 #lc-form .actions,#lm-form .actions,#fc-form .actions{justify-content:flex-end;margin-top:14px}
 .chip.t-hidden{background:#F1E6E2;color:#8A3B2B}
 .chip.t-locked{background:#FFF0B0;color:#6B4E00}
-#att-form h2,#ev-form h2{font-size:1.5rem;margin-bottom:14px}
-#att-form .field input,#ev-form .field input,#ev-form .field select{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
-#att-form .field textarea,#ev-form .field textarea{width:100%;min-height:72px;resize:vertical;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
-#att-form .actions,#ev-form .actions{justify-content:flex-end;margin-top:14px}
+#att-form h2,#sc-form h2,#ee-body h2{font-size:1.5rem;margin-bottom:14px}
+#att-form .field input,#sc-form .field input,#sc-form .field select,#ee-body .field input,#ee-body .field select{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
+#att-form .field textarea,#ee-body .field textarea{width:100%;min-height:72px;resize:vertical;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+#att-form .actions,#sc-form .actions,#ee-body .actions{justify-content:flex-end;margin-top:14px}
+#sc-dlg,#ee-dlg{width:min(720px,100% - 24px)}
+.lbls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.lbl{display:flex;align-items:center;gap:8px}.lbl span{width:24px;font-weight:700;color:var(--brown);text-align:center}
+#sc-form .field .lbl input{padding:9px 12px;min-width:0}
+.crits,.ecrits{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:10px}
+.crit{border:1px solid var(--line);border-radius:16px;padding:10px;background:#fff;display:grid;gap:8px}
+.crit-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crit-n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--cream);color:var(--brown);font-weight:700;font-size:.8rem}
+#sc-form .field .c-title{flex:1 1 150px;width:auto;min-width:0;padding:10px 12px}
+#sc-form .field .c-weight{width:76px;flex:none;padding:10px 8px;text-align:center}
+#sc-form .field .c-desc{padding:9px 12px}
+.crit-acts{display:flex;gap:2px;flex:none;margin-left:auto}
+.ecrit{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff}
+.ec-h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ec-w{font-size:.8rem;color:var(--muted);flex:none}
+.rts{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+.rt{min-width:42px;height:42px;border-radius:12px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--brown);font-weight:700;font-size:1rem;cursor:pointer}
+.rt[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:var(--paper)}
+.rt:disabled{cursor:default;opacity:.7}
+.ec-l{min-height:1.2em;font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.ec-c{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid rgba(74,46,34,.2);background:var(--paper);color:var(--ink);font:inherit;resize:vertical}
+.ee-score{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:12px 16px;border-radius:16px;background:var(--cream);margin-bottom:12px}
+.ee-score b{font-family:var(--serif);font-weight:400;font-size:1.8rem;color:var(--brown)}
+.ee-score span{color:var(--muted);font-size:.9rem}
 .sp-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 14px}
 .sp-controls input[type=date]{height:44px;padding:0 14px;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--ink);font:inherit}
 .sp-sum{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
@@ -823,21 +847,26 @@ dialog[open]{animation:pop .5s var(--ease)}
   </form>
 </dialog>
 
-<dialog id="ev-dlg" aria-labelledby="ev-title">
-  <form id="ev-form" novalidate>
-    <h2 id="ev-title">Evaluation Form</h2>
-    <div class="field"><label for="ev-kind">Type</label><select id="ev-kind"><option value="self">Self evaluation</option><option value="peer">Peer evaluation</option><option value="manager">Manager evaluation</option></select></div>
-    <div class="field"><label for="ev-name">Title</label><input id="ev-name" type="text" maxlength="160" autocomplete="off" placeholder="For example Q4 Self Evaluation"></div>
-    <div class="field"><label for="ev-url">Link to the Form</label><input id="ev-url" type="url" inputmode="url" placeholder="https://" autocomplete="off"></div>
-    <div class="field"><label for="ev-inst">Instructions (Optional)</label><textarea id="ev-inst" maxlength="2000"></textarea></div>
-    <div class="field"><label for="ev-opens">Opens On (Optional)</label><input id="ev-opens" type="date"></div>
-    <div class="field"><label for="ev-closes">Closes On (Optional)</label><input id="ev-closes" type="date"></div>
-    <p class="msg bad" id="ev-err" role="alert" hidden></p>
+<dialog id="sc-dlg" aria-labelledby="sc-heading">
+  <form id="sc-form" novalidate>
+    <h2 id="sc-heading">New Scorecard</h2>
+    <div class="field"><label for="sc-name">Name</label><input id="sc-name" type="text" maxlength="160" autocomplete="off" placeholder="For example Quarterly Performance Review"></div>
+    <div class="field"><label for="sc-desc">Description (Optional)</label><input id="sc-desc" type="text" maxlength="1000" autocomplete="off" placeholder="What this scorecard is for"></div>
+    <div class="field"><label for="sc-scale">Rating scale</label><select id="sc-scale"><option value="3">1 to 3</option><option value="4">1 to 4</option><option value="5" selected>1 to 5</option><option value="6">1 to 6</option><option value="7">1 to 7</option><option value="10">1 to 10</option></select></div>
+    <div class="field"><label>What each rating means (Optional)</label><div id="sc-labels" class="lbls"></div></div>
+    <div class="field"><label>Criteria</label><p class="fine" id="sc-total" style="margin:0 0 8px"></p><ul class="crits" id="sc-crit"></ul>
+      <button class="btn btn-ghost btn-sm" type="button" id="sc-add">Add a criterion</button></div>
+    <p class="fine" id="sc-note" hidden>Changes only affect new evaluations. Evaluations already written keep their own copy.</p>
+    <p class="msg bad" id="sc-err" role="alert" hidden></p>
     <div class="actions">
-      <button class="btn btn-ghost btn-sm" type="button" id="ev-cancel">Cancel</button>
-      <button class="btn btn-primary btn-sm" type="submit" id="ev-ok">Save</button>
+      <button class="btn btn-ghost btn-sm" type="button" id="sc-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="sc-ok">Save</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="ee-dlg" aria-label="Evaluation">
+  <div id="ee-body"></div>
 </dialog>
 
 <dialog id="rec-dlg" aria-labelledby="rd-title">

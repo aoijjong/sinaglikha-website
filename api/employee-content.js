@@ -2,10 +2,10 @@
   Everything an employee reads, in one function (Vercel's free plan allows 12 functions).
 
   GET /api/employee-content?home=1             the WHOLE dashboard in one answer, fetched in parallel: the
-                                               employee, Published content, open evaluation forms, own time
+                                               employee, Published content, own time
                                                records, own compensation records, learning progress, the forum
                                                feed and the announcements
-  GET /api/employee-content                    just the content and evaluation forms
+  GET /api/employee-content                    just the content
   GET /api/employee-content?file=<item id>     a 5-minute link to open one Published item (links go straight to
                                                their web address)
   GET /api/employee-content?ann=<id>&i=<n>     a 5-minute link to open file number n attached to an announcement
@@ -22,15 +22,14 @@ const E = require('./_employee');
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const AVATAR_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 
-/* Published items for Employees or the Public, the deliverables they belong to, and the evaluation
-   forms that are switched on and open today. Returns null if the content itself can't be read. */
-async function contentPayload(today) {
-  const [d, c, ev] = await Promise.all([
+/* Published items for Employees or the Public and the deliverables they belong to. Returns null if the
+   content itself can't be read. */
+async function contentPayload() {
+  const [d, c] = await Promise.all([
     E.rest('GET', 'deliverables?kind=neq.special&select=key,name,department&order=name'),
     E.rest('GET', 'content_items?status=eq.published&audience=in.(employees,public)&kind=neq.folder' +
       '&select=id,deliverable,kind,folder_path,title,description,category,version,external_url,extra,published_at' +
-      '&order=published_at.desc&limit=1000'),
-    E.rest('GET', 'evaluation_setups?active=eq.true&select=id,title,kind,url,instructions,opens_on,closes_on&order=kind,title')
+      '&order=published_at.desc&limit=1000')
   ]);
   if (!d.ok || !c.ok || !Array.isArray(d.data) || !Array.isArray(c.data)) return null;
   const items = c.data.map((i) => ({
@@ -40,10 +39,7 @@ async function contentPayload(today) {
     size: i.extra && typeof i.extra.size === 'number' ? i.extra.size : null,
     published_at: i.published_at
   }));
-  // The evaluation table is created by supabase/phase2.sql; until then there is simply nothing to show.
-  const evaluations = E.list(ev).filter((e) =>
-    /^https?:\/\//i.test(e.url || '') && (!e.opens_on || e.opens_on <= today) && (!e.closes_on || e.closes_on >= today));
-  return { deliverables: d.data, items, evaluations };
+  return { deliverables: d.data, items };
 }
 
 /* The latest published announcements, newest first. File paths stay on the server. */
@@ -78,12 +74,11 @@ module.exports = async function handler(req, res) {
 
   const q = req.query || {};
   const eid = me.emp.id;
-  const today = E.manilaDate();
 
   /* ---- the whole dashboard, every piece fetched at the same time ---- */
   if (q.home !== undefined) {
     const [content, attendance, records, learning, forum, announcements, av] = await Promise.all([
-      contentPayload(today),
+      contentPayload(),
       E.attendanceRecent(eid),
       ownRecords(eid),
       E.learningSummary(eid),
@@ -97,7 +92,7 @@ module.exports = async function handler(req, res) {
     const avatar = row && typeof row.avatar === 'string' && AVATAR_RE.test(row.avatar) ? row.avatar : null;
     return E.send(res, 200, {
       employee: { employee_no: me.emp.employee_no, full_name: me.emp.full_name, position: me.emp.position, avatar },
-      deliverables: content.deliverables, items: content.items, evaluations: content.evaluations,
+      deliverables: content.deliverables, items: content.items,
       attendance, records, learning, forum, announcements: announcements.items, announcementPhotos: announcements.photos
     });
   }
@@ -148,7 +143,7 @@ module.exports = async function handler(req, res) {
   }
 
   /* ---- just the portal's content ---- */
-  const content = await contentPayload(today);
+  const content = await contentPayload();
   if (!content) return E.send(res, 502, { error: "Couldn't load the portal content. Try again in a moment." });
   return E.send(res, 200, content);
 };

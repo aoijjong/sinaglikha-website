@@ -6,7 +6,7 @@
 
   The dashboard loads in ONE request (/api/employee-content?home=1) that the server fills in
   parallel, then draws everything: announcements, the community feed (discussions open and reply in
-  place, no page changes), attendance, evaluations, learning, compensation records and departments.
+  place, no page changes), attendance, learning, compensation records and departments.
   Everything typed by people is shown as plain text, never as HTML.
 */
 (function () {
@@ -24,7 +24,7 @@
   DEPTS.forEach(function (d) { DEPT_NAME[d[0]] = d[1]; });
 
   var me = null;
-  var content = { deliverables: [], items: [], evaluations: [] };
+  var content = { deliverables: [], items: [] };
   var att = { today: '', records: [], unavailable: false };
   var recs = [];
   var learn = { courses: [], course: null, modules: [] };
@@ -183,7 +183,7 @@
 
   function applyHome(d) {
     if (d.employee) { me = Object.assign({}, me || {}, d.employee); paintMe(); }
-    content = { deliverables: d.deliverables || [], items: d.items || [], evaluations: d.evaluations || [] };
+    content = { deliverables: d.deliverables || [], items: d.items || [] };
     att = d.attendance || { today: '', records: [], unavailable: true };
     recs = d.records || [];
     learn.courses = d.learning || [];
@@ -233,7 +233,6 @@
     renderAnnouncements();
     renderForum();
     renderAttendance();
-    renderEvaluations();
     renderLearningPanel();
     renderRecords();
     $('#tiles').innerHTML = DEPTS.map(function (d) {
@@ -415,23 +414,6 @@
     });
     $('#dept-body').innerHTML = html || '<p class="fine">Nothing published yet.</p>';
     show('dept');
-  }
-
-  /* ---------- evaluations: links to the forms that are open today ---------- */
-  var EVAL_KINDS = [['self', 'Self evaluation'], ['peer', 'Peer evaluation'], ['manager', 'Manager evaluation']];
-  function renderEvaluations() {
-    var list = content.evaluations || [];
-    $('#eval-panel').hidden = !list.length;
-    var html = '';
-    EVAL_KINDS.forEach(function (k) {
-      list.filter(function (e) { return e.kind === k[0]; }).forEach(function (e) {
-        var meta = [k[1], e.closes_on ? 'Open until ' + fmtDate(e.closes_on + 'T00:00:00+08:00') : ''].filter(Boolean).join(' · ');
-        html += '<li class="lrow"><button class="lmain" type="button" data-form="' + esc(e.url) + '" aria-label="Open ' + esc(e.title) + '">' +
-          '<span class="lico">' + I('clipboard') + '</span><span class="ltext"><span class="lname">' + esc(e.title) + '</span><span class="lmeta">' + esc(meta) + '</span>' +
-          (e.instructions ? '<span class="ldesc">' + esc(e.instructions) + '</span>' : '') + '</span></button>' + I('external', 'lgo') + '</li>';
-      });
-    });
-    $('#evals').innerHTML = html;
   }
 
   /* ---------- attendance: time in and time out ---------- */
