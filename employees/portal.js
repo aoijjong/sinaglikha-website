@@ -264,8 +264,10 @@
   /* ---------- the community feed: discussions open and reply right here ---------- */
   /* Delete (your own) or Report (someone else's), shown as a labelled button on every post and reply. */
   function modBtn(mine, kind, id) {
+    var del = { style: 'margin-left:auto' };
+    del['data-del-' + kind] = id;
     return mine
-      ? '<button class="pbtn push" type="button" data-del-' + kind + '="' + esc(id) + '">' + I('trash') + '<span>Delete</span></button>'
+      ? IB('trash', 'Delete', del, 'danger')
       : '<button class="pbtn push" type="button" data-report-' + kind + '="' + esc(id) + '">' + I('flag') + '<span>Report</span></button>';
   }
 
