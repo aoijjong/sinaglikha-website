@@ -9,6 +9,7 @@
   POST /api/employee-forum  { "action": "thread", "category_id": "...", "title": "...", "body": "..." }
   POST /api/employee-forum  { "action": "reply",  "thread_id": "...", "body": "..." }
   POST /api/employee-forum  { "action": "report", "thread_id" | "post_id": "...", "reason": "..." }
+  POST /api/employee-forum  { "action": "delete", "thread_id" | "post_id": "..." }   remove one of your OWN posts
 
   Posts carry the employee's own name. The author comes from the sign-in cookie, never from the
   request. Hidden threads and posts, closed categories and locked threads are never sent or accepted.
@@ -88,6 +89,18 @@ module.exports = async function handler(req, res) {
       if (!r.ok || !list(r)[0]) return E.send(res, 500, { error: "Couldn't post that. Try again." });
       await E.rest('PATCH', `forum_threads?id=eq.${tid}`, { last_post_at: new Date().toISOString() }, 'return=minimal');
       return E.send(res, 200, { ok: true, id: r.data[0].id });
+    }
+
+    if (body.action === 'delete') {
+      // An employee can only remove their own thread or reply. It is hidden, not erased, so moderators
+      // keep the record (and any reports about it) and can still see what was said.
+      const tid = body.thread_id ? String(body.thread_id) : null, pid = body.post_id ? String(body.post_id) : null;
+      if ((!tid && !pid) || (tid && !UUID_RE.test(tid)) || (pid && !UUID_RE.test(pid))) return E.send(res, 400, { error: 'Bad request.' });
+      const target = tid ? `forum_threads?id=eq.${tid}` : `forum_posts?id=eq.${pid}`;
+      const r = await E.rest('PATCH', `${target}&employee_id=eq.${eid}&hidden=eq.false`, { hidden: true }, 'return=representation');
+      if (!r.ok || !list(r)[0]) return E.send(res, 404, gone);
+      await E.logAudit('forum.delete', me.emp.employee_no, { thread: tid, post: pid });
+      return E.send(res, 200, { ok: true });
     }
 
     if (body.action === 'report') {

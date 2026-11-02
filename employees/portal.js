@@ -262,6 +262,13 @@
   }
 
   /* ---------- the community feed: discussions open and reply right here ---------- */
+  /* Delete (your own) or Report (someone else's), shown as a labelled button on every post and reply. */
+  function modBtn(mine, kind, id) {
+    return mine
+      ? '<button class="pbtn push" type="button" data-del-' + kind + '="' + esc(id) + '">' + I('trash') + '<span>Delete</span></button>'
+      : '<button class="pbtn push" type="button" data-report-' + kind + '="' + esc(id) + '">' + I('flag') + '<span>Report</span></button>';
+  }
+
   function renderForum() {
     var panel = $('#forum-panel');
     panel.hidden = !forum.cats.length;
@@ -272,10 +279,10 @@
     var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
     $('#forum-feed').innerHTML = forum.threads.length ? forum.threads.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
-        '<span class="chip plain">' + esc(catName(t.category_id)) + '</span>' + (t.mine ? '' : IB('flag', 'Report to a moderator', { 'data-report-thread': t.id })) + '</div>' +
+        '<span class="chip plain">' + esc(catName(t.category_id)) + '</span></div>' +
         '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' reply' : ' replies') + '</span></button>' +
-        (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + '</div><div class="replies" hidden></div></article>';
+        (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">No discussions yet. Start the first one above.</div>';
   }
 
@@ -287,7 +294,7 @@
 
   function replyHtml(p) {
     return '<div class="reply"><div class="post-top">' + avSm(p.author) + '<div class="who"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span></div>' +
-      (p.mine ? '' : IB('flag', 'Report to a moderator', { 'data-report-post': p.id })) + '</div><p>' + text(p.body) + '</p></div>';
+      modBtn(p.mine, 'post', p.id) + '</div><p>' + text(p.body) + '</p></div>';
   }
 
   async function toggleReplies(id) {
@@ -352,6 +359,23 @@
     composerOpen(false);
     refreshFeed();
   });
+
+  async function sendDelete(kind, id) {
+    if (!window.confirm(kind === 'thread' ? 'Delete this discussion? Its replies will disappear too.' : 'Delete your reply?')) return;
+    var payload = { action: 'delete' };
+    payload[kind === 'thread' ? 'thread_id' : 'post_id'] = id;
+    var r = await call('POST', '/api/employee-forum', payload);
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { toast(r.data.error || "Couldn't delete that. Try again."); return; }
+    toast('Deleted.');
+    if (kind === 'thread') { forum.threads = forum.threads.filter(function (x) { return x.id !== id; }); renderForum(); return; }
+    var btn = document.querySelector('[data-del-post="' + id + '"]'), card = btn && btn.closest('[data-thread]');
+    if (btn) btn.closest('.reply').remove();
+    if (card) {
+      var t = forum.threads.filter(function (x) { return x.id === card.getAttribute('data-thread'); })[0];
+      if (t) { t.replies = Math.max(0, t.replies - 1); card.querySelector('[data-replies] span').textContent = t.replies + (t.replies === 1 ? ' reply' : ' replies'); }
+    }
+  }
 
   async function sendReport(kind, id) {
     if (!window.confirm('Report this to a moderator? They will take a look.')) return;
@@ -559,6 +583,8 @@
     else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
     else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
     else if ((t = e.target.closest('[data-send-reply]'))) sendReply(t.closest('form'));
+    else if ((t = e.target.closest('[data-del-thread]'))) sendDelete('thread', t.dataset.delThread);
+    else if ((t = e.target.closest('[data-del-post]'))) sendDelete('post', t.dataset.delPost);
     else if ((t = e.target.closest('[data-report-thread]'))) sendReport('thread', t.dataset.reportThread);
     else if ((t = e.target.closest('[data-report-post]'))) sendReport('post', t.dataset.reportPost);
     else if (e.target.closest('#ann-more')) { annShown = anns.length; renderAnnouncements(); }
