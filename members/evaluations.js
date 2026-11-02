@@ -6,7 +6,9 @@
   scorecard is copied into the evaluation when it starts, so editing a scorecard later never changes
   an evaluation already written. Evaluations are private: no other Senior Manager and no employee can
   open them. The database rules in supabase/phase5.sql decide who can do what; this screen only shows
-  it. Opened from the Performance Management System card in the Content tab (see content.js).
+  it. A spreadsheet (CSV) of the evaluations can be downloaded, and one evaluation can be printed or
+  saved as a PDF. Both are written to the activity log.
+  Opened from the Performance Management System card in the Content tab (see content.js).
 */
 (function () {
   'use strict';
@@ -69,6 +71,7 @@
     if (!canEvaluate()) { a.innerHTML = ''; return; }
     a.innerHTML = ev.tab === 'evals'
       ? '<div class="sbox">' + I('search') + '<input id="ev-search" type="search" placeholder="Search" aria-label="Search by employee, scorecard or period" autocomplete="off" value="' + esc(ev.q) + '"></div>' +
+        IB('download', 'Download these evaluations as a spreadsheet', { 'data-a': 'export' }) +
         IB('plus', 'Evaluate an employee', { 'data-a': 'new-eval' }, 'solid')
       : IB('plus', 'Build a new scorecard', { 'data-a': 'new-card' }, 'solid');
     var s = $('#ev-search', ev.box);
@@ -126,12 +129,7 @@
       } else empty.hidden = true;
       return;
     }
-    var q = ev.q.trim().toLowerCase();
-    var list = ev.rows.filter(function (r) {
-      var p = person(r.employee_id);
-      return !q || (p && (p.full_name.toLowerCase().indexOf(q) !== -1 || p.employee_no.toLowerCase().indexOf(q) !== -1)) ||
-        r.scorecard_title.toLowerCase().indexOf(q) !== -1 || r.period.toLowerCase().indexOf(q) !== -1;
-    });
+    var list = visibleRows();
     rows.innerHTML = list.map(function (r) {
       var p = person(r.employee_id);
       var meta = [r.scorecard_title, r.period, r.status === 'final' ? fmtScore(r.score) : 'Not finalised', r.evaluator_name ? 'by ' + r.evaluator_name : ''].filter(Boolean).join(' · ');
@@ -336,11 +334,12 @@
       '<div class="ee-score" id="ee-score"></div><ul class="ecrits" id="ee-crit">' + rows + '</ul>' +
       '<div class="field"><label for="ee-over">Overall comments</label><textarea id="ee-over" maxlength="3000" rows="4"' + (final ? ' disabled' : '') + '>' + esc(r.overall_comment || '') + '</textarea></div>' +
       '<p class="msg bad" id="ee-err" role="alert" hidden></p>' +
-      '<div class="actions"><button class="btn btn-ghost btn-sm" type="button" id="ee-close">Close</button>' +
+      '<div class="actions"><button class="btn btn-ghost btn-sm" type="button" id="ee-close">Close</button><button class="btn btn-ghost btn-sm" type="button" id="ee-print">Print or PDF</button>' +
       (final ? '<button class="btn btn-ghost btn-sm" type="button" id="ee-reopen">Reopen</button>'
         : '<button class="btn btn-ghost btn-sm" type="button" id="ee-save">Save draft</button><button class="btn btn-primary btn-sm" type="button" id="ee-final">Finalise</button>') + '</div>';
     paintScore();
     $('#ee-close').onclick = function () { $('#ee-dlg').close(); };
+    $('#ee-print').onclick = function () { if (!final) readEditor(); printEval(r); };
     if (final) {
       $('#ee-reopen').onclick = reopen;
       return;
@@ -414,6 +413,82 @@
     await load();
   }
 
+  /* ---------- copies: a spreadsheet of the evaluations, and a printable page for one ---------- */
+  function fmtDay(iso) {
+    return iso ? new Date(iso).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+  }
+  function csvCell(v) {
+    var t = String(v === null || v === undefined ? '' : v).replace(/\r\n?/g, '\n');
+    if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;                 // keep a spreadsheet from running typed text as a formula
+    return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+  function visibleRows() {
+    var q = ev.q.trim().toLowerCase();
+    return ev.rows.filter(function (r) {
+      var p = person(r.employee_id);
+      return !q || (p && (p.full_name.toLowerCase().indexOf(q) !== -1 || p.employee_no.toLowerCase().indexOf(q) !== -1)) ||
+        r.scorecard_title.toLowerCase().indexOf(q) !== -1 || r.period.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+  function exportCsv() {
+    var list = visibleRows();
+    if (!list.length) { toast('Nothing to export.', 'bad'); return; }
+    var titles = [];
+    list.forEach(function (r) { (r.criteria || []).forEach(function (c) { if (titles.indexOf(c.title) === -1) titles.push(c.title); }); });
+    var head = ['Employee ID', 'Employee', 'Scorecard', 'Period', 'Status', 'Score (%)', 'Rating scale (max)', 'Evaluated by', 'Finalised on', 'Overall comments'];
+    titles.forEach(function (t) { head.push(t + ' - rating', t + ' - comment'); });
+    var lines = [head.map(csvCell).join(',')];
+    list.forEach(function (r) {
+      var p = person(r.employee_id);
+      var row = [p ? p.employee_no : '', p ? p.full_name : '', r.scorecard_title, r.period, r.status === 'final' ? 'Final' : 'Draft',
+        r.score === null || r.score === undefined ? '' : r.score, r.scale_max, r.evaluator_name, fmtDay(r.finalized_at), r.overall_comment];
+      titles.forEach(function (t) {
+        var c = (r.criteria || []).filter(function (x) { return x.title === t; })[0];
+        row.push(c && c.rating ? c.rating : '', c ? c.comment || '' : '');
+      });
+      lines.push(row.map(csvCell).join(','));
+    });
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sinaglikha-evaluations-' + new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    logAction('evaluation.export', list.length + (list.length === 1 ? ' evaluation' : ' evaluations'), { rows: list.length });
+    toast('Downloaded ' + list.length + (list.length === 1 ? ' evaluation.' : ' evaluations.'), 'ok');
+  }
+
+  function printEval(r) {
+    var p = person(r.employee_id), card = ev.cards.filter(function (c) { return c.id === r.scorecard_id; })[0] || null;
+    var w = window.open('', '_blank');
+    if (!w) { toast('Allow pop-ups to print or save a PDF.', 'bad'); return; }
+    var rows = (r.criteria || []).map(function (c) {
+      var lab = c.rating ? labelFor(card, Number(c.rating)) : '';
+      return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">' + esc(c.weight) + '</td>' +
+        '<td class="c"><b>' + (c.rating ? esc(c.rating) + ' / ' + esc(r.scale_max) : 'Not rated') + '</b>' + (lab ? '<div class="m">' + esc(lab) + '</div>' : '') + '</td><td>' + esc(c.comment || '') + '</td></tr>';
+    }).join('');
+    var score = r.status === 'final' ? fmtScore(r.score) : 'Draft: ' + (r.score === null || r.score === undefined ? 'not scored' : r.score + '% so far');
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Evaluation - ' + esc(p ? p.full_name : '') + ' - ' + esc(r.period) + '</title><style>' +
+      'body{font:14px/1.5 Arial,Helvetica,sans-serif;color:#2B1D16;margin:28px}h1{font-size:22px;margin:0 0 2px;color:#4A2E22}h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#B3361A;margin:0 0 14px}' +
+      '.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 24px;margin:12px 0 16px}.meta span{color:#6B5648;font-size:12px}.score{display:inline-block;background:#FFF6DC;border:1px solid #E9C77A;border-radius:10px;padding:8px 14px;font-size:18px;margin:4px 0 14px}' +
+      'table{width:100%;border-collapse:collapse}th,td{border:1px solid #E6D9C4;padding:7px 9px;vertical-align:top;text-align:left}th{background:#FBF3CB;font-size:12px}.c{text-align:center;white-space:nowrap}.m{color:#6B5648;font-size:12px}' +
+      '.over{border:1px solid #E6D9C4;border-radius:8px;padding:10px 12px;margin-top:14px;white-space:pre-wrap}.foot{margin-top:22px;color:#6B5648;font-size:11px}@media print{body{margin:14mm}}</style></head><body>' +
+      '<h2>SINAGLIKHA &middot; Performance Evaluation</h2><h1>' + esc(p ? p.full_name : 'Employee') + '</h1>' +
+      '<div class="meta"><div><span>Employee ID</span><br>' + esc(p ? p.employee_no : '') + '</div><div><span>Period</span><br>' + esc(r.period) + '</div>' +
+      '<div><span>Scorecard</span><br>' + esc(r.scorecard_title) + '</div><div><span>Evaluated by</span><br>' + esc(r.evaluator_name || '') + '</div>' +
+      '<div><span>Status</span><br>' + (r.status === 'final' ? 'Final' : 'Draft') + '</div><div><span>' + (r.status === 'final' ? 'Finalised on' : 'Last saved') + '</span><br>' + esc(fmtDay(r.status === 'final' ? r.finalized_at : r.updated_at)) + '</div></div>' +
+      '<div class="score"><b>Score: ' + esc(score) + '</b></div>' +
+      '<table><thead><tr><th>Criterion</th><th class="c">Weight</th><th class="c">Rating</th><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      (r.overall_comment ? '<div class="over"><b>Overall comments</b><br>' + esc(r.overall_comment) + '</div>' : '') +
+      '<div class="foot">Confidential. Kept by Total Rewards. Printed ' + esc(fmtDay(new Date().toISOString())) + '.</div></body></html>');
+    w.document.close();
+    w.focus();
+    setTimeout(function () { w.print(); }, 250);
+    logAction('evaluation.print', (p ? p.employee_no : r.employee_id) + ' / ' + r.period, { id: r.id });
+  }
+
   /* ---------- clicks ---------- */
   function onClick(e) {
     var t = e.target.closest('[data-tab]');
@@ -424,6 +499,7 @@
     if (a === 'back') { ev.ctx.back(); return; }
     if (a === 'new-card') { openCard(null); return; }
     if (a === 'new-eval') { openEval(null); return; }
+    if (a === 'export') { exportCsv(); return; }
     var li = e.target.closest('li.lrow'), id = li && li.dataset.id;
     if (!id) return;
     if (ev.tab === 'cards') {
