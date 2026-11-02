@@ -219,20 +219,33 @@ create policy "profiles: senior managers update"
   using (public.is_senior_manager() and role = 'senior_manager' and not hidden and id <> auth.uid())
   with check (role = 'senior_manager' and not hidden);
 
--- Profile settings: a signed-in person can set their own display name (and nothing else
--- about their account). Used by the profile button in the top bar of the HR 201 Files page.
-create or replace function public.set_my_name(new_name text)
-returns text
+-- Profile settings page: a signed-in person can set their own name and picture (and nothing
+-- else about their account). The picture is a small square JPEG kept with the profile, so it
+-- needs no extra storage setup.
+alter table public.profiles add column if not exists avatar text;
+alter table public.profiles drop constraint if exists profiles_avatar_check;
+alter table public.profiles add constraint profiles_avatar_check
+  check (avatar is null or (avatar like 'data:image/%' and length(avatar) <= 120000));
+
+drop function if exists public.set_my_name(text);
+
+create or replace function public.set_my_profile(
+  new_name text,
+  new_avatar text default null,
+  change_avatar boolean default false
+)
+returns json
 language sql security definer set search_path = public
 as $$
-  update public.profiles
-  set full_name = left(btrim(coalesce(new_name, '')), 80)
-  where id = auth.uid() and active
-  returning full_name;
+  update public.profiles p
+  set full_name = left(btrim(coalesce(new_name, '')), 80),
+      avatar    = case when change_avatar then nullif(new_avatar, '') else p.avatar end
+  where p.id = auth.uid() and p.active
+  returning json_build_object('full_name', p.full_name, 'avatar', p.avatar);
 $$;
 
-revoke all on function public.set_my_name(text) from public, anon;
-grant execute on function public.set_my_name(text) to authenticated;
+revoke all on function public.set_my_profile(text, text, boolean) from public, anon;
+grant execute on function public.set_my_profile(text, text, boolean) to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 7. Files: one private bucket called "library"

@@ -27,26 +27,74 @@
   var linkError = hash.get('error_description') || hash.get('error');
 
   /* ---------- views ---------- */
-  var VIEWS = ['loading', 'setup', 'auth', 'password', 'denied', 'app'];
+  var VIEWS = ['loading', 'setup', 'auth', 'password', 'denied', 'app', 'profile'];
   function show(name) {
     VIEWS.forEach(function (v) { $('#view-' + v).hidden = v !== name; });
-    $('#btn-signout').hidden = !(name === 'app' || name === 'password');
-    if (name !== 'app') { $('#who').hidden = true; $('#btn-profile').hidden = true; }
+    var signedIn = name === 'app' || name === 'profile';
+    $('#btn-signout').hidden = !(signedIn || name === 'password');
+    if (!signedIn) { $('#who').hidden = true; $('#btn-profile').hidden = true; }
+    else updateWho();
+    if (signedIn) $('#btn-profile').setAttribute('aria-current', name === 'profile' ? 'page' : 'false');
   }
 
-  /* the signed-in person's name (wide screens) and initials button (always) in the top bar */
+  function onProfileUrl() { return new URLSearchParams(location.search).has('profile'); }
+
+  /* ---------- profile pictures: a small square JPEG kept with the profile ---------- */
   function initials(p) {
     var words = String(p.full_name || '').trim().split(/\s+/).filter(Boolean);
     if (!words.length) return Array.from(String(p.email || '?'))[0].toUpperCase();
     var first = Array.from(words[0])[0], last = words.length > 1 ? Array.from(words[words.length - 1])[0] : '';
     return (first + last).toUpperCase();
   }
+  function photoOf(p) {
+    return p && typeof p.avatar === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(p.avatar) ? p.avatar : '';
+  }
+  /* fills a circle with the person's picture, or their initials when they have none */
+  function paintAvatar(el, p, photo) {
+    var src = photo === undefined ? photoOf(p) : photo;
+    el.textContent = '';
+    if (src) {
+      var img = new Image();
+      img.alt = '';
+      img.src = src;
+      el.appendChild(img);
+    } else if (p) {
+      el.textContent = initials(p);
+    }
+  }
+  function avatarHtml(p) {
+    var src = photoOf(p);
+    return src ? '<img src="' + src + '" alt="">' : esc(initials(p));
+  }
+  /* the signed-in person's name (wide screens) and picture button (always) in the top bar */
   function updateWho() {
     var p = state.profile, who = $('#who'), av = $('#btn-profile');
     who.textContent = p ? (p.full_name || p.email || '') : '';
     who.hidden = !who.textContent;
-    av.textContent = p ? initials(p) : '';
+    paintAvatar(av, p);
     av.hidden = !p;
+  }
+
+  function resizeToAvatar(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var side = Math.min(img.naturalWidth, img.naturalHeight);
+        if (!side) { reject(new Error('empty')); return; }
+        var c = document.createElement('canvas');
+        c.width = c.height = 256;
+        var g = c.getContext('2d');
+        g.fillStyle = '#fff';
+        g.fillRect(0, 0, 256, 256);
+        g.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 256, 256);
+        var q = 0.86, out = c.toDataURL('image/jpeg', q);
+        while (out.length > 90000 && q > 0.4) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+        resolve(out);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('unreadable')); };
+      img.src = url;
+    });
   }
 
   var toastTimer;
@@ -186,7 +234,7 @@
   async function enterApp(session) {
     state.session = session;
     var res = await sb.from('profiles')
-      .select('id,email,full_name,role,active')
+      .select('id,email,full_name,role,active,created_at')
       .eq('id', session.user.id)
       .maybeSingle();
     var p = res.data;
@@ -195,14 +243,17 @@
       show('denied');
       return;
     }
+    /* The picture is read separately so the page still opens if the latest database update
+       (which adds that column) hasn't been run yet. */
+    var pic = await sb.from('profiles').select('avatar').eq('id', session.user.id).maybeSingle();
+    p.avatar = pic.error || !pic.data ? null : pic.data.avatar || null;
     state.profile = p;
     state.isAdmin = p.role === 'admin';   // the hidden owner: also sets roles
     state.canUse = true;                   // every Senior manager and the owner: all file and people functions
-    updateWho();
     $$('.manager-only').forEach(function (el) { el.hidden = !state.canUse; });
     $('#tabs').hidden = !state.canUse;
     setTab('library');
-    show('app');
+    if (onProfileUrl()) { fillProfile(); show('profile'); } else show('app');
     state.path = [];
     state.filter = '';
     $('#search').value = '';
@@ -217,6 +268,7 @@
     state.isAdmin = false;
     state.canUse = false;
     people = [];
+    if (location.search) history.replaceState(null, '', location.pathname);
     $('#form-login').reset();
     note($('#login-msg'), '');
     show('auth');
@@ -787,8 +839,9 @@
       : '<button class="btn btn-ghost btn-sm" type="button" data-act="toggle">Reactivate</button>' +
         '<button class="btn btn-ghost btn-sm btn-warn" type="button" data-act="delete">Delete</button>';
     return '<li class="row person" data-id="' + esc(p.id) + '" data-email="' + esc(p.email || '') + '">' +
+      '<div class="pid"><span class="pav" aria-hidden="true">' + avatarHtml(p) + '</span>' +
       '<div class="row-text"><span class="row-name">' + label + (me ? ' (you)' : '') + '</span>' +
-      '<span class="row-meta">' + (p.full_name ? esc(p.email || '') : 'No name added') + '</span></div>' +
+      '<span class="row-meta">' + (p.full_name ? esc(p.email || '') : 'No name added') + '</span></div></div>' +
       '<div class="pfield"><span class="plabel">Status</span><span class="status ' + (p.active ? 'on' : 'off') + '">' + (p.active ? 'Active' : 'Deactivated') + '</span></div>' +
       roleControl(p, label, me) + '<div class="pactions">' + actions + '</div></li>';
   }
@@ -813,10 +866,12 @@
     if (!state.canUse) return;
     var list = $('#people');
     if (!people.length) list.innerHTML = '<li class="empty">Loading…</li>';
-    var res = await sb.from('profiles')
-      .select('id,email,full_name,role,active,created_at')
-      .eq('hidden', false)
-      .order('created_at', { ascending: true });
+    var cols = 'id,email,full_name,role,active,created_at';
+    var load = function (c) {
+      return sb.from('profiles').select(c).eq('hidden', false).order('created_at', { ascending: true });
+    };
+    var res = await load(cols + ',avatar');
+    if (res.error) res = await load(cols);   // the picture column isn't there until the database update is run
     if (res.error) {
       list.innerHTML = '<li class="empty">Couldn\'t load the list.</li>';
       return;
@@ -889,32 +944,112 @@
     loadPeople();
   });
 
-  /* ---------- profile settings: each person sets their own name ---------- */
-  $('#btn-profile').addEventListener('click', async function () {
+  /* ---------- profile settings page: picture, name, password ---------- */
+  var pf = { photo: '' };          // the picture shown in the form: a data URL, or '' for none
+  var pushedProfile = false;
+
+  function paintPhoto() {
+    paintAvatar($('#pf-avatar'), { full_name: $('#pf-name').value, email: state.profile.email }, pf.photo);
+    $('#pf-remove').hidden = !pf.photo;
+    $('#pf-upload').textContent = pf.photo ? 'Change photo' : 'Upload photo';
+  }
+  function fillProfile() {
     var p = state.profile;
-    if (!p) return;
-    var name = await ask({
-      title: 'Profile settings',
-      text: (p.email || '') + ' · ' + (p.role === 'admin' ? 'Administrator' : 'Senior manager'),
-      label: 'Your name',
-      value: p.full_name || '',
-      max: 80,
-      ok: 'Save',
-      validate: function (v) { return v.length > 80 ? 'Use 80 characters or fewer.' : ''; }
+    pf.photo = photoOf(p);
+    $('#pf-name').value = p.full_name || '';
+    $('#pf-email').value = p.email || '';
+    $('#pf-role').textContent = p.role === 'admin' ? 'Administrator' : 'Senior manager';
+    $('#pf-since').textContent = fmtDate(p.created_at) || 'Not available';
+    note($('#profile-msg'), '');
+    note($('#newpass-msg'), '');
+    $('#form-newpass').reset();
+    paintPhoto();
+  }
+  function openProfile() {
+    if (!state.profile) return;
+    if (!onProfileUrl()) {
+      history.pushState(null, '', location.pathname + '?profile');
+      pushedProfile = true;
+    }
+    fillProfile();
+    show('profile');
+    window.scrollTo(0, 0);
+  }
+  function closeProfile() {
+    if (pushedProfile) { pushedProfile = false; history.back(); return; }
+    history.replaceState(null, '', location.pathname);
+    show('app');
+  }
+
+  $('#btn-profile').addEventListener('click', openProfile);
+  $('#pf-back').addEventListener('click', closeProfile);
+  window.addEventListener('popstate', function () {
+    if (!state.profile) return;
+    if (onProfileUrl()) { fillProfile(); show('profile'); } else show('app');
+  });
+
+  $('#pf-name').addEventListener('input', function () { if (!pf.photo) paintPhoto(); });
+  $('#pf-upload').addEventListener('click', function () { $('#pf-file').click(); });
+  $('#pf-remove').addEventListener('click', function () { pf.photo = ''; paintPhoto(); });
+  $('#pf-discard').addEventListener('click', fillProfile);
+  $('#pf-file').addEventListener('change', async function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    var msg = $('#profile-msg');
+    if (!f) return;
+    if (!/^image\//.test(f.type)) { note(msg, 'Choose an image file (JPG or PNG).', 'bad'); return; }
+    if (f.size > 15 * 1048576) { note(msg, 'That image is too large. Choose one under 15 MB.', 'bad'); return; }
+    try {
+      pf.photo = await resizeToAvatar(f);
+      note(msg, '');
+      paintPhoto();
+    } catch (err) {
+      note(msg, "Couldn't read that image. Try a JPG or PNG.", 'bad');
+    }
+  });
+
+  $('#form-profile').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var msg = $('#profile-msg'), btn = $('#pf-save');
+    var name = $('#pf-name').value.trim();
+    if (name.length > 80) { note(msg, 'Use 80 characters or fewer.', 'bad'); return; }
+    btn.disabled = true;
+    note(msg, '');
+    var res = await sb.rpc('set_my_profile', {
+      new_name: name,
+      new_avatar: pf.photo || null,
+      change_avatar: pf.photo !== photoOf(state.profile)
     });
-    if (name === null) return;
-    var res = await sb.rpc('set_my_name', { new_name: name });
-    if (res.error || res.data === null) {
-      toast(res.error && res.error.code === 'PGRST202'
-        ? "Names can't be saved yet: the latest database update hasn't been run in Supabase."
-        : "Couldn't save your name. Please try again.", 'bad');
+    btn.disabled = false;
+    if (res.error || !res.data) {
+      note(msg, res.error && res.error.code === 'PGRST202'
+        ? "Saving isn't set up yet: the latest database update hasn't been run in Supabase."
+        : "Couldn't save your changes. Please try again.", 'bad');
       return;
     }
-    state.profile.full_name = res.data;
+    state.profile.full_name = res.data.full_name || '';
+    state.profile.avatar = res.data.avatar || null;
     updateWho();
     people = [];
-    if (!$('#panel-people').hidden) loadPeople();
-    toast(res.data ? 'Name saved.' : 'Name removed.', 'ok');
+    fillProfile();
+    note(msg, 'Saved.', 'ok');
+    toast('Profile saved.', 'ok');
+  });
+
+  $('#form-newpass').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var a = $('#np-new').value, b = $('#np-confirm').value;
+    var msg = $('#newpass-msg'), btn = $('#np-save');
+    if (a.length < 10) { note(msg, 'Use at least 10 characters.', 'bad'); return; }
+    if (a !== b) { note(msg, "The two passwords don't match.", 'bad'); return; }
+    btn.disabled = true;
+    note(msg, '');
+    var res = await sb.auth.updateUser({ password: a });
+    btn.disabled = false;
+    if (res.error) { note(msg, res.error.message || "Couldn't update the password. Try again.", 'bad'); return; }
+    $('#form-newpass').reset();
+    note(msg, 'Password updated.', 'ok');
+    toast('Password updated.', 'ok');
   });
 
   $('#form-invite').addEventListener('submit', async function (e) {
