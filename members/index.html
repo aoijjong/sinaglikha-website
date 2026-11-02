@@ -454,7 +454,8 @@ dialog[open]{animation:pop .5s var(--ease)}
 
     <form class="card" id="form-newpass" novalidate>
       <h2>Password</h2>
-      <p class="lead">Choose a new password with at least 10 characters.</p>
+      <p class="lead">Enter your current password, then choose a new one with at least 10 characters.</p>
+      <div class="field"><label for="np-current">Current password</label><input id="np-current" type="password" autocomplete="current-password"></div>
       <div class="field"><label for="np-new">New password</label><input id="np-new" type="password" autocomplete="new-password"></div>
       <div class="field"><label for="np-confirm">Confirm new password</label><input id="np-confirm" type="password" autocomplete="new-password"></div>
       <button class="btn btn-ghost btn-sm" type="submit" id="np-save">Update password</button>

@@ -157,10 +157,11 @@ want a separate sender.
   click the link in the email and choose a password.
 - **Profile settings:** everyone sets up their own profile. Tap the round button next to
   **Sign out** (your photo, or your initials) to open the **Profile settings** page. There you can
-  upload a photo, set your name and change your password. Until a name is set the list shows
-  "No name added". This needs the latest `supabase/schema.sql` to have been run once (it adds the
-  photo column and the `set_my_profile` function). If you see "Saving isn't set up yet", run it
-  again in the Supabase SQL editor.
+  upload a photo, set your name and change your password (you enter your current password first).
+  Forgot it? Use **Forgot your password?** on the sign-in page instead. Until a name is set the
+  list shows "No name added". This needs the latest `supabase/schema.sql` to have been run once
+  (it adds the photo column and the `set_my_profile` function). If you see "Saving isn't set up
+  yet", run it again in the Supabase SQL editor.
 - **Roles:** everyone you invite is a **Senior manager** with full file access and can invite and
   manage other Senior managers. Only the hidden Administrator can change a role (Accounts tab, role menu).
 - **Remove access:** Accounts tab, **Deactivate** (instant). The account moves out of the main list

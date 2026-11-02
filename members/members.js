@@ -1042,12 +1042,22 @@
 
   $('#form-newpass').addEventListener('submit', async function (e) {
     e.preventDefault();
-    var a = $('#np-new').value, b = $('#np-confirm').value;
+    var cur = $('#np-current').value, a = $('#np-new').value, b = $('#np-confirm').value;
     var msg = $('#newpass-msg'), btn = $('#np-save');
+    if (!cur) { note(msg, 'Enter your current password.', 'bad'); $('#np-current').focus(); return; }
     if (a.length < 10) { note(msg, 'Use at least 10 characters.', 'bad'); return; }
     if (a !== b) { note(msg, "The two passwords don't match.", 'bad'); return; }
+    if (a === cur) { note(msg, 'Choose a password that is different from your current one.', 'bad'); return; }
     btn.disabled = true;
     note(msg, '');
+    /* Prove it's really them first: sign in again with the current password. */
+    var check = await sb.auth.signInWithPassword({ email: state.profile.email, password: cur });
+    if (check.error || !check.data || !check.data.session) {
+      btn.disabled = false;
+      note(msg, "Your current password isn't right.", 'bad');
+      $('#np-current').focus();
+      return;
+    }
     var res = await sb.auth.updateUser({ password: a });
     btn.disabled = false;
     if (res.error) { note(msg, res.error.message || "Couldn't update the password. Try again.", 'bad'); return; }
