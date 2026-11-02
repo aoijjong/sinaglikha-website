@@ -1264,7 +1264,9 @@
     paintAvatar($('#pf-avatar'), { full_name: $('#pf-name').value, email: state.profile.email }, pf.photo);
     $('#pf-remove').hidden = !pf.photo;
     $('#pf-avatar').parentNode.classList.toggle('has-photo', !!pf.photo);
-    $('#pf-upload').textContent = pf.photo ? 'Change Photo' : 'Upload Photo';
+    var up = $('#pf-upload'), upLabel = pf.photo ? 'Change photo' : 'Upload a photo';
+    up.setAttribute('aria-label', upLabel);
+    up.setAttribute('data-tip', upLabel);
   }
   function fillProfile() {
     var p = state.profile;

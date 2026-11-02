@@ -24,7 +24,18 @@
 
   $('#year').textContent = new Date().getFullYear();
 
+  /* every PIN box starts hidden again whenever the page changes */
+  function hidePins() {
+    Array.prototype.forEach.call(document.querySelectorAll('.pw-toggle'), function (b) {
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', 'Show PIN');
+      b.setAttribute('data-tip', 'Show PIN');
+      document.getElementById(b.getAttribute('data-for')).type = 'password';
+    });
+  }
+
   function show(name) {
+    hidePins();
     VIEWS.forEach(function (v) { $('#v-' + v).hidden = v !== name; });
     $('#top-right').hidden = SIGNED_IN.indexOf(name) === -1;
     var first = { signin: '#s-no', activate: '#a-no' }[name];
@@ -54,6 +65,15 @@
   });
   ['#s-no', '#a-no'].forEach(function (sel) {
     $(sel).addEventListener('input', function () { this.value = this.value.toUpperCase(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.pw-toggle'), function (b) {
+    b.addEventListener('click', function () {
+      var input = document.getElementById(b.getAttribute('data-for')), on = input.type === 'password';
+      input.type = on ? 'text' : 'password';
+      b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', on ? 'Hide PIN' : 'Show PIN');
+      b.setAttribute('data-tip', on ? 'Hide PIN' : 'Show PIN');
+    });
   });
   $('#a-code').addEventListener('input', function () { this.value = this.value.toUpperCase(); });
 

@@ -67,6 +67,14 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .field label{display:block;font-weight:600;font-size:.92rem;margin-bottom:7px;color:var(--brown)}
 .field input{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);transition:border-color .4s,box-shadow .4s,background .4s}
 .field input:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
+.pw{position:relative}
+.pw input{padding-right:54px}
+.pw-toggle{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0;transition:background .3s,color .3s}
+.pw-toggle .icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pw-toggle .off,.pw-toggle[aria-pressed="true"] .on{display:none}
+.pw-toggle[aria-pressed="true"] .off{display:block}
+.pw-toggle[aria-pressed="true"]{color:#B3261E}
+@media (hover:hover) and (pointer:fine){.pw-toggle:hover{background:var(--cream);color:var(--brown)}}
 .field input.pin{letter-spacing:.4em;font-weight:700;text-align:center;font-size:1.2rem}
 .field .fine{margin-top:6px}
 .fine{font-size:.88rem;color:var(--muted)}
@@ -178,7 +186,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
       </div>
       <h2>Sign In</h2>
       <div class="field"><label for="s-no">Employee ID</label><input id="s-no" type="text" inputmode="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
-      <div class="field"><label for="s-pin">PIN</label><input id="s-pin" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <div class="field"><label for="s-pin">PIN</label><div class="pw"><input id="s-pin" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><button class="pw-toggle" type="button" data-for="s-pin" aria-pressed="false" aria-label="Show PIN" data-tip="Show PIN"><i data-icon="eye" class="on"></i><i data-icon="eyeOff" class="off"></i></button></div></div>
       <p class="msg bad" id="s-msg" role="alert" hidden></p>
       <div class="actions">
         <button class="btn btn-primary" type="submit" id="s-ok">Sign In</button>
@@ -203,8 +211,8 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
       <p class="lead">Use the Employee ID and activation code Staffing and Recruitment gave you, then pick a 6-digit PIN that only you know.</p>
       <div class="field"><label for="a-no">Employee ID</label><input id="a-no" type="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
       <div class="field"><label for="a-code">Activation Code</label><input id="a-code" type="text" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" maxlength="10"></div>
-      <div class="field"><label for="a-pin">New PIN</label><input id="a-pin" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><p class="fine">Six digits. Avoid easy ones like 123456 or your ID number.</p></div>
-      <div class="field"><label for="a-pin2">Repeat PIN</label><input id="a-pin2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <div class="field"><label for="a-pin">New PIN</label><div class="pw"><input id="a-pin" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><button class="pw-toggle" type="button" data-for="a-pin" aria-pressed="false" aria-label="Show PIN" data-tip="Show PIN"><i data-icon="eye" class="on"></i><i data-icon="eyeOff" class="off"></i></button></div><p class="fine">Six digits. Avoid easy ones like 123456 or your ID number.</p></div>
+      <div class="field"><label for="a-pin2">Repeat PIN</label><div class="pw"><input id="a-pin2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><button class="pw-toggle" type="button" data-for="a-pin2" aria-pressed="false" aria-label="Show PIN" data-tip="Show PIN"><i data-icon="eye" class="on"></i><i data-icon="eyeOff" class="off"></i></button></div></div>
       <p class="msg bad" id="a-msg" role="alert" hidden></p>
       <div class="actions">
         <button class="btn btn-primary" type="submit" id="a-ok">Save PIN</button>
@@ -294,9 +302,9 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
     <form class="card" id="f-pin" novalidate>
       <h2>Change Your PIN</h2>
       <p class="lead">Changing your PIN signs you out on your other devices.</p>
-      <div class="field"><label for="p-cur">Current PIN</label><input id="p-cur" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
-      <div class="field"><label for="p-new">New PIN</label><input id="p-new" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
-      <div class="field"><label for="p-new2">Repeat New PIN</label><input id="p-new2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
+      <div class="field"><label for="p-cur">Current PIN</label><div class="pw"><input id="p-cur" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><button class="pw-toggle" type="button" data-for="p-cur" aria-pressed="false" aria-label="Show PIN" data-tip="Show PIN"><i data-icon="eye" class="on"></i><i data-icon="eyeOff" class="off"></i></button></div></div>
+      <div class="field"><label for="p-new">New PIN</label><div class="pw"><input id="p-new" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><button class="pw-toggle" type="button" data-for="p-new" aria-pressed="false" aria-label="Show PIN" data-tip="Show PIN"><i data-icon="eye" class="on"></i><i data-icon="eyeOff" class="off"></i></button></div></div>
+      <div class="field"><label for="p-new2">Repeat New PIN</label><div class="pw"><input id="p-new2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"><button class="pw-toggle" type="button" data-for="p-new2" aria-pressed="false" aria-label="Show PIN" data-tip="Show PIN"><i data-icon="eye" class="on"></i><i data-icon="eyeOff" class="off"></i></button></div></div>
       <p class="msg bad" id="p-msg" role="alert" hidden></p>
       <div class="actions"><button class="btn btn-primary" type="submit" id="p-ok">Save New PIN</button></div>
     </form>
