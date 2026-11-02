@@ -326,6 +326,14 @@
     toggleReplies(id);
   }
 
+  function composerOpen(on) {
+    $('#fc-fields').hidden = !on;
+    $('#fc-open').hidden = on;
+    if (on) $('#fc-title').focus();
+  }
+  $('#fc-open').addEventListener('click', function () { composerOpen(true); });
+  $('#fc-cancel').addEventListener('click', function () { note('#fc-msg', ''); composerOpen(false); });
+
   $('#f-compose').addEventListener('submit', async function (e) {
     e.preventDefault();
     var title = $('#fc-title').value.trim(), body = $('#fc-body').value.trim();
@@ -341,6 +349,7 @@
     $('#fc-title').value = '';
     $('#fc-body').value = '';
     toast('Posted.');
+    composerOpen(false);
     refreshFeed();
   });
 
@@ -420,7 +429,10 @@
       : 'Timed in ' + fmtTime(rec.time_in) + ' · Timed out ' + fmtTime(rec.time_out) + '. Thank you for today.';
     $('#att-in').disabled = !!inAt;
     $('#att-out').disabled = !inAt || !!outAt;
-    $('#att-recent').innerHTML = att.records.slice(0, 5).map(function (r) {
+    // only the last 7 days (today and the 6 days before it) show here
+    var from = new Date(Date.parse(att.today + 'T00:00:00Z') - 6 * 86400000).toISOString().slice(0, 10);
+    var week = att.records.filter(function (r) { return r.work_date >= from; });
+    $('#att-recent').innerHTML = !week.length ? '<li class="none">No time records in the last 7 days.</li>' : week.map(function (r) {
       var chip = r.time_in && r.time_out ? ['s-published', 'Complete'] : r.work_date === att.today ? ['s-draft', 'Today'] : ['s-archived', 'No time out'];
       return '<li class="lrow"><div class="lmain" style="cursor:default"><span class="ltext"><span class="lname">' + esc(fmtDay(r.work_date)) + '</span><span class="lmeta">' +
         esc((r.time_in ? fmtTime(r.time_in) : '—') + ' to ' + (r.time_out ? fmtTime(r.time_out) : '—')) + '</span></span></div>' +

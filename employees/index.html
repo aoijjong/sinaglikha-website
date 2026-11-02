@@ -163,7 +163,12 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .rcmp{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
 .rcmp textarea{flex:1;min-width:0;min-height:44px;resize:vertical;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
 .rcmp textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
-.composer{padding:14px 20px 18px;border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(251,243,203,.4),rgba(251,243,203,0))}
+.composer{padding:14px 20px 18px;border-top:1px solid var(--line)}
+.cmp-open{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border-radius:999px;border:1.5px solid rgba(74,46,34,.2);background:var(--paper);color:var(--muted);font:inherit;font-size:.95rem;cursor:pointer;text-align:left}
+.cmp-open .icon{width:20px;height:20px;color:var(--brown);flex:none}
+@media (hover:hover) and (pointer:fine){.cmp-open:hover{border-color:var(--brown);background:#fff}}
+.sub-h{margin:0;padding:12px 20px 4px;border-top:1px solid var(--line);font-family:inherit;font-size:.76rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sub-h+.items .lrow:first-child{border-top:0}
 .cmp-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .cmp-row select{padding:11px 12px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;max-width:100%}
 .cmp-row input{flex:1 1 200px;min-width:0;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
@@ -286,6 +291,8 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
           <div class="panel-h"><span class="pi"><i data-icon="users"></i></span><h2>Community</h2></div>
           <div class="feed" id="forum-feed"></div>
           <form class="composer" id="f-compose" novalidate>
+            <button class="cmp-open" type="button" id="fc-open"><i data-icon="plus"></i>Start a discussion</button>
+            <div id="fc-fields" hidden>
             <div class="cmp-row">
               <label class="sr-only" for="fc-cat">Category</label><select id="fc-cat"></select>
               <label class="sr-only" for="fc-title">Title</label><input id="fc-title" type="text" maxlength="120" placeholder="Start a discussion: give it a title" autocomplete="off">
@@ -293,7 +300,8 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
             <label class="sr-only" for="fc-body">Your message</label>
             <textarea id="fc-body" maxlength="2000" rows="3" placeholder="What would you like to share or ask your colleagues?"></textarea>
             <p class="msg bad" id="fc-msg" role="alert" hidden></p>
-            <div class="cmp-foot"><span class="fine">Posts show your name. Be kind and keep it work-friendly.</span><button class="btn btn-primary btn-sm" type="submit" id="fc-post"><i data-icon="send"></i>Post</button></div>
+            <div class="cmp-foot"><span class="fine">Posts show your name. Be kind and keep it work-friendly.</span><span style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" type="button" id="fc-cancel">Cancel</button><button class="btn btn-primary btn-sm" type="submit" id="fc-post"><i data-icon="send"></i>Post</button></span></div>
+            </div>
           </form>
         </section>
       </div>
@@ -309,6 +317,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
             </div>
             <p class="msg bad" id="att-msg" role="alert" hidden style="margin:12px 0 0"></p>
           </div>
+          <h3 class="sub-h">Last 7 days</h3>
           <ul class="items" id="att-recent"></ul>
         </div>
         <div class="panel" id="eval-panel" style="order:2" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>My evaluations</h2></div><ul class="items" id="evals"></ul></div>
