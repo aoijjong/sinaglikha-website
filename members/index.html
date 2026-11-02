@@ -200,6 +200,11 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .status.on{background:#E3F3E4;color:#1E6B2A}
 .status.off{background:#F1E6E2;color:#8A3B2B}
 .pactions{display:flex;gap:8px;align-items:center;margin-left:auto}
+.person .pactions{align-self:flex-end}
+.icon-btn.outline{width:44px;height:44px;border:2px solid var(--brown)}
+.icon-btn.outline[disabled]{opacity:.35;cursor:not-allowed}
+@media (hover:hover) and (pointer:fine){.icon-btn.outline:not([disabled]):hover{background:var(--brown);color:var(--paper)}}
+.no-name{color:var(--muted);font-weight:500}
 .role-tag{font-size:.85rem;font-weight:600;color:var(--brown);background:var(--cream);border-radius:999px;padding:7px 13px;white-space:nowrap}
 
 /* dialog */
@@ -248,14 +253,16 @@ dialog[open]{animation:pop .5s var(--ease)}
   .app-head{align-items:flex-start}
   /* account rows: name on top, status and role side by side, buttons across the bottom */
   .list-head{flex-direction:column;align-items:flex-start;gap:2px}
-  .person{display:grid;grid-template-columns:auto 1fr;gap:14px 16px;padding:16px}
+  .person{display:grid;grid-template-columns:auto 1fr auto;gap:14px 10px;padding:16px}
+  .person.is-off{grid-template-columns:auto 1fr;gap:14px 16px}
   .person .pid{grid-column:1/-1}
   .person .row-name{-webkit-line-clamp:unset;display:block}
   .person .row-meta{white-space:normal;overflow-wrap:anywhere}
   .person .pfield{align-items:stretch;min-width:0}
-  .person select{width:100%}
+  .person select{width:100%;font-size:.92rem;padding:10px 8px 10px 12px}
   .person .status,.person .role-tag{align-self:flex-start}
-  .person .pactions{grid-column:1/-1;margin-left:0}
+  .person .pactions{margin-left:0}
+  .person.is-off .pactions{grid-column:1/-1}
   .person .pactions .btn{flex:1;min-height:42px}
 }
 @media (max-width:420px){
@@ -263,6 +270,8 @@ dialog[open]{animation:pop .5s var(--ease)}
   .top-right .btn-sm{padding:10px 12px}
 }
 @media (max-width:359px){
+  .person:not(.is-off){grid-template-columns:1fr auto}
+  .person:not(.is-off)>.pfield:nth-child(2){grid-column:1/-1}
   .top-in{gap:8px}
   .top-right{gap:6px}
   .avatar{width:34px;height:34px}

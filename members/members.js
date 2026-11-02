@@ -183,6 +183,7 @@
 
   var ICON_FOLDER = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
   var ICON_DOWN = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
+  var ICON_DEACTIVATE = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5M22 8l-5 5"/></svg>';
   var ICON_TRASH = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
 
   /* ---------- confirm / ask dialog ---------- */
@@ -835,13 +836,15 @@
     var me = p.id === state.session.user.id;
     var label = esc(p.full_name || p.email || 'Unnamed');
     var actions = p.active
-      ? '<button class="btn btn-ghost btn-sm" type="button" data-act="toggle"' + (me ? ' disabled' : '') + '>Deactivate</button>'
-      : '<button class="btn btn-ghost btn-sm" type="button" data-act="toggle">Reactivate</button>' +
+      ? '<button class="icon-btn outline" type="button" data-act="toggle" data-to="off" aria-label="Deactivate ' + label + '" title="' + (me ? "You can't deactivate your own account" : 'Deactivate') + '"' + (me ? ' disabled' : '') + '>' + ICON_DEACTIVATE + '</button>'
+      : '<button class="btn btn-ghost btn-sm" type="button" data-act="toggle" data-to="on">Reactivate</button>' +
         '<button class="btn btn-ghost btn-sm btn-warn" type="button" data-act="delete">Delete</button>';
-    return '<li class="row person" data-id="' + esc(p.id) + '" data-email="' + esc(p.email || '') + '">' +
+    /* the name leads; the email sits underneath (and stands in as the title when there is no name) */
+    var nameLine = p.full_name ? esc(p.full_name) + (me ? ' (you)' : '') : '<span class="no-name">No name added</span>';
+    return '<li class="row person' + (p.active ? '' : ' is-off') + '" data-id="' + esc(p.id) + '" data-email="' + esc(p.email || '') + '">' +
       '<div class="pid"><span class="pav" aria-hidden="true">' + avatarHtml(p) + '</span>' +
-      '<div class="row-text"><span class="row-name">' + label + (me ? ' (you)' : '') + '</span>' +
-      '<span class="row-meta">' + (p.full_name ? esc(p.email || '') : 'No name added') + '</span></div></div>' +
+      '<div class="row-text"><span class="row-name">' + nameLine + '</span>' +
+      '<span class="row-meta">' + esc(p.email || '') + (!p.full_name && me ? ' (you)' : '') + '</span></div></div>' +
       '<div class="pfield"><span class="plabel">Status</span><span class="status ' + (p.active ? 'on' : 'off') + '">' + (p.active ? 'Active' : 'Deactivated') + '</span></div>' +
       roleControl(p, label, me) + '<div class="pactions">' + actions + '</div></li>';
   }
@@ -929,7 +932,7 @@
     if (act === 'delete') { await removeAccount(li.dataset.id, li.dataset.email); return; }
     if (act !== 'toggle') return;
 
-    var activate = btn.textContent.trim() === 'Reactivate';
+    var activate = btn.dataset.to === 'on';
     if (!activate) {
       var ok = await ask({
         title: 'Deactivate this account?',
