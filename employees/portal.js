@@ -151,6 +151,26 @@
     if (!r.ok) { note('#h-err', r.data.error || "Couldn't load the portal content."); content = { deliverables: [], items: [] }; }
     else { note('#h-err', ''); content = { deliverables: r.data.deliverables || [], items: r.data.items || [] }; }
     renderHome();
+    loadRecords();
+  }
+
+  /* the employee's own compensation records, if Total Rewards has uploaded any */
+  async function loadRecords() {
+    var r = await call('GET', '/api/employee-records');
+    var list = r.ok && Array.isArray(r.data.records) ? r.data.records : [];
+    $('#rec-panel').hidden = !list.length;
+    $('#recs').innerHTML = list.map(function (x) {
+      return '<li class="item"><div><b>' + esc(x.title) + '</b><span class="meta">' + esc([x.period, fmtDate(x.created_at)].filter(Boolean).join(' · ')) +
+        '</span></div><button class="btn btn-ghost btn-sm" type="button" data-rec="' + esc(x.id) + '">Open</button></li>';
+    }).join('');
+  }
+
+  async function openRecord(id) {
+    var w = window.open('', '_blank');
+    var r = await call('GET', '/api/employee-record-file?id=' + encodeURIComponent(id));
+    if (r.status === 401) { if (w) w.close(); show('signin'); return; }
+    if (!r.ok || !r.data.url) { if (w) w.close(); toast(r.data.error || "Couldn't open that."); return; }
+    if (w) { w.opener = null; w.location.href = r.data.url; } else window.location.href = r.data.url;
   }
 
   async function openItem(id) {
@@ -162,8 +182,9 @@
   }
 
   document.addEventListener('click', function (e) {
-    var open = e.target.closest('[data-open]'), tile = e.target.closest('[data-dept]');
+    var open = e.target.closest('[data-open]'), tile = e.target.closest('[data-dept]'), rec = e.target.closest('[data-rec]');
     if (open) openItem(open.dataset.open);
+    else if (rec) openRecord(rec.dataset.rec);
     else if (tile) openDept(tile.dataset.dept);
   });
   $('#q').addEventListener('input', renderSearch);
