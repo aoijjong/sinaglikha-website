@@ -28,9 +28,10 @@
     toastTimer = setTimeout(function () { t.className = 'toast'; }, 4200);
   }
 
-  function note(sel, msg) {
+  function note(sel, msg, kind) {
     var el = $(sel);
     el.textContent = msg || '';
+    el.className = 'msg ' + (kind || 'bad');
     el.hidden = !msg;
   }
 
@@ -101,8 +102,12 @@
     busy(btn, false, 'Save PIN and Sign In');
     $('#a-pin').value = $('#a-pin2').value = '';
     if (!res.ok) { note('#a-msg', res.data.error || "That didn't work. Ask Staffing and Recruitment for a new code."); return; }
-    toast('PIN saved. Welcome!');
-    enter(res.data.employee);
+    /* Activating only sets the PIN. The employee signs in with it, so the first sign-in proves they remember it. */
+    ['#f-signin', '#f-activate'].forEach(function (f) { $(f).reset(); });
+    show('signin');
+    $('#s-no').value = no;
+    note('#s-msg', 'Your PIN is saved. Now sign in with your Employee ID and your new PIN.', 'ok');
+    $('#s-pin').focus();
   });
 
   $('#f-pin').addEventListener('submit', async function (e) {

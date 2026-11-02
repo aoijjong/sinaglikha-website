@@ -2,7 +2,8 @@
   POST /api/employee-activate   { "employee_no": "SNG-0001", "code": "K7M2-9QXA", "pin": "482913" }
 
   First sign-in: the employee uses the one-time activation code from Staffing and Recruitment
-  and chooses their own 6-digit PIN. The code works once and expires after 7 days.
+  and chooses their own 6-digit PIN. The code works once and expires after 7 days. This only
+  sets the PIN; the employee then signs in with it on the sign-in page.
 */
 
 const E = require('./_employee');
@@ -55,10 +56,6 @@ module.exports = async function handler(req, res) {
     pin_set: true, code_expires_at: null, locked_until: null, last_login_at: new Date().toISOString()
   }, 'return=minimal');
   await E.noteAttempt(ip, no, true);
-  E.setSession(res, found.emp, version);
   await E.logAudit('employee.activate', no);
-  return E.send(res, 200, {
-    ok: true,
-    employee: { employee_no: found.emp.employee_no, full_name: found.emp.full_name, position: found.emp.position }
-  });
+  return E.send(res, 200, { ok: true });
 };
