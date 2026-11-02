@@ -324,6 +324,12 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .tp-note{margin-top:22px;font-size:.88rem;color:var(--muted)}
 
 .rec-wrap{margin-top:clamp(52px,7vw,88px)}
+.notice-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.notice{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.notice h3{font-family:var(--serif);font-weight:400;font-size:1.3rem;line-height:1.2;color:var(--brown);margin:0;overflow-wrap:anywhere}
+.notice .n-meta{font-size:.85rem;color:var(--muted)}
+.notice p{margin:0;font-size:.96rem;color:var(--ink);overflow-wrap:anywhere}
+.notice .btn{align-self:flex-start;margin-top:auto;padding:12px 20px;font-size:.88rem}
 .rec-strip{display:flex;align-items:center;gap:22px;margin-top:18px;padding:22px clamp(22px,3vw,30px);border-radius:26px;background:#fff;border:1px solid rgba(74,46,34,.12);position:relative;overflow:hidden}
 .rec-strip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--grad)}
 .rec-strip .lockbox{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.55);flex:none}
@@ -899,6 +905,17 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   </div>
 </section>
 
+<!-- PUBLIC NOTICES: items the Senior Managers have published for everyone; hidden when there are none -->
+<section id="notices" aria-labelledby="notices-title" hidden>
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">News and Files</span>
+      <h2 id="notices-title">Shared With Everyone</h2>
+    </div>
+    <ul class="notice-list" id="notice-list"></ul>
+  </div>
+</section>
+
 <!-- CONTACT -->
 <section id="contact" data-nav="contact" aria-labelledby="contact-title">
   <div class="container contact-grid">
@@ -1297,6 +1314,59 @@ dlg.addEventListener("click", e => {
       say("info", "Your message looks good, but this form is not connected to an inbox yet, so nothing was sent. Please use the official contact details once they are published.");
     }
   });
+})();
+</script>
+<script src="members/config.js"></script>
+<script>
+/* Items a Senior Manager has Published for Everyone (the Public audience). The database only
+   hands these out while they are Published and Public, so Unpublish removes one right away. */
+(function () {
+  var cfg = window.MEMBERS_CONFIG || {};
+  var url = String(cfg.SUPABASE_URL || ''), key = String(cfg.SUPABASE_ANON_KEY || '');
+  if (!/^https:\/\//.test(url) || !key || /^YOUR_/.test(key)) return;
+  var base = url.replace(/\/+$/, '');
+  var head = { apikey: key };
+  if (key.split('.').length === 3) head.Authorization = 'Bearer ' + key;
+
+  fetch(base + '/rest/v1/content_items?status=eq.published&audience=eq.public&kind=neq.folder' +
+    '&select=id,kind,title,description,category,version,external_url,file_path,published_at&order=published_at.desc&limit=24', { headers: head })
+    .then(function (r) { return r.ok ? r.json() : []; })
+    .then(function (items) {
+      if (!Array.isArray(items) || !items.length) return;
+      var list = document.getElementById('notice-list');
+      items.forEach(function (it) {
+        var li = document.createElement('li'); li.className = 'notice';
+        var h = document.createElement('h3'); h.textContent = it.title; li.appendChild(h);
+        var d = it.published_at ? new Date(it.published_at) : null;
+        var meta = [it.category, it.version ? 'Version ' + it.version : '', d && !isNaN(d) ? d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '']
+          .filter(Boolean).join(' · ');
+        if (meta) { var m = document.createElement('span'); m.className = 'n-meta'; m.textContent = meta; li.appendChild(m); }
+        if (it.description) { var p = document.createElement('p'); p.textContent = it.description.length > 220 ? it.description.slice(0, 220) + '…' : it.description; li.appendChild(p); }
+        if (it.kind === 'link' && /^https?:\/\//i.test(it.external_url || '')) {
+          var a = document.createElement('a'); a.className = 'btn btn-ghost'; a.href = it.external_url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Open Link';
+          li.appendChild(a);
+        } else if (it.kind === 'file' && it.file_path) {
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-ghost'; b.textContent = 'Open File';
+          b.addEventListener('click', function () {
+            var w = window.open('', '_blank');
+            var path = it.file_path.split('/').map(encodeURIComponent).join('/');
+            fetch(base + '/storage/v1/object/sign/content/' + path, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, head), body: JSON.stringify({ expiresIn: 300 }) })
+              .then(function (r) { return r.ok ? r.json() : null; })
+              .then(function (s) {
+                if (!s || !s.signedURL) { if (w) w.close(); return; }
+                var rel = s.signedURL.charAt(0) === '/' ? s.signedURL : '/' + s.signedURL;
+                var full = rel.indexOf('/storage/v1/') === 0 ? base + rel : base + '/storage/v1' + rel;
+                if (w) { w.opener = null; w.location.href = full; } else location.href = full;
+              })
+              .catch(function () { if (w) w.close(); });
+          });
+          li.appendChild(b);
+        } else return;
+        list.appendChild(li);
+      });
+      if (list.children.length) document.getElementById('notices').hidden = false;
+    })
+    .catch(function () { /* the public page works fine without them */ });
 })();
 </script>
 </body>

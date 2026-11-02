@@ -27,7 +27,7 @@
 
   var ICON_FOLDER = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
 
-  var cs = { ready: false, loading: null, deliverables: [], key: '', path: [], items: [], q: '', token: 0, timer: null, failed: false };
+  var cs = { ready: false, loading: null, deliverables: [], key: '', path: [], items: [], q: '', token: 0, timer: null, failed: false, view: 'overview' };
 
   function busy(text) {
     var b = $('#cm-busy');
@@ -250,6 +250,64 @@
     else window.location.href = res.data.signedUrl;
   }
 
+  /* ---------- the overview: every deliverable with its counts ---------- */
+  function overviewCard(d, n, mine) {
+    if (d.kind === 'special') {
+      return '<div class="ov-card"><b>' + esc(d.name) + '</b><span class="ov-note">Has its own screen, coming soon.</span></div>';
+    }
+    n = n || { draft: 0, published: 0, unpublished: 0, archived: 0 };
+    var chips = Object.keys(n).filter(function (k) { return n[k]; }).map(function (k) {
+      return '<span class="chip s-' + k + '">' + n[k] + ' ' + STATUS[k].toLowerCase() + '</span>';
+    }).join('');
+    return '<div class="ov-card' + (mine ? ' mine' : '') + '"><b>' + esc(d.name) + '</b>' +
+      '<div class="ov-nums">' + (chips || '<span class="ov-note">Nothing yet</span>') + '</div>' +
+      '<button class="btn btn-ghost" type="button" data-open="' + esc(d.key) + '">Open</button></div>';
+  }
+
+  async function showOverview() {
+    cs.view = 'overview';
+    $('#cm-browser').hidden = true;
+    $('#cm-sum').textContent = '';
+    var box = $('#cm-overview');
+    box.hidden = false;
+    if (!cs.deliverables.length) {
+      box.innerHTML = '<p class="empty">The Content Manager isn\'t set up in the database yet. Run supabase/content_manager.sql in the Supabase SQL editor.</p>';
+      return;
+    }
+    box.innerHTML = '<p class="ov-note">Loading…</p>';
+    var res = await sb.from('content_items').select('deliverable,status').neq('kind', 'folder').limit(10000);
+    if (cs.view !== 'overview') return;
+    var counts = {};
+    (res.data || []).forEach(function (r) {
+      var c = counts[r.deliverable] || (counts[r.deliverable] = { draft: 0, published: 0, unpublished: 0, archived: 0 });
+      if (c[r.status] !== undefined) c[r.status]++;
+    });
+    var mine = state.profile && state.profile.department;
+    var order = DEPT_ORDER.slice();
+    if (mine && order.indexOf(mine) > 0) { order.splice(order.indexOf(mine), 1); order.unshift(mine); }
+    var html = '';
+    order.forEach(function (dep) {
+      var list = cs.deliverables.filter(function (d) { return d.department === dep; });
+      if (!list.length) return;
+      html += '<div class="ov-dept"><h2>' + esc(app.depts[dep] || dep) + (dep === mine ? ' <span class="chip">Your department</span>' : '') + '</h2><div class="ov-grid">' +
+        list.map(function (d) { return overviewCard(d, counts[d.key], dep === mine); }).join('') + '</div></div>';
+    });
+    box.innerHTML = res.error ? '<p class="empty">Couldn\'t load the counts. ' + esc(res.error.message || '') + '</p>' : html;
+  }
+
+  function openDeliverable(key) {
+    if (!key || !deliverable(key)) return;
+    cs.key = key;
+    cs.path = [];
+    cs.q = '';
+    cs.view = 'browser';
+    $('#cm-search').value = '';
+    $('#cm-deliv').value = key;
+    $('#cm-overview').hidden = true;
+    $('#cm-browser').hidden = false;
+    return load();
+  }
+
   /* ---------- the details dialog (files and links) ---------- */
   function editItem(it, newLink) {
     var d = deliverable(newLink ? cs.key : it.deliverable);
@@ -366,12 +424,11 @@
   }
 
   /* ---------- wiring ---------- */
-  $('#cm-deliv').addEventListener('change', function () {
-    cs.key = this.value;
-    cs.path = [];
-    cs.q = '';
-    $('#cm-search').value = '';
-    load();
+  $('#cm-deliv').addEventListener('change', function () { openDeliverable(this.value); });
+  $('#cm-overview-btn').addEventListener('click', showOverview);
+  $('#cm-overview').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-open]');
+    if (b) openDeliverable(b.dataset.open);
   });
   $('#cm-status').addEventListener('change', render);
   $('#cm-aud').addEventListener('change', render);
@@ -448,11 +505,11 @@
         }
         await cs.loading;
       }
-      await load();
+      if (cs.view === 'overview') await showOverview(); else await load();
     },
     /* called when someone signs out, so the next person starts clean */
     reset: function () {
-      cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = '';
+      cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = ''; cs.view = 'overview';
       $('#cm-search').value = '';
       $('#cm-rows').innerHTML = '';
       $('#cm-sum').textContent = '';

@@ -222,6 +222,15 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .cm-pick select,.cm-filters select{padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);min-height:44px}
 .cm-pick select{flex:1 1 240px;min-width:0;max-width:min(420px,100%);font-weight:600}
 .cm-sum{font-size:.9rem;color:var(--muted)}
+.ov-dept{margin:6px 0 24px}
+.ov-dept h2{font-size:1.35rem;margin-bottom:10px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.ov-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.ov-card.mine{border-color:rgba(206,32,32,.35)}
+.ov-card b{font-weight:700;color:var(--brown)}
+.ov-nums{display:flex;flex-wrap:wrap;gap:6px}
+.ov-card .btn{align-self:flex-start;margin-top:auto;padding:8px 14px;font-size:.82rem}
+.ov-note{font-size:.85rem;color:var(--muted)}
 .cm-filters{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
 .cm-row{flex-wrap:wrap}
 .cm-row .row-main{flex:1 1 240px}
@@ -502,10 +511,13 @@ dialog[open]{animation:pop .5s var(--ease)}
 
     <div id="panel-content" role="tabpanel" aria-labelledby="tab-content" hidden>
       <div class="cm-pick">
+        <button class="btn btn-ghost btn-sm" id="cm-overview-btn" type="button">All Deliverables</button>
         <label class="sr-only" for="cm-deliv">Deliverable</label>
         <select id="cm-deliv"></select>
         <span class="cm-sum" id="cm-sum" role="status"></span>
       </div>
+      <div id="cm-overview" hidden></div>
+      <div id="cm-browser">
       <div class="toolbar">
         <div class="path-row">
           <button class="btn btn-ghost btn-sm" id="cm-back" type="button" aria-label="Back to the parent folder" hidden>
@@ -537,6 +549,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <div class="busy" id="cm-busy" hidden role="status">Loading…</div>
       </div>
       <p class="fine">Any Senior Manager can add and change content in every deliverable. Publishing is what makes an item visible to its audience. The 201 Files are separate and are never shown here.</p>
+      </div>
     </div>
 
     <div id="panel-employees" role="tabpanel" aria-labelledby="tab-employees" hidden>
