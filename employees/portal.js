@@ -111,8 +111,8 @@
   }
 
   async function loadProfile() {
-    var r = await call('GET', '/api/employee-profile');
-    if (r.ok && me) { me.avatar = r.data.avatar || null; paintMe(); }
+    var r = await call('GET', '/api/employee-me');
+    if (r.ok && me && r.data.employee) { me.avatar = r.data.employee.avatar || null; paintMe(); }
   }
 
   /* ---------- the dashboard ---------- */
@@ -294,7 +294,7 @@
 
   async function savePhoto(data) {
     note('#pf-msg', '');
-    var r = await call('POST', '/api/employee-profile', { avatar: data });
+    var r = await call('POST', '/api/employee-me', { avatar: data });
     if (!r.ok) { note('#pf-msg', r.data.error || "Couldn't save your photo."); return; }
     me.avatar = data;
     paintMe();
