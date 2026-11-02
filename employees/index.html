@@ -121,11 +121,13 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .field textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
 
 /* dashboard: announcements and the community feed on the left, the personal tools on the right */
-.home-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.home-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:20px;align-items:stretch}
 .col-main,.col-side{display:flex;flex-direction:column;gap:16px;min-width:0}
-@media (max-width:900px){
-  .home-grid{display:flex;flex-direction:column;gap:16px}
+.col-main>.panel:last-child,.col-side>.panel:last-child{flex:1 1 auto}
+@media (max-width:960px){
+  .home-grid{display:flex;flex-direction:column;align-items:stretch;gap:16px}
   .col-main,.col-side{display:contents}
+  .home-grid>*,.col-main>*,.col-side>*{width:100%;min-width:0}
 }
 .feed{padding:4px 0 6px}
 .feed .none{padding:16px 20px 20px;color:var(--muted);font-size:.95rem}
@@ -161,7 +163,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .rcmp{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
 .rcmp textarea{flex:1;min-width:0;min-height:44px;resize:vertical;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
 .rcmp textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
-.composer{padding:14px 20px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(251,243,203,.4),rgba(251,243,203,0))}
+.composer{padding:14px 20px 18px;border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(251,243,203,.4),rgba(251,243,203,0))}
 .cmp-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .cmp-row select{padding:11px 12px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;max-width:100%}
 .cmp-row input{flex:1 1 200px;min-width:0;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
@@ -172,14 +174,14 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .skel{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--cream),#fff,var(--cream));background-size:200% 100%;animation:sk 1.2s linear infinite;margin:14px 20px}
 @keyframes sk{to{background-position:-200% 0}}
 .items .lrow .lmain{cursor:pointer}
-.att{padding:6px 22px 18px}
-.att-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.att-now b{font-family:var(--serif);font-weight:400;font-size:2.4rem;line-height:1;color:var(--brown)}
-.att-now span{color:var(--muted);font-size:.95rem}
-.att-status{margin:10px 0 14px;font-weight:600;color:var(--brown)}
-.att-btns{display:flex;gap:10px;flex-wrap:wrap}
-.att-btns .btn{flex:1 1 150px;padding:16px 22px;font-size:1rem}
-.att-btns .btn .icon{width:20px;height:20px}
+.att{padding:4px 20px 16px}
+.att-now{display:flex;flex-direction:column;gap:4px}
+.att-now b{font-family:var(--serif);font-weight:400;font-size:clamp(1.6rem,4vw,1.9rem);line-height:1.1;color:var(--brown)}
+.att-now span{color:var(--muted);font-size:.84rem}
+.att-status{margin:10px 0 12px;font-weight:600;font-size:.9rem;line-height:1.4;color:var(--brown)}
+.att-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.att-btns .btn{min-width:0;padding:11px 12px;font-size:.92rem;white-space:nowrap}
+.att-btns .btn .icon{width:18px;height:18px}
 .att-btns .btn[disabled]{opacity:.45;cursor:not-allowed}
 .items .lrow{padding-inline:12px;flex-wrap:nowrap}
 .items .lmain{flex:1 1 auto}
@@ -282,6 +284,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
         </section>
         <section class="panel" id="forum-panel" style="order:4" hidden>
           <div class="panel-h"><span class="pi"><i data-icon="users"></i></span><h2>Community</h2></div>
+          <div class="feed" id="forum-feed"></div>
           <form class="composer" id="f-compose" novalidate>
             <div class="cmp-row">
               <label class="sr-only" for="fc-cat">Category</label><select id="fc-cat"></select>
@@ -292,7 +295,6 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
             <p class="msg bad" id="fc-msg" role="alert" hidden></p>
             <div class="cmp-foot"><span class="fine">Posts show your name. Be kind and keep it work-friendly.</span><button class="btn btn-primary btn-sm" type="submit" id="fc-post"><i data-icon="send"></i>Post</button></div>
           </form>
-          <div class="feed" id="forum-feed"></div>
         </section>
       </div>
       <aside class="col-side">

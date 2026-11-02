@@ -405,7 +405,7 @@
   function tickClock() {
     var now = new Date();
     $('#att-clock').textContent = now.toLocaleTimeString('en-PH', Object.assign({ hour: 'numeric', minute: '2-digit' }, TZ));
-    $('#att-date').textContent = now.toLocaleDateString('en-PH', Object.assign({ weekday: 'long', month: 'long', day: 'numeric' }, TZ)) + ' · Philippine time';
+    $('#att-date').textContent = now.toLocaleDateString('en-PH', Object.assign({ weekday: 'long', month: 'long', day: 'numeric' }, TZ)) + ' · UTC+8';
   }
   setInterval(tickClock, 20000);
 
