@@ -446,8 +446,10 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .op:active img{transform:scale(1.07);transition-duration:.5s}
   .op:active h3,.op:active p{transform:translateY(-4px);transition-duration:.3s}
 
-  .cell:active{background:#fff;transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);transition-duration:.25s}
-  .cell:active .num{transform:scale(1.08);transform-origin:left;transition-duration:.3s}
+  /* objectives: a tap switches the card on (same look as desktop hover), another tap switches it off */
+  .js .cell{transition:opacity .9s var(--ease),transform .5s var(--ease),box-shadow .5s var(--ease),background .4s}
+  .js .cell.is-on{background:#fff;transform:translateY(-6px);box-shadow:var(--shadow-lg);transition-delay:0s}
+  .cell.is-on .num{transform:scale(1.08);transform-origin:left}
 
   .facet:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);border-color:rgba(206,32,32,.25);transition-duration:.25s}
   .facet:active::after{transform:none;transition-duration:.4s}
@@ -1121,6 +1123,16 @@ const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.
 }), { threshold: .1, rootMargin: "0px 0px -5% 0px" }) : null;
 const watch = root => $$(".reveal", root).forEach(el => io ? io.observe(el) : el.classList.add("in"));
 watch();
+
+/* ---------- objectives: tap to highlight on touch screens ---------- */
+const cells = $$(".cell"), touchOnly = matchMedia("(hover:none)");
+cells.forEach(c => c.addEventListener("click", () => {
+  if (!touchOnly.matches) return;
+  const on = !c.classList.contains("is-on");
+  cells.forEach(x => x.classList.remove("is-on"));
+  c.classList.toggle("is-on", on);
+}));
+document.addEventListener("click", e => { if (!e.target.closest(".cell")) cells.forEach(x => x.classList.remove("is-on")); });
 
 /* ---------- HR departments + popup ---------- */
 $("#facet-grid").innerHTML = FACETS.map((f, i) => `
