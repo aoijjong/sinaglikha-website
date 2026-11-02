@@ -219,6 +219,21 @@ create policy "profiles: senior managers update"
   using (public.is_senior_manager() and role = 'senior_manager' and not hidden and id <> auth.uid())
   with check (role = 'senior_manager' and not hidden);
 
+-- Profile settings: a signed-in person can set their own display name (and nothing else
+-- about their account). Used by the profile button in the top bar of the HR 201 Files page.
+create or replace function public.set_my_name(new_name text)
+returns text
+language sql security definer set search_path = public
+as $$
+  update public.profiles
+  set full_name = left(btrim(coalesce(new_name, '')), 80)
+  where id = auth.uid() and active
+  returning full_name;
+$$;
+
+revoke all on function public.set_my_name(text) from public, anon;
+grant execute on function public.set_my_name(text) to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- 7. Files: one private bucket called "library"
 --    Administrators and Senior managers can list, open, upload, replace and delete.

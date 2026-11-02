@@ -31,7 +31,22 @@
   function show(name) {
     VIEWS.forEach(function (v) { $('#view-' + v).hidden = v !== name; });
     $('#btn-signout').hidden = !(name === 'app' || name === 'password');
-    if (name !== 'app') { $('#who').hidden = true; }
+    if (name !== 'app') { $('#who').hidden = true; $('#btn-profile').hidden = true; }
+  }
+
+  /* the signed-in person's name (wide screens) and initials button (always) in the top bar */
+  function initials(p) {
+    var words = String(p.full_name || '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return Array.from(String(p.email || '?'))[0].toUpperCase();
+    var first = Array.from(words[0])[0], last = words.length > 1 ? Array.from(words[words.length - 1])[0] : '';
+    return (first + last).toUpperCase();
+  }
+  function updateWho() {
+    var p = state.profile, who = $('#who'), av = $('#btn-profile');
+    who.textContent = p ? (p.full_name || p.email || '') : '';
+    who.hidden = !who.textContent;
+    av.textContent = p ? initials(p) : '';
+    av.hidden = !p;
   }
 
   var toastTimer;
@@ -133,6 +148,7 @@
       $('#m-field').hidden = !o.label;
       $('#m-label').textContent = o.label || '';
       input.value = o.value || '';
+      input.maxLength = o.max || 60;
       err.hidden = true;
       okBtn.textContent = o.ok || 'OK';
       okBtn.className = 'btn btn-sm ' + (o.danger ? 'btn-danger' : 'btn-primary');
@@ -182,9 +198,7 @@
     state.profile = p;
     state.isAdmin = p.role === 'admin';   // the hidden owner: also sets roles
     state.canUse = true;                   // every Senior manager and the owner: all file and people functions
-    var who = $('#who');
-    who.textContent = p.full_name || p.email || '';
-    who.hidden = !who.textContent;
+    updateWho();
     $$('.manager-only').forEach(function (el) { el.hidden = !state.canUse; });
     $('#tabs').hidden = !state.canUse;
     setTab('library');
@@ -875,10 +889,37 @@
     loadPeople();
   });
 
+  /* ---------- profile settings: each person sets their own name ---------- */
+  $('#btn-profile').addEventListener('click', async function () {
+    var p = state.profile;
+    if (!p) return;
+    var name = await ask({
+      title: 'Profile settings',
+      text: (p.email || '') + ' · ' + (p.role === 'admin' ? 'Administrator' : 'Senior manager'),
+      label: 'Your name',
+      value: p.full_name || '',
+      max: 80,
+      ok: 'Save',
+      validate: function (v) { return v.length > 80 ? 'Use 80 characters or fewer.' : ''; }
+    });
+    if (name === null) return;
+    var res = await sb.rpc('set_my_name', { new_name: name });
+    if (res.error || res.data === null) {
+      toast(res.error && res.error.code === 'PGRST202'
+        ? "Names can't be saved yet: the latest database update hasn't been run in Supabase."
+        : "Couldn't save your name. Please try again.", 'bad');
+      return;
+    }
+    state.profile.full_name = res.data;
+    updateWho();
+    people = [];
+    if (!$('#panel-people').hidden) loadPeople();
+    toast(res.data ? 'Name saved.' : 'Name removed.', 'ok');
+  });
+
   $('#form-invite').addEventListener('submit', async function (e) {
     e.preventDefault();
     var email = $('#i-email').value.trim();
-    var name = $('#i-name').value.trim();
     var msg = $('#invite-msg');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { note(msg, 'Enter a valid email address.', 'bad'); return; }
     var btn = $('#btn-invite');
@@ -890,7 +931,7 @@
       var res = await fetch('../api/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ email: email, name: name })
+        body: JSON.stringify({ email: email })
       });
       var body = {};
       try { body = await res.json(); } catch (x) { /* not JSON */ }

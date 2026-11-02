@@ -155,6 +155,10 @@ want a separate sender.
 ## Everyday use
 - **Invite someone:** Members area, **Accounts**, enter their email, **Send invitation**. They
   click the link in the email and choose a password.
+- **Set your name:** everyone sets their own. Tap the round initials button next to **Sign out**
+  (**Profile settings**), type your name and **Save**. Until then the list shows "No name added".
+  This needs the latest `supabase/schema.sql` to have been run once (it adds the `set_my_name`
+  function). If you see "Names can't be saved yet", run it again in the Supabase SQL editor.
 - **Roles:** everyone you invite is a **Senior manager** with full file access and can invite and
   manage other Senior managers. Only the hidden Administrator can change a role (Accounts tab, role menu).
 - **Remove access:** Accounts tab, **Deactivate** (instant). The account moves out of the main list
