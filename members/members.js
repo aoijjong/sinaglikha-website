@@ -242,15 +242,23 @@
     } catch (x) { /* logging never stops the work */ }
   }
 
+  /* The pieces the Content Manager (content.js) shares with this page. */
+  window.MembersApp = {
+    sb: sb, state: state, esc: esc, toast: toast, ask: ask, logAction: logAction,
+    fmtDate: fmtDate, fmtSize: fmtSize, extOf: extOf, cleanName: cleanName, maxMb: MAX_MB, depts: DEPTS
+  };
+
   /* What the signed-in person can open. The 201 Files are for the Administrator and for Senior
-     Managers of Staffing and Recruitment and Legal Compliance. Everyone keeps the Accounts tab. */
+     Managers of Staffing and Recruitment and Legal Compliance. Everyone keeps the Content and
+     Accounts tabs. */
+  var TAB_TITLES = { library: '201 Files', content: 'Content Manager', people: 'Accounts' };
   function applyAccess() {
     var files = state.canUse && state.can201;
     $$('.manager-only').forEach(function (el) { el.hidden = !files; });
     $('#tab-library').hidden = !files;
-    $('#tabs').hidden = !files;          // with one section left there is nothing to switch between
-    $('#app-title').textContent = files ? '201 Files' : 'Accounts';
-    $('#pf-back-text').textContent = files ? 'Back to 201 Files' : 'Back to Accounts';
+    $('#tabs').hidden = false;
+    $('#tabs').style.setProperty('--n', files ? '3' : '2');
+    $('#pf-back-text').textContent = 'Back';
     $('#dept-note').hidden = !(state.deptKnown && !state.isAdmin && !state.profile.department);
   }
 
@@ -281,7 +289,7 @@
     state.canUse = true;                   // every Senior Manager and the owner: the Accounts tab
     state.can201 = state.isAdmin || !state.deptKnown || FILE_DEPTS.indexOf(p.department) !== -1;
     applyAccess();
-    setTab(state.can201 ? 'library' : 'people');
+    setTab(state.can201 ? 'library' : 'content');
     if (onProfileUrl()) { fillProfile(); show('profile'); } else show('app');
     state.path = [];
     state.filter = '';
@@ -293,6 +301,7 @@
     if ($('#viewer').open) $('#viewer').close();
     index = null;
     indexPromise = null;
+    if (window.MembersContent) window.MembersContent.reset();
     state.session = null;
     state.profile = null;
     state.isAdmin = false;
@@ -392,25 +401,36 @@
   $('#btn-denied-out').addEventListener('click', function () { sb.auth.signOut(); });
 
   /* ---------- tabs ---------- */
+  var TAB_NAMES = ['library', 'content', 'people'];
+  function visibleTabs() { return TAB_NAMES.filter(function (n) { return !$('#tab-' + n).hidden; }); }
   function setTab(name) {
-    var lib = name === 'library';
-    $('#tab-library').setAttribute('aria-selected', String(lib));
-    $('#tab-people').setAttribute('aria-selected', String(!lib));
-    $('#tab-library').tabIndex = lib ? 0 : -1;
-    $('#tab-people').tabIndex = lib ? -1 : 0;
-    $('#tabs').dataset.pos = lib ? '0' : '1';
-    $('#panel-library').hidden = !lib;
-    $('#panel-people').hidden = lib;
-    if (!lib) loadPeople();
+    var open = visibleTabs();
+    if (open.indexOf(name) === -1) name = open[0];
+    TAB_NAMES.forEach(function (n) {
+      var on = n === name;
+      $('#tab-' + n).setAttribute('aria-selected', String(on));
+      $('#tab-' + n).tabIndex = on ? 0 : -1;
+      $('#panel-' + n).hidden = !on;
+    });
+    $('#tabs').style.setProperty('--pos', String(open.indexOf(name)));
+    $('#app-title').textContent = TAB_TITLES[name];
+    if (name === 'people') loadPeople();
+    if (name === 'content' && window.MembersContent) window.MembersContent.open();
   }
-  $('#tab-library').addEventListener('click', function () { setTab('library'); });
-  $('#tab-people').addEventListener('click', function () { setTab('people'); });
+  TAB_NAMES.forEach(function (n) {
+    $('#tab-' + n).addEventListener('click', function () { setTab(n); });
+  });
   $('#tabs').addEventListener('keydown', function (e) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
     e.preventDefault();
-    var goPeople = e.key === 'ArrowRight' || e.key === 'End';
-    setTab(goPeople ? 'people' : 'library');
-    $(goPeople ? '#tab-people' : '#tab-library').focus();
+    var open = visibleTabs();
+    var cur = TAB_NAMES.filter(function (n) { return $('#tab-' + n).getAttribute('aria-selected') === 'true'; })[0];
+    var i = open.indexOf(cur);
+    if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = open.length - 1;
+    else i = Math.max(0, Math.min(open.length - 1, i + (e.key === 'ArrowRight' ? 1 : -1)));
+    setTab(open[i]);
+    $('#tab-' + open[i]).focus();
   });
 
   /* ---------- library ---------- */

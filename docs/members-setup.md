@@ -215,3 +215,5 @@ want a separate sender.
 | "Couldn't send the invitation" | One of the four Vercel variables is missing, or you haven't redeployed. |
 | "In-site invitations only work on the Vercel version" | You're on GitHub Pages. Invite from the Supabase dashboard, or use the Vercel address. |
 | Upload says "already exists" | A file with that name is in the folder. Rename it or delete the old one. |
+| The Content tab says "isn't set up in the database yet" | `supabase/content_manager.sql` hasn't been run. Paste it into the Supabase SQL editor (after `schema.sql`) and run it. |
+| Content upload says "file type not allowed" | Only PDF, images, Word, Excel, PowerPoint, text and CSV files are accepted. |
