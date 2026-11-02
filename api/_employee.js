@@ -259,6 +259,21 @@ async function namesOf(ids) {
   return out;
 }
 
+/* Profile photos for a set of people, sent once each: { pics: [photo, ...], at(id) -> index into pics, or null }.
+   table is "employees" or "profiles" (Senior Managers). A photo that isn't a small, valid image is skipped. */
+const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+async function photoPack(table, ids) {
+  const pics = [], index = {};
+  const unique = Array.from(new Set(ids.filter(Boolean)));
+  if (unique.length) {
+    // A missing photo column (SQL not run yet) just means nobody has a photo.
+    list(await rest('GET', `${table}?id=in.(${unique.join(',')})&select=id,avatar`)).forEach((x) => {
+      if (typeof x.avatar === 'string' && PHOTO_RE.test(x.avatar)) { index[x.id] = pics.length; pics.push(x.avatar); }
+    });
+  }
+  return { pics, at: (id) => (id in index ? index[id] : null) };
+}
+
 /* This employee's own time records for the last 31 days. */
 async function attendanceRecent(eid) {
   const today = manilaDate();
@@ -293,23 +308,25 @@ async function forumFeed(eid) {
   const ids = c.data.map((x) => x.id).join(',');
   const threads = list(await rest('GET', `forum_threads?category_id=in.(${ids})&hidden=eq.false&select=id,category_id,employee_id,title,body,locked,created_at,last_post_at&order=last_post_at.desc&limit=20`));
   const tids = threads.map((x) => x.id);
-  const [p, who] = await Promise.all([
+  const [p, who, pack] = await Promise.all([
     tids.length ? rest('GET', `forum_posts?thread_id=in.(${tids.join(',')})&hidden=eq.false&select=thread_id&limit=5000`) : { ok: true, data: [] },
-    namesOf(threads.map((x) => x.employee_id))
+    namesOf(threads.map((x) => x.employee_id)),
+    photoPack('employees', threads.map((x) => x.employee_id))
   ]);
   const count = {};
   list(p).forEach((x) => { count[x.thread_id] = (count[x.thread_id] || 0) + 1; });
   return {
     categories: c.data.map((x) => ({ id: x.id, name: x.name, description: x.description || '' })),
+    photos: pack.pics,
     threads: threads.map((x) => ({
       id: x.id, category_id: x.category_id, title: x.title, body: x.body, locked: x.locked, replies: count[x.id] || 0,
-      author: who[x.employee_id] || 'Employee', mine: x.employee_id === eid, created_at: x.created_at, last_post_at: x.last_post_at
+      author: who[x.employee_id] || 'Employee', pic: pack.at(x.employee_id), mine: x.employee_id === eid, created_at: x.created_at, last_post_at: x.last_post_at
     }))
   };
 }
 
 module.exports = {
-  list, namesOf, attendanceRecent, learningSummary, forumFeed,
+  list, namesOf, photoPack, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
