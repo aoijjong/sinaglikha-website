@@ -75,6 +75,32 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .facts dd{margin:0;font-weight:600;color:var(--brown)}
 .soon{border:1.5px dashed rgba(74,46,34,.3);border-radius:18px;padding:16px 18px;color:var(--muted);font-size:.95rem;margin-bottom:22px}
 .row-btns{display:flex;flex-wrap:wrap;gap:10px}
+.dash-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px;margin-bottom:18px}
+.dash-head .hello{margin:0}
+.search{margin-bottom:22px}
+.search input{width:100%;height:48px;padding:0 18px;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--ink);transition:border-color .4s,box-shadow .4s}
+.search input:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-bottom:8px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:24px;padding:clamp(18px,3vw,26px);box-shadow:var(--shadow)}
+.panel h2{font-size:1.35rem;margin-bottom:10px}
+.sec{font-size:1.5rem;margin:30px 0 14px}
+.items{list-style:none;margin:0;padding:0}
+.item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item b{display:block;font-weight:700;color:var(--brown);overflow-wrap:anywhere}
+.item .meta{display:block;font-size:.82rem;color:var(--muted)}
+.item .desc{margin-top:4px;font-size:.93rem;color:var(--ink);overflow-wrap:anywhere}
+.item .btn{flex:none}
+.none{padding:10px 0;color:var(--muted);font-size:.95rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px;cursor:pointer;color:var(--brown);box-shadow:var(--shadow);transition:transform .5s var(--ease),border-color .4s}
+.tile b{font-family:var(--serif);font-weight:400;font-size:1.25rem;line-height:1.2}
+.tile span{font-size:.88rem;color:var(--muted)}
+@media (hover:hover) and (pointer:fine){.tile:hover{transform:translateY(-3px);border-color:rgba(206,32,32,.4)}}
+.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px;padding:8px 14px 8px 10px;border-radius:999px;border:0;background:none;color:var(--brown);font-weight:700;font-size:.92rem;cursor:pointer}
+@media (hover:hover) and (pointer:fine){.back:hover{background:var(--cream)}}
+.dept-sec{margin-bottom:18px}
+.dept-sec h2{font-size:1.3rem;margin-bottom:8px}
 .foot{padding-block:22px;font-size:.88rem;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--brown);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:.93rem;opacity:0;pointer-events:none;transition:opacity .4s,transform .5s var(--ease);z-index:60;max-width:min(92vw,420px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -126,17 +152,29 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
     </form>
   </section>
 
-  <section id="v-home" class="narrow" hidden>
-    <div class="card">
-      <span class="eyebrow">Employee Portal</span>
-      <div class="hello"><div class="av" id="h-av" aria-hidden="true"></div><div><h1 id="h-name" style="font-size:1.8rem;margin:0"></h1><p class="fine" id="h-pos"></p></div></div>
-      <dl class="facts"><div><dt>Employee ID</dt><dd id="h-no"></dd></div></dl>
-      <p class="soon">Announcements, your department pages and your attendance will appear here as they are published. You can sign in and change your PIN now.</p>
-      <div class="row-btns">
-        <button class="btn btn-ghost btn-sm" type="button" id="to-pin">Change My PIN</button>
-        <button class="btn btn-ghost btn-sm" type="button" id="h-out">Sign Out</button>
-      </div>
+  <section id="v-home" hidden>
+    <div class="dash-head">
+      <div class="hello"><div class="av" id="h-av" aria-hidden="true"></div><div><span class="eyebrow" style="margin:0 0 4px">Employee Portal</span><h1 id="h-name" style="font-size:clamp(1.6rem,3.4vw,2.2rem);margin:0"></h1><p class="fine" id="h-pos"></p></div></div>
+      <div class="row-btns"><button class="btn btn-ghost btn-sm" type="button" id="to-pin">Change My PIN</button></div>
     </div>
+    <div class="search"><label class="sr-only" for="q">Search the portal</label><input id="q" type="search" placeholder="Search announcements and department pages" autocomplete="off"></div>
+    <p class="msg bad" id="h-err" role="alert" hidden></p>
+    <div id="home-main">
+      <div class="grid2">
+        <div class="panel"><h2>Announcements</h2><ul class="items" id="ann"></ul></div>
+        <div class="panel"><h2>Latest daily activity</h2><ul class="items" id="today"></ul></div>
+      </div>
+      <h2 class="sec">Departments</h2>
+      <div class="tiles" id="tiles"></div>
+    </div>
+    <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><ul class="items panel" id="res"></ul></div>
+  </section>
+
+  <section id="v-dept" hidden>
+    <button class="back" type="button" id="dept-back"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to the dashboard</button>
+    <span class="eyebrow">Department</span>
+    <h1 id="dept-name" style="font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:18px"></h1>
+    <div id="dept-body"></div>
   </section>
 
   <section id="v-pin" class="narrow" hidden>

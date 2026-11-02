@@ -8,13 +8,21 @@
   'use strict';
 
   var $ = function (s) { return document.querySelector(s); };
-  var VIEWS = ['loading', 'signin', 'activate', 'home', 'pin'];
+  var VIEWS = ['loading', 'signin', 'activate', 'home', 'dept', 'pin'];
+  var DEPTS = [
+    ['staffing', 'Staffing and Recruitment'], ['training', 'Training and Development'], ['engagement', 'Employee Engagement'],
+    ['rewards', 'Total Rewards'], ['legal', 'Legal Compliance']
+  ];
+  var content = { deliverables: [], items: [] };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  };
 
   $('#year').textContent = new Date().getFullYear();
 
   function show(name) {
     VIEWS.forEach(function (v) { $('#v-' + v).hidden = v !== name; });
-    $('#btn-out').hidden = !(name === 'home' || name === 'pin');
+    $('#btn-out').hidden = !(name === 'home' || name === 'dept' || name === 'pin');
     var first = { signin: '#s-no', activate: '#a-no', pin: '#p-cur' }[name];
     if (first) $(first).focus();
   }
@@ -59,11 +67,107 @@
     var w = name.trim().split(/\s+/).filter(Boolean);
     $('#h-av').textContent = ((w[0] ? Array.from(w[0])[0] : '?') + (w.length > 1 ? Array.from(w[w.length - 1])[0] : '')).toUpperCase();
     $('#h-name').textContent = name;
-    $('#h-pos').textContent = employee.position || '';
-    $('#h-no').textContent = employee.employee_no;
+    $('#h-pos').textContent = [employee.position, employee.employee_no].filter(Boolean).join(' · ');
     ['#f-signin', '#f-activate', '#f-pin'].forEach(function (f) { $(f).reset(); });
+    $('#q').value = '';
+    note('#h-err', '');
     show('home');
+    loadContent();
   }
+
+  /* ---------- the dashboard ---------- */
+  function fmtDate(d) {
+    var x = new Date(d);
+    return isNaN(x) ? '' : x.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+  function fmtSize(b) {
+    if (typeof b !== 'number') return '';
+    return b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+  }
+  function deptOf(item) {
+    var d = content.deliverables.filter(function (x) { return x.key === item.deliverable; })[0];
+    return d ? d.department : '';
+  }
+  function nameOf(key) {
+    var d = content.deliverables.filter(function (x) { return x.key === key; })[0];
+    return d ? d.name : '';
+  }
+  function itemHtml(it, showWhere) {
+    var meta = [];
+    if (showWhere) meta.push(nameOf(it.deliverable));
+    if (it.category) meta.push(it.category);
+    if (it.kind === 'link') meta.push('Link');
+    else if (it.size) meta.push(fmtSize(it.size));
+    if (it.version) meta.push('Version ' + it.version);
+    if (it.published_at) meta.push(fmtDate(it.published_at));
+    return '<li class="item"><div><b>' + esc(it.title) + '</b><span class="meta">' + esc(meta.join(' · ')) + '</span>' +
+      (it.description ? '<p class="desc">' + esc(it.description.length > 220 ? it.description.slice(0, 220) + '…' : it.description) + '</p>' : '') +
+      '</div><button class="btn btn-ghost btn-sm" type="button" data-open="' + esc(it.id) + '">Open</button></li>';
+  }
+  function listHtml(items, empty, showWhere) {
+    return items.length ? items.map(function (i) { return itemHtml(i, showWhere); }).join('') : '<li class="none">' + esc(empty) + '</li>';
+  }
+
+  function renderHome() {
+    var by = function (key) { return content.items.filter(function (i) { return i.deliverable === key; }); };
+    $('#ann').innerHTML = listHtml(by('communication').slice(0, 5), 'No announcements yet.', false);
+    $('#today').innerHTML = listHtml(by('daily_activity').slice(0, 1), 'Nothing posted yet.', false);
+    $('#tiles').innerHTML = DEPTS.map(function (d) {
+      var n = content.items.filter(function (i) { return deptOf(i) === d[0]; }).length;
+      return '<button class="tile" type="button" data-dept="' + d[0] + '"><b>' + esc(d[1]) + '</b><span>' +
+        (n ? n + (n === 1 ? ' item' : ' items') + ' published' : 'Nothing published yet') + '</span></button>';
+    }).join('');
+    renderSearch();
+  }
+
+  function renderSearch() {
+    var q = $('#q').value.trim().toLowerCase();
+    $('#home-main').hidden = !!q;
+    $('#results').hidden = !q;
+    if (!q) return;
+    var found = content.items.filter(function (i) {
+      return (i.title + ' ' + i.description + ' ' + i.category + ' ' + nameOf(i.deliverable)).toLowerCase().indexOf(q) !== -1;
+    });
+    $('#res').innerHTML = listHtml(found, 'Nothing matches "' + $('#q').value.trim() + '".', true);
+  }
+
+  function openDept(key) {
+    var dep = DEPTS.filter(function (d) { return d[0] === key; })[0];
+    if (!dep) return;
+    $('#dept-name').textContent = dep[1];
+    var html = '';
+    content.deliverables.filter(function (d) { return d.department === key; }).forEach(function (d) {
+      var items = content.items.filter(function (i) { return i.deliverable === d.key; });
+      html += '<div class="panel dept-sec"><h2>' + esc(d.name) + '</h2><ul class="items">' + listHtml(items, 'Nothing published yet.', false) + '</ul></div>';
+    });
+    $('#dept-body').innerHTML = html || '<p class="none">Nothing published yet.</p>';
+    show('dept');
+    window.scrollTo(0, 0);
+  }
+
+  async function loadContent() {
+    var r = await call('GET', '/api/employee-content');
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { note('#h-err', r.data.error || "Couldn't load the portal content."); content = { deliverables: [], items: [] }; }
+    else { note('#h-err', ''); content = { deliverables: r.data.deliverables || [], items: r.data.items || [] }; }
+    renderHome();
+  }
+
+  async function openItem(id) {
+    var w = window.open('', '_blank');
+    var r = await call('GET', '/api/employee-file?id=' + encodeURIComponent(id));
+    if (r.status === 401) { if (w) w.close(); show('signin'); return; }
+    if (!r.ok || !r.data.url) { if (w) w.close(); toast(r.data.error || "Couldn't open that."); return; }
+    if (w) { w.opener = null; w.location.href = r.data.url; } else window.location.href = r.data.url;
+  }
+
+  document.addEventListener('click', function (e) {
+    var open = e.target.closest('[data-open]'), tile = e.target.closest('[data-dept]');
+    if (open) openItem(open.dataset.open);
+    else if (tile) openDept(tile.dataset.dept);
+  });
+  $('#q').addEventListener('input', renderSearch);
+  $('#dept-back').addEventListener('click', function () { show('home'); });
 
   function busy(btn, on, label) {
     btn.disabled = on;
@@ -139,7 +243,6 @@
     show('signin');
   }
   $('#btn-out').addEventListener('click', signOut);
-  $('#h-out').addEventListener('click', signOut);
   $('#to-activate').addEventListener('click', function () { note('#a-msg', ''); show('activate'); });
   $('#to-signin').addEventListener('click', function () { note('#s-msg', ''); show('signin'); });
   $('#to-pin').addEventListener('click', function () { note('#p-msg', ''); show('pin'); });
