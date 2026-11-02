@@ -954,6 +954,7 @@
   function paintPhoto() {
     paintAvatar($('#pf-avatar'), { full_name: $('#pf-name').value, email: state.profile.email }, pf.photo);
     $('#pf-remove').hidden = !pf.photo;
+    $('#pf-avatar').parentNode.classList.toggle('has-photo', !!pf.photo);
     $('#pf-upload').textContent = pf.photo ? 'Change photo' : 'Upload photo';
   }
   function fillProfile() {

@@ -185,8 +185,8 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .pf-photo-actions .btn{flex:1 1 auto;padding:10px 14px}
 .field input[readonly]{background:#F4F0E8;border-color:rgba(74,46,34,.14);color:var(--muted);cursor:default}
 .field .fine{margin:8px 0 0}
-#form-profile .actions{gap:10px}
-#form-profile .actions .btn{padding:10px 14px}
+#form-profile .actions{flex-direction:column;align-items:center;gap:10px}
+#form-profile .actions .btn{padding:10px 14px;min-width:200px}
 .pf-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:4px 0 22px}
 .pf-facts dt{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .pf-facts dd{margin:0;font-weight:600;color:var(--brown)}
@@ -255,8 +255,8 @@ dialog[open]{animation:pop .5s var(--ease)}
   .list-head{flex-direction:column;align-items:flex-start;gap:2px}
   .person{display:grid;grid-template-columns:auto 1fr auto;gap:14px 10px;padding:16px}
   .person.is-off{grid-template-columns:auto 1fr;gap:14px 16px}
-  .pf-photo{flex-direction:column;align-items:flex-start;gap:16px}
-  .pf-photo-actions{align-self:stretch}
+  .pf-photo.has-photo{flex-direction:column;align-items:flex-start;gap:16px}
+  .pf-photo.has-photo .pf-photo-actions{align-self:stretch}
   .person .pid{grid-column:1/-1}
   .person .row-name{-webkit-line-clamp:unset;display:block}
   .person .row-meta{white-space:normal;overflow-wrap:anywhere}
