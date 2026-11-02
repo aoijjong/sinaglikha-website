@@ -27,17 +27,23 @@
 html{-webkit-text-size-adjust:100%;background:var(--paper)}
 body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;
   background:radial-gradient(60% 40% at 85% 0%,rgba(255,203,27,.18),transparent 70%),radial-gradient(50% 40% at 0% 100%,rgba(248,238,174,.6),transparent 70%),var(--paper)}
-h1,h2{font-family:var(--serif);font-weight:400;line-height:1.12;margin:0;color:var(--brown);letter-spacing:-.015em}
+h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.12;margin:0;color:var(--brown);letter-spacing:-.015em}
 p{margin:0}
+ul{list-style:none;margin:0;padding:0}
 button,input{font:inherit}
 img,svg{display:block;max-width:100%}
 :focus-visible{outline:3px solid #CE2020;outline-offset:3px;border-radius:8px}
 [hidden]{display:none!important}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.wrap{width:min(1000px,100% - 2 * clamp(20px,4vw,40px));margin-inline:auto}
+.wrap{width:min(960px,100% - 2 * clamp(20px,4vw,40px));margin-inline:auto}
+.icon{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .top{position:sticky;top:0;z-index:20;background:rgba(255,253,246,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .top-in{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:75px}
 .brand img{height:36px;width:auto}
+.top-right{display:flex;align-items:center;gap:6px}
+.avatar{width:44px;height:44px;padding:0;border-radius:50%;border:2px solid var(--brown);background:var(--cream);color:var(--brown);font-weight:700;font-size:.9rem;cursor:pointer;display:grid;place-items:center;overflow:hidden;transition:transform .5s var(--ease)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar:active{transform:scale(.92)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:.95rem;line-height:1;padding:14px 22px;border-radius:999px;border:2px solid transparent;cursor:pointer;white-space:nowrap;transition:transform .5s var(--ease),background .4s,color .4s}
 .btn:active{transform:scale(.96)}
 .btn[disabled]{opacity:.6;cursor:progress}
@@ -46,14 +52,15 @@ img,svg{display:block;max-width:100%}
 .btn-sm{padding:10px 16px;font-size:.86rem}
 @media (hover:hover) and (pointer:fine){.btn-primary:hover{transform:translateY(-3px)}.btn-ghost:hover{background:var(--brown);color:var(--paper)}}
 .link{background:none;border:0;padding:4px 2px;color:#B3261E;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
-main{flex:1;padding-block:clamp(28px,5vw,64px)}
+main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.86rem;font-weight:700;letter-spacing:.05em;color:#B3361A;margin-bottom:12px}
 .eyebrow::before{content:"";width:34px;height:3px;border-radius:3px;background:var(--grad)}
 .center{display:grid;place-items:center;min-height:40vh}
 .spinner{width:44px;height:44px;border-radius:50%;border:4px solid var(--cream);border-top-color:#E8701A;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.card{background:#fff;border:1px solid var(--line);border-radius:28px;padding:clamp(24px,4vw,40px);box-shadow:var(--shadow)}
-.card h1{font-size:clamp(1.9rem,4vw,2.6rem);margin-bottom:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:28px;padding:clamp(24px,4vw,40px);box-shadow:var(--shadow);margin-bottom:18px}
+.card h1,.card h2.big{font-size:clamp(1.9rem,4vw,2.6rem);margin-bottom:10px}
+.card h2{font-size:1.4rem;margin-bottom:12px}
 .card .lead{color:var(--muted);margin:0 0 20px}
 .narrow{max-width:520px;margin-inline:auto}
 .field{margin-bottom:16px}
@@ -68,59 +75,56 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .msg.ok{background:#EAF6EC;color:#1E5B2B}
 .actions{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px}
 .actions .btn{min-width:220px}
-.hello{display:flex;align-items:center;gap:16px;margin-bottom:22px}
-.av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--soft-warm);color:var(--brown);font-family:var(--serif);font-size:1.6rem;flex:none}
-.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:0 0 22px}
-.facts dt{font-size:.8rem;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
-.facts dd{margin:0;font-weight:600;color:var(--brown)}
-.soon{border:1.5px dashed rgba(74,46,34,.3);border-radius:18px;padding:16px 18px;color:var(--muted);font-size:.95rem;margin-bottom:22px}
-.row-btns{display:flex;flex-wrap:wrap;gap:10px}
 .who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
 .who-switch>*{text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:background .4s,color .4s}
 .who-switch [aria-current="true"]{background:var(--brown);color:var(--paper)}
 @media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
-.dash-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px;margin-bottom:18px}
-.dash-head .hello{margin:0}
-.search{margin-bottom:22px}
-.search input{width:100%;height:48px;padding:0 18px;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--ink);transition:border-color .4s,box-shadow .4s}
-.search input:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15)}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-bottom:8px}
-.panel{background:#fff;border:1px solid var(--line);border-radius:24px;padding:clamp(18px,3vw,26px);box-shadow:var(--shadow)}
-.panel h2{font-size:1.35rem;margin-bottom:10px}
-.sec{font-size:1.5rem;margin:30px 0 14px}
-.items{list-style:none;margin:0;padding:0}
-.item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
-.item:first-child{border-top:0}
-.item b{display:block;font-weight:700;color:var(--brown);overflow-wrap:anywhere}
-.item .meta{display:block;font-size:.82rem;color:var(--muted)}
-.item .desc{margin-top:4px;font-size:.93rem;color:var(--ink);overflow-wrap:anywhere}
-.item .btn{flex:none}
-.none{padding:10px 0;color:var(--muted);font-size:.95rem}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
-.tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px;cursor:pointer;color:var(--brown);box-shadow:var(--shadow);transition:transform .5s var(--ease),border-color .4s}
-.tile b{font-family:var(--serif);font-weight:400;font-size:1.25rem;line-height:1.2}
-.tile span{font-size:.88rem;color:var(--muted)}
-@media (hover:hover) and (pointer:fine){.tile:hover{transform:translateY(-3px);border-color:rgba(206,32,32,.4)}}
-.back{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px;padding:8px 14px 8px 10px;border-radius:999px;border:0;background:none;color:var(--brown);font-weight:700;font-size:.92rem;cursor:pointer}
-@media (hover:hover) and (pointer:fine){.back:hover{background:var(--cream)}}
-.dept-sec{margin-bottom:18px}
-.dept-sec h2{font-size:1.3rem;margin-bottom:8px}
+
+/* dashboard */
+.hello h1{font-size:clamp(1.7rem,3.8vw,2.4rem)}
+.hello p{color:var(--muted);font-size:.95rem;margin-top:2px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+.panel-h{display:flex;align-items:center;gap:10px;padding:16px 20px 6px}
+.panel-h .pi{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--soft-warm);color:var(--brown)}
+.panel-h h2{font-size:1.2rem}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px}
+.sec{font-size:1.4rem;margin:26px 0 12px}
+.items .lrow{padding-inline:12px}
+.items .none{padding:14px 20px 18px;color:var(--muted);font-size:.95rem}
+.lgo{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-right:6px}
+.ldesc{font-size:.88rem;color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.back-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+
+/* profile */
+.pf-photo{display:flex;align-items:center;gap:22px;margin-bottom:22px;flex-wrap:wrap}
+.pf-avatar{width:104px;height:104px;border-radius:50%;flex:none;overflow:hidden;display:grid;place-items:center;background:var(--soft-warm);color:var(--brown);font-family:var(--serif);font-size:2.3rem;border:3px solid #fff;box-shadow:var(--shadow)}
+.pf-avatar img{width:100%;height:100%;object-fit:cover}
+.pf-photo-actions{display:flex;gap:6px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:0 0 6px}
+.facts dt{font-size:.8rem;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+.facts dd{margin:0;font-weight:600;color:var(--brown);overflow-wrap:anywhere}
 .foot{padding-block:22px;font-size:.88rem;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--brown);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:.93rem;opacity:0;pointer-events:none;transition:opacity .4s,transform .5s var(--ease);z-index:60;max-width:min(92vw,420px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:520px){.facts{grid-template-columns:1fr}.brand img{height:28px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style>
+<link rel="stylesheet" href="../assets/ui.css">
 </head>
 <body>
 <header class="top">
   <div class="wrap top-in">
     <a class="brand" href="../" aria-label="SINAGLIKHA, back to the website"><img src="../assets/sinaglikha-logo-notag.png" alt="SINAGLIKHA" width="1487" height="212"></a>
-    <button class="btn btn-ghost btn-sm" id="btn-out" type="button" hidden>Sign Out</button>
+    <div class="top-right" id="top-right" hidden>
+      <button class="avatar" id="btn-profile" type="button" aria-label="Profile settings" title="Profile settings"></button>
+      <button class="ib" id="btn-out" type="button" aria-label="Sign out" data-tip="Sign out"><i data-icon="logout"></i></button>
+    </div>
   </div>
 </header>
 
 <main id="main" class="wrap">
+  <noscript><p class="msg bad">This page needs JavaScript. Please turn it on and reload.</p></noscript>
+
   <section id="v-loading" class="center" aria-live="polite"><div class="spinner" role="status"><span class="sr-only">Loading</span></div></section>
 
   <section id="v-signin" class="narrow" hidden>
@@ -129,7 +133,6 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
         <a href="../members/">Senior Manager</a>
         <span aria-current="true">Employee</span>
       </div>
-      <span class="eyebrow">Employee Portal</span>
       <h1>Welcome Back</h1>
       <p class="lead">Sign in with your Employee ID and your PIN.</p>
       <div class="field"><label for="s-no">Employee ID</label><input id="s-no" type="text" inputmode="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
@@ -149,7 +152,6 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
         <a href="../members/">Senior Manager</a>
         <span aria-current="true">Employee</span>
       </div>
-      <span class="eyebrow">First Time Here</span>
       <h1>Choose Your PIN</h1>
       <p class="lead">Use the Employee ID and activation code Staffing and Recruitment gave you, then pick a 6-digit PIN that only you know.</p>
       <div class="field"><label for="a-no">Employee ID</label><input id="a-no" type="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
@@ -158,57 +160,74 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
       <div class="field"><label for="a-pin2">Repeat PIN</label><input id="a-pin2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
       <p class="msg bad" id="a-msg" role="alert" hidden></p>
       <div class="actions">
-        <button class="btn btn-primary" type="submit" id="a-ok">Save PIN and Sign In</button>
+        <button class="btn btn-primary" type="submit" id="a-ok">Save PIN</button>
         <button class="link" type="button" id="to-signin">Back to sign in</button>
       </div>
     </form>
   </section>
 
   <section id="v-home" hidden>
-    <div class="dash-head">
-      <div class="hello"><div class="av" id="h-av" aria-hidden="true"></div><div><span class="eyebrow" style="margin:0 0 4px">Employee Portal</span><h1 id="h-name" style="font-size:clamp(1.6rem,3.4vw,2.2rem);margin:0"></h1><p class="fine" id="h-pos"></p></div></div>
-      <div class="row-btns"><button class="btn btn-ghost btn-sm" type="button" id="to-pin">Change My PIN</button></div>
-    </div>
-    <div class="search"><label class="sr-only" for="q">Search the portal</label><input id="q" type="search" placeholder="Search announcements and department pages" autocomplete="off"></div>
+    <div class="hello" style="margin-bottom:18px"><h1 id="h-hello"></h1><p id="h-sub"></p></div>
+    <div class="ph" style="margin-bottom:20px"><div class="sbox" style="width:100%"><i data-icon="search"></i><input id="q" type="search" placeholder="Search announcements and department pages" aria-label="Search the portal" autocomplete="off"></div></div>
     <p class="msg bad" id="h-err" role="alert" hidden></p>
     <div id="home-main">
       <div class="grid2">
-        <div class="panel"><h2>Announcements</h2><ul class="items" id="ann"></ul></div>
-        <div class="panel"><h2>Latest daily activity</h2><ul class="items" id="today"></ul></div>
+        <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="chat"></i></span><h2>Announcements</h2></div><ul class="items" id="ann"></ul></div>
+        <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="calendar"></i></span><h2>Latest daily activity</h2></div><ul class="items" id="today"></ul></div>
       </div>
-      <div class="panel" id="rec-panel" style="margin-top:18px" hidden><h2>My Compensation Records</h2><p class="fine" style="margin:-4px 0 6px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
+      <div class="panel" id="rec-panel" style="margin-bottom:16px" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
       <h2 class="sec">Departments</h2>
-      <div class="tiles" id="tiles"></div>
+      <div class="dgrid" id="tiles"></div>
     </div>
-    <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><ul class="items panel" id="res"></ul></div>
+    <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><div class="panel"><ul class="items" id="res"></ul></div></div>
   </section>
 
   <section id="v-dept" hidden>
-    <button class="back" type="button" id="dept-back"><svg class="icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to the dashboard</button>
-    <span class="eyebrow">Department</span>
-    <h1 id="dept-name" style="font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:18px"></h1>
+    <div class="back-row">
+      <button class="ib line" id="dept-back" type="button" aria-label="Back to the dashboard" data-tip="Back"><i data-icon="back"></i></button>
+      <div><h1 id="dept-name" style="font-size:clamp(1.7rem,4vw,2.4rem)"></h1><p class="fine">Everything published for employees in this department.</p></div>
+    </div>
     <div id="dept-body"></div>
   </section>
 
-  <section id="v-pin" class="narrow" hidden>
+  <section id="v-profile" class="narrow" hidden>
+    <div class="back-row">
+      <button class="ib line" id="pf-back" type="button" aria-label="Back to the dashboard" data-tip="Back"><i data-icon="back"></i></button>
+      <h1 style="font-size:clamp(1.7rem,4vw,2.4rem)">Profile Settings</h1>
+    </div>
+    <div class="card">
+      <h2>Profile</h2>
+      <div class="pf-photo">
+        <div class="pf-avatar" id="pf-avatar" aria-hidden="true"></div>
+        <div class="pf-photo-actions">
+          <button class="ib line" id="pf-upload" type="button" aria-label="Upload a photo" data-tip="Upload a photo"><i data-icon="camera"></i></button>
+          <button class="ib danger" id="pf-remove" type="button" aria-label="Remove photo" data-tip="Remove photo" hidden><i data-icon="trash"></i></button>
+        </div>
+        <input type="file" id="pf-file" accept="image/*" hidden>
+      </div>
+      <dl class="facts">
+        <div><dt>Name</dt><dd id="pf-name"></dd></div>
+        <div><dt>Employee ID</dt><dd id="pf-no"></dd></div>
+        <div><dt>Position</dt><dd id="pf-pos"></dd></div>
+      </dl>
+      <p class="fine" style="margin-top:12px">Your name and position are set by Staffing and Recruitment. Ask them if something is wrong.</p>
+      <p class="msg bad" id="pf-msg" role="alert" hidden style="margin-top:14px"></p>
+    </div>
     <form class="card" id="f-pin" novalidate>
-      <span class="eyebrow">My PIN</span>
-      <h1>Change Your PIN</h1>
+      <h2>Change Your PIN</h2>
       <p class="lead">Changing your PIN signs you out on your other devices.</p>
       <div class="field"><label for="p-cur">Current PIN</label><input id="p-cur" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
       <div class="field"><label for="p-new">New PIN</label><input id="p-new" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
       <div class="field"><label for="p-new2">Repeat New PIN</label><input id="p-new2" class="pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
       <p class="msg bad" id="p-msg" role="alert" hidden></p>
-      <div class="actions">
-        <button class="btn btn-primary" type="submit" id="p-ok">Save New PIN</button>
-        <button class="link" type="button" id="p-back">Back</button>
-      </div>
+      <div class="actions"><button class="btn btn-primary" type="submit" id="p-ok">Save New PIN</button></div>
     </form>
   </section>
 </main>
 
 <footer class="wrap foot"><span>© <span id="year">2026</span> SINAGLIKHA. Employee Portal.</span></footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="../assets/ui-icons.js"></script>
 <script src="portal.js"></script>
 </body>
 </html>

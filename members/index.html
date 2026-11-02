@@ -106,7 +106,7 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .app-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
 .app-head h1{font-size:clamp(2rem,4.4vw,3.2rem)}
 /* sliding switch: the dark thumb glides between the sections (--n of them, --pos is the open one) */
-.tabs{--n:3;--pos:0;position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);padding:5px;border-radius:999px;background:#fff;border:1px solid var(--line);min-width:236px;box-shadow:inset 0 1px 3px rgba(74,46,34,.07)}
+.tabs{--n:3;--pos:0;position:relative;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));padding:5px;border-radius:999px;background:#fff;border:1px solid var(--line);min-width:calc(var(--n) * 96px);box-shadow:inset 0 1px 3px rgba(74,46,34,.07)}
 .tab-thumb{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / var(--n));border-radius:999px;background:var(--brown);box-shadow:0 8px 16px -8px rgba(74,46,34,.6);transform:translateX(calc(var(--pos) * 100%));transition:transform .65s cubic-bezier(.3,1.2,.4,1)}
 .tab{position:relative;z-index:1;border:0;background:none;padding:11px 20px;border-radius:999px;font-weight:700;font-size:.9rem;color:var(--muted);cursor:pointer;text-align:center;transition:color .45s}
 .tab[aria-selected="true"]{color:var(--paper)}
@@ -217,39 +217,11 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .role-tag.is-none{background:#F1E6E2;color:#8A3B2B}
 .person .pdept{min-width:0}
 
-/* content manager */
-.cm-pick{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px}
-.cm-pick select,.cm-filters select{padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);min-height:44px}
-.cm-pick select{flex:1 1 240px;min-width:0;max-width:min(420px,100%);font-weight:600}
-.cm-sum{font-size:.9rem;color:var(--muted)}
-.ov-dept{margin:6px 0 24px}
-.ov-dept h2{font-size:1.35rem;margin-bottom:10px}
-.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.ov-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
-.ov-card.mine{border-color:rgba(206,32,32,.35)}
-.ov-card b{font-weight:700;color:var(--brown)}
-.ov-nums{display:flex;flex-wrap:wrap;gap:6px}
-.ov-card .btn{align-self:flex-start;margin-top:auto;padding:8px 14px;font-size:.82rem}
-.ov-note{font-size:.85rem;color:var(--muted)}
-.cm-filters{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
-.cm-row{flex-wrap:wrap}
-.cm-row .row-main{flex:1 1 240px}
-.cm-side{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-left:auto;padding-right:4px}
-.chip{font-size:.78rem;font-weight:700;border-radius:999px;padding:5px 11px;white-space:nowrap;background:var(--cream);color:var(--brown)}
-.chip.s-draft{background:#FFF0B0;color:#6B4E00}
-.chip.s-published{background:#E3F3E4;color:#1E6B2A}
-.chip.s-unpublished,.chip.s-archived{background:#F1E6E2;color:#8A3B2B}
-.chip.a-public{background:#DCEBFA;color:#1B4B7A}
-.chip.a-managers{background:#EFEAE4;color:#5A4538}
-.cm-acts{display:flex;flex-wrap:wrap;gap:6px}
-.cm-acts .btn{padding:8px 13px;font-size:.8rem}
-.cm-dz{margin:0 0 14px;padding:12px 16px;border:1.5px dashed rgba(74,46,34,.3);border-radius:18px;font-size:.9rem;color:var(--muted);text-align:center}
 #item-form{padding:clamp(22px,4vw,32px)}
 #item-form h2{font-size:1.5rem;margin-bottom:14px}
 #item-form .field textarea{width:100%;min-height:84px;resize:vertical;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
 #item-form .field input:focus,#item-form .field textarea:focus,#item-form .field select:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
 #item-form .actions{justify-content:flex-end;margin-top:14px}
-@media (max-width:640px){.cm-side{margin-left:0;width:100%;padding:0 8px 6px}.cm-acts{width:100%}.cm-acts .btn{flex:1}}
 
 /* sign-in choice: Senior Manager or Employee */
 .who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
@@ -258,20 +230,12 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 @media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
 
 /* employee directory */
-.em-select{padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);min-height:44px}
-.chip.e-active{background:#E3F3E4;color:#1E6B2A}
-.chip.e-pending{background:#FFF0B0;color:#6B4E00}
-.chip.e-locked,.chip.e-inactive,.chip.e-expired{background:#F1E6E2;color:#8A3B2B}
-.chip.e-none{background:#EFEAE4;color:#5A4538}
 #rec-form{padding:clamp(22px,4vw,32px)}
 #rec-form h2{font-size:1.5rem;margin-bottom:14px}
 #rec-form .field select,#rec-form .field input[type=file]{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
 #rec-form .field textarea{width:100%;min-height:72px;resize:vertical;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
 #rec-form .actions{justify-content:flex-end;margin-top:14px}
-.chip.k-compensation{background:#E3F3E4;color:#1E6B2A}
-.chip.k-evaluation{background:#DCEBFA;color:#1B4B7A}
-.chip.k-disciplinary{background:#F1E6E2;color:#8A3B2B}
-@media (max-width:640px){.tab{padding:11px 10px;font-size:.82rem}}
+@media (max-width:640px){.tabs{width:100%;min-width:0}.tab{padding:11px 0;font-size:.72rem;letter-spacing:-.01em}}
 #emp-form{padding:clamp(22px,4vw,32px)}
 #emp-form h2{font-size:1.5rem;margin-bottom:14px}
 #emp-form .actions{justify-content:flex-end;margin-top:14px}
@@ -401,6 +365,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style>
+<link rel="stylesheet" href="../assets/ui.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -506,8 +471,8 @@ dialog[open]{animation:pop .5s var(--ease)}
             <input id="search" type="search" placeholder="Search files and folders" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
             <ul class="suggest" id="suggest" role="listbox" aria-label="Suggestions" hidden></ul>
           </div>
-          <button class="btn btn-ghost btn-sm manager-only" id="btn-folder" type="button" hidden>New Folder</button>
-          <button class="btn btn-primary btn-sm manager-only" id="btn-upload" type="button" hidden>Upload Files</button>
+          <button class="ib manager-only" id="btn-folder" type="button" aria-label="New folder" data-tip="New folder" hidden><i data-icon="folderPlus"></i></button>
+          <button class="ib solid manager-only" id="btn-upload" type="button" aria-label="Upload files" data-tip="Upload files" hidden><i data-icon="upload"></i></button>
           <input type="file" id="file-input" multiple hidden>
         </div>
       </div>
@@ -520,94 +485,65 @@ dialog[open]{animation:pop .5s var(--ease)}
     </div>
 
     <div id="panel-content" role="tabpanel" aria-labelledby="tab-content" hidden>
-      <div class="cm-pick">
-        <button class="btn btn-ghost btn-sm" id="cm-overview-btn" type="button">All Deliverables</button>
-        <label class="sr-only" for="cm-deliv">Deliverable</label>
-        <select id="cm-deliv"></select>
-        <span class="cm-sum" id="cm-sum" role="status"></span>
+      <div id="cm-home">
+        <div class="pills scroll" id="cm-depts" role="group" aria-label="Departments"></div>
+        <div class="dgrid" id="cm-cards"></div>
       </div>
-      <div id="cm-overview" hidden></div>
-      <div id="cm-browser">
-      <div class="toolbar">
-        <div class="path-row">
-          <button class="btn btn-ghost btn-sm" id="cm-back" type="button" aria-label="Back to the parent folder" hidden>
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back
-          </button>
-          <nav class="crumbs" id="cm-crumbs" aria-label="Folder path"></nav>
-        </div>
-        <div class="tools">
-          <div class="search">
-            <label class="sr-only" for="cm-search">Search this deliverable</label>
-            <input id="cm-search" type="search" placeholder="Search this deliverable" autocomplete="off">
+      <div id="cm-browser" hidden>
+        <div class="ph">
+          <button class="ib line" id="cm-back" type="button" aria-label="Go back" data-tip="Go back"><i data-icon="back"></i></button>
+          <div class="ph-main"><h2 id="cm-title"></h2><nav class="trail" id="cm-crumbs" aria-label="Where you are"></nav></div>
+          <div class="ph-actions">
+            <div class="sbox"><i data-icon="search"></i><input id="cm-search" type="search" placeholder="Search" aria-label="Search this deliverable" autocomplete="off"></div>
+            <button class="ib" id="cm-folder" type="button" aria-label="New folder" data-tip="New folder"><i data-icon="folderPlus"></i></button>
+            <button class="ib" id="cm-link" type="button" aria-label="Add a link" data-tip="Add a link"><i data-icon="link"></i></button>
+            <button class="ib solid" id="cm-upload" type="button" aria-label="Upload files" data-tip="Upload files"><i data-icon="upload"></i></button>
+            <input type="file" id="cm-file" multiple hidden>
           </div>
-          <button class="btn btn-ghost btn-sm" id="cm-folder" type="button">New Folder</button>
-          <button class="btn btn-ghost btn-sm" id="cm-link" type="button">Add Link</button>
-          <button class="btn btn-primary btn-sm" id="cm-upload" type="button">Upload Files</button>
-          <input type="file" id="cm-file" multiple hidden>
         </div>
-      </div>
-      <div class="cm-filters">
-        <label class="sr-only" for="cm-status">Filter by status</label>
-        <select id="cm-status"><option value="">Status: all</option><option value="draft">Draft</option><option value="published">Published</option><option value="unpublished">Unpublished</option><option value="archived">Archived</option></select>
-        <label class="sr-only" for="cm-aud">Filter by audience</label>
-        <select id="cm-aud"><option value="">Audience: all</option><option value="managers">Managers only</option><option value="employees">Employees</option><option value="public">Public</option></select>
-      </div>
-      <p class="cm-dz" id="cm-dz">Drag files here to upload. New uploads start as a Draft that only managers can see.</p>
-      <div class="list-card" id="cm-drop">
-        <ul class="rows" id="cm-rows"></ul>
-        <p class="empty" id="cm-empty" hidden></p>
-        <div class="busy" id="cm-busy" hidden role="status">Loading…</div>
-      </div>
-      <p class="fine">Any Senior Manager can add and change content in every deliverable. Publishing is what makes an item visible to its audience. The 201 Files are separate and are never shown here.</p>
+        <div class="pills" id="cm-status" role="group" aria-label="Show"></div>
+        <div class="list-card" id="cm-drop">
+          <ul class="rows" id="cm-rows"></ul>
+          <div class="es" id="cm-empty" hidden></div>
+          <div class="busy" id="cm-busy" hidden role="status">Loading…</div>
+        </div>
       </div>
     </div>
 
     <div id="panel-employees" role="tabpanel" aria-labelledby="tab-employees" hidden>
-      <div class="toolbar">
-        <div class="tools">
-          <div class="search">
-            <label class="sr-only" for="em-search">Search employees</label>
-            <input id="em-search" type="search" placeholder="Search by name or ID" autocomplete="off">
-          </div>
-          <label class="sr-only" for="em-show">Which employees to show</label>
-          <select id="em-show" class="em-select"><option value="current">Current employees</option><option value="all">Everyone</option><option value="inactive">Inactive only</option></select>
-        </div>
-        <div class="tools">
-          <button class="btn btn-ghost btn-sm" id="em-import" type="button">Import CSV</button>
-          <button class="btn btn-ghost btn-sm" id="em-bulk" type="button">Codes for everyone without a PIN</button>
-          <button class="btn btn-primary btn-sm" id="em-add" type="button">Add Employee</button>
+      <div class="ph">
+        <div class="ph-main"><h2>Employees</h2><p class="sub" id="em-sub">People who sign in to the Employee Portal with their ID and a PIN.</p></div>
+        <div class="ph-actions">
+          <div class="sbox"><i data-icon="search"></i><input id="em-search" type="search" placeholder="Search" aria-label="Search by name or ID" autocomplete="off"></div>
+          <button class="ib" id="em-import" type="button" aria-label="Import a CSV file" data-tip="Import a CSV file"><i data-icon="fileUp"></i></button>
+          <button class="ib" id="em-bulk" type="button" aria-label="Issue codes for everyone without a PIN" data-tip="Codes for everyone without a PIN"><i data-icon="key"></i></button>
+          <button class="ib solid" id="em-add" type="button" aria-label="Add an employee" data-tip="Add an employee"><i data-icon="userPlus"></i></button>
           <input type="file" id="em-file" accept=".csv,text/csv" hidden>
         </div>
       </div>
+      <div class="pills" id="em-show" role="group" aria-label="Show"></div>
       <div class="list-card">
         <ul class="rows" id="em-rows"></ul>
-        <p class="empty" id="em-empty" hidden></p>
+        <div class="es" id="em-empty" hidden></div>
         <div class="busy" id="em-busy" hidden role="status">Loading…</div>
       </div>
-      <p class="fine">Employees sign in at the Employee Portal with their Employee ID and a 6-digit PIN they choose themselves. An activation code works once and expires after 7 days. Nobody, including the Administrator, can read a PIN. A new code is also how you reset a lost or locked PIN.</p>
     </div>
 
     <div id="panel-records" role="tabpanel" aria-labelledby="tab-records" hidden>
-      <p class="msg" role="note" style="margin:0 0 14px">Restricted records. Every time one is opened, uploaded or deleted, it is written to the activity log. Never share these files outside this page.</p>
-      <div class="toolbar">
-        <div class="tools">
-          <label class="sr-only" for="rc-kind">Type of record</label>
-          <select id="rc-kind" class="em-select"></select>
-          <label class="sr-only" for="rc-emp">Employee</label>
-          <select id="rc-emp" class="em-select"><option value="">All employees</option></select>
-          <div class="search">
-            <label class="sr-only" for="rc-search">Search records</label>
-            <input id="rc-search" type="search" placeholder="Search by title or name" autocomplete="off">
-          </div>
+      <div class="ph">
+        <div class="ph-main"><h2>Restricted Records</h2><p class="sub">Every time one is opened, uploaded or deleted, it is written to the activity log.</p></div>
+        <div class="ph-actions">
+          <div class="sbox"><i data-icon="search"></i><input id="rc-search" type="search" placeholder="Search" aria-label="Search by title or employee" autocomplete="off"></div>
+          <button class="ib solid" id="rc-add" type="button" aria-label="Upload a record" data-tip="Upload a record"><i data-icon="upload"></i></button>
         </div>
-        <div class="tools"><button class="btn btn-primary btn-sm" id="rc-add" type="button">Upload Record</button></div>
       </div>
+      <div class="pills" id="rc-kind" role="group" aria-label="Type of record"></div>
+      <p class="fine" id="rc-rule" style="margin:-4px 0 14px"></p>
       <div class="list-card">
         <ul class="rows" id="rc-rows"></ul>
-        <p class="empty" id="rc-empty" hidden></p>
+        <div class="es" id="rc-empty" hidden></div>
         <div class="busy" id="rc-busy" hidden role="status">Loading…</div>
       </div>
-      <p class="fine" id="rc-rule"></p>
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
@@ -799,6 +735,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="../assets/ui-icons.js"></script>
 <script src="members.js"></script>
 <script src="content.js"></script>
 <script src="employees.js"></script>

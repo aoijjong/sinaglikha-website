@@ -12,10 +12,11 @@
   if (!app) return;
 
   var sb = app.sb, esc = app.esc, toast = app.toast, ask = app.ask, logAction = app.logAction;
+  var I = window.SngIcon, IB = window.SngIconButton;
   var ID_RE = /^[A-Z]{3}-\d{4}$/;
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
-  var em = { rows: [], ready: false, loading: false };
+  var em = { rows: [], show: 'current', failed: false };
 
   function busy(text) {
     var b = $('#em-busy');
@@ -61,36 +62,53 @@
     var st = statusOf(r);
     var meta = [r.employee_no, r.position].filter(Boolean).join(' · ');
     var last = r.last_login_at ? 'Last sign-in ' + app.fmtDate(r.last_login_at) : '';
-    var acts = '<button class="btn btn-ghost" type="button" data-act="edit">Edit</button>';
+    var acts = IB('pencil', 'Edit name and position', { 'data-act': 'edit' });
     if (r.active) {
-      acts += '<button class="btn ' + (r.pin_set ? 'btn-ghost' : 'btn-primary') + '" type="button" data-act="code">' + (r.pin_set ? 'Reset PIN' : 'New code') + '</button>' +
-        '<button class="btn btn-ghost" type="button" data-act="deactivate">Deactivate</button>';
+      acts += IB('key', r.pin_set ? 'Reset PIN: issue a new activation code' : 'Issue an activation code', { 'data-act': 'code' }, r.pin_set ? '' : 'good');
+      acts += IB('userX', 'Deactivate', { 'data-act': 'deactivate' }, 'danger');
     } else {
-      acts += '<button class="btn btn-ghost" type="button" data-act="reactivate">Reactivate</button>';
+      acts += IB('userCheck', 'Reactivate', { 'data-act': 'reactivate' }, 'good');
     }
-    return '<li class="row cm-row" data-id="' + esc(r.id) + '">' +
-      '<div class="row-main" style="cursor:default"><span class="ico">' + esc(initialsOf(r.full_name)) + '</span>' +
-      '<span class="row-text"><span class="row-name">' + esc(r.full_name) + '</span><span class="row-meta">' + esc(meta) + (last ? ' · ' + esc(last) : '') + '</span></span></div>' +
-      '<div class="cm-side"><span class="chip e-' + st[0] + '">' + esc(st[1]) + '</span><div class="cm-acts">' + acts + '</div></div></li>';
+    return '<li class="lrow" data-id="' + esc(r.id) + '">' +
+      '<div class="lmain"><span class="lico">' + esc(initialsOf(r.full_name)) + '</span>' +
+      '<span class="ltext"><span class="lname">' + esc(r.full_name) + '</span><span class="lmeta">' + esc(meta) + (last ? ' · ' + esc(last) : '') + '</span></span></div>' +
+      '<div class="lside"><span class="chip e-' + st[0] + '">' + esc(st[1]) + '</span><div class="lacts">' + acts + '</div></div></li>';
+  }
+
+  function drawPills() {
+    var cur = em.rows.filter(function (r) { return r.active; }).length;
+    var tabs = [['current', 'Current', cur], ['inactive', 'Inactive', em.rows.length - cur], ['all', 'Everyone', em.rows.length]];
+    $('#em-show').innerHTML = tabs.map(function (t) {
+      return '<button class="pill" type="button" data-show="' + t[0] + '" aria-pressed="' + (em.show === t[0]) + '">' + t[1] + ' <small>' + t[2] + '</small></button>';
+    }).join('');
+    var need = em.rows.filter(function (r) { return r.active && !r.pin_set; }).length;
+    $('#em-sub').textContent = em.rows.length
+      ? cur + ' current' + (need ? ' · ' + need + ' without a PIN yet' : '')
+      : 'People who sign in to the Employee Portal with their ID and a PIN.';
+  }
+
+  function emptyHtml(icon, title, text) {
+    return '<span class="eic">' + I(icon) + '</span><b>' + title + '</b><p>' + text + '</p>';
   }
 
   function render() {
-    var show = $('#em-show').value, q = $('#em-search').value.trim().toLowerCase();
+    drawPills();
+    var q = $('#em-search').value.trim().toLowerCase();
     var list = em.rows.filter(function (r) {
-      if (show === 'current' && !r.active) return false;
-      if (show === 'inactive' && r.active) return false;
+      if (em.show === 'current' && !r.active) return false;
+      if (em.show === 'inactive' && r.active) return false;
       return !q || r.full_name.toLowerCase().indexOf(q) !== -1 || r.employee_no.toLowerCase().indexOf(q) !== -1;
     });
     $('#em-rows').innerHTML = list.map(rowHtml).join('');
     var empty = $('#em-empty');
     if (em.failed) {
-      empty.textContent = "The Employee Directory isn't set up in the database yet. Run supabase/employees.sql in the Supabase SQL editor.";
+      empty.innerHTML = emptyHtml('inbox', 'Not set up yet', 'Run supabase/employees.sql in the Supabase SQL editor, then reload this page.');
       empty.hidden = false;
     } else if (!em.rows.length) {
-      empty.textContent = 'No employees yet. Add one, or import a CSV file with the columns Employee ID, Full Name and Position.';
+      empty.innerHTML = emptyHtml('users', 'No employees yet', 'Tap ' + I('userPlus', 'inline') + ' to add someone, or ' + I('fileUp', 'inline') + ' to import a CSV file with the columns Employee ID, Full Name and Position.');
       empty.hidden = false;
     } else if (!list.length) {
-      empty.textContent = 'Nobody matches.';
+      empty.innerHTML = emptyHtml('search', 'Nobody matches', 'Try another search or filter.');
       empty.hidden = false;
     } else {
       empty.hidden = true;
@@ -287,7 +305,10 @@
 
   /* ---------- wiring ---------- */
   $('#em-search').addEventListener('input', render);
-  $('#em-show').addEventListener('change', render);
+  $('#em-show').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-show]');
+    if (b) { em.show = b.dataset.show; render(); }
+  });
   $('#em-add').addEventListener('click', function () { openForm(null); });
   $('#em-import').addEventListener('click', function () { $('#em-file').click(); });
   $('#em-file').addEventListener('change', function (e) {
@@ -299,7 +320,7 @@
     issue(em.rows.filter(function (r) { return r.active && !r.pin_set; }));
   });
   $('#em-rows').addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-act]'), li = e.target.closest('li.row');
+    var btn = e.target.closest('[data-act]'), li = e.target.closest('li.lrow');
     if (!btn || !li) return;
     var r = em.rows.filter(function (x) { return x.id === li.dataset.id; })[0];
     if (!r) return;

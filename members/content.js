@@ -1,10 +1,10 @@
 /*
   SINAGLIKHA Content Manager.
-  One folder-style browser for every deliverable outside the 201 Files. Each file, link and
-  folder is a row in public.content_items (see supabase/content_manager.sql); the files
+  Two steps: pick a department and a deliverable, then work in a folder-style list. Each file, link
+  and folder is a row in public.content_items (see supabase/content_manager.sql); the files
   themselves sit in the private "content" bucket. The database rules decide who can read or
   change what; this page only presents it. It shares the sign-in, dialogs and toasts of
-  members.js through window.MembersApp.
+  members.js through window.MembersApp. Actions are icon buttons with hover labels.
 */
 (function () {
   'use strict';
@@ -13,28 +13,28 @@
   if (!app) return;
 
   var sb = app.sb, state = app.state, esc = app.esc, toast = app.toast, ask = app.ask, logAction = app.logAction;
+  var I = window.SngIcon, IB = window.SngIconButton;
   var BUCKET = 'content';
   /* Only the file types the deliverables expect. There is no virus scanning, so nothing else goes in. */
   var ALLOWED = /\.(pdf|png|jpe?g|gif|webp|docx?|xlsx?|pptx?|txt|csv)$/i;
   var STATUS = { draft: 'Draft', published: 'Published', unpublished: 'Unpublished', archived: 'Archived' };
-  var AUDIENCE = { managers: 'Managers only', employees: 'Employees', public: 'Public' };
+  var AUDIENCE = { managers: 'Managers only', employees: 'Employees', public: 'Everyone' };
   /* Publishing these keeps them for managers only until someone picks another audience. */
   var MANAGEMENT_DEFAULT = ['risk_plan'];
   var DEPT_ORDER = ['staffing', 'training', 'engagement', 'rewards', 'legal'];
+  var DEPT_ICON = { staffing: 'users', training: 'book', engagement: 'chat', rewards: 'award', legal: 'scale' };
+  var KIND_ICON = { document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
+  var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  var ICON_FOLDER = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
-
-  var cs = { ready: false, loading: null, deliverables: [], key: '', path: [], items: [], q: '', token: 0, timer: null, failed: false, view: 'overview' };
+  var cs = { ready: false, loading: null, deliverables: [], dept: '', key: '', path: [], items: [], q: '', show: 'all', token: 0, timer: null, failed: false, view: 'home' };
 
   function busy(text) {
     var b = $('#cm-busy');
     b.textContent = text || 'Loading…';
     b.hidden = !text;
   }
-
   function deliverable(key) {
     return cs.deliverables.filter(function (d) { return d.key === key; })[0] || null;
   }
@@ -43,37 +43,76 @@
     return window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   }
   function likeEscape(s) { return String(s).replace(/[\\%_]/g, '\\$&'); }
+  function myDept() { return state.profile && state.profile.department; }
 
-  /* ---------- the deliverable picker ---------- */
+  /* ---------- the deliverables list ---------- */
   async function loadDeliverables() {
     var res = await sb.from('deliverables').select('key,name,department,kind,allow_public').order('name');
-    if (res.error || !res.data || !res.data.length) {
-      cs.failed = true;
-      cs.deliverables = [];
-      return false;
-    }
+    if (res.error || !res.data || !res.data.length) { cs.failed = true; cs.deliverables = []; return false; }
     cs.failed = false;
     cs.deliverables = res.data;
-    var html = '';
-    DEPT_ORDER.forEach(function (dep) {
-      var list = cs.deliverables.filter(function (d) { return d.department === dep; });
-      if (!list.length) return;
-      html += '<optgroup label="' + esc(app.depts[dep] || dep) + '">' + list.map(function (d) {
-        var special = d.kind === 'special';
-        return '<option value="' + esc(d.key) + '"' + (special ? ' disabled' : '') + '>' + esc(d.name) + (special ? ' (own screen, coming soon)' : '') + '</option>';
-      }).join('') + '</optgroup>';
-    });
-    $('#cm-deliv').innerHTML = html;
-    var usable = cs.deliverables.filter(function (d) { return d.kind !== 'special'; });
-    var mine = usable.filter(function (d) { return d.department === (state.profile && state.profile.department); })[0];
-    cs.key = (mine || usable[0] || {}).key || '';
-    $('#cm-deliv').value = cs.key;
-    return !!cs.key;
+    var mine = myDept();
+    cs.dept = DEPT_ORDER.indexOf(mine) !== -1 ? mine : 'staffing';
+    return true;
   }
 
-  /* ---------- loading and drawing the list ---------- */
+  /* ---------- home: department, then deliverable ---------- */
+  async function showHome() {
+    cs.view = 'home';
+    $('#cm-browser').hidden = true;
+    $('#cm-home').hidden = false;
+    var pills = $('#cm-depts'), cards = $('#cm-cards');
+    if (!cs.deliverables.length) {
+      pills.innerHTML = '';
+      cards.innerHTML = '<div class="es" style="grid-column:1/-1"><span class="eic">' + I('inbox') + '</span><b>Not set up yet</b><p>Run supabase/content_manager.sql in the Supabase SQL editor, then reload this page.</p></div>';
+      return;
+    }
+    var mine = myDept();
+    var order = DEPT_ORDER.slice();
+    if (mine && order.indexOf(mine) > 0) { order.splice(order.indexOf(mine), 1); order.unshift(mine); }
+    pills.innerHTML = order.map(function (d) {
+      return '<button class="pill" type="button" data-dept="' + d + '" aria-pressed="' + (d === cs.dept) + '">' + I(DEPT_ICON[d]) + esc(app.depts[d] || d) + '</button>';
+    }).join('');
+    cards.innerHTML = '';
+    var res = await sb.from('content_items').select('deliverable,status').neq('kind', 'folder').limit(10000);
+    if (cs.view !== 'home') return;
+    var counts = {};
+    (res.data || []).forEach(function (r) {
+      var c = counts[r.deliverable] || (counts[r.deliverable] = { published: 0, draft: 0, unpublished: 0, archived: 0 });
+      if (c[r.status] !== undefined) c[r.status]++;
+    });
+    cards.innerHTML = cs.deliverables.filter(function (d) { return d.department === cs.dept; }).map(function (d) {
+      var icon = '<span class="di">' + I(KIND_ICON[d.kind] || 'file') + '</span>';
+      if (d.kind === 'special') {
+        return '<button class="dcard" type="button" disabled>' + icon + '<span class="dt"><b>' + esc(d.name) + '</b><span class="dm">Coming soon</span></span></button>';
+      }
+      var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
+      var parts = [];
+      if (n.published) parts.push(n.published + ' published');
+      if (n.draft + n.unpublished) parts.push((n.draft + n.unpublished) + (n.draft + n.unpublished === 1 ? ' draft' : ' drafts'));
+      return '<button class="dcard" type="button" data-open="' + esc(d.key) + '">' + icon + '<span class="dt"><b>' + esc(d.name) +
+        '</b><span class="dm">' + esc(parts.length ? parts.join(' · ') : 'Nothing yet') + '</span></span>' + I('chevron', 'go') + '</button>';
+    }).join('');
+  }
+
+  function openDeliverable(key) {
+    var d = deliverable(key);
+    if (!d) return;
+    cs.key = key;
+    cs.dept = d.department;
+    cs.path = [];
+    cs.q = '';
+    cs.show = 'all';
+    cs.view = 'browser';
+    $('#cm-search').value = '';
+    $('#cm-home').hidden = true;
+    $('#cm-browser').hidden = false;
+    return load();
+  }
+
+  /* ---------- the list ---------- */
   async function load() {
-    if (!cs.key) { render(); return; }
+    if (!cs.key) { showHome(); return; }
     var token = ++cs.token;
     busy('Loading…');
     var term = cs.q.trim().replace(/[\\%_]/g, '');
@@ -83,7 +122,7 @@
     if (token !== cs.token) return;
     busy('');
     if (res.error) {
-      toast("Couldn't load this deliverable. " + (res.error.message || ''), 'bad');
+      toast("Couldn't load this list. " + (res.error.message || ''), 'bad');
       cs.items = [];
     } else {
       cs.items = res.data || [];
@@ -92,84 +131,102 @@
     summarize();
   }
 
+  /* counts for the filter pills cover the whole deliverable, not just this folder */
   async function summarize() {
     var key = cs.key;
     var res = await sb.from('content_items').select('status').eq('deliverable', key).neq('kind', 'folder').limit(5000);
     if (key !== cs.key) return;
-    var el = $('#cm-sum');
-    if (res.error) { el.textContent = ''; return; }
-    var n = { draft: 0, published: 0, unpublished: 0, archived: 0 };
-    (res.data || []).forEach(function (r) { if (n[r.status] !== undefined) n[r.status]++; });
-    var parts = Object.keys(n).filter(function (k) { return n[k]; }).map(function (k) { return n[k] + ' ' + STATUS[k].toLowerCase(); });
-    el.textContent = parts.length ? parts.join(' · ') : 'No items yet';
+    var n = { all: 0, published: 0, drafts: 0, archived: 0 };
+    (res.data || []).forEach(function (r) {
+      n.all++;
+      if (r.status === 'published') n.published++;
+      else if (r.status === 'archived') n.archived++;
+      else n.drafts++;
+    });
+    cs.counts = n;
+    drawPills();
+  }
+  function drawPills() {
+    var n = cs.counts || {};
+    $('#cm-status').innerHTML = SHOW.map(function (s) {
+      return '<button class="pill" type="button" data-show="' + s[0] + '" aria-pressed="' + (cs.show === s[0]) + '">' + s[1] +
+        (n[s[0]] !== undefined ? ' <small>' + n[s[0]] + '</small>' : '') + '</button>';
+    }).join('');
   }
 
-  function renderCrumbs() {
+  function drawTrail() {
     var d = deliverable(cs.key);
-    var html = '<button type="button" data-go="0"' + (cs.path.length || cs.q.trim() ? '' : ' aria-current="true"') + '>' + esc(d ? d.name : 'Content') + '</button>';
+    $('#cm-title').textContent = cs.path.length ? cs.path[cs.path.length - 1] : (d ? d.name : 'Content');
+    var html = '<button type="button" data-go="home">' + esc(d ? app.depts[d.department] || d.department : 'Content') + '</button>';
+    if (cs.path.length || cs.q.trim()) {
+      html += '<span class="sep" aria-hidden="true">›</span><button type="button" data-go="0">' + esc(d ? d.name : '') + '</button>';
+    }
     cs.path.forEach(function (seg, i) {
       var last = i === cs.path.length - 1 && !cs.q.trim();
-      html += '<span class="sep" aria-hidden="true">/</span><button type="button" data-go="' + (i + 1) + '"' + (last ? ' aria-current="true"' : '') + '>' + esc(seg) + '</button>';
+      html += '<span class="sep" aria-hidden="true">›</span><button type="button" data-go="' + (i + 1) + '"' + (last ? ' aria-current="true"' : '') + '>' + esc(seg) + '</button>';
     });
     $('#cm-crumbs').innerHTML = html;
   }
 
   function rowHtml(it) {
-    var n = esc(it.title);
-    var searching = !!cs.q.trim();
+    var n = esc(it.title), searching = !!cs.q.trim();
     if (it.kind === 'folder') {
-      return '<li class="row cm-row" data-id="' + esc(it.id) + '">' +
-        '<button class="row-main" type="button" data-act="open"><span class="ico folder">' + ICON_FOLDER + '</span>' +
-        '<span class="row-text"><span class="row-name">' + n + '</span><span class="row-meta">Folder' + (searching && it.folder_path ? ' in ' + esc(it.folder_path) : '') + '</span></span></button>' +
-        '<div class="cm-side"><div class="cm-acts"><button class="btn btn-ghost" type="button" data-act="delete">Delete</button></div></div></li>';
+      return '<li class="lrow" data-id="' + esc(it.id) + '">' +
+        '<button class="lmain" type="button" data-act="open"><span class="lico folder">' + I('folder') + '</span>' +
+        '<span class="ltext"><span class="lname">' + n + '</span><span class="lmeta">Folder' + (searching && it.folder_path ? ' in ' + esc(it.folder_path) : '') + '</span></span></button>' +
+        '<div class="lside"><div class="lacts">' + IB('trash', 'Delete this folder', { 'data-act': 'delete' }, 'danger') + '</div></div></li>';
     }
-    var meta = [];
+    var meta = [AUDIENCE[it.audience] || it.audience];
     if (it.kind === 'file' && it.extra && it.extra.size) meta.push(app.fmtSize(it.extra.size));
     if (it.kind === 'link') meta.push('Link');
-    meta.push(app.fmtDate(it.updated_at));
     if (it.version) meta.push('Version ' + it.version);
+    meta.push(app.fmtDate(it.updated_at));
     if (searching && it.folder_path) meta.push('in ' + it.folder_path);
     var s = it.status;
-    var acts = '<button class="btn btn-ghost" type="button" data-act="edit">Edit</button>';
-    if (s === 'draft') acts += '<button class="btn btn-primary" type="button" data-act="publish">Publish</button><button class="btn btn-ghost" type="button" data-act="delete">Delete</button>';
-    else if (s === 'published') acts += '<button class="btn btn-ghost" type="button" data-act="unpublish">Unpublish</button><button class="btn btn-ghost" type="button" data-act="archive">Archive</button>';
-    else if (s === 'unpublished') acts += '<button class="btn btn-primary" type="button" data-act="publish">Publish</button><button class="btn btn-ghost" type="button" data-act="archive">Archive</button>';
-    else acts += '<button class="btn btn-ghost" type="button" data-act="restore">Restore</button><button class="btn btn-ghost" type="button" data-act="delete">Delete</button>';
-    return '<li class="row cm-row" data-id="' + esc(it.id) + '">' +
-      '<button class="row-main" type="button" data-act="preview" title="' + (it.kind === 'link' ? 'Open the link' : 'Open in a new tab') + '"><span class="ico">' + esc(it.kind === 'link' ? 'LINK' : app.extOf(it.title)) + '</span>' +
-      '<span class="row-text"><span class="row-name">' + n + '</span><span class="row-meta">' + esc(meta.filter(Boolean).join(' · ')) + '</span></span></button>' +
-      '<div class="cm-side"><span class="chip s-' + esc(s) + '">' + esc(STATUS[s] || s) + '</span>' +
-      '<span class="chip a-' + esc(it.audience) + '">' + esc(AUDIENCE[it.audience] || it.audience) + '</span>' +
-      '<div class="cm-acts">' + acts + '</div></div></li>';
+    var acts = IB('pencil', 'Edit details', { 'data-act': 'edit' });
+    if (s === 'draft' || s === 'unpublished') acts += IB('eye', 'Publish: show it to its audience', { 'data-act': 'publish' }, 'good');
+    if (s === 'published') acts += IB('eyeOff', 'Unpublish: hide it again', { 'data-act': 'unpublish' });
+    if (s === 'published' || s === 'unpublished') acts += IB('archive', 'Archive', { 'data-act': 'archive' });
+    if (s === 'archived') acts += IB('restore', 'Restore', { 'data-act': 'restore' });
+    if (s !== 'published' && s !== 'unpublished') acts += IB('trash', 'Delete', { 'data-act': 'delete' }, 'danger');
+    return '<li class="lrow" data-id="' + esc(it.id) + '">' +
+      '<button class="lmain" type="button" data-act="preview" title="' + (it.kind === 'link' ? 'Open the link' : 'Open in a new tab') + '"><span class="lico">' +
+      (it.kind === 'link' ? I('link') : esc(app.extOf(it.title))) + '</span>' +
+      '<span class="ltext"><span class="lname">' + n + '</span><span class="lmeta">' + esc(meta.filter(Boolean).join(' · ')) + '</span></span></button>' +
+      '<div class="lside"><span class="chip s-' + esc(s) + '">' + esc(STATUS[s] || s) + '</span><div class="lacts">' + acts + '</div></div></li>';
+  }
+
+  function emptyHtml(icon, title, text) {
+    return '<span class="eic">' + I(icon) + '</span><b>' + title + '</b><p>' + text + '</p>';
   }
 
   function render() {
-    renderCrumbs();
-    $('#cm-back').hidden = !cs.path.length;
-    var fs = $('#cm-status').value, fa = $('#cm-aud').value;
+    drawTrail();
+    drawPills();
+    $('#cm-back').setAttribute('data-tip', cs.path.length ? 'Up one folder' : 'Back to the deliverables');
     var items = cs.items.filter(function (it) {
-      if (it.kind === 'folder') return !fs && !fa;
-      return (!fs || it.status === fs) && (!fa || it.audience === fa);
+      if (it.kind === 'folder') return cs.show === 'all';
+      if (cs.show === 'published') return it.status === 'published';
+      if (cs.show === 'drafts') return it.status === 'draft' || it.status === 'unpublished';
+      if (cs.show === 'archived') return it.status === 'archived';
+      return true;
     }).sort(function (a, b) {
       if ((a.kind === 'folder') !== (b.kind === 'folder')) return a.kind === 'folder' ? -1 : 1;
       return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
     });
     $('#cm-rows').innerHTML = items.map(rowHtml).join('');
     var empty = $('#cm-empty');
-    if (cs.failed) {
-      empty.textContent = "The Content Manager isn't set up in the database yet. Run supabase/content_manager.sql in the Supabase SQL editor.";
-      empty.hidden = false;
-    } else if (!cs.items.length) {
-      empty.textContent = cs.q.trim() ? 'Nothing in this deliverable matches "' + cs.q.trim() + '".' : 'This folder is empty. Upload files, add a link, or drag files here.';
+    if (!cs.items.length) {
+      empty.innerHTML = cs.q.trim()
+        ? emptyHtml('search', 'No matches', 'Nothing here matches "' + esc(cs.q.trim()) + '".')
+        : emptyHtml('inbox', 'Nothing here yet', 'Tap ' + I('upload', 'inline') + ' to add files, ' + I('link', 'inline') + ' to add a link, or drop files onto this list. New items start as drafts that only managers can see.');
       empty.hidden = false;
     } else if (!items.length) {
-      empty.textContent = 'Nothing here matches the filters.';
+      empty.innerHTML = emptyHtml('inbox', 'Nothing in this view', 'Try another filter above.');
       empty.hidden = false;
     } else {
       empty.hidden = true;
     }
-    var special = !cs.key;
-    ['#cm-folder', '#cm-link', '#cm-upload'].forEach(function (id) { $(id).disabled = special; });
   }
 
   /* ---------- changing status and audience ---------- */
@@ -250,64 +307,6 @@
     else window.location.href = res.data.signedUrl;
   }
 
-  /* ---------- the overview: every deliverable with its counts ---------- */
-  function overviewCard(d, n, mine) {
-    if (d.kind === 'special') {
-      return '<div class="ov-card"><b>' + esc(d.name) + '</b><span class="ov-note">Has its own screen, coming soon.</span></div>';
-    }
-    n = n || { draft: 0, published: 0, unpublished: 0, archived: 0 };
-    var chips = Object.keys(n).filter(function (k) { return n[k]; }).map(function (k) {
-      return '<span class="chip s-' + k + '">' + n[k] + ' ' + STATUS[k].toLowerCase() + '</span>';
-    }).join('');
-    return '<div class="ov-card' + (mine ? ' mine' : '') + '"><b>' + esc(d.name) + '</b>' +
-      '<div class="ov-nums">' + (chips || '<span class="ov-note">Nothing yet</span>') + '</div>' +
-      '<button class="btn btn-ghost" type="button" data-open="' + esc(d.key) + '">Open</button></div>';
-  }
-
-  async function showOverview() {
-    cs.view = 'overview';
-    $('#cm-browser').hidden = true;
-    $('#cm-sum').textContent = '';
-    var box = $('#cm-overview');
-    box.hidden = false;
-    if (!cs.deliverables.length) {
-      box.innerHTML = '<p class="empty">The Content Manager isn\'t set up in the database yet. Run supabase/content_manager.sql in the Supabase SQL editor.</p>';
-      return;
-    }
-    box.innerHTML = '<p class="ov-note">Loading…</p>';
-    var res = await sb.from('content_items').select('deliverable,status').neq('kind', 'folder').limit(10000);
-    if (cs.view !== 'overview') return;
-    var counts = {};
-    (res.data || []).forEach(function (r) {
-      var c = counts[r.deliverable] || (counts[r.deliverable] = { draft: 0, published: 0, unpublished: 0, archived: 0 });
-      if (c[r.status] !== undefined) c[r.status]++;
-    });
-    var mine = state.profile && state.profile.department;
-    var order = DEPT_ORDER.slice();
-    if (mine && order.indexOf(mine) > 0) { order.splice(order.indexOf(mine), 1); order.unshift(mine); }
-    var html = '';
-    order.forEach(function (dep) {
-      var list = cs.deliverables.filter(function (d) { return d.department === dep; });
-      if (!list.length) return;
-      html += '<div class="ov-dept"><h2>' + esc(app.depts[dep] || dep) + (dep === mine ? ' <span class="chip">Your department</span>' : '') + '</h2><div class="ov-grid">' +
-        list.map(function (d) { return overviewCard(d, counts[d.key], dep === mine); }).join('') + '</div></div>';
-    });
-    box.innerHTML = res.error ? '<p class="empty">Couldn\'t load the counts. ' + esc(res.error.message || '') + '</p>' : html;
-  }
-
-  function openDeliverable(key) {
-    if (!key || !deliverable(key)) return;
-    cs.key = key;
-    cs.path = [];
-    cs.q = '';
-    cs.view = 'browser';
-    $('#cm-search').value = '';
-    $('#cm-deliv').value = key;
-    $('#cm-overview').hidden = true;
-    $('#cm-browser').hidden = false;
-    return load();
-  }
-
   /* ---------- the details dialog (files and links) ---------- */
   function editItem(it, newLink) {
     var d = deliverable(newLink ? cs.key : it.deliverable);
@@ -321,7 +320,8 @@
     $('#it-cat').value = newLink ? '' : it.category || '';
     $('#it-ver').value = newLink ? '' : it.version || '';
     $('#it-aud').innerHTML = Object.keys(AUDIENCE).map(function (k) {
-      return '<option value="' + k + '"' + (k === 'public' && !(d && d.allow_public) ? ' disabled' : '') + '>' + AUDIENCE[k] + (k === 'public' && !(d && d.allow_public) ? ' (not for this deliverable)' : '') + '</option>';
+      var off = k === 'public' && !(d && d.allow_public);
+      return '<option value="' + k + '"' + (off ? ' disabled' : '') + '>' + AUDIENCE[k] + (off ? ' (not for this deliverable)' : '') + '</option>';
     }).join('');
     $('#it-aud').value = newLink ? 'managers' : it.audience;
     err.hidden = true;
@@ -424,14 +424,22 @@
   }
 
   /* ---------- wiring ---------- */
-  $('#cm-deliv').addEventListener('change', function () { openDeliverable(this.value); });
-  $('#cm-overview-btn').addEventListener('click', showOverview);
-  $('#cm-overview').addEventListener('click', function (e) {
+  $('#cm-depts').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-dept]');
+    if (!b) return;
+    cs.dept = b.dataset.dept;
+    showHome();
+  });
+  $('#cm-cards').addEventListener('click', function (e) {
     var b = e.target.closest('[data-open]');
     if (b) openDeliverable(b.dataset.open);
   });
-  $('#cm-status').addEventListener('change', render);
-  $('#cm-aud').addEventListener('change', render);
+  $('#cm-status').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-show]');
+    if (!b) return;
+    cs.show = b.dataset.show;
+    render();
+  });
   $('#cm-search').addEventListener('input', function () {
     var v = this.value;
     clearTimeout(cs.timer);
@@ -440,21 +448,20 @@
   $('#cm-crumbs').addEventListener('click', function (e) {
     var b = e.target.closest('[data-go]');
     if (!b || b.getAttribute('aria-current')) return;
-    cs.path = cs.path.slice(0, Number(b.dataset.go));
     cs.q = '';
     $('#cm-search').value = '';
+    if (b.dataset.go === 'home') { cs.key = ''; showHome(); return; }
+    cs.path = cs.path.slice(0, Number(b.dataset.go));
     load();
   });
   $('#cm-back').addEventListener('click', function () {
-    if (!cs.path.length) return;
-    cs.path.pop();
     cs.q = '';
     $('#cm-search').value = '';
-    load();
+    if (cs.path.length) { cs.path.pop(); load(); } else { cs.key = ''; showHome(); }
   });
   $('#cm-rows').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-act]');
-    var li = e.target.closest('li.row');
+    var li = e.target.closest('li.lrow');
     if (!btn || !li) return;
     var it = cs.items.filter(function (x) { return x.id === li.dataset.id; })[0];
     if (!it) return;
@@ -505,14 +512,14 @@
         }
         await cs.loading;
       }
-      if (cs.view === 'overview') await showOverview(); else await load();
+      if (cs.view === 'browser' && cs.key) await load(); else await showHome();
     },
     /* called when someone signs out, so the next person starts clean */
     reset: function () {
-      cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = ''; cs.view = 'overview';
+      cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = ''; cs.view = 'home'; cs.show = 'all';
       $('#cm-search').value = '';
       $('#cm-rows').innerHTML = '';
-      $('#cm-sum').textContent = '';
+      $('#cm-cards').innerHTML = '';
     }
   };
 })();

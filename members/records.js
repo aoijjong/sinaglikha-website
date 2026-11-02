@@ -25,7 +25,8 @@
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var rc = { people: [], rows: [], ready: false, failed: false, token: 0 };
+  var I = window.SngIcon, IB = window.SngIconButton;
+  var rc = { people: [], rows: [], kind: '', ready: false, failed: false, token: 0 };
 
   function dept() { return state.profile && state.profile.department; }
   function viewKinds() {
@@ -54,23 +55,25 @@
     var res = await sb.rpc('employee_options');
     if (res.error || !Array.isArray(res.data)) { rc.failed = true; rc.people = []; }
     else { rc.failed = false; rc.people = res.data; }
-    var kinds = viewKinds();
-    $('#rc-kind').innerHTML = kinds.map(function (k) { return '<option value="' + k + '">' + KINDS[k] + '</option>'; }).join('');
-    $('#rc-emp').innerHTML = '<option value="">All employees</option>' + rc.people.map(function (p) {
-      return '<option value="' + esc(p.id) + '">' + esc(p.employee_no + ' - ' + p.full_name + (p.active ? '' : ' (inactive)')) + '</option>';
-    }).join('');
+    rc.kind = viewKinds()[0];
+    drawKinds();
     $('#rc-add').hidden = !uploadKinds().length;
     rc.ready = !rc.failed;
   }
 
+  function drawKinds() {
+    $('#rc-kind').innerHTML = viewKinds().map(function (k) {
+      return '<button class="pill" type="button" data-kind="' + k + '" aria-pressed="' + (rc.kind === k) + '">' + KINDS[k] + '</button>';
+    }).join('');
+  }
+
   async function load() {
-    var kind = $('#rc-kind').value;
+    var kind = rc.kind;
     $('#rc-rule').textContent = RULES[kind] || '';
     if (rc.failed) { rc.rows = []; render(); return; }
     var token = ++rc.token;
     busy('Loading…');
     var q = sb.from('restricted_records').select('id,employee_id,kind,title,period,notes,file_path,extra,created_at').eq('kind', kind);
-    if ($('#rc-emp').value) q = q.eq('employee_id', $('#rc-emp').value);
     var res = await q.order('created_at', { ascending: false }).limit(500);
     if (token !== rc.token) return;
     busy('');
@@ -82,8 +85,12 @@
     render();
   }
 
+  function emptyHtml(icon, title, text) {
+    return '<span class="eic">' + I(icon) + '</span><b>' + title + '</b><p>' + text + '</p>';
+  }
+
   function render() {
-    var kind = $('#rc-kind').value, q = $('#rc-search').value.trim().toLowerCase();
+    var kind = rc.kind, q = $('#rc-search').value.trim().toLowerCase();
     var list = rc.rows.filter(function (r) {
       var p = person(r.employee_id);
       return !q || r.title.toLowerCase().indexOf(q) !== -1 || (p && (p.full_name.toLowerCase().indexOf(q) !== -1 || p.employee_no.toLowerCase().indexOf(q) !== -1));
@@ -91,21 +98,20 @@
     $('#rc-rows').innerHTML = list.map(function (r) {
       var p = person(r.employee_id);
       var meta = [p ? p.full_name + ' (' + p.employee_no + ')' : 'Unknown employee', r.period, r.extra && r.extra.size ? app.fmtSize(r.extra.size) : '', app.fmtDate(r.created_at)].filter(Boolean).join(' · ');
-      return '<li class="row cm-row" data-id="' + esc(r.id) + '">' +
-        '<button class="row-main" type="button" data-act="open" title="Open in a new tab"><span class="ico">' + esc(app.extOf(r.file_path)) + '</span>' +
-        '<span class="row-text"><span class="row-name">' + esc(r.title) + '</span><span class="row-meta">' + esc(meta) + '</span></span></button>' +
-        '<div class="cm-side"><span class="chip k-' + esc(r.kind) + '">' + esc(KINDS[r.kind] || r.kind) + '</span>' +
-        '<div class="cm-acts">' + (canUpload(r.kind) ? '<button class="btn btn-ghost" type="button" data-act="delete">Delete</button>' : '') + '</div></div></li>';
+      return '<li class="lrow" data-id="' + esc(r.id) + '">' +
+        '<button class="lmain" type="button" data-act="open" title="Open in a new tab"><span class="lico">' + esc(app.extOf(r.file_path)) + '</span>' +
+        '<span class="ltext"><span class="lname">' + esc(r.title) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
+        '<div class="lside"><div class="lacts">' + (canUpload(r.kind) ? IB('trash', 'Delete this record', { 'data-act': 'delete' }, 'danger') : '') + '</div></div></li>';
     }).join('');
     var empty = $('#rc-empty');
     if (rc.failed) {
-      empty.textContent = "Restricted Records aren't set up in the database yet. Run supabase/restricted_records.sql in the Supabase SQL editor.";
+      empty.innerHTML = emptyHtml('lock', 'Not set up yet', 'Run supabase/restricted_records.sql in the Supabase SQL editor, then reload this page.');
       empty.hidden = false;
     } else if (!rc.rows.length) {
-      empty.textContent = 'No ' + (KINDS[kind] || 'records').toLowerCase() + ' records yet.' + (canUpload(kind) ? ' Use Upload Record to add one.' : '');
+      empty.innerHTML = emptyHtml('lock', 'No ' + (KINDS[kind] || 'records').toLowerCase() + ' yet', canUpload(kind) ? 'Tap ' + I('upload', 'inline') + ' to upload the first one.' : 'Nothing has been uploaded for this type.');
       empty.hidden = false;
     } else if (!list.length) {
-      empty.textContent = 'Nothing matches.';
+      empty.innerHTML = emptyHtml('search', 'Nothing matches', 'Try another search.');
       empty.hidden = false;
     } else empty.hidden = true;
   }
@@ -144,11 +150,10 @@
     if (!kinds.length) return;
     var dlg = $('#rec-dlg'), form = $('#rec-form'), err = $('#rd-err');
     $('#rd-kind').innerHTML = kinds.map(function (k) { return '<option value="' + k + '">' + KINDS[k] + '</option>'; }).join('');
-    if (kinds.indexOf($('#rc-kind').value) !== -1) $('#rd-kind').value = $('#rc-kind').value;
+    if (kinds.indexOf(rc.kind) !== -1) $('#rd-kind').value = rc.kind;
     $('#rd-emp').innerHTML = '<option value="">Choose an employee</option>' + rc.people.filter(function (p) { return p.active; }).map(function (p) {
       return '<option value="' + esc(p.id) + '">' + esc(p.employee_no + ' - ' + p.full_name) + '</option>';
     }).join('');
-    if ($('#rc-emp').value) $('#rd-emp').value = $('#rc-emp').value;
     ['#rd-name', '#rd-period', '#rd-notes', '#rd-file'].forEach(function (s) { $(s).value = ''; });
     err.hidden = true;
     form.onsubmit = async function (e) {
@@ -185,7 +190,7 @@
       var p = person(empId);
       logAction('record.upload', kind + '/' + (p ? p.employee_no : empId), { id: ins.data.id });
       toast('Record uploaded.', 'ok');
-      if ($('#rc-kind').value !== kind) $('#rc-kind').value = kind;
+      if (viewKinds().indexOf(kind) !== -1) { rc.kind = kind; drawKinds(); }
       await load();
     };
     $('#rd-cancel').onclick = function () { dlg.close(); };
@@ -193,12 +198,17 @@
   }
 
   /* ---------- wiring ---------- */
-  $('#rc-kind').addEventListener('change', load);
-  $('#rc-emp').addEventListener('change', load);
+  $('#rc-kind').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-kind]');
+    if (!b) return;
+    rc.kind = b.dataset.kind;
+    drawKinds();
+    load();
+  });
   $('#rc-search').addEventListener('input', render);
   $('#rc-add').addEventListener('click', openUpload);
   $('#rc-rows').addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-act]'), li = e.target.closest('li.row');
+    var btn = e.target.closest('[data-act]'), li = e.target.closest('li.lrow');
     if (!btn || !li) return;
     var r = rc.rows.filter(function (x) { return x.id === li.dataset.id; })[0];
     if (!r) return;

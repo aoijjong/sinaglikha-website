@@ -223,3 +223,4 @@ want a separate sender.
 | An employee lost their PIN | Nobody can read a PIN. Choose **Reset PIN** on their row in the Employees tab to issue a new activation code. |
 | The Records tab says "aren't set up in the database yet" | `supabase/restricted_records.sql` hasn't been run. Paste it into the Supabase SQL editor (after `schema.sql` and `employees.sql`) and run it. |
 | A Senior Manager can't see Evaluation Results or has no Upload Record button | By design. Evaluation results are for Total Rewards and the Administrator, compensation is uploaded by Total Rewards, and disciplinary cases by Legal Compliance. Check the person's department in the Accounts tab. |
+| An employee's photo won't save ("Photos aren't set up yet") | `supabase/employees_avatar.sql` hasn't been run. Paste it into the Supabase SQL editor (after `employees.sql`) and run it. |

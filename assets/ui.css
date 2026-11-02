@@ -1,0 +1,107 @@
+/*
+  SINAGLIKHA shared interface pieces for the members area and the Employee Portal.
+  Icon buttons, pills, status chips, page headers, deliverable cards, rows and empty states.
+  Colours and radii come from the :root variables each page already defines.
+*/
+
+[data-icon]{display:contents}
+.ib [data-icon] .icon,.sbox [data-icon] .icon{fill:none}
+
+/* icon buttons: every action is an icon with a hover label */
+.ib{position:relative;width:42px;height:42px;border-radius:50%;border:0;background:none;color:var(--brown);display:inline-grid;place-items:center;cursor:pointer;flex:none;padding:0;transition:background .3s,color .3s,transform .4s var(--ease)}
+.ib .icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ib:active{transform:scale(.9)}
+.ib.line{border:1.5px solid rgba(74,46,34,.28)}
+.ib.solid{background:var(--grad-btn);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.65)}
+.ib[disabled]{opacity:.35;cursor:not-allowed}
+@media (hover:hover) and (pointer:fine){
+  .ib:not(.solid):not([disabled]):hover{background:var(--cream)}
+  .ib.good:not([disabled]):hover{background:#E3F3E4;color:#1E6B2A}
+  .ib.danger:not([disabled]):hover{background:#FDECEA;color:#B91C1C}
+  .ib.solid:not([disabled]):hover{transform:translateY(-2px)}
+  .ib[data-tip]:hover::after,.ib[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--brown);color:#fff;font-size:.75rem;font-weight:600;line-height:1.3;padding:5px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;z-index:40}
+}
+
+/* page header: back, title and actions on one calm line */
+.ph{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;margin:0 0 18px}
+.ph-main{flex:1 1 200px;min-width:0}
+.ph h2{font-size:clamp(1.4rem,3vw,1.9rem);line-height:1.15}
+.ph .sub{font-size:.92rem;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.ph-actions{display:flex;align-items:center;gap:4px;margin-left:auto;flex-wrap:wrap}
+.sbox{position:relative;width:min(240px,100%)}
+@media (max-width:640px){.ph-actions{width:100%;margin-left:0}.ph-actions .sbox{flex:1;width:auto;min-width:0}}
+.sbox .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.sbox input{width:100%;height:44px;padding:0 16px 0 42px;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--ink);transition:border-color .4s,box-shadow .4s}
+.sbox input:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15)}
+
+/* pills: a short row of choices */
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:9px 16px;font-weight:600;font-size:.9rem;cursor:pointer;transition:background .3s,color .3s,border-color .3s}
+.pill .icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pill small{font-size:.78rem;font-weight:700;opacity:.75}
+.pill[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.pill[aria-pressed="false"]:hover{border-color:var(--brown);color:var(--brown)}}
+@media (max-width:640px){.pills.scroll{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;margin-inline:-4px;padding-inline:4px}.pills.scroll::-webkit-scrollbar{display:none}.pills.scroll .pill{flex:none}}
+
+/* status chips */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;border-radius:999px;padding:4px 11px;white-space:nowrap;background:var(--cream);color:var(--brown)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.8}
+.chip.plain::before{display:none}
+.chip.s-draft{background:#FFF0B0;color:#6B4E00}
+.chip.s-published{background:#E3F3E4;color:#1E6B2A}
+.chip.s-unpublished,.chip.s-archived{background:#F1E6E2;color:#8A3B2B}
+.chip.e-active{background:#E3F3E4;color:#1E6B2A}
+.chip.e-pending{background:#FFF0B0;color:#6B4E00}
+.chip.e-locked,.chip.e-inactive,.chip.e-expired{background:#F1E6E2;color:#8A3B2B}
+.chip.e-none{background:#EFEAE4;color:#5A4538}
+.chip.k-compensation{background:#E3F3E4;color:#1E6B2A}
+.chip.k-evaluation{background:#DCEBFA;color:#1B4B7A}
+.chip.k-disciplinary{background:#F1E6E2;color:#8A3B2B}
+
+/* deliverable cards: one tap to open */
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.dcard{display:flex;align-items:center;gap:14px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 18px;cursor:pointer;color:var(--brown);box-shadow:var(--shadow);transition:transform .5s var(--ease),border-color .4s;min-width:0}
+.dcard .di{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;flex:none;background:var(--soft-warm);color:var(--brown)}
+.dcard .di .icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dcard .dt{display:flex;flex-direction:column;min-width:0;flex:1}
+.dcard b{font-family:var(--serif);font-weight:400;font-size:1.15rem;line-height:1.2}
+.dcard .dm{font-size:.85rem;color:var(--muted)}
+.dcard .go{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dcard[disabled]{cursor:default;opacity:.6;box-shadow:none}
+@media (hover:hover) and (pointer:fine){.dcard:not([disabled]):hover{transform:translateY(-3px);border-color:rgba(206,32,32,.4)}}
+
+/* list rows */
+.lrow{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 10px;border-top:1px solid var(--line);transition:background .3s}
+.lrow:first-child{border-top:0}
+@media (hover:hover) and (pointer:fine){.lrow:hover{background:rgba(251,243,203,.45)}}
+.lmain{flex:1;min-width:0;display:flex;align-items:center;gap:14px;background:none;border:0;padding:4px;border-radius:16px;text-align:left;color:inherit;font:inherit}
+button.lmain{cursor:pointer}
+.lico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--cream);color:#C8321A;font-size:.66rem;font-weight:700;letter-spacing:.04em}
+.lico.folder{background:var(--soft-warm);color:var(--brown)}
+.lico .icon{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ltext{display:flex;flex-direction:column;min-width:0}
+.lname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lmeta{font-size:.84rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lside{display:flex;align-items:center;gap:6px;margin-left:auto;flex:none}
+.lacts{display:flex;align-items:center;gap:0}
+@media (max-width:640px){
+  .lrow{flex-wrap:wrap;padding-bottom:8px}
+  .lmain{flex:1 1 100%}
+  .lside{width:100%;justify-content:space-between;padding-left:4px}
+  .lname,.lmeta{white-space:normal}
+}
+
+/* empty states */
+.es{display:grid;justify-items:center;gap:8px;padding:54px 22px;text-align:center;color:var(--muted)}
+.es .eic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--cream);color:var(--brown);margin-bottom:6px}
+.es .eic .icon{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.es b{font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--brown)}
+.es p{max-width:36ch;font-size:.95rem}
+.es .icon.inline{display:inline;width:1em;height:1em;vertical-align:-.15em;fill:none;stroke:currentColor;stroke-width:2}
+
+/* breadcrumb line under a page title */
+.trail{display:flex;flex-wrap:wrap;align-items:center;gap:2px;font-size:.88rem;color:var(--muted)}
+.trail button{background:none;border:0;padding:2px 6px;border-radius:8px;color:var(--muted);cursor:pointer;font:inherit;font-weight:600}
+.trail button[aria-current="true"]{color:var(--brown);cursor:default}
+.trail .sep{opacity:.6}
+@media (hover:hover) and (pointer:fine){.trail button:not([aria-current]):hover{background:var(--cream);color:var(--brown)}}
