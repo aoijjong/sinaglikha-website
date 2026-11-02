@@ -488,7 +488,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       </div>
     </div>
 
-    <div id="panel-library" role="tabpanel" aria-labelledby="tab-library">
+    <div id="panel-library" class="screen" role="tabpanel" aria-labelledby="tab-library">
       <div class="toolbar">
         <div class="path-row">
           <button class="btn btn-ghost btn-sm" id="btn-back" type="button" aria-label="Back to the parent folder" hidden>
@@ -521,7 +521,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <div class="pills scroll" id="cm-depts" role="group" aria-label="Departments"></div>
         <div class="dpanel" id="cm-cards"></div>
       </div>
-      <div id="cm-browser" hidden>
+      <div id="cm-browser" class="screen" hidden>
         <div class="ph">
           <button class="ib line" id="cm-back" type="button" aria-label="Go back" data-tip="Go back"><i data-icon="back"></i></button>
           <div class="ph-main"><h2 id="cm-title"></h2><nav class="trail" id="cm-crumbs" aria-label="Where you are"></nav></div>
@@ -540,10 +540,10 @@ dialog[open]{animation:pop .5s var(--ease)}
           <div class="busy" id="cm-busy" hidden role="status">Loading…</div>
         </div>
       </div>
-      <div id="cm-special" hidden></div>
+      <div id="cm-special" class="screen" hidden></div>
     </div>
 
-    <div id="panel-employees" role="tabpanel" aria-labelledby="tab-employees" hidden>
+    <div id="panel-employees" class="screen" role="tabpanel" aria-labelledby="tab-employees" hidden>
       <div class="ph">
         <div class="ph-main"><p class="sub" id="em-sub" style="font-size:1rem">People who sign in to the Employee Portal with their ID and a PIN.</p></div>
         <div class="ph-actions">
@@ -562,7 +562,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       </div>
     </div>
 
-    <div id="panel-records" role="tabpanel" aria-labelledby="tab-records" hidden>
+    <div id="panel-records" class="screen" role="tabpanel" aria-labelledby="tab-records" hidden>
       <div class="ph">
         <div class="ph-main"><p class="sub" style="font-size:1rem">Every time one is opened, uploaded or deleted, it is written to the activity log.</p></div>
         <div class="ph-actions">

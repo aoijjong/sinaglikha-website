@@ -299,7 +299,7 @@
       box.onclick = onClick;
       if (!canModerate()) {
         box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Employee Forum</h2></div></div>' +
-          '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Employee Engagement only</b><p>The forum is moderated by Employee Engagement and the Administrator.</p></div></div>';
+          '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Employee Engagement only</b><p>The forum is moderated by Employee Engagement.</p></div></div>';
         return;
       }
       F.box.innerHTML = '<p class="fine">Loading…</p>';

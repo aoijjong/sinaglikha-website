@@ -64,6 +64,49 @@
   window.SngIconFill = fill;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { fill(); });
   else fill();
+  /* Hover labels: one floating label appended to the page, so no card can clip it. It shows on mouse
+     hover and on keyboard focus, sits above the icon (below if there is no room) and never leaves the screen. */
+  var tip = null;
+  function tipEl() {
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'sng-tip';
+      tip.setAttribute('role', 'tooltip');
+      tip.hidden = true;
+      document.body.appendChild(tip);
+    }
+    return tip;
+  }
+  function showTip(el) {
+    var text = el.getAttribute('data-tip');
+    if (!text) return;
+    var t = tipEl();
+    t.textContent = text;
+    t.hidden = false;
+    var r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
+    var left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+    var top = r.top - h - 8;
+    if (top < 8) top = r.bottom + 8;
+    t.style.left = left + 'px';
+    t.style.top = top + 'px';
+  }
+  function hideTip() { if (tip) tip.hidden = true; }
+  document.addEventListener('mouseover', function (e) {
+    var el = e.target.closest && e.target.closest('[data-tip]');
+    if (el && window.matchMedia('(hover:hover)').matches) showTip(el);
+  });
+  document.addEventListener('mouseout', function (e) {
+    var el = e.target.closest && e.target.closest('[data-tip]');
+    if (el && !(e.relatedTarget && el.contains(e.relatedTarget))) hideTip();
+  });
+  document.addEventListener('focusin', function (e) {
+    var el = e.target.closest && e.target.closest('[data-tip]');
+    if (el && el.matches(':focus-visible')) showTip(el);
+  });
+  document.addEventListener('focusout', hideTip);
+  document.addEventListener('click', hideTip);
+  document.addEventListener('scroll', hideTip, true);
+
   /* An icon-only button: hover label, accessible name, optional look ("solid", "line", "good", "danger"). */
   window.SngIconButton = function (name, label, attrs, look) {
     var a = '';

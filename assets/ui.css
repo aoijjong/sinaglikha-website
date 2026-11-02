@@ -19,7 +19,6 @@
   .ib.good:not([disabled]):hover{background:#E3F3E4;color:#1E6B2A}
   .ib.danger:not([disabled]):hover{background:#FDECEA;color:#B91C1C}
   .ib.solid:not([disabled]):hover{transform:translateY(-2px)}
-  .ib[data-tip]:hover::after,.ib[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--brown);color:#fff;font-size:.75rem;font-weight:600;line-height:1.3;padding:5px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;z-index:40}
 }
 
 /* page header: back, title and actions on one calm line */
@@ -140,3 +139,16 @@ button.lmain{cursor:pointer}
   .dpanel .lside{padding-left:62px;gap:8px;flex-wrap:wrap}
   .dpanel .lside:empty{display:none}
 }
+
+/* one bordered panel around a whole list screen, so nothing floats on the page */
+.screen{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:clamp(16px,3vw,24px)}
+.screen[hidden]{display:none}
+.screen>.ph{padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.screen .toolbar{margin-bottom:12px}
+.screen .list-card{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;overflow:visible}
+.screen .list-card.drag{border-top-color:#CE2020;box-shadow:none;background:rgba(206,32,32,.04)}
+.screen .fine{margin-top:14px}
+
+/* hover labels for icon buttons: one floating label, placed by ui-icons.js */
+.sng-tip{position:fixed;z-index:300;background:var(--brown);color:#fff;font-size:.78rem;font-weight:600;line-height:1.3;padding:6px 10px;border-radius:8px;pointer-events:none;max-width:260px;box-shadow:0 6px 18px rgba(43,33,28,.25)}
+.sng-tip[hidden]{display:none}

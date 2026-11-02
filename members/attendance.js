@@ -219,7 +219,7 @@
       at.ctx = ctx;
       if (!canReview()) {
         box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Attendance Tracker</h2></div></div>' +
-          '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Staffing and Recruitment only</b><p>Attendance records can be reviewed by Staffing and Recruitment and the Administrator.</p></div></div>';
+          '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Staffing and Recruitment only</b><p>Attendance records can be reviewed by Staffing and Recruitment.</p></div></div>';
         box.onclick = onClick;
         return;
       }

@@ -19,9 +19,9 @@
   var ALLOWED = /\.(pdf|png|jpe?g|gif|webp|docx?|xlsx?|pptx?|txt|csv)$/i;
   var KINDS = { compensation: 'Compensation', evaluation: 'Evaluation Results', disciplinary: 'Disciplinary Cases' };
   var RULES = {
-    compensation: 'Compensation records can be opened by every Senior Manager and the Administrator, and each employee can open their own. Total Rewards uploads them.',
-    evaluation: 'Evaluation results can be opened only by Total Rewards and the Administrator. Employees do not see them. Total Rewards uploads them.',
-    disciplinary: 'Disciplinary cases can be opened by every Senior Manager and the Administrator. Employees do not see them. Legal Compliance uploads them.'
+    compensation: 'Compensation records can be opened by every Senior Manager, and each employee can open their own. Total Rewards uploads them.',
+    evaluation: 'Evaluation results can be opened only by Total Rewards. Employees do not see them. Total Rewards uploads them.',
+    disciplinary: 'Disciplinary cases can be opened by every Senior Manager. Employees do not see them. Legal Compliance uploads them.'
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
