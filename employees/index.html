@@ -163,7 +163,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .rcmp{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
 .rcmp textarea{flex:1;min-width:0;min-height:44px;resize:vertical;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
 .rcmp textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
-.composer{padding:14px 20px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(251,243,203,.4),rgba(251,243,203,0))}
+.composer{padding:14px 20px 18px;border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(251,243,203,.4),rgba(251,243,203,0))}
 .cmp-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .cmp-row select{padding:11px 12px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;max-width:100%}
 .cmp-row input{flex:1 1 200px;min-width:0;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
@@ -284,6 +284,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
         </section>
         <section class="panel" id="forum-panel" style="order:4" hidden>
           <div class="panel-h"><span class="pi"><i data-icon="users"></i></span><h2>Community</h2></div>
+          <div class="feed" id="forum-feed"></div>
           <form class="composer" id="f-compose" novalidate>
             <div class="cmp-row">
               <label class="sr-only" for="fc-cat">Category</label><select id="fc-cat"></select>
@@ -294,7 +295,6 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
             <p class="msg bad" id="fc-msg" role="alert" hidden></p>
             <div class="cmp-foot"><span class="fine">Posts show your name. Be kind and keep it work-friendly.</span><button class="btn btn-primary btn-sm" type="submit" id="fc-post"><i data-icon="send"></i>Post</button></div>
           </form>
-          <div class="feed" id="forum-feed"></div>
         </section>
       </div>
       <aside class="col-side">
