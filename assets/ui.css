@@ -105,3 +105,29 @@ button.lmain{cursor:pointer}
 .trail button[aria-current="true"]{color:var(--brown);cursor:default}
 .trail .sep{opacity:.6}
 @media (hover:hover) and (pointer:fine){.trail button:not([aria-current]):hover{background:var(--cream);color:var(--brown)}}
+
+/* department panel on the Content home */
+.dpanel{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+.dp-head{display:flex;align-items:center;gap:16px;padding:20px 24px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(251,243,203,.55),rgba(251,243,203,0))}
+.dp-head .di{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none;background:var(--soft-warm);color:var(--brown)}
+.dp-head .di .icon{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dp-title{flex:1;min-width:0}
+.dp-title h2{font-size:clamp(1.3rem,2.6vw,1.7rem);line-height:1.15}
+.dp-title p{color:var(--muted);font-size:.95rem}
+.dp-sum{font-size:.88rem;font-weight:600;color:var(--brown);text-align:right}
+.dpanel .rows{display:block}
+.dpanel .lrow{padding:14px 18px 14px 14px}
+.dpanel .lmeta{white-space:normal}
+.dpanel .go{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dpanel .go-main{display:none;margin-left:auto}
+.dp-empty{font-size:.85rem;color:var(--muted);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.dp-empty .icon{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+@media (max-width:640px){
+  .dp-head{flex-wrap:wrap;padding:16px}
+  .dp-sum{width:100%;text-align:left}
+  .dp-empty{display:none}
+  .dpanel .go-main{display:block}
+  .dpanel .go-side{display:none}
+  .dpanel .lside{padding-left:62px;gap:8px;flex-wrap:wrap}
+  .dpanel .lside:empty{display:none}
+}

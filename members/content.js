@@ -24,6 +24,32 @@
   var DEPT_ORDER = ['staffing', 'training', 'engagement', 'rewards', 'legal'];
   var DEPT_ICON = { staffing: 'users', training: 'book', engagement: 'chat', rewards: 'award', legal: 'scale' };
   var KIND_ICON = { document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
+  var DEPT_LINE = {
+    staffing: 'Finding and welcoming the right people.',
+    training: 'Building skills for a future-ready workforce.',
+    engagement: 'Culture, communication, and community.',
+    rewards: 'Fair pay, benefits, and recognition.',
+    legal: 'Fair, lawful, and safe workplaces.'
+  };
+  var DELIV_LINE = {
+    attendance: 'Time in and time out records, with corrections and a monthly spreadsheet',
+    company_files: 'Company documents for the team and, where you allow it, the public',
+    talent_flow: 'Talent management flowcharts and the files that support them',
+    training_materials: 'Slides, guides and other learning resources',
+    lms: 'Courses and modules that employees complete and track',
+    career_dev: 'Programs and opportunities for growing a career here',
+    communication: 'Announcements, posters and newsletters',
+    forum: 'Employee conversations: moderation, reports and categories',
+    daily_activity: 'The activity of the day, with its instructions',
+    csr: 'Community activities and their photos',
+    wellness: 'Wellness programs and learning material',
+    comp_packages: 'General compensation and benefits information',
+    pms: 'Evaluation forms for self, peer and manager reviews',
+    incentive_plan: 'Incentive and recognition plan information',
+    handbook: 'The current Employee Handbook, with its versions',
+    disciplinary_guidelines: 'The approved guidelines for disciplinary action',
+    risk_plan: 'The Risk Mitigation Plan (management only by default)'
+  };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
   var SPECIAL = { lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms for employees'] };
@@ -67,7 +93,7 @@
     var pills = $('#cm-depts'), cards = $('#cm-cards');
     if (!cs.deliverables.length) {
       pills.innerHTML = '';
-      cards.innerHTML = '<div class="es" style="grid-column:1/-1"><span class="eic">' + I('inbox') + '</span><b>Not set up yet</b><p>Run supabase/content_manager.sql in the Supabase SQL editor, then reload this page.</p></div>';
+      cards.innerHTML = '<div class="es"><span class="eic">' + I('inbox') + '</span><b>Not set up yet</b><p>Run supabase/content_manager.sql in the Supabase SQL editor, then reload this page.</p></div>';
       return;
     }
     var mine = myDept();
@@ -84,23 +110,35 @@
       var c = counts[r.deliverable] || (counts[r.deliverable] = { published: 0, draft: 0, unpublished: 0, archived: 0 });
       if (c[r.status] !== undefined) c[r.status]++;
     });
-    cards.innerHTML = cs.deliverables.filter(function (d) { return d.department === cs.dept; }).map(function (d) {
-      var icon = '<span class="di">' + I(KIND_ICON[d.kind] || 'file') + '</span>';
-      var sp = SPECIAL[d.key];
-      if (sp && window[sp[0]]) {
-        return '<button class="dcard" type="button" data-special="' + esc(d.key) + '">' + icon + '<span class="dt"><b>' + esc(d.name) +
-          '</b><span class="dm">' + esc(sp[1]) + '</span></span>' + I('chevron', 'go') + '</button>';
-      }
-      if (d.kind === 'special') {
-        return '<button class="dcard" type="button" disabled>' + icon + '<span class="dt"><b>' + esc(d.name) + '</b><span class="dm">Coming soon</span></span></button>';
-      }
-      var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
-      var parts = [];
-      if (n.published) parts.push(n.published + ' published');
-      if (n.draft + n.unpublished) parts.push((n.draft + n.unpublished) + (n.draft + n.unpublished === 1 ? ' draft' : ' drafts'));
-      return '<button class="dcard" type="button" data-open="' + esc(d.key) + '">' + icon + '<span class="dt"><b>' + esc(d.name) +
-        '</b><span class="dm">' + esc(parts.length ? parts.join(' · ') : 'Nothing yet') + '</span></span>' + I('chevron', 'go') + '</button>';
-    }).join('');
+    var list = cs.deliverables.filter(function (d) { return d.department === cs.dept; });
+    var pub = 0, drafts = 0;
+    list.forEach(function (d) {
+      var n = counts[d.key];
+      if (n) { pub += n.published; drafts += n.draft + n.unpublished; }
+    });
+    var summary = [list.length + (list.length === 1 ? ' deliverable' : ' deliverables')];
+    if (pub) summary.push(pub + ' published');
+    if (drafts) summary.push(drafts + (drafts === 1 ? ' draft waiting' : ' drafts waiting'));
+    cards.innerHTML = '<div class="dp-head"><span class="di">' + I(DEPT_ICON[cs.dept]) + '</span><div class="dp-title"><h2>' + esc(app.depts[cs.dept] || cs.dept) + '</h2>' +
+      '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div><ul class="rows">' +
+      list.map(function (d) {
+        var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
+        var sp = SPECIAL[d.key], special = !!(sp && window[sp[0]]);
+        var line = DELIV_LINE[d.key] || '';
+        var open = special ? 'data-special="' + esc(d.key) + '"' : 'data-open="' + esc(d.key) + '"';
+        var chips = '';
+        if (!special) {
+          if (n.published) chips += '<span class="chip s-published">' + n.published + ' published</span>';
+          if (n.draft + n.unpublished) chips += '<span class="chip s-draft">' + (n.draft + n.unpublished) + (n.draft + n.unpublished === 1 ? ' draft' : ' drafts') + '</span>';
+          if (!chips) chips = '<span class="dp-empty">' + I('upload', 'inline') + ' Add the first file</span>';
+        }
+        if (d.kind === 'special' && !special) {
+          return '<li class="lrow"><div class="lmain" style="cursor:default;opacity:.6"><span class="lico">' + I(KIND_ICON[d.kind] || 'file') + '</span><span class="ltext"><span class="lname">' + esc(d.name) +
+            '</span><span class="lmeta">' + esc(line) + '</span></span></div><div class="lside"><span class="chip e-none plain">Coming soon</span></div></li>';
+        }
+        return '<li class="lrow"><button class="lmain" type="button" ' + open + '><span class="lico">' + I(KIND_ICON[d.kind] || 'file') + '</span><span class="ltext"><span class="lname">' + esc(d.name) +
+          '</span><span class="lmeta">' + esc(line) + '</span></span>' + I('chevron', 'go go-main') + '</button><div class="lside">' + chips + I('chevron', 'go go-side') + '</div></li>';
+      }).join('') + '</ul>';
   }
 
   function openSpecial(key) {
