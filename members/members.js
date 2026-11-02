@@ -153,7 +153,11 @@
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' }
   });
 
-  var state = { session: null, profile: null, isAdmin: false, canUse: false, path: [], entries: [], filter: '' };
+  var state = { session: null, profile: null, isAdmin: false, canUse: false, deptKnown: false, can201: false, path: [], entries: [], filter: '' };
+
+  /* The five HR departments. The 201 Files are for Staffing and Recruitment and Legal Compliance. */
+  var DEPTS = { staffing: 'Staffing and Recruitment', training: 'Training and Development', engagement: 'Employee Engagement', rewards: 'Total Rewards', legal: 'Legal Compliance' };
+  var FILE_DEPTS = ['staffing', 'legal'];
 
   /* ---------- small helpers ---------- */
   function prefix() { return state.path.length ? state.path.join('/') + '/' : ''; }
@@ -231,6 +235,25 @@
     });
   }
 
+  /* ---------- activity log: a line for each file and account action (the database adds who and when) ---------- */
+  function logAction(action, target, detail) {
+    try {
+      sb.rpc('log_action', { action: action, target: target || null, detail: detail || null }).then(function () {}, function () {});
+    } catch (x) { /* logging never stops the work */ }
+  }
+
+  /* What the signed-in person can open. The 201 Files are for the Administrator and for Senior
+     Managers of Staffing and Recruitment and Legal Compliance. Everyone keeps the Accounts tab. */
+  function applyAccess() {
+    var files = state.canUse && state.can201;
+    $$('.manager-only').forEach(function (el) { el.hidden = !files; });
+    $('#tab-library').hidden = !files;
+    $('#tabs').hidden = !files;          // with one section left there is nothing to switch between
+    $('#app-title').textContent = files ? '201 Files' : 'Accounts';
+    $('#pf-back-text').textContent = files ? 'Back to 201 Files' : 'Back to Accounts';
+    $('#dept-note').hidden = !(state.deptKnown && !state.isAdmin && !state.profile.department);
+  }
+
   /* ---------- session flow ---------- */
   async function enterApp(session) {
     state.session = session;
@@ -248,17 +271,22 @@
        (which adds that column) hasn't been run yet. */
     var pic = await sb.from('profiles').select('avatar').eq('id', session.user.id).maybeSingle();
     p.avatar = pic.error || !pic.data ? null : pic.data.avatar || null;
+    /* Same for the department (added by the access update). Until that update is run the page
+       behaves as before and every Senior Manager can open the 201 Files. */
+    var dep = await sb.from('profiles').select('department').eq('id', session.user.id).maybeSingle();
+    state.deptKnown = !dep.error && !!dep.data;
+    p.department = state.deptKnown ? dep.data.department || null : null;
     state.profile = p;
-    state.isAdmin = p.role === 'admin';   // the hidden owner: also sets roles
-    state.canUse = true;                   // every Senior Manager and the owner: all file and people functions
-    $$('.manager-only').forEach(function (el) { el.hidden = !state.canUse; });
-    $('#tabs').hidden = !state.canUse;
-    setTab('library');
+    state.isAdmin = p.role === 'admin';   // the hidden owner: also sets roles and departments
+    state.canUse = true;                   // every Senior Manager and the owner: the Accounts tab
+    state.can201 = state.isAdmin || !state.deptKnown || FILE_DEPTS.indexOf(p.department) !== -1;
+    applyAccess();
+    setTab(state.can201 ? 'library' : 'people');
     if (onProfileUrl()) { fillProfile(); show('profile'); } else show('app');
     state.path = [];
     state.filter = '';
     $('#search').value = '';
-    await loadFolder();
+    if (state.can201) await loadFolder();
   }
 
   function resetToSignIn() {
@@ -269,6 +297,8 @@
     state.profile = null;
     state.isAdmin = false;
     state.canUse = false;
+    state.can201 = false;
+    state.deptKnown = false;
     people = [];
     if (location.search) history.replaceState(null, '', location.pathname);
     $('#form-login').reset();
@@ -799,6 +829,8 @@
       if (res.error || !res.data) throw new Error('download');
       if (token !== V.token) return;
       V.blob = res.data;
+      V.path = path;
+      logAction('file.view', path);
       $('#v-download').disabled = false;
     } catch (err) {
       if (token === V.token) vMessage("Couldn't open this file. You may not have permission.");
@@ -852,6 +884,7 @@
   $('#v-zoom-reset').addEventListener('click', function () { vSetZoom(2); });
   $('#v-download').addEventListener('click', function () {
     if (!V.blob) return;
+    logAction('file.download', V.path);
     var url = URL.createObjectURL(V.blob), a = document.createElement('a');
     a.href = url;
     a.download = V.name;
@@ -882,6 +915,7 @@
     var w = window.open('about:blank', '_blank');
     try {
       var url = await signedUrl(name, false);
+      logAction('file.view', prefix() + name);
       if (w) { w.opener = null; w.location.href = url; } else { location.href = url; }
     } catch (err) {
       if (w) w.close();
@@ -892,6 +926,7 @@
   async function download(name) {
     try {
       var url = await signedUrl(name, true);
+      logAction('file.download', prefix() + name);
       var a = document.createElement('a');
       a.href = url;
       a.download = name;
@@ -941,6 +976,7 @@
       var paths = isFolder ? await listTree(prefix() + name) : [prefix() + name];
       var removed = await removePaths(paths);
       if (removed < paths.length) throw new Error('Some items were not deleted');
+      logAction(isFolder ? 'folder.delete' : 'file.delete', prefix() + name, { items: removed });
       toast(isFolder ? 'Folder deleted.' : 'File deleted.', 'ok');
     } catch (err) {
       toast("Couldn't delete that. You may not have permission.", 'bad');
@@ -981,7 +1017,7 @@
       });
       if (res.error) {
         failed.push(f.name + (/exist|duplicate/i.test(res.error.message || '') ? ' (already exists)' : ''));
-      } else { ok++; }
+      } else { ok++; logAction('file.upload', prefix() + cleanName(f.name)); }
     }
     setBusy('');
     if (ok && !failed.length) toast(ok === 1 ? 'File uploaded.' : ok + ' files uploaded.', 'ok');
@@ -1034,7 +1070,7 @@
     setBusy('Creating folder…');
     var res = await sb.storage.from(BUCKET).upload(prefix() + clean + '/.keep', new Blob([' '], { type: 'text/plain' }), { upsert: false });
     setBusy('');
-    if (res.error) toast("Couldn't create the folder.", 'bad'); else toast('Folder created.', 'ok');
+    if (res.error) toast("Couldn't create the folder.", 'bad'); else { toast('Folder created.', 'ok'); logAction('folder.create', prefix() + clean); }
     dirtyIndex();
     await loadFolder();
   });
@@ -1048,6 +1084,21 @@
     return '<label class="pfield"><span class="plabel">Role</span><select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
       '<option value="senior_manager"' + (p.role === 'senior_manager' ? ' selected' : '') + '>Senior Manager</option>' +
       '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Administrator</option></select></label>';
+  }
+
+  /* Department: the Administrator picks it; everyone else just sees it. Hidden until the database
+     update that adds departments has been run. */
+  function deptControl(p, label) {
+    if (!state.deptKnown || p.role === 'admin') return '';
+    if (!state.isAdmin) {
+      return '<div class="pfield pdept"><span class="plabel">Department</span><span class="role-tag' + (p.department ? '' : ' is-none') + '">' +
+        esc(p.department ? DEPTS[p.department] || p.department : 'Not set') + '</span></div>';
+    }
+    return '<label class="pfield pdept"><span class="plabel">Department</span><select data-act="dept" aria-label="Department for ' + label + '">' +
+      '<option value=""' + (p.department ? '' : ' selected') + '>Not set</option>' +
+      Object.keys(DEPTS).map(function (k) {
+        return '<option value="' + k + '"' + (p.department === k ? ' selected' : '') + '>' + DEPTS[k] + '</option>';
+      }).join('') + '</select></label>';
   }
 
   function personRow(p) {
@@ -1064,7 +1115,7 @@
       '<div class="row-text"><span class="row-name">' + nameLine + '</span>' +
       '<span class="row-meta">' + esc(p.email || '') + (!p.full_name && me ? ' (you)' : '') + '</span></div></div>' +
       '<div class="pfield"><span class="plabel">Status</span><span class="status ' + (p.active ? 'on' : 'off') + '">' + (p.active ? 'Active' : 'Deactivated') + '</span></div>' +
-      roleControl(p, label, me) + '<div class="pactions">' + actions + '</div></li>';
+      roleControl(p, label, me) + deptControl(p, label) + '<div class="pactions">' + actions + '</div></li>';
   }
 
   function renderPeople() {
@@ -1091,8 +1142,12 @@
     var load = function (c) {
       return sb.from('profiles').select(c).eq('hidden', false).order('created_at', { ascending: true });
     };
-    var res = await load(cols + ',avatar');
-    if (res.error) res = await load(cols);   // the picture column isn't there until the database update is run
+    /* the picture and department columns aren't there until the database updates are run */
+    var res = null, extras = [',avatar,department', ',department', ',avatar', ''];
+    for (var k = 0; k < extras.length; k++) {
+      res = await load(cols + extras[k]);
+      if (!res.error) break;
+    }
     if (res.error) {
       list.innerHTML = '<li class="empty">Couldn\'t load the list.</li>';
       return;
@@ -1126,7 +1181,7 @@
       });
       var body = {};
       try { body = await res.json(); } catch (x) { /* not JSON */ }
-      if (res.ok) toast('Account deleted.', 'ok');
+      if (res.ok) { toast('Account deleted.', 'ok'); logAction('account.delete', email); }
       else toast(body.error || 'Deleting accounts only works on the Vercel version of the website. Use Supabase, then Authentication, then Users instead.', 'bad');
     } catch (err) {
       toast("Couldn't reach the server. Check your connection and try again.", 'bad');
@@ -1135,10 +1190,18 @@
   }
 
   $('#people').addEventListener('change', async function (e) {
-    var sel = e.target.closest('select[data-act="role"]');
+    var sel = e.target.closest('select[data-act="role"], select[data-act="dept"]');
     if (!sel) return;
-    var id = sel.closest('li').dataset.id;
-    if (!(await updateProfile(id, { role: sel.value }))) loadPeople();
+    var li = sel.closest('li'), id = li.dataset.id;
+    var isDept = sel.dataset.act === 'dept';
+    var patch = isDept ? { department: sel.value || null } : { role: sel.value };
+    if (await updateProfile(id, patch)) {
+      logAction(isDept ? 'account.department' : 'account.role', li.dataset.email, isDept ? { department: sel.value || null } : { role: sel.value });
+      var who = people.filter(function (p) { return p.id === id; })[0];
+      if (who) { if (isDept) who.department = sel.value || null; else who.role = sel.value; }
+    } else {
+      loadPeople();
+    }
   });
 
   $('#people').addEventListener('click', async function (e) {
@@ -1160,8 +1223,10 @@
       });
       if (!ok) return;
     }
-    await updateProfile(li.dataset.id, { active: activate },
-      activate ? 'Account reactivated.' : "Deactivated. You'll find them under \"Show deactivated accounts\".");
+    if (await updateProfile(li.dataset.id, { active: activate },
+      activate ? 'Account reactivated.' : "Deactivated. You'll find them under \"Show deactivated accounts\".")) {
+      logAction(activate ? 'account.activate' : 'account.deactivate', li.dataset.email);
+    }
     loadPeople();
   });
 
@@ -1181,6 +1246,7 @@
     $('#pf-name').value = p.full_name || '';
     $('#pf-email').value = p.email || '';
     $('#pf-role').textContent = p.role === 'admin' ? 'Administrator' : 'Senior Manager';
+    $('#pf-dept').textContent = p.role === 'admin' ? 'All departments' : !state.deptKnown ? 'Not available' : p.department ? DEPTS[p.department] || p.department : 'Not set';
     $('#pf-since').textContent = fmtDate(p.created_at) || 'Not available';
     note($('#profile-msg'), '');
     resetPasswordForm();
@@ -1353,6 +1419,7 @@
       try { body = await res.json(); } catch (x) { /* not JSON */ }
       if (res.ok) {
         note(msg, 'Invitation sent to ' + email + '.', 'ok');
+        logAction('account.invite', email);
         $('#form-invite').reset();
         loadPeople();
       } else if (body.error) {

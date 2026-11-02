@@ -216,6 +216,8 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 @media (hover:hover) and (pointer:fine){.icon-btn.outline:not([disabled]):hover{background:var(--brown);color:var(--paper)}}
 .no-name{color:var(--muted);font-weight:500}
 .role-tag{font-size:.85rem;font-weight:600;color:var(--brown);background:var(--cream);border-radius:999px;padding:7px 13px;white-space:nowrap}
+.role-tag.is-none{background:#F1E6E2;color:#8A3B2B}
+.person .pdept{min-width:0}
 
 /* PDF viewer */
 body:has(.viewer[open]){overflow:hidden}
@@ -302,6 +304,8 @@ dialog[open]{animation:pop .5s var(--ease)}
   .person select{width:100%;font-size:.92rem;padding:10px 8px 10px 12px}
   .person .status,.person .role-tag{align-self:flex-start}
   .person .pactions{margin-left:0}
+  .person:not(.is-off) .pactions{grid-column:3;grid-row:2}
+  .person .pdept{grid-column:1/-1}
   .person.is-off .pactions{grid-column:1/-1}
   .person .pactions .btn{flex:1;min-height:42px}
 }
@@ -312,6 +316,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 @media (max-width:359px){
   .person:not(.is-off){grid-template-columns:1fr auto}
   .person:not(.is-off)>.pfield:nth-child(2){grid-column:1/-1}
+  .person:not(.is-off) .pactions{grid-column:2;grid-row:auto}
   .top-in{gap:8px}
   .top-right{gap:6px}
   .avatar{width:34px;height:34px}
@@ -397,7 +402,7 @@ dialog[open]{animation:pop .5s var(--ease)}
     <div class="app-head">
       <div>
         <span class="eyebrow">Senior Managers Only</span>
-        <h1>201 Files</h1>
+        <h1 id="app-title">201 Files</h1>
       </div>
       <div class="tabs" role="tablist" id="tabs" aria-label="Sections" data-pos="0" hidden>
         <span class="tab-thumb" aria-hidden="true"></span>
@@ -430,13 +435,14 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="empty" id="empty" hidden></p>
         <div class="busy" id="busy" hidden role="status">Loading…</div>
       </div>
-      <p class="fine">All Senior Managers can see and manage every file here, so only invite people who should have that access.</p>
+      <p class="fine">Everyone who can open this area can see and manage every file in it. Only Senior Managers of Staffing and Recruitment and Legal Compliance should be given access.</p>
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
+      <p class="msg" id="dept-note" role="status" style="margin:0 0 18px" hidden>Your account has no department yet, so the 201 Files are closed to you. Ask the Administrator to set your department.</p>
       <form class="card invite" id="form-invite" novalidate>
         <h2>Invite Someone</h2>
-        <p class="lead">They'll join as a Senior Manager, with full access to every file. They get an email with a link to set a password, and only people you invite can sign in.</p>
+        <p class="lead">They'll join as a Senior Manager. They get an email with a link to set a password, and only people you invite can sign in. The Administrator then sets their department, which decides whether they can open the 201 Files.</p>
         <div class="invite-grid">
           <div class="field"><label for="i-email">Email</label><input id="i-email" type="email" inputmode="email" autocomplete="off" required></div>
           <button class="btn btn-primary" type="submit" id="btn-invite">Send Invitation</button>
@@ -450,7 +456,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 
   <section id="view-profile" class="profile" hidden>
     <button class="back" type="button" id="pf-back">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to 201 Files
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span id="pf-back-text">Back to 201 Files</span>
     </button>
     <div class="app-head">
       <div>
@@ -474,6 +480,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <div class="field"><label for="pf-email">Email</label><input id="pf-email" type="email" readonly aria-describedby="pf-email-note"><p class="fine" id="pf-email-note">This is the email you sign in with. It can't be changed here.</p></div>
       <dl class="pf-facts">
         <div><dt>Role</dt><dd id="pf-role"></dd></div>
+        <div><dt>Department</dt><dd id="pf-dept"></dd></div>
         <div><dt>Member Since</dt><dd id="pf-since"></dd></div>
       </dl>
       <div class="actions">
