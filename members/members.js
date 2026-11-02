@@ -250,7 +250,7 @@
     p.avatar = pic.error || !pic.data ? null : pic.data.avatar || null;
     state.profile = p;
     state.isAdmin = p.role === 'admin';   // the hidden owner: also sets roles
-    state.canUse = true;                   // every Senior manager and the owner: all file and people functions
+    state.canUse = true;                   // every Senior Manager and the owner: all file and people functions
     $$('.manager-only').forEach(function (el) { el.hidden = !state.canUse; });
     $('#tabs').hidden = !state.canUse;
     setTab('library');
@@ -281,7 +281,7 @@
 
     if (linkError) {
       show('auth');
-      note($('#login-msg'), 'That link has expired or was already used. Sign in, use "Forgot your password?", or ask a Senior manager for a new invitation.', 'bad');
+      note($('#login-msg'), 'That link has expired or was already used. Sign in, use "Forgot your password?", or ask a Senior Manager for a new invitation.', 'bad');
       history.replaceState(null, '', location.pathname);
       return;
     }
@@ -420,7 +420,7 @@
   }
 
   function renderCrumbs() {
-    var html = '<button type="button" data-go="0"' + (state.path.length ? '' : ' aria-current="true"') + '>HR 201</button>';
+    var html = '<button type="button" data-go="0"' + (state.path.length ? '' : ' aria-current="true"') + '>201 Files</button>';
     state.path.forEach(function (seg, i) {
       var last = i === state.path.length - 1;
       html += '<span class="sep" aria-hidden="true">/</span><button type="button" data-go="' + (i + 1) + '"' +
@@ -600,7 +600,7 @@
       return;
     }
     box.innerHTML = sug.items.map(function (it, i) {
-      var where = ['HR 201'].concat(it.dir ? it.dir.split('/') : []).join(' / ');
+      var where = ['201 Files'].concat(it.dir ? it.dir.split('/') : []).join(' / ');
       return '<li id="sg-' + i + '" role="option" aria-selected="false" data-i="' + i + '">' +
         '<span class="sico' + (it.folder ? ' folder' : '') + '">' + (it.folder ? ICON_FOLDER : esc(extOf(it.name))) + '</span>' +
         '<span class="stxt"><span class="sname">' + highlight(it.name, tokens) + '</span>' +
@@ -928,7 +928,7 @@
 
   async function deleteEntry(name, isFolder) {
     var ok = await ask({
-      title: isFolder ? 'Delete this folder?' : 'Delete this file?',
+      title: isFolder ? 'Delete This Folder?' : 'Delete This File?',
       text: isFolder
         ? '"' + name + '" and everything inside it will be permanently deleted.'
         : '"' + name + '" will be permanently deleted.',
@@ -1017,8 +1017,8 @@
 
   $('#btn-folder').addEventListener('click', async function () {
     var name = await ask({
-      title: 'New folder',
-      label: 'Folder name',
+      title: 'New Folder',
+      label: 'Folder Name',
       ok: 'Create',
       validate: function (v) {
         if (!v) return 'Enter a folder name.';
@@ -1039,14 +1039,14 @@
     await loadFolder();
   });
 
-  /* ---------- people (Senior managers; only the owner sets roles) ---------- */
+  /* ---------- people (Senior Managers; only the owner sets roles) ---------- */
   var people = [];
   var showInactive = false;
 
   function roleControl(p, label, me) {
-    if (!state.isAdmin) return '<div class="pfield"><span class="plabel">Role</span><span class="role-tag">' + (p.role === 'admin' ? 'Administrator' : 'Senior manager') + '</span></div>';
+    if (!state.isAdmin) return '<div class="pfield"><span class="plabel">Role</span><span class="role-tag">' + (p.role === 'admin' ? 'Administrator' : 'Senior Manager') + '</span></div>';
     return '<label class="pfield"><span class="plabel">Role</span><select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
-      '<option value="senior_manager"' + (p.role === 'senior_manager' ? ' selected' : '') + '>Senior manager</option>' +
+      '<option value="senior_manager"' + (p.role === 'senior_manager' ? ' selected' : '') + '>Senior Manager</option>' +
       '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Administrator</option></select></label>';
   }
 
@@ -1110,7 +1110,7 @@
 
   async function removeAccount(id, email) {
     var ok = await ask({
-      title: 'Delete this account?',
+      title: 'Delete This Account?',
       text: (email || 'This account') + ' will be removed for good and can be invited again later. Files they uploaded stay in the library.',
       ok: 'Delete',
       danger: true
@@ -1153,7 +1153,7 @@
     var activate = btn.dataset.to === 'on';
     if (!activate) {
       var ok = await ask({
-        title: 'Deactivate this account?',
+        title: 'Deactivate This Account?',
         text: 'They will lose access to the files right away. You can reactivate or delete them later.',
         ok: 'Deactivate',
         danger: true
@@ -1173,14 +1173,14 @@
     paintAvatar($('#pf-avatar'), { full_name: $('#pf-name').value, email: state.profile.email }, pf.photo);
     $('#pf-remove').hidden = !pf.photo;
     $('#pf-avatar').parentNode.classList.toggle('has-photo', !!pf.photo);
-    $('#pf-upload').textContent = pf.photo ? 'Change photo' : 'Upload photo';
+    $('#pf-upload').textContent = pf.photo ? 'Change Photo' : 'Upload Photo';
   }
   function fillProfile() {
     var p = state.profile;
     pf.photo = photoOf(p);
     $('#pf-name').value = p.full_name || '';
     $('#pf-email').value = p.email || '';
-    $('#pf-role').textContent = p.role === 'admin' ? 'Administrator' : 'Senior manager';
+    $('#pf-role').textContent = p.role === 'admin' ? 'Administrator' : 'Senior Manager';
     $('#pf-since').textContent = fmtDate(p.created_at) || 'Not available';
     note($('#profile-msg'), '');
     resetPasswordForm();

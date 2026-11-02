@@ -2,9 +2,9 @@
   POST /api/remove-user   { "id": "<account id>" }
 
   Permanently deletes a DEACTIVATED account so the email can be invited again.
-  Only a signed-in, active Senior manager or administrator may call it. Safety rules:
+  Only a signed-in, active Senior Manager or administrator may call it. Safety rules:
     - you can't delete yourself,
-    - a Senior manager can only delete Senior managers; hidden accounts can't be deleted here,
+    - a Senior Manager can only delete Senior Managers; hidden accounts can't be deleted here,
     - the account must already be deactivated (deactivate first, then delete),
     - the account's profile row disappears with it automatically.
 
@@ -63,13 +63,13 @@ module.exports = async function handler(req, res) {
     return rows[0] || null;
   };
 
-  // 2. Are they an active administrator or Senior manager? (checked with the secret key,
+  // 2. Are they an active administrator or Senior Manager? (checked with the secret key,
   //    not trusted from the browser)
   let me;
   try {
     me = await lookup(callerId);
     if (!me || me.active !== true || (me.role !== 'admin' && me.role !== 'senior_manager')) {
-      return send(res, 403, { error: 'Only Senior managers can remove accounts.' });
+      return send(res, 403, { error: 'Only Senior Managers can remove accounts.' });
     }
   } catch {
     return send(res, 502, { error: 'Could not check your permissions.' });
@@ -89,7 +89,7 @@ module.exports = async function handler(req, res) {
   // 4. The target must exist and already be deactivated
   try {
     const target = await lookup(id);
-    // Hidden accounts, and (for a Senior manager) anyone who isn't a Senior manager, are
+    // Hidden accounts, and (for a Senior Manager) anyone who isn't a Senior Manager, are
     // answered exactly like a missing account so their existence isn't revealed.
     if (!target || target.hidden === true || (me.role !== 'admin' && target.role !== 'senior_manager')) {
       return send(res, 404, { error: 'That account was not found.' });

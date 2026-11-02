@@ -1,21 +1,21 @@
 # Members area setup
 
-An invite-only area for the SINAGLIKHA HR 201 files. People sign in with an email and
-password. Only people a Senior manager invites can get in. Files are kept in private storage
-(not in GitHub) and are only handed out to signed-in Senior managers.
+An invite-only area for the SINAGLIKHA 201 Files. People sign in with an email and
+password. Only people a Senior Manager invites can get in. Files are kept in private storage
+(not in GitHub) and are only handed out to signed-in Senior Managers.
 
 ## Who can do what
 | Role | Files (view, download, upload, new folder, delete) | Accounts (invite, deactivate, reactivate, delete) | Set roles | Visible in the accounts list |
 |---|---|---|---|---|
-| **Senior manager** | Yes, everything | Yes, for other Senior managers | No | Yes |
+| **Senior Manager** | Yes, everything | Yes, for other Senior Managers | No | Yes |
 | **Administrator** (the owner) | Yes, everything | Yes, for everyone | Yes | **No, hidden** |
 
-Everyone who is invited starts as a Senior manager. The Administrator account is the owner's:
-it is hidden from the accounts list, so no Senior manager can see it, deactivate it, delete it
+Everyone who is invited starts as a Senior Manager. The Administrator account is the owner's:
+it is hidden from the accounts list, so no Senior Manager can see it, deactivate it, delete it
 or change its role. There are no other roles.
 
 You'll set up three things: **Supabase** (logins and file storage), the **site settings**
-(two values in `members/config.js`), and **Vercel** (so Senior managers can send invitations from the
+(two values in `members/config.js`), and **Vercel** (so Senior Managers can send invitations from the
 website). Allow about 20 minutes.
 
 > The code was tested against a simulated Supabase, not a real project, so expect to fix a
@@ -38,13 +38,13 @@ website). Allow about 20 minutes.
 3. You should see "Success". Running it again later is safe.
 
 This creates the people list, a private storage bucket called `library`, and the rules:
-- every active **Senior manager** (and the Administrator) can **view, download, upload, create folders and delete**,
+- every active **Senior Manager** (and the Administrator) can **view, download, upload, create folders and delete**,
 - nobody else can do anything.
 
 **Before you press Run, edit one line.** Near the top, in the block marked `EDIT THIS`, replace
 `YOUR-ADMIN-EMAIL@example.com` with the email you sign in with. Do this only in the Supabase SQL
 editor, not in the file on GitHub. If your project already has accounts from the old Member/Admin
-setup, this one run also converts them: everybody becomes a Senior manager, and the email you typed
+setup, this one run also converts them: everybody becomes a Senior Manager, and the email you typed
 becomes the hidden Administrator. If that email isn't found, it stops without changing anything.
 
 ### 3. Make sign-up invite-only
@@ -104,7 +104,7 @@ per file. Keep `MAX_UPLOAD_MB` in `members/config.js` at or below it.
 ---
 
 ## Part C. Vercel (needed only for inviting from the website)
-Signing in and the HR 201 files work on any host. **Sending invitations from the Accounts tab**
+Signing in and the 201 Files work on any host. **Sending invitations from the Accounts tab**
 needs the server function in `api/invite.js`, which runs on Vercel.
 (You can always invite from the Supabase dashboard instead.)
 
@@ -166,8 +166,8 @@ want a separate sender.
   page: scroll through the pages, zoom with **+** and **-** (or the keyboard), and download from the
   top bar. Other file types still open in a new tab. The viewer uses the open-source pdf.js library,
   loaded from a CDN the first time a PDF is opened, so it needs an internet connection.
-- **Roles:** everyone you invite is a **Senior manager** with full file access and can invite and
-  manage other Senior managers. Only the hidden Administrator can change a role (Accounts tab, role menu).
+- **Roles:** everyone you invite is a **Senior Manager** with full file access and can invite and
+  manage other Senior Managers. Only the hidden Administrator can change a role (Accounts tab, role menu).
 - **Remove access:** Accounts tab, **Deactivate** (instant). The account moves out of the main list
   into **Show deactivated accounts**, where you can **Reactivate** it or **Delete** it for good.
   Deleting frees the email so the person can be invited again. You can't delete yourself, and you
@@ -176,8 +176,12 @@ want a separate sender.
 - **Add files:** open **Files**, then **Upload files**, or drag files onto the list. Use **New folder** to organize.
 
 ## What this does and doesn't protect
-- Only invited people can sign in. Every active Senior manager sees and can change **every** file. There are no
+- Only invited people can sign in. Every active Senior Manager sees and can change **every** file. There are no
   per-folder permissions yet.
+- **Known gap:** the public site's 201 Files notice says these files are only for Senior Managers of Staffing and
+  Recruitment and Legal Compliance. The system does not enforce that yet, because accounts have no department.
+  Until a department is added to each account and the file rules check it, only invite people who should see
+  every 201 file.
 - Files are never stored in GitHub. Download links expire after two minutes.
 - Don't upload real employee records (HR 201) unless your team has approved where they're stored
   and who can see them. For the simulation, use sample documents.
@@ -193,7 +197,7 @@ want a separate sender.
 | "SUPABASE_URL contains a key" | You pasted a key into the URL line. Put the Project URL (`https://….supabase.co`) there. |
 | Invitation link says "expired" | The address isn't in **Redirect URLs** (step A4), or an email scanner already opened the link. Send a new invitation. |
 | Signed in but "This account isn't active" | The account has no profile row or was deactivated. Re-run `schema.sql`, or check the Accounts tab. |
-| No Upload button | The account isn't an active Senior manager or Administrator. Re-run `schema.sql` (with the owner email edited), or reactivate it from the Accounts tab. |
+| No Upload button | The account isn't an active Senior Manager or Administrator. Re-run `schema.sql` (with the owner email edited), or reactivate it from the Accounts tab. |
 | `schema.sql` stops with "The owner email … was not found" | The email in the `EDIT THIS` block doesn't match your account. Fix it in the SQL editor and run again. Nothing was changed. |
 | My own account doesn't appear in the accounts list | By design: the Administrator account is hidden. |
 | "Email rate limit exceeded" or "Too many emails were sent recently" | Supabase's built-in sender only allows about 2 emails an hour. Wait an hour, or set up your own sender (Part D). |

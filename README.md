@@ -22,13 +22,13 @@ Edit the `CONFIG` block near the bottom of `index.html`:
 
 Anything left empty shows as "To be provided". Nothing is invented.
 
-## Members area (invite-only HR 201 files)
+## Members area (invite-only 201 Files)
 
-`/members/` is a private area for the team's HR 201 files. Sign-in and files run on Supabase, and Senior managers can
+`/members/` is a private area for the team's 201 Files. Sign-in and files run on Supabase, and Senior Managers can
 invite people from the site through a small Vercel function.
 
 - `members/` the sign-in page and HR 201 file area (`config.js` holds the two Supabase settings)
-- `api/invite.js` sends invitations (Senior managers only; runs on Vercel)
+- `api/invite.js` sends invitations (Senior Managers only; runs on Vercel)
 - `supabase/schema.sql` creates the people list, the private `library` bucket, and the access rules
 - `docs/members-setup.md` step-by-step setup
 
@@ -42,4 +42,5 @@ connection to show them. To use your own photos, save them in `assets/` and repl
 ## Notes
 
 - Employee (HR 201) records are confidential and must never be committed to this repository.
-- `assets/source/` keeps the original logo exports; the site uses `assets/sinaglikha-logo.png`.
+- `assets/source/` keeps the original logo exports. The site uses `assets/sinaglikha-logo-notag.png` (the logo without its tagline).
+  It is an interim version cut from the original; replace that one file with the official logo when it is supplied.

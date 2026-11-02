@@ -1,12 +1,12 @@
--- SINAGLIKHA HR 201 Files: accounts, roles and file access
+-- SINAGLIKHA 201 Files: accounts, roles and file access
 -- Run in Supabase: SQL Editor -> New query -> paste -> Run.
 -- Safe to run again. It creates what is missing and refreshes every rule.
 --
 -- ROLES
 --   Administrator    the system owner. Hidden from everyone else. Manages accounts and can
 --                    also open, upload and delete files.
---   Senior manager   full access to the HR 201 files: view, download, upload, create folders
---                    and delete. Can invite and manage other Senior managers, and can never
+--   Senior Manager   full access to the 201 Files: view, download, upload, create folders
+--                    and delete. Can invite and manage other Senior Managers, and can never
 --                    see or change an Administrator.
 --
 -- >>> BEFORE YOU RUN IT, change the owner email in the block marked "EDIT THIS" below.
@@ -33,7 +33,7 @@ alter table public.profiles enable row level security;
 -- ---------------------------------------------------------------------------
 -- 2. One-time conversion from the old Member/Admin roles.
 --    Runs only if the old roles are still in place. Everyone except the owner becomes a
---    Senior manager; the owner becomes the hidden Administrator.
+--    Senior Manager; the owner becomes the hidden Administrator.
 -- ---------------------------------------------------------------------------
 do $$
 declare
@@ -105,7 +105,7 @@ as $$
   );
 $$;
 
--- Anyone who may use the HR 201 files: an active Administrator or Senior manager.
+-- Anyone who may use the 201 Files: an active Administrator or Senior Manager.
 create or replace function public.can_use_repository()
 returns boolean
 language sql stable security definer set search_path = public
@@ -126,7 +126,7 @@ grant execute on function public.is_senior_manager()   to authenticated;
 grant execute on function public.can_use_repository()  to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 5. New accounts. Only INVITED accounts start out active, and they start as Senior manager.
+-- 5. New accounts. Only INVITED accounts start out active, and they start as Senior Manager.
 --    Someone who signs themselves up (if sign-ups were ever left on) stays inactive and sees
 --    "This account isn't active". Accounts made with "Add user -> Create new user" aren't
 --    invitations either; activate those from the Accounts tab.
@@ -193,9 +193,9 @@ create trigger profiles_guard_trigger
 -- 6. Who can see and change accounts
 --    - everyone sees their own record
 --    - an Administrator sees every account except hidden ones (the owner is hidden)
---    - a Senior manager sees only other Senior managers (never an Administrator)
+--    - a Senior Manager sees only other Senior Managers (never an Administrator)
 --    - changes: an Administrator can change any visible account except their own;
---      a Senior manager can only switch other Senior managers on or off
+--      a Senior Manager can only switch other Senior Managers on or off
 -- ---------------------------------------------------------------------------
 create policy "profiles: read own"
   on public.profiles for select to authenticated
@@ -249,7 +249,7 @@ grant execute on function public.set_my_profile(text, text, boolean) to authenti
 
 -- ---------------------------------------------------------------------------
 -- 7. Files: one private bucket called "library"
---    Administrators and Senior managers can list, open, upload, replace and delete.
+--    Administrators and Senior Managers can list, open, upload, replace and delete.
 --    Nobody else can do anything.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)

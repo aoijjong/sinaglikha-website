@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HR 201 Files | SINAGLIKHA</title>
+<title>201 Files | SINAGLIKHA</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFDF6">
 <link rel="icon" type="image/png" href="../assets/favicon.png">
@@ -45,7 +45,7 @@ img,svg{display:block;max-width:100%}
 /* top bar */
 .top{position:sticky;top:0;z-index:20;background:rgba(255,253,246,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .top-in{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:75px}
-.brand img{height:42px;width:auto}
+.brand img{height:36px;width:auto}
 .top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .avatar{width:42px;height:42px;padding:0;border-radius:50%;border:2px solid var(--brown);background:var(--cream);color:var(--brown);font-weight:700;font-size:.85rem;letter-spacing:.02em;line-height:1;cursor:pointer;display:grid;place-items:center;overflow:hidden;transition:transform .5s var(--ease),background .4s,color .4s}
 .avatar img,.pf-avatar img,.pav img{width:100%;height:100%;object-fit:cover}
@@ -70,7 +70,7 @@ img,svg{display:block;max-width:100%}
 .link{background:none;border:0;padding:0;color:#B3261E;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
 
 main{flex:1;padding-block:clamp(28px,5vw,64px)}
-.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B3361A;margin-bottom:12px}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.86rem;font-weight:700;letter-spacing:.05em;color:#B3361A;margin-bottom:12px}
 .eyebrow::before{content:"";width:34px;height:3px;border-radius:3px;background:var(--grad)}
 .center{display:grid;place-items:center;min-height:40vh}
 .spinner{width:44px;height:44px;border-radius:50%;border:4px solid var(--cream);border-top-color:#E8701A;animation:spin 1s linear infinite}
@@ -198,14 +198,14 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 #form-profile .actions{flex-wrap:nowrap;justify-content:flex-start;gap:10px}
 #form-profile .actions .btn{padding:10px 14px;min-width:128px}
 .pf-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:4px 0 22px}
-.pf-facts dt{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.pf-facts dt{font-size:.8rem;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
 .pf-facts dd{margin:0;font-weight:600;color:var(--brown)}
 .person select{width:auto;padding:10px 12px}
 .list-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:26px 4px 12px}
 .list-head h2{font-size:1.4rem}
 .list-head span{font-size:.88rem;color:var(--muted)}
 .pfield{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-.plabel{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plabel{font-size:.8rem;font-weight:700;letter-spacing:.06em;color:var(--muted)}
 .status{font-size:.85rem;font-weight:600;border-radius:999px;padding:7px 13px;white-space:nowrap}
 .status.on{background:#E3F3E4;color:#1E6B2A}
 .status.off{background:#F1E6E2;color:#8A3B2B}
@@ -266,7 +266,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 }
 @media (max-width:720px){
   .top-in{min-height:65px}   /* same header height and logo sizes as the main website */
-  .brand img{height:34px}
+  .brand img{height:29px}
 }
 @media (max-width:560px){
   .v-bar{padding:8px 10px}
@@ -306,7 +306,7 @@ dialog[open]{animation:pop .5s var(--ease)}
   .person .pactions .btn{flex:1;min-height:42px}
 }
 @media (max-width:420px){
-  .brand img{height:30px}
+  .brand img{height:26px}
   .top-right .btn-sm{padding:10px 12px}
 }
 @media (max-width:359px){
@@ -318,7 +318,7 @@ dialog[open]{animation:pop .5s var(--ease)}
   .top-right .btn-sm{padding:8px 10px}
 }
 @media (max-width:340px){
-  .brand img{height:26px}
+  .brand img{height:22px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style>
@@ -328,17 +328,17 @@ dialog[open]{animation:pop .5s var(--ease)}
 
 <header class="top">
   <div class="wrap top-in">
-    <a class="brand" href="../" aria-label="SINAGLIKHA, back to the website"><img src="../assets/sinaglikha-logo.png" alt="SINAGLIKHA" width="1487" height="251"></a>
+    <a class="brand" href="../" aria-label="SINAGLIKHA, back to the website"><img src="../assets/sinaglikha-logo-notag.png" alt="SINAGLIKHA" width="1487" height="212"></a>
     <div class="top-right">
       <span class="who" id="who" hidden></span>
       <button class="avatar" id="btn-profile" type="button" aria-haspopup="dialog" aria-label="Profile settings" title="Profile settings" hidden></button>
-      <button class="btn btn-ghost btn-sm" id="btn-signout" type="button" hidden>Sign out</button>
+      <button class="btn btn-ghost btn-sm" id="btn-signout" type="button" hidden>Sign Out</button>
     </div>
   </div>
 </header>
 
 <main id="main" class="wrap">
-  <noscript><p class="msg bad">The HR 201 Files page needs JavaScript. Please turn it on and reload.</p></noscript>
+  <noscript><p class="msg bad">The 201 Files page needs JavaScript. Please turn it on and reload.</p></noscript>
 
   <section id="view-loading" class="center" aria-live="polite">
     <div class="spinner" role="status"><span class="sr-only">Loading</span></div>
@@ -346,58 +346,58 @@ dialog[open]{animation:pop .5s var(--ease)}
 
   <section id="view-setup" class="narrow" hidden>
     <div class="card">
-      <span class="eyebrow">Setup needed</span>
-      <h2>The HR 201 Files page isn't connected yet</h2>
+      <span class="eyebrow">Setup Needed</span>
+      <h2>The 201 Files page isn't connected yet</h2>
       <p class="lead">Someone needs to add the Supabase project details to <code>members/config.js</code>. The steps are in <code>docs/members-setup.md</code>.</p>
-      <a class="btn btn-ghost" href="../">Back to website</a>
+      <a class="btn btn-ghost" href="../">Back to Website</a>
     </div>
   </section>
 
   <section id="view-auth" class="auth" hidden>
     <div class="auth-intro">
       <span class="lock" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-      <h1>HR 201 Files</h1>
-      <p>For SINAGLIKHA Senior managers. Access is by invitation only.</p>
+      <h1>201 Files</h1>
+      <p>For SINAGLIKHA Senior Managers. Access is by invitation only.</p>
     </div>
     <form class="card" id="form-login" novalidate>
-      <h2>Sign in</h2>
+      <h2>Sign In</h2>
       <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" inputmode="email" required></div>
       <div class="field"><label for="l-pass">Password</label><input id="l-pass" type="password" autocomplete="current-password" required></div>
       <p class="msg" id="login-msg" role="alert" hidden></p>
       <div class="actions">
-        <button class="btn btn-primary" type="submit" id="btn-login">Sign in</button>
-        <button class="link" type="button" id="btn-forgot">Forgot your password?</button>
+        <button class="btn btn-primary" type="submit" id="btn-login">Sign In</button>
+        <button class="link" type="button" id="btn-forgot">Forgot Your Password?</button>
       </div>
-      <p class="fine">No account yet? Ask a Senior manager to invite you.</p>
+      <p class="fine">No account yet? Ask a Senior Manager to invite you.</p>
     </form>
   </section>
 
   <section id="view-password" class="narrow" hidden>
     <form class="card" id="form-password" novalidate>
       <span class="eyebrow">Welcome</span>
-      <h2>Set your password</h2>
+      <h2>Set Your Password</h2>
       <p class="lead">Choose a password with at least 10 characters. You'll use it with your email to sign in.</p>
-      <div class="field"><label for="p-new">New password</label><input id="p-new" type="password" autocomplete="new-password" required></div>
-      <div class="field"><label for="p-confirm">Confirm password</label><input id="p-confirm" type="password" autocomplete="new-password" required></div>
+      <div class="field"><label for="p-new">New Password</label><input id="p-new" type="password" autocomplete="new-password" required></div>
+      <div class="field"><label for="p-confirm">Confirm Password</label><input id="p-confirm" type="password" autocomplete="new-password" required></div>
       <p class="msg" id="password-msg" role="alert" hidden></p>
-      <button class="btn btn-primary" type="submit" id="btn-password">Save password</button>
+      <button class="btn btn-primary" type="submit" id="btn-password">Save Password</button>
     </form>
   </section>
 
   <section id="view-denied" class="narrow" hidden>
     <div class="card">
-      <span class="eyebrow">No access</span>
-      <h2>This account isn't active</h2>
-      <p class="lead">You're signed in, but you don't have access to the HR 201 files. Please ask a Senior manager to check your account.</p>
-      <button class="btn btn-ghost" type="button" id="btn-denied-out">Sign out</button>
+      <span class="eyebrow">No Access</span>
+      <h2>This Account Isn't Active</h2>
+      <p class="lead">You're signed in, but you don't have access to the 201 Files. Please ask a Senior Manager to check your account.</p>
+      <button class="btn btn-ghost" type="button" id="btn-denied-out">Sign Out</button>
     </div>
   </section>
 
   <section id="view-app" hidden>
     <div class="app-head">
       <div>
-        <span class="eyebrow">Senior managers only</span>
-        <h1>HR 201 Files</h1>
+        <span class="eyebrow">Senior Managers Only</span>
+        <h1>201 Files</h1>
       </div>
       <div class="tabs" role="tablist" id="tabs" aria-label="Sections" data-pos="0" hidden>
         <span class="tab-thumb" aria-hidden="true"></span>
@@ -420,8 +420,8 @@ dialog[open]{animation:pop .5s var(--ease)}
             <input id="search" type="search" placeholder="Search files and folders" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
             <ul class="suggest" id="suggest" role="listbox" aria-label="Suggestions" hidden></ul>
           </div>
-          <button class="btn btn-ghost btn-sm manager-only" id="btn-folder" type="button" hidden>New folder</button>
-          <button class="btn btn-primary btn-sm manager-only" id="btn-upload" type="button" hidden>Upload files</button>
+          <button class="btn btn-ghost btn-sm manager-only" id="btn-folder" type="button" hidden>New Folder</button>
+          <button class="btn btn-primary btn-sm manager-only" id="btn-upload" type="button" hidden>Upload Files</button>
           <input type="file" id="file-input" multiple hidden>
         </div>
       </div>
@@ -430,43 +430,43 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="empty" id="empty" hidden></p>
         <div class="busy" id="busy" hidden role="status">Loading…</div>
       </div>
-      <p class="fine">All Senior managers can see and manage every file here, so only invite people who should have that access.</p>
+      <p class="fine">All Senior Managers can see and manage every file here, so only invite people who should have that access.</p>
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
       <form class="card invite" id="form-invite" novalidate>
-        <h2>Invite someone</h2>
-        <p class="lead">They'll join as a Senior manager, with full access to every file. They get an email with a link to set a password, and only people you invite can sign in.</p>
+        <h2>Invite Someone</h2>
+        <p class="lead">They'll join as a Senior Manager, with full access to every file. They get an email with a link to set a password, and only people you invite can sign in.</p>
         <div class="invite-grid">
           <div class="field"><label for="i-email">Email</label><input id="i-email" type="email" inputmode="email" autocomplete="off" required></div>
-          <button class="btn btn-primary" type="submit" id="btn-invite">Send invitation</button>
+          <button class="btn btn-primary" type="submit" id="btn-invite">Send Invitation</button>
         </div>
         <p class="msg" id="invite-msg" role="alert" hidden style="margin-top:14px"></p>
       </form>
-      <div class="list-head"><h2>Senior manager accounts</h2><span id="people-count"></span></div>
+      <div class="list-head"><h2>Senior Manager Accounts</h2><span id="people-count"></span></div>
       <div class="list-card"><ul class="rows" id="people"></ul></div>
     </div>
   </section>
 
   <section id="view-profile" class="profile" hidden>
     <button class="back" type="button" id="pf-back">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to HR 201 Files
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to 201 Files
     </button>
     <div class="app-head">
       <div>
-        <span class="eyebrow">Your account</span>
-        <h1>Profile settings</h1>
+        <span class="eyebrow">Your Account</span>
+        <h1>Profile Settings</h1>
       </div>
     </div>
 
     <form class="card" id="form-profile" novalidate>
       <h2>Profile</h2>
-      <p class="lead">Your name and photo show beside your account in the Senior manager accounts list.</p>
+      <p class="lead">Your name and photo show beside your account in the Senior Manager accounts list.</p>
       <div class="pf-photo">
         <div class="pf-avatar" id="pf-avatar" aria-hidden="true"></div>
         <div class="pf-photo-actions">
-          <button class="btn btn-primary btn-sm" type="button" id="pf-upload">Upload photo</button>
-          <button class="btn btn-ghost btn-warn btn-sm" type="button" id="pf-remove" hidden>Remove photo</button>
+          <button class="btn btn-primary btn-sm" type="button" id="pf-upload">Upload Photo</button>
+          <button class="btn btn-ghost btn-warn btn-sm" type="button" id="pf-remove" hidden>Remove Photo</button>
         </div>
         <input type="file" id="pf-file" accept="image/*" hidden>
       </div>
@@ -474,7 +474,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <div class="field"><label for="pf-email">Email</label><input id="pf-email" type="email" readonly aria-describedby="pf-email-note"><p class="fine" id="pf-email-note">This is the email you sign in with. It can't be changed here.</p></div>
       <dl class="pf-facts">
         <div><dt>Role</dt><dd id="pf-role"></dd></div>
-        <div><dt>Member since</dt><dd id="pf-since"></dd></div>
+        <div><dt>Member Since</dt><dd id="pf-since"></dd></div>
       </dl>
       <div class="actions">
         <button class="btn btn-primary btn-sm" type="submit" id="pf-save">Save</button>
@@ -487,7 +487,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <h2>Password</h2>
       <p class="lead">Enter your current password, then choose a new one with at least 10 characters.</p>
       <div class="field">
-        <label for="np-current">Current password</label>
+        <label for="np-current">Current Password</label>
         <div class="pw">
           <input id="np-current" type="password" autocomplete="current-password" aria-describedby="np-current-err">
           <button class="pw-toggle" type="button" data-for="np-current" aria-pressed="false" aria-label="Show password" title="Show password"><svg class="icon on" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon off" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg></button>
@@ -495,7 +495,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="field-err" id="np-current-err" role="alert" hidden></p>
       </div>
       <div class="field">
-        <label for="np-new">New password</label>
+        <label for="np-new">New Password</label>
         <div class="pw">
           <input id="np-new" type="password" autocomplete="new-password" aria-describedby="np-new-err">
           <button class="pw-toggle" type="button" data-for="np-new" aria-pressed="false" aria-label="Show password" title="Show password"><svg class="icon on" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon off" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg></button>
@@ -503,21 +503,21 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="field-err" id="np-new-err" role="alert" hidden></p>
       </div>
       <div class="field">
-        <label for="np-confirm">Confirm new password</label>
+        <label for="np-confirm">Confirm New Password</label>
         <div class="pw">
           <input id="np-confirm" type="password" autocomplete="new-password" aria-describedby="np-confirm-err">
           <button class="pw-toggle" type="button" data-for="np-confirm" aria-pressed="false" aria-label="Show password" title="Show password"><svg class="icon on" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon off" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg></button>
         </div>
         <p class="field-err" id="np-confirm-err" role="alert" hidden></p>
       </div>
-      <button class="btn btn-ghost btn-sm" type="submit" id="np-save">Update password</button>
+      <button class="btn btn-ghost btn-sm" type="submit" id="np-save">Update Password</button>
       <p class="msg" id="newpass-msg" role="alert" hidden></p>
     </form>
   </section>
 </main>
 
 <footer class="wrap foot">
-  <span>© <span id="year">2026</span> SINAGLIKHA. HR 201 Files.</span>
+  <span>© <span id="year">2026</span> SINAGLIKHA. 201 Files.</span>
 </footer>
 
 <dialog id="viewer" class="viewer" aria-labelledby="v-title">

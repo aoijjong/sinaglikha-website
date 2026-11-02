@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#FFFDF6">
 <meta property="og:type" content="website">
 <meta property="og:title" content="SINAGLIKHA | Bringing Light to Every Possibility">
-<meta property="og:description" content="Filipino solar energy for homes, businesses, and industry.">
+<meta property="og:description" content="Filipino Solar Energy for Homes, Businesses, and Industry.">
 <meta property="og:image" content="assets/sinaglikha-banner.jpg">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,7 +71,7 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
   radial-gradient(55% 45% at 10% 66%,rgba(248,238,174,.6),transparent 72%),
   linear-gradient(180deg,var(--paper) 0%,rgba(251,243,203,.55) 14%,var(--cream) 34%,var(--cream) 66%,rgba(251,243,203,.55) 86%,var(--paper) 100%)}
 
-.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#B3361A;margin-bottom:16px}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.86rem;font-weight:700;letter-spacing:.05em;color:#B3361A;margin-bottom:16px}
 .eyebrow::before{content:"";width:34px;height:3px;border-radius:3px;background:var(--grad)}
 .sec-head{max-width:720px;margin-bottom:clamp(30px,5vw,56px)}
 .sec-head h2{font-size:clamp(2rem,4.4vw,3.4rem)}
@@ -100,7 +100,7 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .site-header .container{width:min(1400px,100% - 48px)}
 .header-inner{height:100%;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .brand{display:block;flex:none;transition:transform 0.56s var(--ease)}
-.brand img{height:42px;width:auto}
+.brand img{height:36px;width:auto}
 .brand:active{transform:scale(.97)}
 .nav-list{display:flex;align-items:center;gap:2px}
 .nav-list a{display:block;white-space:nowrap;padding:9px 10px;border-radius:999px;font-size:.84rem;font-weight:600;text-decoration:none;color:var(--ink);position:relative;transition:color 0.5s var(--ease),opacity 0.6s var(--ease),background 0.4s}
@@ -155,7 +155,7 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .hero .lead{margin-top:24px;font-size:clamp(1.05rem,1.6vw,1.25rem);color:#F3E8D6;max-width:34ch}
 .hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
 .hero-strip{position:absolute;z-index:2;left:0;right:0;bottom:0;border-top:1px solid rgba(255,243,200,.22);background:rgba(30,18,14,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.hero-strip ul{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-block:18px;font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#FFF3C8}
+.hero-strip ul{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-block:18px;font-size:.86rem;font-weight:700;letter-spacing:.05em;color:#FFF3C8}
 .hero-strip li{display:flex;align-items:center;gap:24px}
 .hero-strip li+li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--fire-a)}
 
@@ -163,7 +163,9 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .identity{display:grid;grid-template-columns:.95fr 1.25fr;gap:clamp(32px,6vw,88px);align-items:center}
 .identity h2{font-size:clamp(2.6rem,6.2vw,5rem);letter-spacing:-.03em}
 .identity h2 span{display:block}
-.meaning{display:grid;gap:18px;margin-top:30px}
+.profile-h{font-family:var(--sans);font-size:.95rem;font-weight:700;letter-spacing:.05em;color:#9C2A10;margin-top:26px}
+.profile{margin-top:8px;font-size:1.05rem;line-height:1.7;color:var(--ink);max-width:56ch}
+.meaning{display:grid;gap:18px;margin-top:26px}
 .meaning p{font-size:1.1rem;color:var(--muted);padding-left:18px;border-left:3px solid #E8701A}
 .meaning b{color:var(--brown);font-family:var(--serif);font-size:1.25rem;font-weight:400}
 .brand-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -197,12 +199,13 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .op:active{transform:scale(.985)}
 
 /* mission vision */
-.mv-split{display:grid;grid-template-columns:1fr 1fr;padding:0}
-.mvp{position:relative;min-height:min(78svh,680px);display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(28px,5vw,72px);color:#fff;isolation:isolate;overflow:hidden;background:#2A1E1C}
+.mv-split{display:grid;grid-template-columns:1fr 1fr;padding:0;--mv-h:min(78svh,680px)}
+/* the text starts at the same height in both cards, so opening one never moves the other one's heading */
+.mvp{position:relative;min-height:var(--mv-h);display:flex;flex-direction:column;justify-content:flex-start;padding:calc(var(--mv-h) * .36) clamp(28px,5vw,72px) clamp(28px,5vw,72px);color:#fff;isolation:isolate;overflow:hidden;background:#2A1E1C}
 .mvp>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1.92s var(--ease)}
 .mvp::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(30,18,14,.9) 0%,rgba(30,18,14,.5) 55%,rgba(30,18,14,.12) 100%)}
 @media (hover:hover) and (pointer:fine){.mvp:hover>img{transform:scale(1.04)}}
-.mvp .tag{display:inline-flex;align-items:center;gap:10px;font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--fire-a);margin-bottom:16px}
+.mvp .tag{display:inline-flex;align-items:center;gap:10px;font-size:.86rem;font-weight:700;letter-spacing:.05em;color:var(--fire-a);margin-bottom:16px}
 .mvp .tag .icon{width:20px;height:20px}
 .mvp h3{color:#fff;font-size:clamp(2rem,4.2vw,3.4rem);max-width:15ch}
 .more{margin-top:22px}
@@ -247,7 +250,7 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .val-list li{counter-increment:v;display:grid;grid-template-columns:48px 1fr;column-gap:14px;row-gap:4px;align-items:baseline;padding:clamp(20px,2.4vw,28px) 0;border-top:1px solid var(--line);position:relative}
 .val-list li::before{content:"0" counter(v);font-size:.8rem;font-weight:700;letter-spacing:.14em;color:#B3361A;transition:transform 0.64s var(--ease)}
 .val-list li::after{content:"";position:absolute;left:0;top:-1px;height:2px;width:0;background:var(--grad);transition:width 0.96s var(--ease)}
-.val-list h3{font-size:clamp(1.7rem,3vw,2.4rem);transition:color 0.48s,transform 0.8s var(--ease)}
+.val-list h3{font-size:clamp(1.45rem,2.4vw,1.95rem);transition:color 0.48s,transform 0.8s var(--ease)}
 .val-list p{grid-column:2;color:var(--muted);font-size:1rem;transition:transform 0.8s var(--ease)}
 @media (hover:hover) and (pointer:fine){
   .val-list li:hover::after{width:100%}
@@ -276,7 +279,6 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .facet::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform 0.8s var(--ease)}
 .facet .f-icon{grid-row:1;grid-column:1;width:56px;height:56px;border-radius:18px;display:grid;place-items:center;color:#fff;background:var(--grad);box-shadow:0 10px 22px -10px rgba(206,32,32,.55);transition:transform 0.8s var(--ease)}
 .facet .f-icon .icon{width:27px;height:27px}
-.facet .f-letter{grid-row:1;grid-column:2;justify-self:end;align-self:start;font-family:var(--serif);font-weight:400;font-size:1rem;letter-spacing:.12em;color:#B3361A}
 .facet .f-text{grid-row:2;grid-column:1 / -1;align-self:end;display:flex;flex-direction:column;gap:8px;margin-top:34px}
 .facet .f-name{font-family:var(--serif);font-weight:400;font-size:1.32rem;line-height:1.15;color:var(--brown);letter-spacing:-.01em;min-height:2.3em}
 .facet .f-line{font-size:.94rem;line-height:1.45;color:var(--muted)}
@@ -310,17 +312,15 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .dlg-foot .btn{padding:12px 18px;font-size:.88rem}
 .dlg-foot .dir{display:none}
 
-.tp-count{display:inline-block;margin-top:6px;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#B3361A}
+.tp-count{display:inline-block;margin-top:6px;font-size:.86rem;font-weight:700;letter-spacing:.05em;color:#B3361A}
 .tp-ov{font-size:1.1rem;max-width:58ch}
-.tp-cols{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,36px);margin-top:28px}
-.tp-cols h4{font-family:var(--sans);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#9C2A10;margin-bottom:14px}
-.roles{display:grid;gap:8px}
-.role{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(74,46,34,.08);font-size:.96rem;line-height:1.35;transition:transform 0.56s var(--ease),background 0.48s,box-shadow 0.56s var(--ease)}
-.role b{flex:none;min-width:34px;text-align:center;padding:3px 9px;border-radius:999px;background:var(--grad);color:#fff;font-size:.8rem}
-@media (hover:hover) and (pointer:fine){.role:hover{transform:translateX(5px);background:#fff;box-shadow:var(--shadow)}}
-.deliv{display:flex;flex-wrap:wrap;gap:8px}
-.deliv li{padding:9px 14px;border-radius:999px;background:rgba(255,253,246,.7);border:1px solid rgba(74,46,34,.14);font-size:.9rem;line-height:1.3;transition:transform 0.56s var(--ease),background 0.48s,border-color 0.48s}
+.tp-lead{margin-top:12px;color:var(--muted);font-size:.98rem}
+.tp-lead b{color:var(--brown)}
+.tp-h{font-family:var(--sans);font-size:.9rem;letter-spacing:.05em;font-weight:700;color:#9C2A10;margin:26px 0 12px}
+.deliv{counter-reset:d;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.deliv li{counter-increment:d;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(74,46,34,.1);font-size:.96rem;line-height:1.35;transition:transform 0.56s var(--ease),background 0.48s,border-color 0.48s}
 @media (hover:hover) and (pointer:fine){.deliv li:hover{transform:translateY(-3px);background:#fff;border-color:rgba(206,32,32,.35)}}
+.deliv li::before{content:counter(d);flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#fff;font-size:.78rem;font-weight:700}
 .tp-note{margin-top:22px;font-size:.88rem;color:var(--muted)}
 
 .rec-wrap{margin-top:clamp(52px,7vw,88px)}
@@ -331,40 +331,39 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .rec-strip .rec-text{flex:1 1 220px}
 .rec-strip h3{font-size:clamp(1.3rem,2.2vw,1.6rem)}
 .rec-strip p{color:var(--muted);font-size:.98rem;margin-top:4px;max-width:60ch}
-.rec-tag{flex:none;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(74,46,34,.3);font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brown)}
+.rec-tag{flex:none;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(74,46,34,.3);font-size:.82rem;font-weight:700;letter-spacing:.05em;color:var(--brown)}
 
-/* team */
-.team-title{font-size:1.4rem;margin-bottom:18px}
-.team-lead{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:clamp(30px,4.5vw,52px)}
-.member{background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:22px;padding:20px;display:flex;gap:16px;align-items:center;transition:transform 0.72s var(--ease),box-shadow 0.72s var(--ease)}
-.member.is-ph{border-style:dashed}
 .avatar{width:64px;height:64px;border-radius:50%;flex:none;background:var(--yellow);display:grid;place-items:center;color:#B3361A;overflow:hidden;border:3px solid #fff;box-shadow:0 0 0 2px rgba(206,32,32,.25)}
 .avatar img{width:100%;height:100%;object-fit:cover}
 .avatar .icon{width:28px;height:28px}
-.member h4{font-family:var(--sans);font-size:1.02rem;font-weight:700;letter-spacing:0;color:var(--ink)}
-.member .role-t{color:#9C2A10;font-weight:600;font-size:.9rem}
-.tbd{color:var(--muted);font-style:italic}
-.dept-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.dteam{display:flex;flex-direction:column;gap:6px;padding:22px 20px 20px;border-radius:24px;background:rgba(255,255,255,.85);border:1px solid var(--line);text-decoration:none;position:relative;overflow:hidden;transition:transform 0.72s var(--ease),box-shadow 0.72s var(--ease),background 0.48s}
-.dteam::before{content:"";position:absolute;inset:auto 0 0 0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform 0.8s var(--ease)}
-.dt-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--cream);color:#C8321A;margin-bottom:10px;transition:background 0.48s,color 0.48s,transform 0.72s var(--ease)}
-.dt-ic .icon{width:22px;height:22px}
-.dteam h4{font-size:1.15rem;line-height:1.2}
-.dt-sub{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#B3361A}
-.stack{display:flex;margin-top:10px;padding-left:8px}
-.stack span{width:34px;height:34px;border-radius:50%;margin-left:-8px;border:2px solid #fff;background:var(--yellow);display:grid;place-items:center;color:#B3361A;font-size:.78rem;font-weight:700;overflow:hidden}
-.stack span img{width:100%;height:100%;object-fit:cover}
-.stack .icon{width:16px;height:16px}
-.dt-go{margin-top:auto;padding-top:14px;display:inline-flex;align-items:center;gap:8px;font-size:.88rem;font-weight:700;color:var(--brown)}
-.dt-go .icon{width:16px;height:16px;transition:transform 0.64s var(--ease)}
+/* team: one card per Senior Manager */
+.sm-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.sm{grid-column:span 2;display:flex;flex-direction:column;gap:14px;padding:26px 24px 22px;border-radius:26px;background:rgba(255,255,255,.88);border:1px solid var(--line);position:relative;overflow:hidden;transition:transform 0.72s var(--ease),box-shadow 0.72s var(--ease),background 0.48s}
+.sm:nth-child(4){grid-column:2 / span 2}
+.sm:nth-child(5){grid-column:4 / span 2}
+.sm::before{content:"";position:absolute;inset:auto 0 0 0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform 0.8s var(--ease)}
+.sm-top{display:flex;align-items:center;gap:16px}
+.sm-top .avatar{width:68px;height:68px}
+.sm-role{display:block;font-size:.86rem;font-weight:700;letter-spacing:.04em;color:#B3361A;margin-bottom:2px}
+.sm h3{font-family:var(--sans);font-size:1.18rem;font-weight:700;letter-spacing:0;line-height:1.25;color:var(--ink)}
+.sm-dept{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--cream);color:var(--brown);font-family:var(--serif);font-size:1.18rem;line-height:1.2}
+.sm-dept .icon{width:22px;height:22px;color:#C8321A;transition:transform 0.72s var(--ease)}
+.sm h4{font-family:var(--sans);font-size:.86rem;font-weight:700;letter-spacing:.05em;color:#9C2A10;margin:4px 0 -4px}
+.sm-roles{display:grid;gap:8px}
+.sm-roles li{position:relative;padding-left:20px;font-size:.96rem;line-height:1.4}
+.sm-roles li::before{content:"";position:absolute;left:2px;top:.55em;width:7px;height:7px;border-radius:50%;background:var(--grad)}
+.sm-go{margin-top:auto;padding:10px 0 0;display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font:inherit;font-size:.9rem;font-weight:700;color:var(--brown);background:none;border:0;cursor:pointer}
+.sm-go .icon{width:16px;height:16px;transition:transform 0.64s var(--ease)}
 @media (hover:hover) and (pointer:fine){
-  .member:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg)}
-  .dteam:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);background:#fff}
-  .dteam:hover::before{transform:none}
-  .dteam:hover .dt-ic{background:var(--grad);color:#fff;transform:scale(1.08) rotate(-4deg)}
-  .dteam:hover .dt-go .icon{transform:translateX(5px)}
+  .sm:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);background:#fff}
+  .sm:hover::before{transform:none}
+  .sm:hover .sm-dept .icon{transform:scale(1.12) rotate(-4deg)}
+  .sm:hover .sm-go .icon{transform:translateX(5px)}
 }
-.dteam:active,.member:active{transform:scale(.985)}
+.sm:active{transform:scale(.985)}
+.tbd{color:var(--muted);font-style:italic}
+@media (hover:hover) and (pointer:fine){
+}
 
 /* contact */
 .contact-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(28px,5vw,72px);align-items:start}
@@ -372,7 +371,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .info-list li{display:flex;gap:16px;align-items:flex-start}
 .chip{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--cream);color:#C8321A;flex:none}
 .chip .icon{width:24px;height:24px}
-.info-list dt{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#9C2A10}
+.info-list dt{font-size:.86rem;letter-spacing:.05em;font-weight:700;color:#9C2A10}
 .info-list dd{margin:2px 0 0;font-size:1.05rem}
 .social{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
 .social a{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:.9rem;text-decoration:none;transition:background 0.48s,color 0.48s,transform 0.56s var(--ease)}
@@ -411,7 +410,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .foot-brand .mark{width:72px;margin-bottom:18px}
 .foot-brand p.t{font-family:var(--serif);font-size:1.6rem;color:var(--brown);line-height:1.2;max-width:14ch}
 .foot-brand p.s{margin-top:14px;font-size:.95rem;color:var(--muted);max-width:38ch}
-.foot-col h4{font-family:var(--sans);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:#9C2A10;margin-bottom:12px}
+.foot-col h4{font-family:var(--sans);font-size:.86rem;letter-spacing:.05em;font-weight:700;color:#9C2A10;margin-bottom:12px}
 .foot-col a,.foot-col button{color:var(--ink);text-decoration:none;font-size:.96rem;background:none;border:0;padding:6px 0;cursor:pointer;text-align:left;display:inline-block;transition:color 0.4s,transform 0.56s var(--ease)}
 .foot-col .tbd{color:var(--muted)}
 .foot-col p{font-size:.96rem}
@@ -432,7 +431,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 /* touch devices: press feedback that mirrors the desktop hover.
    Pressing responds quickly; letting go eases back at the normal slow pace. */
 @media (hover:none){
-  a,button,summary,.op,.cell,.facet,.dteam,.member,.btile,.val-list li{-webkit-tap-highlight-color:transparent}
+  a,button,summary,.op,.cell,.facet,.sm,.btile,.val-list li{-webkit-tap-highlight-color:transparent}
 
   .btn-primary:active{box-shadow:0 18px 30px -12px rgba(206,32,32,.7);transition-duration:.2s}
   .btn-light:active{background:#fff;color:var(--brown);transition-duration:.2s}
@@ -456,11 +455,10 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .facet:active .f-icon{transform:scale(1.08) rotate(-5deg);transition-duration:.3s}
   .facet:active .f-go .icon{transform:translateX(6px);transition-duration:.3s}
 
-  .dteam:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);background:#fff;transition-duration:.25s}
-  .dteam:active::before{transform:none;transition-duration:.4s}
-  .dteam:active .dt-ic{background:var(--grad);color:#fff;transform:scale(1.08) rotate(-4deg);transition-duration:.3s}
-  .dteam:active .dt-go .icon{transform:translateX(5px);transition-duration:.3s}
-  .member:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);transition-duration:.25s}
+
+  .sm:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);background:#fff;transition-duration:.25s}
+  .sm:active::before{transform:none;transition-duration:.4s}
+  .sm:active .sm-go .icon{transform:translateX(5px);transition-duration:.3s}
 
   /* core values: tap a row to switch it on (same look as desktop hover) */
   .val-list li.is-on h3{color:#B3261E;transform:translateX(8px)}
@@ -472,7 +470,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .more summary:active{background:rgba(255,255,255,.16);transition-duration:.2s}
   .more.dark summary:active{background:var(--brown);color:#fff;transition-duration:.2s}
   .social a:active{background:var(--brown);color:#fff;transform:translateY(-2px);transition-duration:.2s}
-  .role:active{background:#fff;box-shadow:var(--shadow);transform:translateX(4px);transition-duration:.2s}
   .deliv li:active{background:#fff;border-color:rgba(206,32,32,.35);transform:translateY(-2px);transition-duration:.2s}
   .foot-col a:active,.foot-col button:active{color:#B3261E;transform:translateX(5px);transition-duration:.2s}
   .nav-list a:active{background:linear-gradient(90deg,rgba(248,238,174,.7),transparent);color:#B3261E;transition-duration:.2s}
@@ -482,11 +479,9 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 
 /* tablet */
 @media (max-width:1100px){
-  .dept-grid{grid-template-columns:repeat(3,1fr)}
   .facet-grid{grid-template-columns:1fr;gap:12px}
   .facet{grid-template-columns:auto 1fr auto;grid-template-rows:auto;align-items:center;column-gap:18px;min-height:0;padding:18px 22px;border-radius:24px}
   .facet .f-icon{grid-row:1;grid-column:1}
-  .facet .f-letter{display:none}
   .facet .f-text{grid-row:1;grid-column:2;margin-top:0;gap:3px}
   .facet .f-name{min-height:0;font-size:1.25rem}
   .facet .f-go{grid-row:1;grid-column:3;margin-top:0}
@@ -496,21 +491,23 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .ops{grid-template-columns:repeat(2,1fr)}
   .op,.op:nth-child(1),.op:nth-child(2){grid-column:span 1;min-height:360px}
   .op:nth-child(1){grid-column:1/-1}
-  .mv-split{grid-template-columns:1fr}
-  .mvp{min-height:520px}
+  .mv-split{grid-template-columns:1fr;--mv-h:520px}
   .cells{grid-template-columns:repeat(2,1fr)}
   .foot-top{grid-template-columns:1fr 1fr}
   .hr-compose{display:block}
   .hr-photo{min-height:0;aspect-ratio:16/10;border-radius:28px}
   .hr-box{margin:-64px 20px 0;position:relative}
   .values-top{margin-bottom:20px}
+  .sm-grid{grid-template-columns:repeat(2,1fr)}
+  .sm,.sm:nth-child(4),.sm:nth-child(5){grid-column:auto}
+  .sm:last-child{grid-column:1 / -1;width:calc(50% - 8px);justify-self:center}
 }
 
 /* phone */
 @media (max-width:720px){
   body{font-size:1rem}
   :root{--header-h:66px}
-  .brand img{height:34px}
+  .brand img{height:29px}
   .header-actions{gap:8px}
   .members-link,.nav-toggle{width:42px;height:42px}
   section{padding-block:56px}
@@ -520,7 +517,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .hero h1{font-size:clamp(2.6rem,13vw,3.4rem)}
   .hero-actions{gap:10px}
   .hero-actions .btn{flex:1 1 100%}
-  .hero-strip ul{justify-content:center;font-size:.66rem;letter-spacing:.14em;gap:6px 14px;padding-block:14px}
+  .hero-strip ul{justify-content:center;font-size:.74rem;letter-spacing:.04em;gap:6px 14px;padding-block:14px}
   .hero-strip li{gap:14px}
   .hero-strip li:nth-child(n+4){display:none}
 
@@ -534,7 +531,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .ops::-webkit-scrollbar{display:none}
   .op,.op:nth-child(1),.op:nth-child(2){flex:0 0 80%;min-height:400px;scroll-snap-align:start;grid-column:auto}
 
-  .mvp{min-height:460px}
+  .mv-split{--mv-h:460px}
 
   .cells{grid-template-columns:1fr;gap:12px}
   .cell{min-height:0;flex-direction:row;align-items:flex-start;gap:16px;padding:20px}
@@ -546,12 +543,11 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .sun-card{width:84px}
   .val-list{grid-template-columns:1fr;grid-template-rows:none;grid-auto-flow:row}
   .val-list li{padding:18px 0}
-  .val-list h3{font-size:1.65rem}
+  .val-list h3{font-size:1.5rem}
 
   .hr-box{margin:-48px 14px 0;padding:24px 22px;border-radius:24px}
   .hr-photo{aspect-ratio:4/3;border-radius:24px}
 
-  .tp-cols{grid-template-columns:1fr;gap:24px;margin-top:22px}
   .facet{padding:16px 18px;column-gap:14px}
   .facet .f-icon{width:48px;height:48px;border-radius:15px}
   .facet .f-go span{display:none}
@@ -562,12 +558,13 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .dlg-head{padding:18px 20px;gap:14px;align-items:flex-start}
   .dlg-head .f-icon{width:46px;height:46px;border-radius:14px}
   .dlg-head .f-icon .icon{width:24px;height:24px}
-  .dlg-head .eyebrow{margin-bottom:2px;font-size:.68rem;gap:8px}
+  .dlg-head .eyebrow{margin-bottom:2px;font-size:.8rem;gap:8px}
   .dlg-head .eyebrow::before{width:20px}
   .dlg-head h3{font-size:1.3rem;padding-right:44px}
   .dlg-close{right:10px;top:10px}
   .dlg-body{padding:20px}
   .tp-ov{font-size:1.02rem}
+  .deliv{grid-template-columns:1fr}
   .dlg-foot{padding:12px 16px;gap:10px}
   .dlg-foot .btn{flex:1;padding:13px 10px}
   .dlg-foot .nm{display:none}
@@ -577,15 +574,10 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .rec-strip .rec-text{flex:1 1 0;min-width:0}
   .rec-tag{display:none}
 
-  .dept-grid{grid-template-columns:1fr;gap:10px}
-  .dteam{flex-direction:row;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;display:grid;grid-template-columns:auto 1fr auto}
-  .dt-ic{margin:0}
-  .dteam h4{font-size:1.08rem}
-  .stack{display:none}
-  .dt-go{padding:0;margin:0}
-  .dt-go span{display:none}
-  .team-lead{grid-template-columns:1fr;gap:10px}
-  .member{padding:16px}
+
+  .sm-grid{grid-template-columns:1fr;gap:12px}
+  .sm:last-child{width:auto}
+  .sm{padding:22px 20px 18px;border-radius:24px}
 
   .form-row{grid-template-columns:1fr;gap:0}
   .form-card{border-radius:22px}
@@ -598,11 +590,11 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 
 /* small phones: keep the logo, Members icon and menu button on one line */
 @media (max-width:420px){
-  .brand img{height:30px}
+  .brand img{height:26px}
   .header-inner{gap:10px}
 }
 @media (max-width:340px){
-  .brand img{height:26px}
+  .brand img{height:22px}
   .header-actions{gap:6px}
   .members-link,.nav-toggle{width:40px;height:40px}
 }
@@ -664,8 +656,8 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 
 <header class="site-header" id="top">
   <div class="container header-inner">
-    <a class="brand" href="#home" aria-label="SINAGLIKHA, Bringing Light to Every Possibility — home">
-      <img src="assets/sinaglikha-logo.png" alt="SINAGLIKHA — Bringing Light to Every Possibility" width="1487" height="251">
+    <a class="brand" href="#home" aria-label="SINAGLIKHA — Home">
+      <img src="assets/sinaglikha-logo-notag.png" alt="SINAGLIKHA" width="1487" height="212">
     </a>
 
     <nav class="primary-nav" id="primary-nav" aria-label="Primary">
@@ -678,12 +670,12 @@ dialog[open]{animation:pop 0.96s var(--ease)}
         <li><a href="#contact" data-s="contact">Contact Us</a></li>
       </ul>
       <a class="btn btn-primary menu-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-      <a class="btn btn-ghost menu-members" href="members/">Senior manager login</a>
+      <a class="btn btn-ghost menu-members" href="members/">Senior Manager Login</a>
     </nav>
 
     <div class="header-actions">
       <a class="btn btn-primary btn-sm nav-cta" href="#about">Discover Our Company <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-      <a class="members-link" href="members/" aria-label="Senior manager login" title="Senior manager login"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></a>
+      <a class="members-link" href="members/" aria-label="Senior Manager Login" title="Senior Manager Login"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
         <svg class="icon i-menu" aria-hidden="true"><use href="#i-menu"/></svg>
         <svg class="icon i-close" aria-hidden="true"><use href="#i-x"/></svg>
@@ -699,7 +691,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   <img src="https://images.unsplash.com/photo-1613665813446-82a78c468a1d?auto=format&fit=crop&w=2000&q=72" alt="Sunset over a rooftop solar panel array" fetchpriority="high">
   <div class="container hero-inner">
     <h1 id="hero-title">Bringing Light to <span class="hl">Every Possibility.</span></h1>
-    <p class="lead">Filipino solar energy for homes, businesses, and industry.</p>
+    <p class="lead">Filipino Solar Energy for Homes, Businesses, and Industry.</p>
     <div class="hero-actions">
       <a class="btn btn-primary" href="#about">Explore SINAGLIKHA <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
       <a class="btn btn-light" href="#team">Meet Our Team</a>
@@ -720,6 +712,8 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     <div class="reveal">
       <span class="eyebrow">About Us</span>
       <h2 id="about-title"><span>Sinag</span><span class="grad-text">+ Likha</span></h2>
+      <h3 class="profile-h">Company Profile</h3>
+      <p class="profile">SINAGLIKHA is a Filipino renewable-energy company that designs, manufactures, supplies, installs, and maintains reliable solar-energy systems for residential, commercial, and industrial clients. Through quality products, responsible sourcing, technical assessment, after-sales support, and customer education, the company seeks to make solar energy more practical, affordable, and accessible while promoting responsible energy consumption and environmental sustainability.</p>
       <div class="meaning">
         <p><b>Sinag</b> — a ray of light. Sunlight, hope, energy, and new opportunities.</p>
         <p><b>Likha</b> — to create. Creativity, innovation, and Filipino ingenuity.</p>
@@ -728,15 +722,15 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     <div class="brand-tiles">
       <figure class="btile reveal">
         <div class="art mark"><img src="assets/sinaglikha-mark.png" alt="SINAGLIKHA mark: a rising sun over a roof with a solar panel" loading="lazy"></div>
-        <figcaption><b>Rising sun &amp; roof</b>New beginnings, powered by renewables.</figcaption>
+        <figcaption><b>Rising Sun and Roof</b>New beginnings, powered by renewables.</figcaption>
       </figure>
       <figure class="btile reveal" style="--d:.08s">
         <div class="art"><img src="assets/brand-panel.jpg" alt="Solar panel grid symbol on an orange gradient" loading="lazy"></div>
-        <figcaption><b>Solar panel grid</b>Shelter, sustainability, generation.</figcaption>
+        <figcaption><b>Solar Panel Grid</b>Shelter, sustainability, generation.</figcaption>
       </figure>
       <figure class="btile reveal" style="--d:.16s">
         <div class="art"><img src="assets/brand-monogram.jpg" alt="SL monogram in SINAGLIKHA's custom lettering" loading="lazy"></div>
-        <figcaption><b>Custom lettering</b>Clean angles, sliced corners.</figcaption>
+        <figcaption><b>Custom Lettering</b>Clean angles, sliced corners.</figcaption>
       </figure>
     </div>
   </div>
@@ -747,7 +741,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   <div class="container">
     <div class="sec-head reveal">
       <span class="eyebrow">What We Do</span>
-      <h2 id="ops-title">From sunlight to your rooftop.</h2>
+      <h2 id="ops-title">From Sunlight to Your Rooftop</h2>
     </div>
     <div class="ops">
       <article class="op reveal">
@@ -784,18 +778,18 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   <article class="mvp">
     <img src="https://images.unsplash.com/photo-1529180979161-06b8b6d6f2be?auto=format&fit=crop&w=1400&q=70" alt="A family holding hands in silhouette at sunset" loading="lazy">
     <span class="tag"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Our Mission</span>
-    <h3>Solar that’s practical and within reach.</h3>
+    <h3>Solar That’s Practical and Within Reach</h3>
     <details class="more">
-      <summary>Read the full statement</summary>
+      <summary>Read the Full Statement</summary>
       <p>SINAGLIKHA is committed to making solar energy practical and accessible to Filipino households and businesses by providing reliable, cost-effective, and sustainable energy solutions. We also promote renewable-energy awareness and responsible consumption by equipping customers with clear information that enables them to make informed energy decisions.</p>
     </details>
   </article>
   <article class="mvp">
     <img src="https://images.unsplash.com/photo-1611365892117-00ac5ef43c90?auto=format&fit=crop&w=1400&q=70" alt="A solar field under a pink dusk sky" loading="lazy">
     <span class="tag"><svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>Our Vision</span>
-    <h3>A brighter future for every community.</h3>
+    <h3>A Brighter Future for Every Community</h3>
     <details class="more">
-      <summary>Read the full statement</summary>
+      <summary>Read the Full Statement</summary>
       <p>To contribute to a future in which reliable and sustainable solar-energy solutions are accessible to more Filipino households, businesses, and communities, empowering lives and creating opportunities for inclusive growth.</p>
     </details>
   </article>
@@ -807,17 +801,17 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     <div class="obj-head reveal">
       <div>
         <span class="eyebrow">Objectives</span>
-        <h2 id="obj-title">Reliable solar, within reach.</h2>
+        <h2 id="obj-title">Reliable Solar, Within Reach</h2>
       </div>
-      <p>To improve access to reliable, cost-effective, and sustainable solar solutions through quality manufacturing, installation, and maintenance.</p>
+      <p>To improve access to reliable, cost-effective, and sustainable solar energy solutions for Filipino households and businesses through quality manufacturing, installation, and maintenance, while promoting responsible energy consumption and customer satisfaction during our initial years of operations.</p>
     </div>
     <div class="cells">
-      <article class="cell reveal"><span class="num">01</span><div><h3>Right-fit solutions</h3><p>Assess needs and recommend the right solar system for every customer.</p></div></article>
-      <article class="cell reveal" style="--d:.06s"><span class="num">02</span><div><h3>Built to last</h3><p>Standard procedures, quality inspections, and regular maintenance.</p></div></article>
-      <article class="cell reveal" style="--d:.12s"><span class="num">03</span><div><h3>Wider reach</h3><p>Efficient sales and distribution, with timely delivery and installation.</p></div></article>
-      <article class="cell reveal"><span class="num">04</span><div><h3>Responsible sourcing</h3><p>Reliable suppliers, with material quality and cost reviewed regularly.</p></div></article>
-      <article class="cell reveal" style="--d:.06s"><span class="num">05</span><div><h3>Energy awareness</h3><p>Clear information and consultations on solar and responsible consumption.</p></div></article>
-      <article class="cell reveal" style="--d:.12s"><span class="num">06</span><div><h3>Sustainable growth</h3><p>Customer feedback, performance tracking, and competitive pricing.</p></div></article>
+      <article class="cell reveal"><span class="num">01</span><div><h3>Quality and Cost-Effective Solar Solutions</h3><p>Reliable, affordable systems that fit the energy needs and budgets of residential, commercial, and industrial customers.</p></div></article>
+      <article class="cell reveal" style="--d:.06s"><span class="num">02</span><div><h3>Product Quality and Durability</h3><p>Standardized manufacturing, quality inspections, reliable installation, regular maintenance, and dependable after-sales support.</p></div></article>
+      <article class="cell reveal" style="--d:.12s"><span class="num">03</span><div><h3>Market Accessibility and Expansion</h3><p>Better sales, distribution, delivery, and installation, with steady growth in access to solar energy.</p></div></article>
+      <article class="cell reveal"><span class="num">04</span><div><h3>Responsible Material Sourcing</h3><p>Reliable supplier partnerships, with the quality, cost, and sustainability of raw materials evaluated.</p></div></article>
+      <article class="cell reveal" style="--d:.06s"><span class="num">05</span><div><h3>Renewable Energy Awareness</h3><p>Customer education on the benefits of solar, proper maintenance, and responsible energy use, through consultations and learning resources.</p></div></article>
+      <article class="cell reveal" style="--d:.12s"><span class="num">06</span><div><h3>Sustainable Business Growth</h3><p>Stronger customer satisfaction, monitored business performance, competitive pricing, and opportunities for gradual expansion.</p></div></article>
     </div>
   </div>
 </section>
@@ -828,19 +822,19 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     <div class="values-top reveal">
       <div>
         <span class="eyebrow">Core Values</span>
-        <h2 id="val-title">What we stand for.</h2>
+        <h2 id="val-title">What We Stand For</h2>
         <p>Seven values behind everything we make and do.</p>
       </div>
       <div class="sun-card" aria-hidden="true"><img src="assets/sinaglikha-mark.png" alt="" loading="lazy"></div>
     </div>
     <ol class="val-list">
-      <li class="reveal"><h3>Integrity</h3><p>Honesty, transparency, and accountability in every action.</p></li>
-      <li class="reveal"><h3>Safety</h3><p>Rigorous standards in every operation, from factory to rooftop.</p></li>
-      <li class="reveal"><h3>Excellence</h3><p>High standards in everything we do.</p></li>
-      <li class="reveal"><h3>Innovation</h3><p>New ideas and technology for a brighter future.</p></li>
-      <li class="reveal"><h3>Inclusivity</h3><p>Respect for everyone, and solar energy for all.</p></li>
-      <li class="reveal"><h3>Commitment</h3><p>Our Likhains are at the heart of what we do.</p></li>
-      <li class="reveal"><h3>Responsibility</h3><p>Clean energy, with care for the environment we share.</p></li>
+      <li class="reveal"><h3>Integrity in Every Action</h3><p>Honesty, transparency, and accountability guide every decision, building trust with our employees, customers, partners, and communities.</p></li>
+      <li class="reveal"><h3>Safety in Every Operation</h3><p>We protect our Likhains, partners, and communities with proper safety standards in manufacturing, handling, transportation, installation, and maintenance.</p></li>
+      <li class="reveal"><h3>Excellence in Everything</h3><p>High standards, quality workmanship, and dependable service, with continuous improvement that creates value for our customers and company.</p></li>
+      <li class="reveal"><h3>Innovation for a Brighter Future</h3><p>Creativity, employee initiative, and technological development drive continuous improvement in our solar products and operations.</p></li>
+      <li class="reveal"><h3>Inclusivity in Every Connection</h3><p>Respect, equal opportunity, and collaboration make solar energy accessible to people from every background and circumstance.</p></li>
+      <li class="reveal"><h3>Commitment to Our Likhains</h3><p>Likhains are our employees. We empower them, and their contributions help us deliver responsive service and better customer experiences.</p></li>
+      <li class="reveal"><h3>Responsibility for Our Environment</h3><p>Care for the environment across the product lifecycle: sourcing, manufacturing, packaging, transportation, installation, maintenance, and end-of-life management.</p></li>
     </ol>
   </div>
 </section>
@@ -853,7 +847,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     </div>
     <div class="hr-box reveal">
       <span class="eyebrow">Human Resources</span>
-      <h2 id="hr-title">Our people power the light.</h2>
+      <h2 id="hr-title">Our People Power the Light</h2>
       <p class="lead">A skilled, safe, and values-centered team.</p>
       <div class="more-row">
         <details class="more dark">
@@ -873,20 +867,20 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 <section id="facets" data-nav="hr" aria-labelledby="facets-title" style="padding-block:clamp(24px,4vw,48px) 0">
   <div class="container">
     <div class="sec-head reveal">
-      <span class="eyebrow">Our HR Facets</span>
-      <h2 id="facets-title">Five departments. One workforce.</h2>
-      <p>Select a department to see its roles and deliverables.</p>
+      <span class="eyebrow">Our HR Areas</span>
+      <h2 id="facets-title">Five Departments. One Workforce.</h2>
+      <p>Select a department to see its deliverables.</p>
     </div>
     <div class="facet-grid" id="facet-grid"></div>
-    <noscript><p>Please enable JavaScript to explore the five HR departments.</p></noscript>
+    <noscript><p>Please enable JavaScript to explore the five HR areas.</p></noscript>
 
     <div class="rec-wrap reveal" id="hr201">
-      <span class="eyebrow">Records and privacy</span>
+      <span class="eyebrow">Records and Privacy</span>
       <div class="rec-strip">
         <div class="lockbox"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
         <div class="rec-text">
-          <h3>HR 201 files stay confidential.</h3>
-          <p>Employee records are kept in one organized system, shared only with authorized HR staff, and never published on this site.</p>
+          <h3>201 Files</h3>
+          <p>These files are confidential and accessible only to authorized Senior Managers of Staffing and Recruitment and Legal Compliance. Never publish these files on this website.</p>
         </div>
         <span class="rec-tag">Confidential</span>
       </div>
@@ -899,8 +893,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   <div class="container">
     <div class="sec-head reveal">
       <span class="eyebrow">Our Team</span>
-      <h2 id="team-title">The team behind the light.</h2>
-      <p id="team-sub"></p>
+      <h2 id="team-title">The Team Behind the Light</h2>
     </div>
     <div id="team-root"></div>
   </div>
@@ -911,7 +904,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   <div class="container contact-grid">
     <div class="reveal">
       <span class="eyebrow">Contact Us</span>
-      <h2 id="contact-title" style="font-size:clamp(2rem,4.4vw,3.4rem);margin-bottom:26px">Let’s talk solar.</h2>
+      <h2 id="contact-title" style="font-size:clamp(2rem,4.4vw,3.4rem);margin-bottom:26px">Let’s Talk Solar</h2>
       <dl class="info-list" id="contact-info"></dl>
       <div style="margin-top:24px"><div class="social" id="social"></div></div>
       <div id="location"></div>
@@ -920,7 +913,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     </div>
 
     <div class="form-card reveal" style="--d:.1s">
-      <h3>Send us a message</h3>
+      <h3>Send Us a Message</h3>
       <form id="contact-form" novalidate>
         <div class="form-row">
           <div class="field">
@@ -944,7 +937,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
           <textarea id="f-message" name="message" required minlength="10" aria-describedby="e-message"></textarea>
           <p class="err" id="e-message">Please write a message of at least 10 characters.</p>
         </div>
-        <button class="btn btn-primary" type="submit">Send message <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <button class="btn btn-primary" type="submit">Send Message <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
         <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
       </form>
     </div>
@@ -959,7 +952,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
       <div class="foot-brand">
         <img class="mark" src="assets/sinaglikha-mark.png" alt="SINAGLIKHA mark" loading="lazy">
         <p class="t">Bringing Light to Every Possibility.</p>
-        <p class="s">Filipino solar energy for homes, businesses, and industry.</p>
+        <p class="s">Filipino Solar Energy for Homes, Businesses, and Industry.</p>
       </div>
       <nav class="foot-col" aria-label="Quick links">
         <h4>Explore</h4>
@@ -972,11 +965,11 @@ dialog[open]{animation:pop 0.96s var(--ease)}
           <li><a href="#hr">Human Resources</a></li>
           <li><a href="#team">Our Team</a></li>
           <li><a href="#contact">Contact Us</a></li>
-          <li><a href="members/">Senior manager login</a></li>
+          <li><a href="members/">Senior Manager Login</a></li>
         </ul>
       </nav>
-      <nav class="foot-col" aria-label="HR departments">
-        <h4>HR Departments</h4>
+      <nav class="foot-col" aria-label="HR areas">
+        <h4>HR Areas</h4>
         <ul id="foot-facets"></ul>
       </nav>
       <div class="foot-col">
@@ -986,7 +979,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
     </div>
     <div class="foot-bottom">
       <span>© <span id="year">2026</span> SINAGLIKHA. All rights reserved.</span>
-      <span>Employee records are confidential and not published here. <a href="#hr201">Privacy notice</a> · Photography via Unsplash.</span>
+      <span>Photography via Unsplash.</span>
     </div>
   </div>
   <div class="foot-bar" aria-hidden="true"></div>
@@ -1020,14 +1013,14 @@ dialog[open]{animation:pop 0.96s var(--ease)}
    ============================================================ */
 const CONFIG = {
   location: {
-    address: "",        // complete street address
-    cityProvince: "",   // city and province
+    address: "SINAGLIKHA Bldg. 709 E. Boni Ave.",
+    cityProvince: "Mandaluyong City",
     hours: "",          // office hours, if applicable
-    mapQuery: ""        // e.g. the full address; enables the embedded map + "Get Directions"
+    mapQuery: "709 E. Boni Ave., Mandaluyong City"   // enables the embedded map + "Get Directions"; clear it to hide the map
   },
   contact: {
-    email: "",
-    phone: "",
+    email: "sinaglikha.hr@gmail.com",
+    phone: "+63 923 456 7891",
     social: []          // e.g. [{ label: "Facebook", url: "https://..." }]
   },
   // Optional: a form service URL (e.g. Formspree). If empty, the form uses
@@ -1035,49 +1028,49 @@ const CONFIG = {
   formEndpoint: "",
 
   team: {
-    // Company leadership: replace the placeholders with approved names and positions.
+    // The five Senior Managers, one per HR department (keys match FACETS below).
+    // The names are the placeholders supplied by the project owner; replace them when the final names are approved.
     // photo: path to an image file, e.g. "assets/team/juan.jpg"
-    leadership: [
-      { name: "Name to be provided", role: "Position to be provided", photo: "" },
-      { name: "Name to be provided", role: "Position to be provided", photo: "" }
-    ],
-    // HR department members (shown as avatars on each department card).
-    // dept: staffing | training | engagement | rewards | legal
-    // Example: { name: "Juan Dela Cruz", role: "HRIS Specialist", dept: "staffing", photo: "" }
-    members: []
+    seniorManagers: {
+      staffing:   { name: "Ma. Carmy B. Dominguez", photo: "" },
+      training:   { name: "Roselyn Obalan", photo: "" },
+      engagement: { name: "Winona Faith Bagon", photo: "" },
+      rewards:    { name: "Athea Venice Rosales", photo: "" },
+      legal:      { name: "Ezekiel Aminoso", photo: "" }
+    }
   }
 };
 
-/* Department structure from the company conceptualization document. */
+/* The five HR areas. "deliv" is shown under Our HR Areas; "roles" (the positions under each
+   Senior Manager) is shown under Our Team. */
 const FACETS = [
-  { key:"staffing", n:"A", name:"Staffing and Recruitment", short:"Staffing", icon:"i-userplus",
+  { key:"staffing", name:"Staffing and Recruitment", icon:"i-userplus",
     line:"Finding and welcoming the right people.",
     overview:"Attracts, selects, and onboards the people SINAGLIKHA needs, and keeps employee records accurate through the HRIS.",
     roles:[["HRIS Specialist",2],["Talent Acquisition Specialist",2],["Recruitment Coordinator",2],["Onboarding Specialist",1],["Employer Branding Specialist",1]],
-    deliv:["201 filing","Attendance tracking","Company files","Workforce planning","Talent management flow","Recruitment and selection","Onboarding program","Employer value proposition"] },
-  { key:"training", n:"B", name:"Training and Development", short:"Training", icon:"i-book",
+    deliv:["201 Files","Attendance Tracker","Company Files","Talent Management Flow"] },
+  { key:"training", name:"Training and Development", icon:"i-book",
     line:"Building skills for a future-ready workforce.",
     overview:"Researches, designs, delivers, and evaluates learning that builds technical, behavioral, and professional competencies.",
     roles:[["Learning Innovation Specialist",2],["Training Systems Specialist",2],["Training Program Specialist",2],["Training Needs Assessment Specialist",1]],
-    deliv:["Learning approaches and resource research","Training materials and educational resources","LMS development and configuration","Training and competency records","Learning analytics reports","Training program and implementation plan","Annual training calendar","Training needs analysis","Program evaluation and effectiveness","Competency evaluation"] },
-  { key:"engagement", n:"C", name:"Employee Engagement", short:"Engagement", icon:"i-chat",
+    deliv:["Training Materials","Learning Management System","Career Development Program"] },
+  { key:"engagement", name:"Employee Engagement", icon:"i-chat",
     line:"Culture, communication, and community.",
     overview:"Runs engagement initiatives, internal communication, employee surveys, and CSR activities that build a positive workplace culture.",
     roles:[["Employee Engagement Specialist",2],["Employee Engagement Coordinator",2],["Employee Communications Specialist",2],["Employee Engagement Analyst",1]],
-    deliv:["Engagement initiatives","Employee surveys","CSR programs","Activity calendar","Documents and records","Communication strategies and plan","Communication materials","Survey findings and recommendations"] },
-  { key:"rewards", n:"D", name:"Total Rewards", short:"Rewards", icon:"i-award",
+    deliv:["Communication Materials","Employee Forum","Daily Engagement Activity","Engagement Activity – CSR","Wellness Program"] },
+  { key:"rewards", name:"Total Rewards", icon:"i-award",
     line:"Fair pay, benefits, and recognition.",
     overview:"Designs compensation, benefits, performance appraisal, incentives, and recognition programs that are fair and competitive.",
     roles:[["Compensation and Benefits Specialist",2],["Performance Management System (PMS) Specialist",2],["Performance and Incentives Analyst",2],["Rewards Program Coordinator",2]],
-    deliv:["Compensation packages","Benefits analysis","Performance management system","Appraisal questions and matrix","Performance appraisal report","Incentive plan design","Recognition and rewards program","Total rewards communication"] },
-  { key:"legal", n:"E", name:"Legal Compliance", short:"Compliance", icon:"i-scale",
+    deliv:["Compensation Packages","Performance Management System","Incentive Plan Design"] },
+  { key:"legal", name:"Legal Compliance", icon:"i-scale",
     line:"Fair, lawful, and safe workplaces.",
     overview:"Keeps policies, employee relations, and workplace safety aligned with Philippine labor law and Occupational Safety and Health standards.",
     roles:[["HR Compliance Officer",2],["Employee Relations Specialist",3],["Health & Safety Compliance Strategist",2]],
-    deliv:["Employee contract","Employee handbook","Guidelines for disciplinary action","HR compliance audit and risk mitigation plan","Legal program","Compensation packages","Orientation to Occupational Safety and Health (OSH) in the Philippines"],
+    deliv:["Employee Handbook","Guidelines for Disciplinary Action","Risk Mitigation Plan"],
     note:"This describes the department’s role within our HR simulation. No legal certification or verified compliance is claimed." }
 ];
-const positions = f => f.roles.reduce((m, r) => m + r[1], 0);
 
 /* ---------- helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
@@ -1143,9 +1136,8 @@ tapSwitch(".val-list li");
 
 /* ---------- HR departments + popup ---------- */
 $("#facet-grid").innerHTML = FACETS.map((f, i) => `
-  <button class="facet reveal" style="--d:${i * .06}s" type="button" data-facet="${f.key}" aria-haspopup="dialog" aria-label="${esc(f.name)}: view roles and deliverables">
+  <button class="facet reveal" style="--d:${i * .06}s" type="button" data-facet="${f.key}" aria-haspopup="dialog" aria-label="${esc(f.name)}: view deliverables">
     <span class="f-icon">${ico(f.icon)}</span>
-    <span class="f-letter">${f.n}</span>
     <span class="f-text"><span class="f-name">${esc(f.name)}</span><span class="f-line">${esc(f.line)}</span></span>
     <span class="f-go"><span>Explore</span>${ico("i-arrow")}</span>
   </button>`).join("");
@@ -1159,16 +1151,16 @@ function renderFacet(i) {
   const f = FACETS[current];
   const prev = FACETS[(current + FACETS.length - 1) % FACETS.length];
   const next = FACETS[(current + 1) % FACETS.length];
+  const m = CONFIG.team.seniorManagers[f.key];
   $("#dlg-icon").innerHTML = ico(f.icon);
-  $("#dlg-eyebrow").textContent = "HR Department " + f.n;
+  $("#dlg-eyebrow").textContent = "Our HR Areas";
   $("#dlg-title").textContent = f.name;
-  $("#dlg-count").textContent = positions(f) + " positions";
+  $("#dlg-count").textContent = f.deliv.length + " Deliverables";
   $("#dlg-body").innerHTML = `
     <p class="tp-ov">${esc(f.overview)}</p>
-    <div class="tp-cols">
-      <div><h4>Roles</h4><ul class="roles">${f.roles.map(([r, c]) => `<li class="role"><span>${esc(r)}</span><b>×${c}</b></li>`).join("")}</ul></div>
-      <div><h4>Deliverables</h4><ul class="deliv">${f.deliv.map(d => `<li>${esc(d)}</li>`).join("")}</ul></div>
-    </div>
+    ${m && m.name ? `<p class="tp-lead">Led by <b>${esc(m.name)}</b>, Senior Manager</p>` : ""}
+    <h4 class="tp-h">Deliverables</h4>
+    <ul class="deliv">${f.deliv.map(d => `<li>${esc(d)}</li>`).join("")}</ul>
     ${f.note ? `<p class="tp-note">${esc(f.note)}</p>` : ""}`;
   $("#dlg-prev .nm").textContent = prev.name;
   $("#dlg-next .nm").textContent = next.name;
@@ -1196,36 +1188,22 @@ dlg.addEventListener("click", e => {
   if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
 });
 
-/* ---------- team ---------- */
+/* ---------- team: the five Senior Managers, each with the positions under their department ---------- */
 (function () {
-  const T = CONFIG.team;
-  const total = FACETS.reduce((n, f) => n + positions(f), 0);
-  $("#team-sub").textContent = `${total} positions across five HR departments.`;
-
-  const lead = m => {
-    const ph = /to be provided/i.test(m.name);
-    return `<article class="member reveal ${ph ? "is-ph" : ""}">
-      <div class="avatar">${m.photo ? `<img src="${esc(m.photo)}" alt="Portrait of ${esc(m.name)}" loading="lazy">` : ico("i-user")}</div>
-      <div><h4>${ph ? tbd(esc(m.name)) : esc(m.name)}</h4><p class="role-t">${esc(m.role)}</p></div>
+  const M = CONFIG.team.seniorManagers;
+  $("#team-root").innerHTML = `<div class="sm-grid">` + FACETS.map((f, i) => {
+    const m = M[f.key] || {};
+    return `<article class="sm reveal" style="--d:${i * .05}s">
+      <div class="sm-top">
+        <div class="avatar">${m.photo ? `<img src="${esc(m.photo)}" alt="Portrait of ${esc(m.name)}" loading="lazy">` : ico("i-user")}</div>
+        <div><span class="sm-role">Senior Manager</span><h3>${m.name ? esc(m.name) : tbd("Name to be provided")}</h3></div>
+      </div>
+      <p class="sm-dept">${ico(f.icon)}<span>${esc(f.name)}</span></p>
+      <h4>Positions Under Supervision</h4>
+      <ul class="sm-roles">${f.roles.map(r => `<li>${esc(r[0])}</li>`).join("")}</ul>
+      <button class="sm-go" type="button" data-facet="${f.key}" aria-label="View the deliverables of ${esc(f.name)}"><span>View Deliverables</span>${ico("i-arrow")}</button>
     </article>`;
-  };
-  const stack = f => {
-    const people = T.members.filter(m => m.dept === f.key).slice(0, 4);
-    const items = people.length
-      ? people.map(m => `<span title="${esc(m.name)}">${m.photo ? `<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy">` : esc(m.name.trim().charAt(0).toUpperCase())}</span>`)
-      : [0, 1, 2].map(() => `<span>${ico("i-user")}</span>`);
-    return `<div class="stack" aria-hidden="true">${items.join("")}</div>`;
-  };
-  $("#team-root").innerHTML =
-    `<h3 class="team-title reveal">Company Leadership</h3><div class="team-lead">${T.leadership.map(lead).join("")}</div>` +
-    `<h3 class="team-title reveal">HR Departments</h3><div class="dept-grid">` +
-    FACETS.map((f, i) => `
-      <a class="dteam reveal" style="--d:${i * .05}s" href="#facets" data-facet="${f.key}" aria-label="${esc(f.name)}, ${positions(f)} positions. View roles">
-        <span class="dt-ic">${ico(f.icon)}</span>
-        <div><h4>${esc(f.name)}</h4><span class="dt-sub">${positions(f)} positions</span></div>
-        ${stack(f)}
-        <span class="dt-go"><span>View roles</span>${ico("i-arrow")}</span>
-      </a>`).join("") + `</div>`;
+  }).join("") + `</div>`;
   watch($("#team-root"));
 })();
 
