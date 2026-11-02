@@ -28,8 +28,8 @@
   var att = { today: '', records: [], unavailable: false };
   var recs = [];
   var learn = { courses: [], course: null, modules: [] };
-  var forum = { cats: [], threads: [] };
-  var anns = [], annShown = 3;
+  var forum = { cats: [], threads: [], photos: [] };
+  var anns = [], annPhotos = [], annShown = 3;
   var esc = function (s) {
     return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   };
@@ -111,7 +111,9 @@
     return ((w[0] ? Array.from(w[0])[0] : '?') + (w.length > 1 ? Array.from(w[w.length - 1])[0] : '')).toUpperCase();
   }
   var TINTS = ['#FFE7A8', '#FBD2B0', '#F6C9C0', '#D8E6C4', '#CFE3F1', '#E4D6F0'];
-  function avSm(name, cls) {
+  var PHOTO_OK = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
+  function avSm(name, cls, photo) {
+    if (photo && PHOTO_OK.test(photo)) return '<span class="av-sm has-pic' + (cls ? ' ' + cls : '') + '"><img src="' + photo + '" alt=""></span>';
     var h = 0;
     String(name).split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) >>> 0; });
     return '<span class="av-sm' + (cls ? ' ' + cls : '') + '" style="background:' + TINTS[h % TINTS.length] + '" aria-hidden="true">' + esc(initials(name)) + '</span>';
@@ -187,6 +189,8 @@
     learn.courses = d.learning || [];
     forum = { cats: (d.forum && d.forum.categories) || [], threads: (d.forum && d.forum.threads) || [] };
     anns = d.announcements || [];
+    annPhotos = d.announcementPhotos || [];
+    forum.photos = (d.forum && d.forum.photos) || [];
     annShown = 3;
     renderHome();
   }
@@ -249,7 +253,7 @@
       return;
     }
     feed.innerHTML = anns.slice(0, annShown).map(function (a) {
-      return '<article class="post"><div class="post-top">' + avSm(a.author) + '<div class="who"><b>' + esc(a.author) + '</b><span>' +
+      return '<article class="post"><div class="post-top">' + avSm(a.author, '', annPhotos[a.pic]) + '<div class="who"><b>' + esc(a.author) + '</b><span>' +
         esc((DEPT_NAME[a.dept] ? DEPT_NAME[a.dept] + ' · ' : '') + ago(a.created_at)) + '</span></div></div>' +
         (a.title ? '<h3 class="post-title">' + esc(a.title) + '</h3>' : '') + '<p class="post-body">' + text(a.body) + '</p>' +
         (a.files.length ? '<div class="fchips">' + a.files.map(function (f, i) {
@@ -278,7 +282,7 @@
     if (keep) sel.value = keep;
     var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
     $('#forum-feed').innerHTML = forum.threads.length ? forum.threads.map(function (t) {
-      return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
+      return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain">' + esc(catName(t.category_id)) + '</span></div>' +
         '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' reply' : ' replies') + '</span></button>' +
@@ -289,11 +293,11 @@
   async function refreshFeed() {
     var r = await call('GET', '/api/employee-forum?feed=1');
     if (r.status === 401) { show('signin'); return; }
-    if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [] }; renderForum(); }
+    if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [], photos: r.data.photos || [] }; renderForum(); }
   }
 
-  function replyHtml(p) {
-    return '<div class="reply"><div class="post-top">' + avSm(p.author) + '<div class="who"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span></div>' +
+  function replyHtml(p, photos) {
+    return '<div class="reply"><div class="post-top">' + avSm(p.author, '', photos[p.pic]) + '<div class="who"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span></div>' +
       modBtn(p.mine, 'post', p.id) + '</div><p>' + text(p.body) + '</p></div>';
   }
 
@@ -308,7 +312,8 @@
     var r = await call('GET', '/api/employee-forum?thread=' + encodeURIComponent(id));
     if (r.status === 401) { show('signin'); return; }
     if (!r.ok) { box.innerHTML = '<p class="fine">' + esc(r.data.error || "Couldn't load the replies.") + '</p>'; return; }
-    box.innerHTML = r.data.posts.map(replyHtml).join('') + (r.data.thread.locked ? '<p class="fine" style="margin-top:8px">This thread is locked, so it cannot take new replies.</p>' :
+    var photos = r.data.photos || [];
+    box.innerHTML = r.data.posts.map(function (p) { return replyHtml(p, photos); }).join('') + (r.data.thread.locked ? '<p class="fine" style="margin-top:8px">This thread is locked, so it cannot take new replies.</p>' :
       '<form class="rcmp" data-reply-form="' + esc(id) + '" novalidate><label class="sr-only" for="rb-' + esc(id) + '">Your reply</label><textarea id="rb-' + esc(id) + '" maxlength="2000" rows="1" placeholder="Write a reply…"></textarea>' +
       IB('send', 'Send reply', { 'data-send-reply': '1' }, 'solid') + '</form><p class="msg bad" role="alert" hidden style="margin-top:8px"></p>');
   }

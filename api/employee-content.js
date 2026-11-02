@@ -48,12 +48,17 @@ async function contentPayload(today) {
 
 /* The latest published announcements, newest first. File paths stay on the server. */
 async function announcementList() {
-  const r = await E.rest('GET', 'announcements?published=eq.true&select=id,title,body,files,author_name,author_dept,created_at&order=created_at.desc&limit=30');
+  const r = await E.rest('GET', 'announcements?published=eq.true&select=id,title,body,files,author_id,author_name,author_dept,created_at&order=created_at.desc&limit=30');
   // Before supabase/phase4.sql has been run the table doesn't exist yet.
-  return E.list(r).map((a) => ({
-    id: a.id, title: a.title || '', body: a.body, author: a.author_name || 'A Senior Manager', dept: a.author_dept || '', created_at: a.created_at,
-    files: (Array.isArray(a.files) ? a.files : []).map((f) => ({ name: String(f.name || 'File'), size: typeof f.size === 'number' ? f.size : null }))
-  }));
+  const rows = E.list(r);
+  const pack = await E.photoPack('profiles', rows.map((a) => a.author_id));
+  return {
+    photos: pack.pics,
+    items: rows.map((a) => ({
+      id: a.id, title: a.title || '', body: a.body, author: a.author_name || 'A Senior Manager', pic: pack.at(a.author_id), dept: a.author_dept || '', created_at: a.created_at,
+      files: (Array.isArray(a.files) ? a.files : []).map((f) => ({ name: String(f.name || 'File'), size: typeof f.size === 'number' ? f.size : null }))
+    }))
+  };
 }
 
 async function ownRecords(eid) {
@@ -93,7 +98,7 @@ module.exports = async function handler(req, res) {
     return E.send(res, 200, {
       employee: { employee_no: me.emp.employee_no, full_name: me.emp.full_name, position: me.emp.position, avatar },
       deliverables: content.deliverables, items: content.items, evaluations: content.evaluations,
-      attendance, records, learning, forum, announcements
+      attendance, records, learning, forum, announcements: announcements.items, announcementPhotos: announcements.photos
     });
   }
 

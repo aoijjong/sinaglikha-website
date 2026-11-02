@@ -130,11 +130,13 @@ module.exports = async function handler(req, res) {
     if (!cat) return E.send(res, 404, gone);
     const p = await E.rest('GET', `forum_posts?thread_id=eq.${id}&hidden=eq.false&select=id,employee_id,body,created_at&order=created_at.asc&limit=500`);
     const posts = list(p);
-    const who = await names([thread.employee_id].concat(posts.map((x) => x.employee_id)));
+    const authors = [thread.employee_id].concat(posts.map((x) => x.employee_id));
+    const [who, pack] = await Promise.all([names(authors), E.photoPack('employees', authors)]);
     return E.send(res, 200, {
       category: cat,
+      photos: pack.pics,
       thread: { id: thread.id, title: thread.title, body: thread.body, locked: thread.locked, created_at: thread.created_at, author: who[thread.employee_id] || 'Employee', mine: thread.employee_id === eid },
-      posts: posts.map((x) => ({ id: x.id, body: x.body, created_at: x.created_at, author: who[x.employee_id] || 'Employee', mine: x.employee_id === eid }))
+      posts: posts.map((x) => ({ id: x.id, body: x.body, created_at: x.created_at, author: who[x.employee_id] || 'Employee', pic: pack.at(x.employee_id), mine: x.employee_id === eid }))
     });
   }
 
