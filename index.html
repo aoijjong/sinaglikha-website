@@ -462,9 +462,11 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .dteam:active .dt-go .icon{transform:translateX(5px);transition-duration:.3s}
   .member:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);transition-duration:.25s}
 
-  .val-list li:active h3{color:#B3261E;transform:translateX(8px);transition-duration:.25s}
-  .val-list li:active p{transform:translateX(8px);transition-duration:.25s}
-  .val-list li:active::after{width:100%;transition-duration:.4s}
+  /* core values: tap a row to switch it on (same look as desktop hover) */
+  .val-list li.is-on h3{color:#B3261E;transform:translateX(8px)}
+  .val-list li.is-on p{transform:translateX(8px)}
+  .val-list li.is-on::before{transform:translateX(2px)}
+  .val-list li.is-on::after{width:100%}
 
   .mvp:active>img,.hr-compose:active .hr-photo img{transform:scale(1.04);transition-duration:.8s}
   .more summary:active{background:rgba(255,255,255,.16);transition-duration:.2s}
@@ -1124,15 +1126,20 @@ const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.
 const watch = root => $$(".reveal", root).forEach(el => io ? io.observe(el) : el.classList.add("in"));
 watch();
 
-/* ---------- objectives: tap to highlight on touch screens ---------- */
-const cells = $$(".cell"), touchOnly = matchMedia("(hover:none)");
-cells.forEach(c => c.addEventListener("click", () => {
-  if (!touchOnly.matches) return;
-  const on = !c.classList.contains("is-on");
-  cells.forEach(x => x.classList.remove("is-on"));
-  c.classList.toggle("is-on", on);
-}));
-document.addEventListener("click", e => { if (!e.target.closest(".cell")) cells.forEach(x => x.classList.remove("is-on")); });
+/* ---------- touch screens: tap a card or row to switch its hover look on, tap again to switch it off ---------- */
+const touchOnly = matchMedia("(hover:none)");
+function tapSwitch(selector) {
+  const items = $$(selector);
+  items.forEach(c => c.addEventListener("click", () => {
+    if (!touchOnly.matches) return;
+    const on = !c.classList.contains("is-on");
+    items.forEach(x => x.classList.remove("is-on"));
+    c.classList.toggle("is-on", on);
+  }));
+  document.addEventListener("click", e => { if (!e.target.closest(selector)) items.forEach(x => x.classList.remove("is-on")); });
+}
+tapSwitch(".cell");
+tapSwitch(".val-list li");
 
 /* ---------- HR departments + popup ---------- */
 $("#facet-grid").innerHTML = FACETS.map((f, i) => `
