@@ -1,6 +1,8 @@
 /*
   The Employee Forum for the signed-in employee (supabase/phase3.sql). No private messages.
 
+  GET  /api/employee-forum?feed=1                   the open categories and the latest threads across them (the
+                                                    dashboard's discussion feed)
   GET  /api/employee-forum                          the open categories, with how many threads each has
   GET  /api/employee-forum?category=<id>            the threads in one category, newest activity first
   GET  /api/employee-forum?thread=<id>              one thread and its replies
@@ -101,6 +103,8 @@ module.exports = async function handler(req, res) {
   }
 
   const q = req.query || {};
+
+  if (q.feed !== undefined) return E.send(res, 200, await E.forumFeed(eid));
 
   if (q.thread !== undefined) {
     const id = String(q.thread);

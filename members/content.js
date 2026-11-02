@@ -23,7 +23,7 @@
   var MANAGEMENT_DEFAULT = ['risk_plan'];
   var DEPT_ORDER = ['staffing', 'training', 'engagement', 'rewards', 'legal'];
   var DEPT_ICON = { staffing: 'users', training: 'book', engagement: 'chat', rewards: 'award', legal: 'scale' };
-  var KIND_ICON = { document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
+  var KIND_ICON = { post: 'chat', document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
   var DEPT_LINE = {
     staffing: 'Finding and welcoming the right people.',
     training: 'Building skills for a future-ready workforce.',
@@ -32,6 +32,7 @@
     legal: 'Fair, lawful, and safe workplaces.'
   };
   var DELIV_LINE = {
+    announcements: 'Write a post for every employee. It shows your name, and you can attach files',
     attendance: 'Time in and time out records, with corrections and a monthly spreadsheet',
     company_files: 'Company documents for the team and, where you allow it, the public',
     talent_flow: 'Talent management flowcharts and the files that support them',
@@ -52,7 +53,7 @@
   };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms for employees'] };
+  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms for employees'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
@@ -112,6 +113,8 @@
       if (c[r.status] !== undefined) c[r.status]++;
     });
     var list = cs.deliverables.filter(function (d) { return d.department === cs.dept; });
+    /* Announcements are posts, not files, so they have no row in the deliverables table */
+    if (cs.dept === 'engagement') list = [{ key: 'announcements', name: 'Announcements', department: 'engagement', kind: 'post' }].concat(list);
     var pub = 0, drafts = 0;
     list.forEach(function (d) {
       var n = counts[d.key];

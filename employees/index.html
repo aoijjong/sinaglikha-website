@@ -117,13 +117,61 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .sec{font-size:1.4rem;margin:26px 0 12px}
 .bar{display:block;height:8px;border-radius:999px;background:var(--cream);overflow:hidden;margin:6px 0 2px}
 .bar i{display:block;height:100%;background:var(--grad-btn);border-radius:999px}
-.post{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow)}
-.post-h{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem}
-.post-h b{color:var(--brown);font-size:.95rem}
-.post-h .ib{margin-left:auto;width:34px;height:34px}
-.post p{margin-top:6px;overflow-wrap:anywhere}
 .field textarea{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;resize:vertical}
 .field textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
+
+/* dashboard: announcements and the community feed on the left, the personal tools on the right */
+.home-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.col-main,.col-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+@media (max-width:900px){
+  .home-grid{display:flex;flex-direction:column;gap:16px}
+  .col-main,.col-side{display:contents}
+}
+.feed{padding:4px 0 6px}
+.feed .none{padding:16px 20px 20px;color:var(--muted);font-size:.95rem}
+.feed-more{display:block;width:calc(100% - 32px);margin:4px 16px 16px;padding:11px;border-radius:14px;border:1.5px dashed rgba(74,46,34,.3);background:none;color:var(--brown);font-weight:700;font-size:.9rem;cursor:pointer}
+@media (hover:hover) and (pointer:fine){.feed-more:hover{background:var(--cream)}}
+.post{padding:16px 20px;border-top:1px solid var(--line)}
+.feed>.post:first-child{border-top:0}
+.post-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.post-top .ib{width:34px;height:34px}
+.av-sm{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;font-weight:700;font-size:.85rem;color:var(--brown);background:var(--soft-warm)}
+.who{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.25}
+.who b{color:var(--brown);overflow-wrap:anywhere}
+.who span{font-size:.82rem;color:var(--muted)}
+.post-title{font-size:1.15rem;margin:0 0 4px;color:var(--brown)}
+.post-body{overflow-wrap:anywhere;color:var(--ink);font-size:.98rem}
+.post-body.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.post-foot{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.pbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font-weight:600;font-size:.88rem;padding:6px 10px;border-radius:999px;cursor:pointer}
+.pbtn .icon{width:18px;height:18px}
+@media (hover:hover) and (pointer:fine){.pbtn:hover{background:var(--cream);color:var(--brown)}}
+.fchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.fchip{display:inline-flex;align-items:center;gap:8px;max-width:100%;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:8px 12px;cursor:pointer;color:var(--brown);font-size:.88rem;font-weight:600;text-align:left}
+.fchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+.fchip small{color:var(--muted);font-weight:500}
+.fchip .icon{width:18px;height:18px;flex:none}
+@media (hover:hover) and (pointer:fine){.fchip:hover{border-color:var(--brown);background:#fff}}
+.replies{margin:12px 0 0 12px;padding-left:16px;border-left:2px solid var(--cream)}
+.reply{padding:10px 0;border-top:1px solid var(--line)}
+.replies>.reply:first-child{border-top:0}
+.reply .post-top{margin-bottom:4px}
+.reply .av-sm{width:30px;height:30px;font-size:.72rem}
+.reply p{overflow-wrap:anywhere;font-size:.95rem}
+.rcmp{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.rcmp textarea{flex:1;min-width:0;min-height:44px;resize:vertical;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+.rcmp textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
+.composer{padding:14px 20px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(251,243,203,.4),rgba(251,243,203,0))}
+.cmp-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.cmp-row select{padding:11px 12px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;max-width:100%}
+.cmp-row input{flex:1 1 200px;min-width:0;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+.composer textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;resize:vertical}
+.composer input:focus,.composer textarea:focus,.composer select:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
+.cmp-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;flex-wrap:wrap}
+.cmp-foot .btn .icon{width:18px;height:18px}
+.skel{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--cream),#fff,var(--cream));background-size:200% 100%;animation:sk 1.2s linear infinite;margin:14px 20px}
+@keyframes sk{to{background-position:-200% 0}}
+.items .lrow .lmain{cursor:pointer}
 .att{padding:6px 22px 18px}
 .att-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .att-now b{font-family:var(--serif);font-weight:400;font-size:2.4rem;line-height:1;color:var(--brown)}
@@ -222,32 +270,50 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
   </section>
 
   <section id="v-home" hidden>
-    <div class="hello" style="margin-bottom:18px"><h1 id="h-hello"></h1><p id="h-sub"></p></div>
-    <div class="ph" style="margin-bottom:20px"><div class="sbox" style="width:100%"><i data-icon="search"></i><input id="q" type="search" placeholder="Search the portal" aria-label="Search the portal" autocomplete="off"></div></div>
+    <div class="hello"><h1 id="h-hello"></h1><p id="h-sub"></p></div>
+    <div class="sbox" style="width:100%;margin-bottom:18px"><i data-icon="search"></i><input id="q" type="search" placeholder="Search files and documents" aria-label="Search files and documents" autocomplete="off"></div>
     <p class="msg bad" id="h-err" role="alert" hidden></p>
-    <div id="home-main">
-      <div class="panel" id="att-panel" style="margin-bottom:16px" hidden>
-        <div class="panel-h"><span class="pi"><i data-icon="clock"></i></span><h2>My attendance</h2></div>
-        <div class="att">
-          <div class="att-now"><b id="att-clock"></b><span id="att-date"></span></div>
-          <p class="att-status" id="att-status" role="status"></p>
-          <div class="att-btns">
-            <button class="btn btn-primary" type="button" id="att-in"><i data-icon="clock"></i>Time In</button>
-            <button class="btn btn-ghost" type="button" id="att-out"><i data-icon="logout"></i>Time Out</button>
+    <div id="home-main" class="home-grid">
+      <div class="col-main">
+        <section class="panel" id="ann-panel" style="order:3">
+          <div class="panel-h"><span class="pi"><i data-icon="chat"></i></span><h2>Announcements</h2></div>
+          <div class="feed" id="ann-feed"></div>
+          <button class="feed-more" type="button" id="ann-more" hidden></button>
+        </section>
+        <section class="panel" id="forum-panel" style="order:4" hidden>
+          <div class="panel-h"><span class="pi"><i data-icon="users"></i></span><h2>Community</h2></div>
+          <form class="composer" id="f-compose" novalidate>
+            <div class="cmp-row">
+              <label class="sr-only" for="fc-cat">Category</label><select id="fc-cat"></select>
+              <label class="sr-only" for="fc-title">Title</label><input id="fc-title" type="text" maxlength="120" placeholder="Start a discussion: give it a title" autocomplete="off">
+            </div>
+            <label class="sr-only" for="fc-body">Your message</label>
+            <textarea id="fc-body" maxlength="2000" rows="3" placeholder="What would you like to share or ask your colleagues?"></textarea>
+            <p class="msg bad" id="fc-msg" role="alert" hidden></p>
+            <div class="cmp-foot"><span class="fine">Posts show your name. Be kind and keep it work-friendly.</span><button class="btn btn-primary btn-sm" type="submit" id="fc-post"><i data-icon="send"></i>Post</button></div>
+          </form>
+          <div class="feed" id="forum-feed"></div>
+        </section>
+      </div>
+      <aside class="col-side">
+        <div class="panel" id="att-panel" style="order:1" hidden>
+          <div class="panel-h"><span class="pi"><i data-icon="clock"></i></span><h2>My attendance</h2></div>
+          <div class="att">
+            <div class="att-now"><b id="att-clock"></b><span id="att-date"></span></div>
+            <p class="att-status" id="att-status" role="status"></p>
+            <div class="att-btns">
+              <button class="btn btn-primary" type="button" id="att-in"><i data-icon="clock"></i>Time In</button>
+              <button class="btn btn-ghost" type="button" id="att-out"><i data-icon="logout"></i>Time Out</button>
+            </div>
+            <p class="msg bad" id="att-msg" role="alert" hidden style="margin:12px 0 0"></p>
           </div>
-          <p class="msg bad" id="att-msg" role="alert" hidden style="margin:12px 0 0"></p>
+          <ul class="items" id="att-recent"></ul>
         </div>
-        <ul class="items" id="att-recent"></ul>
-      </div>
-      <div class="panel" id="eval-panel" style="margin-bottom:16px" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>My evaluations</h2></div><ul class="items" id="evals"></ul></div>
-      <div id="more-sec" hidden><div class="dgrid" id="more-cards" style="margin-bottom:16px"></div></div>
-      <div class="grid2">
-        <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="chat"></i></span><h2>Announcements</h2></div><ul class="items" id="ann"></ul></div>
-        <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="calendar"></i></span><h2>Latest daily activity</h2></div><ul class="items" id="today"></ul></div>
-      </div>
-      <div class="panel" id="rec-panel" style="margin-bottom:16px" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
-      <h2 class="sec">Departments</h2>
-      <div class="dgrid" id="tiles"></div>
+        <div class="panel" id="eval-panel" style="order:2" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>My evaluations</h2></div><ul class="items" id="evals"></ul></div>
+        <div class="panel" id="learn-panel" style="order:5" hidden><div class="panel-h"><span class="pi"><i data-icon="book"></i></span><h2>Learning</h2></div><ul class="items" id="learn-list"></ul></div>
+        <div class="panel" id="rec-panel" style="order:6" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
+        <div class="panel" id="dept-panel" style="order:7"><div class="panel-h"><span class="pi"><i data-icon="folder"></i></span><h2>Departments</h2></div><ul class="items" id="tiles"></ul></div>
+      </aside>
     </div>
     <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><div class="panel"><ul class="items" id="res"></ul></div></div>
   </section>
@@ -266,14 +332,6 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
       <h1 id="learn-title" style="font-size:clamp(1.7rem,4vw,2.4rem)">Learning</h1>
     </div>
     <div id="learn-body"></div>
-  </section>
-
-  <section id="v-forum" hidden>
-    <div class="back-row">
-      <button class="ib line" id="forum-back" type="button" aria-label="Go back" data-tip="Go back"><i data-icon="back"></i></button>
-      <h1 id="forum-title" style="font-size:clamp(1.7rem,4vw,2.4rem)">Employee Forum</h1>
-    </div>
-    <div id="forum-body"></div>
   </section>
 
   <section id="v-profile" class="narrow" hidden>

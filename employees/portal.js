@@ -3,24 +3,37 @@
   Employees sign in with an Employee ID and a 6-digit PIN they chose themselves. This page only
   talks to the /api/employee-* functions; the PIN is never stored in the browser, and the
   signed-in state is a server cookie this script can't read.
+
+  The dashboard loads in ONE request (/api/employee-content?home=1) that the server fills in
+  parallel, then draws everything: announcements, the community feed (discussions open and reply in
+  place, no page changes), attendance, evaluations, learning, compensation records and departments.
+  Everything typed by people is shown as plain text, never as HTML.
 */
 (function () {
   'use strict';
 
   var $ = function (s) { return document.querySelector(s); };
   var I = window.SngIcon, IB = window.SngIconButton;
-  var VIEWS = ['loading', 'signin', 'activate', 'home', 'dept', 'learn', 'forum', 'profile'];
-  var SIGNED_IN = ['home', 'dept', 'learn', 'forum', 'profile'];
+  var VIEWS = ['loading', 'signin', 'activate', 'home', 'dept', 'learn', 'profile'];
+  var SIGNED_IN = ['home', 'dept', 'learn', 'profile'];
   var DEPTS = [
     ['staffing', 'Staffing and Recruitment', 'users'], ['training', 'Training and Development', 'book'], ['engagement', 'Employee Engagement', 'chat'],
     ['rewards', 'Total Rewards', 'award'], ['legal', 'Legal Compliance', 'scale']
   ];
+  var DEPT_NAME = {};
+  DEPTS.forEach(function (d) { DEPT_NAME[d[0]] = d[1]; });
+
   var me = null;
   var content = { deliverables: [], items: [], evaluations: [] };
   var att = { today: '', records: [], unavailable: false };
+  var recs = [];
+  var learn = { courses: [], course: null, modules: [] };
+  var forum = { cats: [], threads: [] };
+  var anns = [], annShown = 3;
   var esc = function (s) {
     return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   };
+  var text = function (s) { return esc(s).replace(/\n/g, '<br>'); };
 
   $('#year').textContent = new Date().getFullYear();
 
@@ -92,11 +105,39 @@
     if (label) btn.textContent = on ? 'Please wait…' : label;
   }
 
-  /* ---------- who is signed in ---------- */
+  /* ---------- small formatting helpers ---------- */
   function initials(name) {
     var w = String(name || '').trim().split(/\s+/).filter(Boolean);
     return ((w[0] ? Array.from(w[0])[0] : '?') + (w.length > 1 ? Array.from(w[w.length - 1])[0] : '')).toUpperCase();
   }
+  var TINTS = ['#FFE7A8', '#FBD2B0', '#F6C9C0', '#D8E6C4', '#CFE3F1', '#E4D6F0'];
+  function avSm(name, cls) {
+    var h = 0;
+    String(name).split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) >>> 0; });
+    return '<span class="av-sm' + (cls ? ' ' + cls : '') + '" style="background:' + TINTS[h % TINTS.length] + '" aria-hidden="true">' + esc(initials(name)) + '</span>';
+  }
+  function fmtDate(d) {
+    var x = new Date(d);
+    return isNaN(x) ? '' : x.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+  function ago(iso) {
+    var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.round(s / 60) + ' min ago';
+    if (s < 86400) return Math.round(s / 3600) + ' h ago';
+    if (s < 86400 * 7) return Math.round(s / 86400) + ' d ago';
+    return fmtDate(iso);
+  }
+  function fmtSize(b) {
+    if (typeof b !== 'number') return '';
+    return b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+  }
+  function extOf(name) {
+    var i = String(name).lastIndexOf('.');
+    return i > 0 && i < name.length - 1 ? name.slice(i + 1, i + 5).toUpperCase() : 'FILE';
+  }
+
+  /* ---------- who is signed in ---------- */
   function photoOf(m) {
     return m && typeof m.avatar === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(m.avatar) ? m.avatar : '';
   }
@@ -118,6 +159,13 @@
     $('#h-sub').textContent = [me.position, me.employee_no].filter(Boolean).join(' · ');
   }
 
+  /* ---------- the dashboard: one request, then everything is drawn ---------- */
+  function skeleton() {
+    var lines = '<div class="skel" style="width:70%"></div><div class="skel" style="width:90%"></div><div class="skel" style="width:55%"></div>';
+    $('#ann-feed').innerHTML = lines;
+    $('#tiles').innerHTML = '';
+  }
+
   function enter(employee) {
     me = Object.assign({ avatar: null }, employee);
     ['#f-signin', '#f-activate', '#f-pin'].forEach(function (f) { $(f).reset(); });
@@ -126,36 +174,30 @@
     note('#pf-msg', '');
     note('#p-msg', '');
     paintMe();
+    skeleton();
     show('home');
-    loadContent();
-    loadProfile();
+    loadHome();
   }
 
-  async function loadProfile() {
-    var r = await call('GET', '/api/employee-me');
-    if (r.ok && me && r.data.employee) { me.avatar = r.data.employee.avatar || null; paintMe(); }
+  function applyHome(d) {
+    if (d.employee) { me = Object.assign({}, me || {}, d.employee); paintMe(); }
+    content = { deliverables: d.deliverables || [], items: d.items || [], evaluations: d.evaluations || [] };
+    att = d.attendance || { today: '', records: [], unavailable: true };
+    recs = d.records || [];
+    learn.courses = d.learning || [];
+    forum = { cats: (d.forum && d.forum.categories) || [], threads: (d.forum && d.forum.threads) || [] };
+    anns = d.announcements || [];
+    annShown = 3;
+    renderHome();
   }
 
-  /* ---------- the dashboard ---------- */
-  function fmtDate(d) {
-    var x = new Date(d);
-    return isNaN(x) ? '' : x.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  }
-  function fmtSize(b) {
-    if (typeof b !== 'number') return '';
-    return b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
-  }
-  function extOf(name) {
-    var i = String(name).lastIndexOf('.');
-    return i > 0 && i < name.length - 1 ? name.slice(i + 1, i + 5).toUpperCase() : 'FILE';
-  }
-  function deptOf(item) {
-    var d = content.deliverables.filter(function (x) { return x.key === item.deliverable; })[0];
-    return d ? d.department : '';
-  }
-  function nameOf(key) {
-    var d = content.deliverables.filter(function (x) { return x.key === key; })[0];
-    return d ? d.name : '';
+  async function loadHome() {
+    var r = await call('GET', '/api/employee-content?home=1');
+    if (r.status === 401) { show('signin'); return false; }
+    if (!r.ok) { note('#h-err', r.data.error || "Couldn't load your dashboard. Try again in a moment."); $('#ann-feed').innerHTML = ''; return false; }
+    note('#h-err', '');
+    applyHome(r.data);
+    return true;
   }
 
   function itemHtml(it, showWhere) {
@@ -174,19 +216,143 @@
   function listHtml(items, empty, showWhere) {
     return items.length ? items.map(function (i) { return itemHtml(i, showWhere); }).join('') : '<li class="none">' + esc(empty) + '</li>';
   }
+  function deptOf(item) {
+    var d = content.deliverables.filter(function (x) { return x.key === item.deliverable; })[0];
+    return d ? d.department : '';
+  }
+  function nameOf(key) {
+    var d = content.deliverables.filter(function (x) { return x.key === key; })[0];
+    return d ? d.name : '';
+  }
 
   function renderHome() {
-    var by = function (key) { return content.items.filter(function (i) { return i.deliverable === key; }); };
-    $('#ann').innerHTML = listHtml(by('communication').slice(0, 5), 'No announcements yet.', false);
-    $('#today').innerHTML = listHtml(by('daily_activity').slice(0, 1), 'Nothing posted yet.', false);
+    renderAnnouncements();
+    renderForum();
+    renderAttendance();
+    renderEvaluations();
+    renderLearningPanel();
+    renderRecords();
     $('#tiles').innerHTML = DEPTS.map(function (d) {
       var n = content.items.filter(function (i) { return deptOf(i) === d[0]; }).length;
-      return '<button class="dcard" type="button" data-dept="' + d[0] + '"><span class="di">' + I(d[2]) + '</span><span class="dt"><b>' + esc(d[1]) + '</b><span class="dm">' +
-        (n ? n + (n === 1 ? ' item' : ' items') : 'Nothing yet') + '</span></span>' + I('chevron', 'go') + '</button>';
+      return '<li class="lrow"><button class="lmain" type="button" data-dept="' + d[0] + '"><span class="lico">' + I(d[2]) + '</span><span class="ltext"><span class="lname">' + esc(d[1]) +
+        '</span><span class="lmeta">' + (n ? n + (n === 1 ? ' item' : ' items') : 'Nothing yet') + '</span></span></button>' + I('chevron', 'lgo') + '</li>';
     }).join('');
     renderSearch();
   }
 
+  /* ---------- announcements: posts from the Senior Managers ---------- */
+  function renderAnnouncements() {
+    var feed = $('#ann-feed');
+    if (!anns.length) {
+      feed.innerHTML = '<div class="none">No announcements yet. When a Senior Manager posts one, it will appear here.</div>';
+      $('#ann-more').hidden = true;
+      return;
+    }
+    feed.innerHTML = anns.slice(0, annShown).map(function (a) {
+      return '<article class="post"><div class="post-top">' + avSm(a.author) + '<div class="who"><b>' + esc(a.author) + '</b><span>' +
+        esc((DEPT_NAME[a.dept] ? DEPT_NAME[a.dept] + ' · ' : '') + ago(a.created_at)) + '</span></div></div>' +
+        (a.title ? '<h3 class="post-title">' + esc(a.title) + '</h3>' : '') + '<p class="post-body">' + text(a.body) + '</p>' +
+        (a.files.length ? '<div class="fchips">' + a.files.map(function (f, i) {
+          return '<button class="fchip" type="button" data-annfile="' + esc(a.id) + '" data-i="' + i + '">' + I('file') + '<span>' + esc(f.name) + '</span>' + (f.size ? '<small>' + esc(fmtSize(f.size)) + '</small>' : '') + '</button>';
+        }).join('') + '</div>' : '') + '</article>';
+    }).join('');
+    var more = anns.length - annShown;
+    $('#ann-more').hidden = more <= 0;
+    $('#ann-more').textContent = 'Show ' + more + ' older ' + (more === 1 ? 'announcement' : 'announcements');
+  }
+
+  /* ---------- the community feed: discussions open and reply right here ---------- */
+  function renderForum() {
+    var panel = $('#forum-panel');
+    panel.hidden = !forum.cats.length;
+    if (!forum.cats.length) return;
+    var sel = $('#fc-cat'), keep = sel.value;
+    sel.innerHTML = forum.cats.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('');
+    if (keep) sel.value = keep;
+    var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
+    $('#forum-feed').innerHTML = forum.threads.length ? forum.threads.map(function (t) {
+      return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
+        '<span class="chip plain">' + esc(catName(t.category_id)) + '</span>' + (t.mine ? '' : IB('flag', 'Report to a moderator', { 'data-report-thread': t.id })) + '</div>' +
+        '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
+        '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' reply' : ' replies') + '</span></button>' +
+        (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + '</div><div class="replies" hidden></div></article>';
+    }).join('') : '<div class="none">No discussions yet. Start the first one above.</div>';
+  }
+
+  async function refreshFeed() {
+    var r = await call('GET', '/api/employee-forum?feed=1');
+    if (r.status === 401) { show('signin'); return; }
+    if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [] }; renderForum(); }
+  }
+
+  function replyHtml(p) {
+    return '<div class="reply"><div class="post-top">' + avSm(p.author) + '<div class="who"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span></div>' +
+      (p.mine ? '' : IB('flag', 'Report to a moderator', { 'data-report-post': p.id })) + '</div><p>' + text(p.body) + '</p></div>';
+  }
+
+  async function toggleReplies(id) {
+    var card = document.querySelector('[data-thread="' + id + '"]');
+    if (!card) return;
+    var box = card.querySelector('.replies'), body = card.querySelector('.post-body');
+    if (!box.hidden) { box.hidden = true; body.classList.add('clamp'); return; }
+    box.hidden = false;
+    body.classList.remove('clamp');
+    box.innerHTML = '<div class="skel" style="width:60%;margin:8px 0"></div>';
+    var r = await call('GET', '/api/employee-forum?thread=' + encodeURIComponent(id));
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { box.innerHTML = '<p class="fine">' + esc(r.data.error || "Couldn't load the replies.") + '</p>'; return; }
+    box.innerHTML = r.data.posts.map(replyHtml).join('') + (r.data.thread.locked ? '<p class="fine" style="margin-top:8px">This thread is locked, so it cannot take new replies.</p>' :
+      '<form class="rcmp" data-reply-form="' + esc(id) + '" novalidate><label class="sr-only" for="rb-' + esc(id) + '">Your reply</label><textarea id="rb-' + esc(id) + '" maxlength="2000" rows="1" placeholder="Write a reply…"></textarea>' +
+      IB('send', 'Send reply', { type: 'submit' }, 'solid') + '</form><p class="msg bad" role="alert" hidden style="margin-top:8px"></p>');
+  }
+
+  async function sendReply(form) {
+    var id = form.getAttribute('data-reply-form'), ta = form.querySelector('textarea'), msg = form.nextElementSibling;
+    var textVal = ta.value.trim();
+    if (!textVal) { msg.textContent = 'Write a reply first.'; msg.hidden = false; return; }
+    msg.hidden = true;
+    var btn = form.querySelector('button');
+    btn.disabled = true;
+    var r = await call('POST', '/api/employee-forum', { action: 'reply', thread_id: id, body: textVal });
+    btn.disabled = false;
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { msg.textContent = r.data.error || "Couldn't post that."; msg.hidden = false; return; }
+    toast('Reply posted.');
+    var t = forum.threads.filter(function (x) { return x.id === id; })[0];
+    if (t) t.replies += 1;
+    var card = document.querySelector('[data-thread="' + id + '"]');
+    card.querySelector('[data-replies] span').textContent = (t ? t.replies : '') + ((t && t.replies === 1) ? ' reply' : ' replies');
+    card.querySelector('.replies').hidden = true;
+    toggleReplies(id);
+  }
+
+  $('#f-compose').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var title = $('#fc-title').value.trim(), body = $('#fc-body').value.trim();
+    if (!title) { note('#fc-msg', 'Give your discussion a title.'); return; }
+    if (!body) { note('#fc-msg', 'Write something to share.'); return; }
+    note('#fc-msg', '');
+    var btn = $('#fc-post');
+    btn.disabled = true;
+    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: $('#fc-cat').value, title: title, body: body });
+    btn.disabled = false;
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { note('#fc-msg', r.data.error || "Couldn't post that."); return; }
+    $('#fc-title').value = '';
+    $('#fc-body').value = '';
+    toast('Posted.');
+    refreshFeed();
+  });
+
+  async function sendReport(kind, id) {
+    if (!window.confirm('Report this to a moderator? They will take a look.')) return;
+    var payload = { action: 'report' };
+    payload[kind === 'thread' ? 'thread_id' : 'post_id'] = id;
+    var r = await call('POST', '/api/employee-forum', payload);
+    toast(r.ok ? 'Thank you. A moderator will take a look.' : (r.data.error || "Couldn't send that report."));
+  }
+
+  /* ---------- search over files and documents ---------- */
   function renderSearch() {
     var q = $('#q').value.trim().toLowerCase();
     $('#home-main').hidden = !!q;
@@ -209,18 +375,6 @@
     });
     $('#dept-body').innerHTML = html || '<p class="fine">Nothing published yet.</p>';
     show('dept');
-  }
-
-  async function loadContent() {
-    var r = await call('GET', '/api/employee-content');
-    if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { note('#h-err', r.data.error || "Couldn't load the portal content."); content = { deliverables: [], items: [], evaluations: [] }; }
-    else { note('#h-err', ''); content = { deliverables: r.data.deliverables || [], items: r.data.items || [], evaluations: r.data.evaluations || [] }; }
-    renderHome();
-    renderEvaluations();
-    loadRecords();
-    loadAttendance();
-    loadMore();
   }
 
   /* ---------- evaluations: links to the forms that are open today ---------- */
@@ -266,7 +420,7 @@
       : 'Timed in ' + fmtTime(rec.time_in) + ' · Timed out ' + fmtTime(rec.time_out) + '. Thank you for today.';
     $('#att-in').disabled = !!inAt;
     $('#att-out').disabled = !inAt || !!outAt;
-    $('#att-recent').innerHTML = att.records.slice(0, 7).map(function (r) {
+    $('#att-recent').innerHTML = att.records.slice(0, 5).map(function (r) {
       var chip = r.time_in && r.time_out ? ['s-published', 'Complete'] : r.work_date === att.today ? ['s-draft', 'Today'] : ['s-archived', 'No time out'];
       return '<li class="lrow"><div class="lmain" style="cursor:default"><span class="ltext"><span class="lname">' + esc(fmtDay(r.work_date)) + '</span><span class="lmeta">' +
         esc((r.time_in ? fmtTime(r.time_in) : '—') + ' to ' + (r.time_out ? fmtTime(r.time_out) : '—')) + '</span></span></div>' +
@@ -295,8 +449,6 @@
   $('#att-out').addEventListener('click', function () { punch('out'); });
 
   /* ---------- learning ---------- */
-  var learn = { courses: [], course: null, modules: [] };
-
   function bar(done, total) {
     var pct = total ? Math.round((done / total) * 100) : 0;
     return '<span class="bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span>';
@@ -305,22 +457,12 @@
     return total ? done + ' of ' + total + (total === 1 ? ' module' : ' modules') + ' complete' : 'No modules yet';
   }
 
-  async function loadMore() {
-    var l = await call('GET', '/api/employee-learning');
-    learn.courses = l.ok && Array.isArray(l.data.courses) ? l.data.courses : [];
-    var f = await call('GET', '/api/employee-forum');
-    forum.cats = f.ok && Array.isArray(f.data.categories) ? f.data.categories : [];
-    var html = '';
-    if (learn.courses.length) {
-      var done = learn.courses.reduce(function (n, c) { return n + c.done; }, 0), total = learn.courses.reduce(function (n, c) { return n + c.total; }, 0);
-      html += '<button class="dcard" type="button" data-go="learn"><span class="di">' + I('book') + '</span><span class="dt"><b>Learning</b><span class="dm">' +
-        esc(learn.courses.length + (learn.courses.length === 1 ? ' course' : ' courses') + ' · ' + done + ' of ' + total + ' complete') + '</span></span>' + I('chevron', 'go') + '</button>';
-    }
-    if (forum.cats.length) {
-      html += '<button class="dcard" type="button" data-go="forum"><span class="di">' + I('chat') + '</span><span class="dt"><b>Employee Forum</b><span class="dm">Ask, share and chat with your colleagues</span></span>' + I('chevron', 'go') + '</button>';
-    }
-    $('#more-cards').innerHTML = html;
-    $('#more-sec').hidden = !html;
+  function renderLearningPanel() {
+    $('#learn-panel').hidden = !learn.courses.length;
+    $('#learn-list').innerHTML = learn.courses.slice(0, 4).map(function (c) {
+      return '<li class="lrow"><button class="lmain" type="button" data-course="' + esc(c.id) + '"><span class="lico">' + I('book') + '</span><span class="ltext"><span class="lname">' + esc(c.title) +
+        '</span>' + bar(c.done, c.total) + '<span class="lmeta">' + esc(progressText(c.done, c.total)) + '</span></span></button>' + I('chevron', 'lgo') + '</li>';
+    }).join('');
   }
 
   function renderCourses() {
@@ -330,15 +472,6 @@
       return '<button class="dcard" type="button" data-course="' + esc(c.id) + '" style="width:100%;margin-bottom:12px"><span class="di">' + I('book') + '</span><span class="dt"><b>' + esc(c.title) +
         '</b>' + (c.description ? '<span class="dm">' + esc(c.description) + '</span>' : '') + bar(c.done, c.total) + '<span class="dm">' + esc(progressText(c.done, c.total)) + '</span></span>' + I('chevron', 'go') + '</button>';
     }).join('') : '<div class="es"><span class="eic">' + I('book') + '</span><b>No courses yet</b><p>Courses from Training and Development will appear here.</p></div>';
-  }
-
-  async function openLearning() {
-    show('learn');
-    $('#learn-body').innerHTML = '<p class="fine">Loading…</p>';
-    var l = await call('GET', '/api/employee-learning');
-    if (l.status === 401) { show('signin'); return; }
-    learn.courses = l.ok && Array.isArray(l.data.courses) ? l.data.courses : [];
-    renderCourses();
   }
 
   function renderCourse() {
@@ -354,7 +487,13 @@
       }).join('') : '<li class="none">No modules in this course yet.</li>') + '</ul></div>';
   }
 
+  async function openLearning() {
+    show('learn');
+    renderCourses();
+  }
+
   async function openCourse(id) {
+    show('learn');
     $('#learn-body').innerHTML = '<p class="fine">Loading…</p>';
     var r = await call('GET', '/api/employee-learning?course=' + encodeURIComponent(id));
     if (r.status === 401) { show('signin'); return; }
@@ -374,132 +513,13 @@
     var c = learn.courses.filter(function (x) { return x.id === learn.course.id; })[0];
     if (c) c.done = learn.modules.filter(function (x) { return x.done; }).length;
     renderCourse();
+    renderLearningPanel();
   }
 
-  /* ---------- the employee forum ---------- */
-  var forum = { cats: [], cat: null, thread: null };
-
-  function text(s) { return esc(s).replace(/\n/g, '<br>'); }
-  function ago(iso) {
-    var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-    if (s < 60) return 'just now';
-    if (s < 3600) return Math.round(s / 60) + ' min ago';
-    if (s < 86400) return Math.round(s / 3600) + ' h ago';
-    return fmtDate(iso);
-  }
-
-  function renderCats() {
-    forum.cat = null; forum.thread = null;
-    $('#forum-title').textContent = 'Employee Forum';
-    $('#forum-body').innerHTML = '<p class="fine" style="margin-bottom:12px">Be kind and keep it work-friendly. Posts show your name. There are no private messages, and moderators can hide or remove posts.</p>' +
-      (forum.cats.length ? forum.cats.map(function (c) {
-        return '<button class="dcard" type="button" data-cat="' + esc(c.id) + '" style="width:100%;margin-bottom:12px"><span class="di">' + I('chat') + '</span><span class="dt"><b>' + esc(c.name) + '</b>' +
-          (c.description ? '<span class="dm">' + esc(c.description) + '</span>' : '') + '<span class="dm">' + c.threads + (c.threads === 1 ? ' thread' : ' threads') + '</span></span>' + I('chevron', 'go') + '</button>';
-      }).join('') : '<div class="es"><span class="eic">' + I('chat') + '</span><b>The forum is quiet</b><p>No categories are open yet.</p></div>');
-  }
-
-  async function openForum() {
-    show('forum');
-    $('#forum-body').innerHTML = '<p class="fine">Loading…</p>';
-    var f = await call('GET', '/api/employee-forum');
-    if (f.status === 401) { show('signin'); return; }
-    forum.cats = f.ok && Array.isArray(f.data.categories) ? f.data.categories : [];
-    renderCats();
-  }
-
-  async function openCat(id) {
-    $('#forum-body').innerHTML = '<p class="fine">Loading…</p>';
-    var r = await call('GET', '/api/employee-forum?category=' + encodeURIComponent(id));
-    if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { toast(r.data.error || "Couldn't open that category."); renderCats(); return; }
-    forum.cat = r.data.category; forum.thread = null;
-    $('#forum-title').textContent = r.data.category.name;
-    $('#forum-body').innerHTML = '<div class="ph" style="margin-bottom:12px"><div class="ph-main"><p class="fine">' + esc(r.data.category.description || '') + '</p></div><div class="ph-actions">' +
-      IB('plus', 'Start a new thread', { 'data-newthread': '1' }, 'solid') + '</div></div>' +
-      '<form class="card" id="f-thread" hidden novalidate style="padding:20px"><div class="field"><label for="t-title">Title</label><input id="t-title" type="text" maxlength="120" autocomplete="off"></div>' +
-      '<div class="field"><label for="t-body">What do you want to say?</label><textarea id="t-body" maxlength="2000" rows="5"></textarea></div>' +
-      '<p class="msg bad" id="t-msg" role="alert" hidden></p><div class="actions" style="flex-direction:row;justify-content:flex-end"><button class="btn btn-ghost btn-sm" type="button" id="t-cancel">Cancel</button><button class="btn btn-primary btn-sm" type="submit" id="t-ok">Post</button></div></form>' +
-      '<div class="panel"><ul class="items">' + (r.data.threads.length ? r.data.threads.map(function (t) {
-        return '<li class="lrow"><button class="lmain" type="button" data-thread="' + esc(t.id) + '"><span class="lico">' + I(t.locked ? 'lock' : 'chat') + '</span><span class="ltext"><span class="lname">' + esc(t.title) + '</span>' +
-          '<span class="lmeta">' + esc(t.author + ' · ' + t.replies + (t.replies === 1 ? ' reply' : ' replies') + ' · ' + ago(t.last_post_at)) + '</span><span class="ldesc">' + esc(t.preview) + '</span></span></button>' + I('chevron', 'lgo') + '</li>';
-      }).join('') : '<li class="none">No threads yet. Be the first to start one.</li>') + '</ul></div>';
-  }
-
-  function postHtml(p, kind) {
-    return '<div class="post"><div class="post-h"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span>' +
-      (p.mine ? '' : IB('flag', 'Report to a moderator', { 'data-report': kind, 'data-id': p.id })) + '</div><p>' + text(p.body) + '</p></div>';
-  }
-
-  async function openThread(id) {
-    $('#forum-body').innerHTML = '<p class="fine">Loading…</p>';
-    var r = await call('GET', '/api/employee-forum?thread=' + encodeURIComponent(id));
-    if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { toast(r.data.error || "Couldn't open that thread."); if (forum.cat) openCat(forum.cat.id); else renderCats(); return; }
-    forum.cat = r.data.category; forum.thread = r.data.thread;
-    var t = r.data.thread;
-    $('#forum-title').textContent = t.title;
-    $('#forum-body').innerHTML = '<p class="fine" style="margin-bottom:10px">In ' + esc(r.data.category.name) + (t.locked ? ' · Locked' : '') + '</p>' +
-      postHtml({ id: t.id, author: t.author, mine: t.mine, created_at: t.created_at, body: t.body }, 'thread') +
-      r.data.posts.map(function (p) { return postHtml(p, 'post'); }).join('') +
-      (t.locked ? '<p class="msg" style="margin-top:12px">This thread is locked, so it cannot take new replies.</p>' :
-        '<form class="card" id="f-reply" novalidate style="padding:20px;margin-top:12px"><div class="field"><label for="r-body">Your reply</label><textarea id="r-body" maxlength="2000" rows="4"></textarea></div>' +
-        '<p class="msg bad" id="r-msg" role="alert" hidden></p><div class="actions" style="flex-direction:row;justify-content:flex-end"><button class="btn btn-primary btn-sm" type="submit" id="r-ok">Reply</button></div></form>');
-  }
-
-  async function forumPost(payload, msgSel, btnSel, done) {
-    note(msgSel, '');
-    var btn = $(btnSel);
-    btn.disabled = true;
-    var r = await call('POST', '/api/employee-forum', payload);
-    btn.disabled = false;
-    if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { note(msgSel, r.data.error || "Couldn't post that."); return; }
-    done(r.data);
-  }
-
-  async function sendReport(kind, id) {
-    if (!window.confirm('Report this to a moderator? They will take a look.')) return;
-    var payload = { action: 'report' };
-    payload[kind === 'thread' ? 'thread_id' : 'post_id'] = id;
-    var r = await call('POST', '/api/employee-forum', payload);
-    toast(r.ok ? 'Thank you. A moderator will take a look.' : (r.data.error || "Couldn't send that report."));
-  }
-
-  document.addEventListener('submit', function (e) {
-    if (e.target.id === 'f-thread') {
-      e.preventDefault();
-      forumPost({ action: 'thread', category_id: forum.cat.id, title: $('#t-title').value, body: $('#t-body').value }, '#t-msg', '#t-ok', function (d) { toast('Posted.'); openThread(d.id); });
-    } else if (e.target.id === 'f-reply') {
-      e.preventDefault();
-      forumPost({ action: 'reply', thread_id: forum.thread.id, body: $('#r-body').value }, '#r-msg', '#r-ok', function () { toast('Reply posted.'); openThread(forum.thread.id); });
-    }
-  });
-
-  document.addEventListener('click', function (e) {
-    var t;
-    if ((t = e.target.closest('[data-go]'))) { if (t.dataset.go === 'learn') openLearning(); else if (t.dataset.go === 'forum') openForum(); }
-    else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course);
-    else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
-    else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
-    else if ((t = e.target.closest('[data-cat]'))) openCat(t.dataset.cat);
-    else if ((t = e.target.closest('[data-thread]'))) openThread(t.dataset.thread);
-    else if (e.target.closest('[data-newthread]')) { $('#f-thread').hidden = false; $('#t-title').focus(); }
-    else if (e.target.closest('#t-cancel')) $('#f-thread').hidden = true;
-    else if ((t = e.target.closest('[data-report]'))) sendReport(t.dataset.report, t.dataset.id);
-  });
-  $('#learn-back').addEventListener('click', function () { if (learn.course) renderCourses(); else { show('home'); loadMore(); } });
-  $('#forum-back').addEventListener('click', function () {
-    if (forum.thread && forum.cat) openCat(forum.cat.id);
-    else if (forum.cat) renderCats();
-    else { show('home'); loadMore(); }
-  });
-
-  /* the employee's own compensation records, if Total Rewards has uploaded any */
-  async function loadRecords() {
-    var r = await call('GET', '/api/employee-content?records=1');
-    var list = r.ok && Array.isArray(r.data.records) ? r.data.records : [];
-    $('#rec-panel').hidden = !list.length;
-    $('#recs').innerHTML = list.map(function (x) {
+  /* ---------- the employee's own compensation records ---------- */
+  function renderRecords() {
+    $('#rec-panel').hidden = !recs.length;
+    $('#recs').innerHTML = recs.map(function (x) {
       return '<li class="lrow"><button class="lmain" type="button" data-rec="' + esc(x.id) + '" aria-label="Open ' + esc(x.title) + '">' +
         '<span class="lico">' + I('lock') + '</span><span class="ltext"><span class="lname">' + esc(x.title) + '</span><span class="lmeta">' +
         esc([x.period, fmtDate(x.created_at)].filter(Boolean).join(' · ')) + '</span></span></button>' + I('external', 'lgo') + '</li>';
@@ -514,15 +534,28 @@
     if (w) { w.opener = null; w.location.href = r.data.url; } else window.location.href = r.data.url;
   }
 
+  /* ---------- clicks on the dashboard ---------- */
   document.addEventListener('click', function (e) {
-    var open = e.target.closest('[data-open]'), tile = e.target.closest('[data-dept]'), rec = e.target.closest('[data-rec]'), form = e.target.closest('[data-form]');
-    if (form) { if (/^https?:\/\//i.test(form.dataset.form)) window.open(form.dataset.form, '_blank', 'noopener'); }
-    else if (open) openUrl('/api/employee-content?file=' + encodeURIComponent(open.dataset.open));
-    else if (rec) openUrl('/api/employee-content?record=' + encodeURIComponent(rec.dataset.rec));
-    else if (tile) openDept(tile.dataset.dept);
+    var t;
+    if ((t = e.target.closest('[data-form]'))) { if (/^https?:\/\//i.test(t.dataset.form)) window.open(t.dataset.form, '_blank', 'noopener'); }
+    else if ((t = e.target.closest('[data-annfile]'))) openUrl('/api/employee-content?ann=' + encodeURIComponent(t.dataset.annfile) + '&i=' + encodeURIComponent(t.dataset.i));
+    else if ((t = e.target.closest('[data-open]'))) openUrl('/api/employee-content?file=' + encodeURIComponent(t.dataset.open));
+    else if ((t = e.target.closest('[data-rec]'))) openUrl('/api/employee-content?record=' + encodeURIComponent(t.dataset.rec));
+    else if ((t = e.target.closest('[data-dept]'))) openDept(t.dataset.dept);
+    else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course);
+    else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
+    else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
+    else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
+    else if ((t = e.target.closest('[data-report-thread]'))) sendReport('thread', t.dataset.reportThread);
+    else if ((t = e.target.closest('[data-report-post]'))) sendReport('post', t.dataset.reportPost);
+    else if (e.target.closest('#ann-more')) { annShown = anns.length; renderAnnouncements(); }
+  });
+  document.addEventListener('submit', function (e) {
+    if (e.target.hasAttribute('data-reply-form')) { e.preventDefault(); sendReply(e.target); }
   });
   $('#q').addEventListener('input', renderSearch);
   $('#dept-back').addEventListener('click', function () { show('home'); });
+  $('#learn-back').addEventListener('click', function () { if (learn.course) renderCourses(); else show('home'); });
 
   /* ---------- sign in, first-time activation ---------- */
   $('#f-signin').addEventListener('submit', async function (e) {
@@ -642,8 +675,14 @@
   $('#to-activate').addEventListener('click', function () { note('#a-msg', ''); show('activate'); });
   $('#to-signin').addEventListener('click', function () { note('#s-msg', ''); show('signin'); });
 
+  /* ---------- start: one request tells us who is signed in AND fills the dashboard ---------- */
   (async function boot() {
-    var res = await call('GET', '/api/employee-me');
-    if (res.ok && res.data.employee) enter(res.data.employee); else show('signin');
+    var r = await call('GET', '/api/employee-content?home=1');
+    if (r.ok && r.data.employee) {
+      me = Object.assign({ avatar: null }, r.data.employee);
+      paintMe();
+      show('home');
+      applyHome(r.data);
+    } else show('signin');
   })();
 })();

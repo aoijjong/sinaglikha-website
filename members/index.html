@@ -241,6 +241,16 @@ dialog:not(.viewer){max-height:calc(100dvh - 24px);overflow-y:auto}
 @media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
 
 /* employee directory */
+#an-form{padding:clamp(22px,4vw,32px)}
+#an-form h2{font-size:1.5rem;margin-bottom:14px}
+#an-form .field input[type=text]{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
+#an-form .field textarea{width:100%;min-height:120px;resize:vertical;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+#an-form .actions{justify-content:flex-end;margin-top:14px}
+.an-files{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+.an-files li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 6px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);font-size:.92rem}
+.an-files li span{display:flex;align-items:center;gap:8px;min-width:0;overflow-wrap:anywhere}
+.an-files li .icon{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.an-files li .ib{width:34px;height:34px}
 #att-form,#ev-form,#lc-form,#lm-form,#fc-form{padding:clamp(22px,4vw,32px)}
 #lc-form h2,#lm-form h2,#fc-form h2{font-size:1.5rem;margin-bottom:14px}
 #lc-form .field input,#lm-form .field input,#lm-form .field select,#fc-form .field input{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
@@ -735,6 +745,25 @@ dialog[open]{animation:pop .5s var(--ease)}
   </form>
 </dialog>
 
+<dialog id="an-dlg" aria-labelledby="an-title">
+  <form id="an-form" novalidate>
+    <h2 id="an-title">New Announcement</h2>
+    <div class="field"><label for="an-name">Title (Optional)</label><input id="an-name" type="text" maxlength="160" autocomplete="off" placeholder="For example Office closed on Friday"></div>
+    <div class="field"><label for="an-body">Message</label><textarea id="an-body" maxlength="5000" rows="6" placeholder="Write your announcement"></textarea></div>
+    <div class="field"><label>Files (Optional)</label>
+      <ul class="an-files" id="an-files"></ul>
+      <button class="btn btn-ghost btn-sm" type="button" id="an-add">Attach files</button>
+      <input type="file" id="an-file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv">
+    </div>
+    <p class="fine">Your name and department show on the post. Employees see it as soon as you post it.</p>
+    <p class="msg bad" id="an-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="an-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="an-ok">Post</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="lc-dlg" aria-labelledby="lc-title">
   <form id="lc-form" novalidate>
     <h2 id="lc-title">Course</h2>
@@ -853,5 +882,6 @@ dialog[open]{animation:pop .5s var(--ease)}
 <script src="evaluations.js"></script>
 <script src="learning.js"></script>
 <script src="forum.js"></script>
+<script src="announcements.js"></script>
 </body>
 </html>

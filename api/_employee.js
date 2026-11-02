@@ -161,10 +161,13 @@ async function currentEmployee(req) {
   let data;
   try { data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')); } catch { return null; }
   if (!data || !data.sub || data.exp < Math.floor(Date.now() / 1000)) return null;
-  const e = await rest('GET', `employees?id=eq.${encodeURIComponent(data.sub)}&select=id,employee_no,full_name,position,active,pin_set`);
+  const sub = encodeURIComponent(data.sub);
+  const [e, s] = await Promise.all([
+    rest('GET', `employees?id=eq.${sub}&select=id,employee_no,full_name,position,active,pin_set`),
+    rest('GET', `employee_secrets?employee_id=eq.${sub}&select=session_version`)
+  ]);
   const emp = e.ok && e.data && e.data[0];
   if (!emp || !emp.active || !emp.pin_set) return null;
-  const s = await rest('GET', `employee_secrets?employee_id=eq.${encodeURIComponent(emp.id)}&select=session_version`);
   const sec = s.ok && s.data && s.data[0];
   if (!sec || sec.session_version !== data.v) return null;
   return { emp, version: sec.session_version };
@@ -245,7 +248,68 @@ function manilaDate(ms) {
   return new Date((ms === undefined ? Date.now() : ms) + 8 * 3600000).toISOString().slice(0, 10);
 }
 
+/* ---------- pieces of the dashboard, shared by the one-request "home" answer and the detail calls ---------- */
+const list = (r) => (r.ok && Array.isArray(r.data) ? r.data : []);
+
+async function namesOf(ids) {
+  const out = {};
+  const unique = Array.from(new Set(ids.filter(Boolean)));
+  if (!unique.length) return out;
+  list(await rest('GET', `employees?id=in.(${unique.join(',')})&select=id,full_name`)).forEach((e) => { out[e.id] = e.full_name; });
+  return out;
+}
+
+/* This employee's own time records for the last 31 days. */
+async function attendanceRecent(eid) {
+  const today = manilaDate();
+  const since = manilaDate(Date.now() - 31 * 86400000);
+  const r = await rest('GET', `attendance_records?employee_id=eq.${eid}&work_date=gte.${since}&select=id,work_date,time_in,time_out,note&order=work_date.desc&limit=40`);
+  // Before supabase/phase2.sql has been run the table doesn't exist yet.
+  if (!r.ok || !Array.isArray(r.data)) return { today, records: [], unavailable: true };
+  return { today, records: r.data };
+}
+
+/* Published courses with how many modules there are and how many THIS employee has completed. */
+async function learningSummary(eid) {
+  const c = await rest('GET', 'learning_courses?published=eq.true&select=id,title,description&order=position,created_at');
+  if (!c.ok || !Array.isArray(c.data) || !c.data.length) return [];
+  const ids = c.data.map((x) => x.id).join(',');
+  const [m, p] = await Promise.all([
+    rest('GET', `learning_modules?course_id=in.(${ids})&select=id,course_id&limit=5000`),
+    rest('GET', `learning_progress?employee_id=eq.${eid}&select=module_id&limit=5000`)
+  ]);
+  const done = new Set(list(p).map((x) => x.module_id));
+  const mods = list(m);
+  return c.data.map((x) => {
+    const own = mods.filter((y) => y.course_id === x.id);
+    return { id: x.id, title: x.title, description: x.description || '', total: own.length, done: own.filter((y) => done.has(y.id)).length };
+  });
+}
+
+/* The open forum categories and the latest threads across them, with reply counts and author names. */
+async function forumFeed(eid) {
+  const c = await rest('GET', 'forum_categories?active=eq.true&select=id,name,description&order=position,created_at');
+  if (!c.ok || !Array.isArray(c.data) || !c.data.length) return { categories: [], threads: [] };
+  const ids = c.data.map((x) => x.id).join(',');
+  const threads = list(await rest('GET', `forum_threads?category_id=in.(${ids})&hidden=eq.false&select=id,category_id,employee_id,title,body,locked,created_at,last_post_at&order=last_post_at.desc&limit=20`));
+  const tids = threads.map((x) => x.id);
+  const [p, who] = await Promise.all([
+    tids.length ? rest('GET', `forum_posts?thread_id=in.(${tids.join(',')})&hidden=eq.false&select=thread_id&limit=5000`) : { ok: true, data: [] },
+    namesOf(threads.map((x) => x.employee_id))
+  ]);
+  const count = {};
+  list(p).forEach((x) => { count[x.thread_id] = (count[x.thread_id] || 0) + 1; });
+  return {
+    categories: c.data.map((x) => ({ id: x.id, name: x.name, description: x.description || '' })),
+    threads: threads.map((x) => ({
+      id: x.id, category_id: x.category_id, title: x.title, body: x.body, locked: x.locked, replies: count[x.id] || 0,
+      author: who[x.employee_id] || 'Employee', mine: x.employee_id === eid, created_at: x.created_at, last_post_at: x.last_post_at
+    }))
+  };
+}
+
 module.exports = {
+  list, namesOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
