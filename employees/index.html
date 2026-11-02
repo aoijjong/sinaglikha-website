@@ -121,9 +121,8 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .field textarea:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
 
 /* dashboard: announcements and the community feed on the left, the personal tools on the right */
-.home-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:20px;align-items:stretch}
+.home-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:20px;align-items:start}
 .col-main,.col-side{display:flex;flex-direction:column;gap:16px;min-width:0}
-.col-main>.panel:last-child,.col-side>.panel:last-child{flex:1 1 auto}
 @media (max-width:960px){
   .home-grid{display:flex;flex-direction:column;align-items:stretch;gap:16px}
   .col-main,.col-side{display:contents}
