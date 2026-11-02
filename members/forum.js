@@ -295,6 +295,7 @@
       F.box = box;
       F.ctx = ctx;
       F.thread = null;
+      F.tab = ctx && ctx.tab ? ctx.tab : 'threads';
       box.onclick = onClick;
       if (!canModerate()) {
         box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Employee Forum</h2></div></div>' +

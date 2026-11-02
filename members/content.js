@@ -105,6 +105,7 @@
     cards.innerHTML = '';
     var res = await sb.from('content_items').select('deliverable,status').neq('kind', 'folder').limit(10000);
     if (cs.view !== 'home') return;
+    loadAttention(res.data || []);
     var counts = {};
     (res.data || []).forEach(function (r) {
       var c = counts[r.deliverable] || (counts[r.deliverable] = { published: 0, draft: 0, unpublished: 0, archived: 0 });
@@ -141,7 +142,61 @@
       }).join('') + '</ul>';
   }
 
-  function openSpecial(key) {
+  /* ---------- the "needs attention" strip: only what applies to this person ---------- */
+  function canModerate() { return state.isAdmin || myDept() === 'engagement'; }
+  function canReview() { return state.isAdmin || myDept() === 'staffing'; }
+  function manilaToday() { return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10); }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+
+  async function loadAttention(rows) {
+    var box = $('#cm-attn');
+    box.hidden = true;
+    var items = [];
+
+    /* drafts waiting, across every department; the button opens the department with the most */
+    var byDept = {}, total = 0;
+    rows.forEach(function (r) {
+      if (r.status !== 'draft' && r.status !== 'unpublished') return;
+      var d = deliverable(r.deliverable);
+      if (!d) return;
+      byDept[d.department] = (byDept[d.department] || 0) + 1;
+      total++;
+    });
+    if (total) {
+      var top = Object.keys(byDept).sort(function (a, b) { return byDept[b] - byDept[a]; })[0];
+      items.push({ icon: 'file', text: plural(total, 'draft is', 'drafts are') + ' waiting to be published', dept: top });
+    }
+
+    var extra = [];
+    if (canModerate()) {
+      extra.push(sb.from('forum_reports').select('id').eq('resolved', false).limit(500).then(function (r) {
+        var n = r.error || !r.data ? 0 : r.data.length;
+        if (n) items.push({ icon: 'flag', text: plural(n, 'forum report needs', 'forum reports need') + ' a moderator', special: 'forum', tab: 'reports' });
+      }));
+    }
+    if (canReview()) {
+      extra.push(Promise.all([
+        sb.rpc('employee_options'),
+        sb.from('attendance_records').select('employee_id,time_in').eq('work_date', manilaToday()).limit(5000)
+      ]).then(function (res) {
+        if (res[1].error || !Array.isArray(res[0].data)) return;
+        var active = res[0].data.filter(function (p) { return p.active; });
+        var timedIn = {};
+        (res[1].data || []).forEach(function (r) { if (r.time_in) timedIn[r.employee_id] = true; });
+        var missing = active.filter(function (p) { return !timedIn[p.id]; }).length;
+        if (active.length && missing) items.push({ icon: 'clock', text: missing + ' of ' + active.length + ' employees have not timed in today', special: 'attendance' });
+      }));
+    }
+    await Promise.all(extra);
+    if (cs.view !== 'home' || !items.length) return;
+    box.innerHTML = items.map(function (it, i) {
+      return '<button type="button" data-attn="' + i + '"><span class="ai">' + I(it.icon) + '</span><span class="at">' + esc(it.text) + '</span>' + I('chevron', 'go') + '</button>';
+    }).join('');
+    box._items = items;
+    box.hidden = false;
+  }
+
+  function openSpecial(key, tab) {
     var sp = SPECIAL[key];
     if (!sp || !window[sp[0]]) return;
     cs.view = 'special';
@@ -150,7 +205,7 @@
     $('#cm-browser').hidden = true;
     var box = $('#cm-special');
     box.hidden = false;
-    window[sp[0]].open(box, { back: function () { cs.special = ''; showHome(); } });
+    window[sp[0]].open(box, { tab: tab, back: function () { cs.special = ''; showHome(); } });
   }
 
   function openDeliverable(key) {
@@ -482,6 +537,13 @@
   }
 
   /* ---------- wiring ---------- */
+  $('#cm-attn').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-attn]');
+    var it = b && this._items && this._items[Number(b.dataset.attn)];
+    if (!it) return;
+    if (it.special) openSpecial(it.special, it.tab);
+    else if (it.dept) { cs.dept = it.dept; showHome(); }
+  });
   $('#cm-depts').addEventListener('click', function (e) {
     var b = e.target.closest('[data-dept]');
     if (!b) return;
