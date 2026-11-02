@@ -303,7 +303,7 @@
     if (!r.ok) { box.innerHTML = '<p class="fine">' + esc(r.data.error || "Couldn't load the replies.") + '</p>'; return; }
     box.innerHTML = r.data.posts.map(replyHtml).join('') + (r.data.thread.locked ? '<p class="fine" style="margin-top:8px">This thread is locked, so it cannot take new replies.</p>' :
       '<form class="rcmp" data-reply-form="' + esc(id) + '" novalidate><label class="sr-only" for="rb-' + esc(id) + '">Your reply</label><textarea id="rb-' + esc(id) + '" maxlength="2000" rows="1" placeholder="Write a reply…"></textarea>' +
-      IB('send', 'Send reply', { type: 'submit' }, 'solid') + '</form><p class="msg bad" role="alert" hidden style="margin-top:8px"></p>');
+      IB('send', 'Send reply', { 'data-send-reply': '1' }, 'solid') + '</form><p class="msg bad" role="alert" hidden style="margin-top:8px"></p>');
   }
 
   async function sendReply(form) {
@@ -558,6 +558,7 @@
     else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
     else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
     else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
+    else if ((t = e.target.closest('[data-send-reply]'))) sendReply(t.closest('form'));
     else if ((t = e.target.closest('[data-report-thread]'))) sendReport('thread', t.dataset.reportThread);
     else if ((t = e.target.closest('[data-report-post]'))) sendReport('post', t.dataset.reportPost);
     else if (e.target.closest('#ann-more')) { annShown = anns.length; renderAnnouncements(); }
