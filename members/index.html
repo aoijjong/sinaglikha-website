@@ -185,6 +185,8 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .pf-photo-actions .fine{margin:0}
 .field input[readonly]{background:#F4F0E8;border-color:rgba(74,46,34,.14);color:var(--muted);cursor:default}
 .field .fine{margin:8px 0 0}
+#form-profile .actions{gap:10px}
+#form-profile .actions .btn{padding:10px 14px}
 .pf-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:4px 0 22px}
 .pf-facts dt{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .pf-facts dd{margin:0;font-weight:600;color:var(--brown)}
@@ -416,8 +418,8 @@ dialog[open]{animation:pop .5s var(--ease)}
       </dl>
       <p class="msg" id="profile-msg" role="alert" hidden></p>
       <div class="actions">
-        <button class="btn btn-primary" type="submit" id="pf-save">Save changes</button>
-        <button class="link" type="button" id="pf-discard">Discard changes</button>
+        <button class="btn btn-primary btn-sm" type="submit" id="pf-save">Save changes</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="pf-discard">Discard changes</button>
       </div>
     </form>
 
@@ -427,7 +429,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <div class="field"><label for="np-new">New password</label><input id="np-new" type="password" autocomplete="new-password"></div>
       <div class="field"><label for="np-confirm">Confirm new password</label><input id="np-confirm" type="password" autocomplete="new-password"></div>
       <p class="msg" id="newpass-msg" role="alert" hidden></p>
-      <button class="btn btn-ghost" type="submit" id="np-save">Update password</button>
+      <button class="btn btn-ghost btn-sm" type="submit" id="np-save">Update password</button>
     </form>
   </section>
 </main>
