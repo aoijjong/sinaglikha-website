@@ -89,6 +89,15 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .panel-h h2{font-size:1.2rem}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px}
 .sec{font-size:1.4rem;margin:26px 0 12px}
+.att{padding:6px 22px 18px}
+.att-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.att-now b{font-family:var(--serif);font-weight:400;font-size:2.4rem;line-height:1;color:var(--brown)}
+.att-now span{color:var(--muted);font-size:.95rem}
+.att-status{margin:10px 0 14px;font-weight:600;color:var(--brown)}
+.att-btns{display:flex;gap:10px;flex-wrap:wrap}
+.att-btns .btn{flex:1 1 150px;padding:16px 22px;font-size:1rem}
+.att-btns .btn .icon{width:20px;height:20px}
+.att-btns .btn[disabled]{opacity:.45;cursor:not-allowed}
 .items .lrow{padding-inline:12px;flex-wrap:nowrap}
 .items .lmain{flex:1 1 auto}
 .items .lname{white-space:normal;overflow-wrap:anywhere}
@@ -173,6 +182,20 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
     <div class="ph" style="margin-bottom:20px"><div class="sbox" style="width:100%"><i data-icon="search"></i><input id="q" type="search" placeholder="Search the portal" aria-label="Search the portal" autocomplete="off"></div></div>
     <p class="msg bad" id="h-err" role="alert" hidden></p>
     <div id="home-main">
+      <div class="panel" id="att-panel" style="margin-bottom:16px" hidden>
+        <div class="panel-h"><span class="pi"><i data-icon="clock"></i></span><h2>My attendance</h2></div>
+        <div class="att">
+          <div class="att-now"><b id="att-clock"></b><span id="att-date"></span></div>
+          <p class="att-status" id="att-status" role="status"></p>
+          <div class="att-btns">
+            <button class="btn btn-primary" type="button" id="att-in"><i data-icon="clock"></i>Time In</button>
+            <button class="btn btn-ghost" type="button" id="att-out"><i data-icon="logout"></i>Time Out</button>
+          </div>
+          <p class="msg bad" id="att-msg" role="alert" hidden style="margin:12px 0 0"></p>
+        </div>
+        <ul class="items" id="att-recent"></ul>
+      </div>
+      <div class="panel" id="eval-panel" style="margin-bottom:16px" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>My evaluations</h2></div><ul class="items" id="evals"></ul></div>
       <div class="grid2">
         <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="chat"></i></span><h2>Announcements</h2></div><ul class="items" id="ann"></ul></div>
         <div class="panel"><div class="panel-h"><span class="pi"><i data-icon="calendar"></i></span><h2>Latest daily activity</h2></div><ul class="items" id="today"></ul></div>

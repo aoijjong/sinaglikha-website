@@ -222,8 +222,31 @@ async function loadEmployee(employeeNo) {
   return { emp, sec };
 }
 
+/* A short-lived link to one private file, made with the secret key. Returns null if it can't be made. */
+async function signUrl(bucket, filePath) {
+  const path = String(filePath).split('/').map(encodeURIComponent).join('/');
+  try {
+    const s = await fetch(`${URL_BASE}/storage/v1/object/sign/${bucket}/${path}`, {
+      method: 'POST',
+      headers: svc({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ expiresIn: 300 })
+    });
+    const data = s.ok ? await s.json() : null;
+    if (!data || !data.signedURL) return null;
+    const rel = data.signedURL.startsWith('/') ? data.signedURL : '/' + data.signedURL;
+    return rel.startsWith('/storage/v1/') ? `${URL_BASE}${rel}` : `${URL_BASE}/storage/v1${rel}`;
+  } catch {
+    return null;
+  }
+}
+
+/* Today's date in the Philippines (UTC+8), as 2026-11-02. Attendance days follow this clock. */
+function manilaDate(ms) {
+  return new Date((ms === undefined ? Date.now() : ms) + 8 * 3600000).toISOString().slice(0, 10);
+}
+
 module.exports = {
-  ID_RE, CODE_DAYS, ANON, URL_BASE,
+  ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
   setSession, clearSession, currentEmployee, ipHash, deviceBlocked, noteAttempt, noteFailure, isLocked,

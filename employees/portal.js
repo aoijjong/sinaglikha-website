@@ -16,7 +16,8 @@
     ['rewards', 'Total Rewards', 'award'], ['legal', 'Legal Compliance', 'scale']
   ];
   var me = null;
-  var content = { deliverables: [], items: [] };
+  var content = { deliverables: [], items: [], evaluations: [] };
+  var att = { today: '', records: [], unavailable: false };
   var esc = function (s) {
     return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   };
@@ -193,15 +194,88 @@
   async function loadContent() {
     var r = await call('GET', '/api/employee-content');
     if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { note('#h-err', r.data.error || "Couldn't load the portal content."); content = { deliverables: [], items: [] }; }
-    else { note('#h-err', ''); content = { deliverables: r.data.deliverables || [], items: r.data.items || [] }; }
+    if (!r.ok) { note('#h-err', r.data.error || "Couldn't load the portal content."); content = { deliverables: [], items: [], evaluations: [] }; }
+    else { note('#h-err', ''); content = { deliverables: r.data.deliverables || [], items: r.data.items || [], evaluations: r.data.evaluations || [] }; }
     renderHome();
+    renderEvaluations();
     loadRecords();
+    loadAttendance();
   }
+
+  /* ---------- evaluations: links to the forms that are open today ---------- */
+  var EVAL_KINDS = [['self', 'Self evaluation'], ['peer', 'Peer evaluation'], ['manager', 'Manager evaluation']];
+  function renderEvaluations() {
+    var list = content.evaluations || [];
+    $('#eval-panel').hidden = !list.length;
+    var html = '';
+    EVAL_KINDS.forEach(function (k) {
+      list.filter(function (e) { return e.kind === k[0]; }).forEach(function (e) {
+        var meta = [k[1], e.closes_on ? 'Open until ' + fmtDate(e.closes_on + 'T00:00:00+08:00') : ''].filter(Boolean).join(' · ');
+        html += '<li class="lrow"><button class="lmain" type="button" data-form="' + esc(e.url) + '" aria-label="Open ' + esc(e.title) + '">' +
+          '<span class="lico">' + I('clipboard') + '</span><span class="ltext"><span class="lname">' + esc(e.title) + '</span><span class="lmeta">' + esc(meta) + '</span>' +
+          (e.instructions ? '<span class="ldesc">' + esc(e.instructions) + '</span>' : '') + '</span></button>' + I('external', 'lgo') + '</li>';
+      });
+    });
+    $('#evals').innerHTML = html;
+  }
+
+  /* ---------- attendance: time in and time out ---------- */
+  var TZ = { timeZone: 'Asia/Manila' };
+  function fmtTime(iso) {
+    return new Date(iso).toLocaleTimeString('en-PH', Object.assign({ hour: 'numeric', minute: '2-digit' }, TZ));
+  }
+  function fmtDay(workDate) {
+    return new Date(workDate + 'T00:00:00+08:00').toLocaleDateString('en-PH', Object.assign({ weekday: 'short', month: 'short', day: 'numeric' }, TZ));
+  }
+  function tickClock() {
+    var now = new Date();
+    $('#att-clock').textContent = now.toLocaleTimeString('en-PH', Object.assign({ hour: 'numeric', minute: '2-digit' }, TZ));
+    $('#att-date').textContent = now.toLocaleDateString('en-PH', Object.assign({ weekday: 'long', month: 'long', day: 'numeric' }, TZ)) + ' · Philippine time';
+  }
+  setInterval(tickClock, 20000);
+
+  function renderAttendance() {
+    $('#att-panel').hidden = att.unavailable;
+    if (att.unavailable) return;
+    tickClock();
+    var rec = att.records.filter(function (r) { return r.work_date === att.today; })[0];
+    var inAt = rec && rec.time_in, outAt = rec && rec.time_out;
+    $('#att-status').textContent = !inAt ? "You haven't timed in yet today."
+      : !outAt ? 'Timed in at ' + fmtTime(rec.time_in) + '. Remember to time out at the end of your day.'
+      : 'Timed in ' + fmtTime(rec.time_in) + ' · Timed out ' + fmtTime(rec.time_out) + '. Thank you for today.';
+    $('#att-in').disabled = !!inAt;
+    $('#att-out').disabled = !inAt || !!outAt;
+    $('#att-recent').innerHTML = att.records.slice(0, 7).map(function (r) {
+      var chip = r.time_in && r.time_out ? ['s-published', 'Complete'] : r.work_date === att.today ? ['s-draft', 'Today'] : ['s-archived', 'No time out'];
+      return '<li class="lrow"><div class="lmain" style="cursor:default"><span class="ltext"><span class="lname">' + esc(fmtDay(r.work_date)) + '</span><span class="lmeta">' +
+        esc((r.time_in ? fmtTime(r.time_in) : '—') + ' to ' + (r.time_out ? fmtTime(r.time_out) : '—')) + '</span></span></div>' +
+        '<span class="chip ' + chip[0] + '" style="margin-right:6px">' + chip[1] + '</span></li>';
+    }).join('');
+  }
+
+  async function loadAttendance() {
+    var r = await call('GET', '/api/employee-attendance');
+    if (r.status === 401) { show('signin'); return; }
+    att = r.ok ? { today: r.data.today, records: r.data.records || [], unavailable: !!r.data.unavailable } : { today: '', records: [], unavailable: true };
+    renderAttendance();
+  }
+
+  async function punch(action) {
+    var btn = $(action === 'in' ? '#att-in' : '#att-out');
+    note('#att-msg', '');
+    btn.disabled = true;
+    var r = await call('POST', '/api/employee-attendance', { action: action });
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) note('#att-msg', r.data.error || "Couldn't record that. Try again.");
+    else toast(action === 'in' ? 'Timed in at ' + fmtTime(r.data.record.time_in) + '.' : 'Timed out at ' + fmtTime(r.data.record.time_out) + '.');
+    await loadAttendance();
+  }
+  $('#att-in').addEventListener('click', function () { punch('in'); });
+  $('#att-out').addEventListener('click', function () { punch('out'); });
 
   /* the employee's own compensation records, if Total Rewards has uploaded any */
   async function loadRecords() {
-    var r = await call('GET', '/api/employee-records');
+    var r = await call('GET', '/api/employee-content?records=1');
     var list = r.ok && Array.isArray(r.data.records) ? r.data.records : [];
     $('#rec-panel').hidden = !list.length;
     $('#recs').innerHTML = list.map(function (x) {
@@ -220,9 +294,10 @@
   }
 
   document.addEventListener('click', function (e) {
-    var open = e.target.closest('[data-open]'), tile = e.target.closest('[data-dept]'), rec = e.target.closest('[data-rec]');
-    if (open) openUrl('/api/employee-file?id=' + encodeURIComponent(open.dataset.open));
-    else if (rec) openUrl('/api/employee-record-file?id=' + encodeURIComponent(rec.dataset.rec));
+    var open = e.target.closest('[data-open]'), tile = e.target.closest('[data-dept]'), rec = e.target.closest('[data-rec]'), form = e.target.closest('[data-form]');
+    if (form) { if (/^https?:\/\//i.test(form.dataset.form)) window.open(form.dataset.form, '_blank', 'noopener'); }
+    else if (open) openUrl('/api/employee-content?file=' + encodeURIComponent(open.dataset.open));
+    else if (rec) openUrl('/api/employee-content?record=' + encodeURIComponent(rec.dataset.rec));
     else if (tile) openDept(tile.dataset.dept);
   });
   $('#q').addEventListener('input', renderSearch);
@@ -324,7 +399,7 @@
     note('#p-msg', '');
     var btn = $('#p-ok');
     busy(btn, true, 'Save New PIN');
-    var res = await call('POST', '/api/employee-pin', { current: cur, next: next });
+    var res = await call('POST', '/api/employee-me', { action: 'pin', current: cur, next: next });
     busy(btn, false, 'Save New PIN');
     $('#p-cur').value = $('#p-new').value = $('#p-new2').value = '';
     if (!res.ok) {
@@ -337,7 +412,7 @@
   });
 
   async function signOut() {
-    await call('POST', '/api/employee-logout');
+    await call('POST', '/api/employee-me', { action: 'logout' });
     me = null;
     note('#s-msg', '');
     show('signin');

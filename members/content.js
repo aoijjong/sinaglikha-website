@@ -25,10 +25,12 @@
   var DEPT_ICON = { staffing: 'users', training: 'book', engagement: 'chat', rewards: 'award', legal: 'scale' };
   var KIND_ICON = { document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
+  /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
+  var SPECIAL = { attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms for employees'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
-  var cs = { ready: false, loading: null, deliverables: [], dept: '', key: '', path: [], items: [], q: '', show: 'all', token: 0, timer: null, failed: false, view: 'home' };
+  var cs = { ready: false, loading: null, deliverables: [], dept: '', key: '', path: [], items: [], q: '', show: 'all', token: 0, timer: null, failed: false, view: 'home', special: '' };
 
   function busy(text) {
     var b = $('#cm-busy');
@@ -60,6 +62,7 @@
   async function showHome() {
     cs.view = 'home';
     $('#cm-browser').hidden = true;
+    $('#cm-special').hidden = true;
     $('#cm-home').hidden = false;
     var pills = $('#cm-depts'), cards = $('#cm-cards');
     if (!cs.deliverables.length) {
@@ -83,6 +86,11 @@
     });
     cards.innerHTML = cs.deliverables.filter(function (d) { return d.department === cs.dept; }).map(function (d) {
       var icon = '<span class="di">' + I(KIND_ICON[d.kind] || 'file') + '</span>';
+      var sp = SPECIAL[d.key];
+      if (sp && window[sp[0]]) {
+        return '<button class="dcard" type="button" data-special="' + esc(d.key) + '">' + icon + '<span class="dt"><b>' + esc(d.name) +
+          '</b><span class="dm">' + esc(sp[1]) + '</span></span>' + I('chevron', 'go') + '</button>';
+      }
       if (d.kind === 'special') {
         return '<button class="dcard" type="button" disabled>' + icon + '<span class="dt"><b>' + esc(d.name) + '</b><span class="dm">Coming soon</span></span></button>';
       }
@@ -93,6 +101,18 @@
       return '<button class="dcard" type="button" data-open="' + esc(d.key) + '">' + icon + '<span class="dt"><b>' + esc(d.name) +
         '</b><span class="dm">' + esc(parts.length ? parts.join(' · ') : 'Nothing yet') + '</span></span>' + I('chevron', 'go') + '</button>';
     }).join('');
+  }
+
+  function openSpecial(key) {
+    var sp = SPECIAL[key];
+    if (!sp || !window[sp[0]]) return;
+    cs.view = 'special';
+    cs.special = key;
+    $('#cm-home').hidden = true;
+    $('#cm-browser').hidden = true;
+    var box = $('#cm-special');
+    box.hidden = false;
+    window[sp[0]].open(box, { back: function () { cs.special = ''; showHome(); } });
   }
 
   function openDeliverable(key) {
@@ -431,6 +451,8 @@
     showHome();
   });
   $('#cm-cards').addEventListener('click', function (e) {
+    var s = e.target.closest('[data-special]');
+    if (s) { openSpecial(s.dataset.special); return; }
     var b = e.target.closest('[data-open]');
     if (b) openDeliverable(b.dataset.open);
   });
@@ -512,11 +534,14 @@
         }
         await cs.loading;
       }
-      if (cs.view === 'browser' && cs.key) await load(); else await showHome();
+      if (cs.view === 'special' && cs.special) openSpecial(cs.special);
+      else if (cs.view === 'browser' && cs.key) await load();
+      else await showHome();
     },
     /* called when someone signs out, so the next person starts clean */
     reset: function () {
-      cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = ''; cs.view = 'home'; cs.show = 'all';
+      cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = ''; cs.view = 'home'; cs.show = 'all'; cs.special = '';
+      $('#cm-special').innerHTML = '';
       $('#cm-search').value = '';
       $('#cm-rows').innerHTML = '';
       $('#cm-cards').innerHTML = '';

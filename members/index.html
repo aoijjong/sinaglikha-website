@@ -241,6 +241,22 @@ dialog:not(.viewer){max-height:calc(100dvh - 24px);overflow-y:auto}
 @media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
 
 /* employee directory */
+#att-form,#ev-form{padding:clamp(22px,4vw,32px)}
+#att-form h2,#ev-form h2{font-size:1.5rem;margin-bottom:14px}
+#att-form .field input,#ev-form .field input,#ev-form .field select{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
+#att-form .field textarea,#ev-form .field textarea{width:100%;min-height:72px;resize:vertical;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+#att-form .actions,#ev-form .actions{justify-content:flex-end;margin-top:14px}
+.sp-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.sp-controls input[type=date]{height:44px;padding:0 14px;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--ink);font:inherit}
+.sp-sum{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.sp-note{background:rgba(248,238,174,.6);border-radius:14px;padding:12px 14px;font-size:.93rem;color:var(--brown);margin:0 0 14px}
+.chip.t-complete{background:#E3F3E4;color:#1E6B2A}
+.chip.t-working{background:#DCEBFA;color:#1B4B7A}
+.chip.t-incomplete{background:#FFF0B0;color:#6B4E00}
+.chip.t-none{background:#EFEAE4;color:#5A4538}
+.chip.t-open{background:#E3F3E4;color:#1E6B2A}
+.chip.t-closed{background:#F1E6E2;color:#8A3B2B}
+.chip.t-off{background:#EFEAE4;color:#5A4538}
 #rec-form{padding:clamp(22px,4vw,32px)}
 #rec-form h2{font-size:1.5rem;margin-bottom:14px}
 #rec-form .field select,#rec-form .field input[type=file]{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
@@ -519,6 +535,7 @@ dialog[open]{animation:pop .5s var(--ease)}
           <div class="busy" id="cm-busy" hidden role="status">Loading…</div>
         </div>
       </div>
+      <div id="cm-special" hidden></div>
     </div>
 
     <div id="panel-employees" role="tabpanel" aria-labelledby="tab-employees" hidden>
@@ -713,6 +730,40 @@ dialog[open]{animation:pop .5s var(--ease)}
   </form>
 </dialog>
 
+<dialog id="att-dlg" aria-labelledby="at-title">
+  <form id="att-form" novalidate>
+    <h2 id="at-title">Correct Attendance</h2>
+    <p class="fine" id="at-who" style="margin:-6px 0 14px"></p>
+    <div class="field"><label for="at-date">Date</label><input id="at-date" type="date"></div>
+    <div class="field"><label for="at-in">Time In</label><input id="at-in" type="time"></div>
+    <div class="field"><label for="at-out">Time Out</label><input id="at-out" type="time"></div>
+    <div class="field"><label for="at-note">Note (Optional)</label><textarea id="at-note" maxlength="500" placeholder="Why is this being changed?"></textarea></div>
+    <p class="fine">Times are Philippine time. Every correction is written to the activity log.</p>
+    <p class="msg bad" id="at-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="at-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="at-ok">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="ev-dlg" aria-labelledby="ev-title">
+  <form id="ev-form" novalidate>
+    <h2 id="ev-title">Evaluation Form</h2>
+    <div class="field"><label for="ev-kind">Type</label><select id="ev-kind"><option value="self">Self evaluation</option><option value="peer">Peer evaluation</option><option value="manager">Manager evaluation</option></select></div>
+    <div class="field"><label for="ev-name">Title</label><input id="ev-name" type="text" maxlength="160" autocomplete="off" placeholder="For example Q4 Self Evaluation"></div>
+    <div class="field"><label for="ev-url">Link to the Form</label><input id="ev-url" type="url" inputmode="url" placeholder="https://" autocomplete="off"></div>
+    <div class="field"><label for="ev-inst">Instructions (Optional)</label><textarea id="ev-inst" maxlength="2000"></textarea></div>
+    <div class="field"><label for="ev-opens">Opens On (Optional)</label><input id="ev-opens" type="date"></div>
+    <div class="field"><label for="ev-closes">Closes On (Optional)</label><input id="ev-closes" type="date"></div>
+    <p class="msg bad" id="ev-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="ev-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="ev-ok">Save</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="rec-dlg" aria-labelledby="rd-title">
   <form id="rec-form" novalidate>
     <h2 id="rd-title">Upload Record</h2>
@@ -751,5 +802,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 <script src="content.js"></script>
 <script src="employees.js"></script>
 <script src="records.js"></script>
+<script src="attendance.js"></script>
+<script src="evaluations.js"></script>
 </body>
 </html>
