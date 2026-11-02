@@ -75,6 +75,24 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .msg.ok{background:#EAF6EC;color:#1E5B2B}
 .actions{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px}
 .actions .btn{min-width:220px}
+/* sign-in layout: the same as the Senior Manager sign-in */
+.auth{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:stretch;max-width:980px;margin-inline:auto}
+.auth>*{min-width:0}
+.auth-intro{border-radius:28px;padding:clamp(28px,5vw,52px);background:var(--soft-warm);border:1px solid rgba(74,46,34,.08);display:flex;flex-direction:column;justify-content:flex-end;gap:14px;min-height:300px}
+.auth-mark{width:84px;height:84px;border-radius:50%;margin-bottom:auto;box-shadow:var(--shadow)}
+.auth-intro h1{font-size:clamp(2.2rem,4.6vw,3.4rem)}
+.auth-intro p{color:#5A4538;max-width:34ch}
+.auth .card{margin-bottom:0}
+.auth .card h2{font-size:1.7rem;margin-bottom:18px}
+.auth .card .lead{margin:-6px 0 18px}
+@media (max-width:820px){.auth{grid-template-columns:minmax(0,1fr)}.auth-intro{min-height:0;gap:10px}}
+@media (max-width:700px){
+  .auth{gap:16px}
+  .auth-intro{min-height:0;padding:18px 20px;flex-direction:row;align-items:center;gap:16px;border-radius:22px}
+  .auth-mark{width:54px;height:54px;margin:0;flex:none}
+  .auth-intro h1{font-size:1.45rem}
+  .auth-intro p{display:none}
+}
 .who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
 .who-switch>*{text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:background .4s,color .4s}
 .who-switch [aria-current="true"]{background:var(--brown);color:var(--paper)}
@@ -147,14 +165,18 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 
   <section id="v-loading" class="center" aria-live="polite"><div class="spinner" role="status"><span class="sr-only">Loading</span></div></section>
 
-  <section id="v-signin" class="narrow" hidden>
+  <section id="v-signin" class="auth" hidden>
+    <div class="auth-intro">
+      <img class="auth-mark" src="../assets/sinaglikha-mark.png" alt="" width="512" height="512">
+      <h1>Welcome to SINAGLIKHA</h1>
+      <p>One place for our Senior Managers and employees. Choose who you are, then sign in.</p>
+    </div>
     <form class="card" id="f-signin" novalidate>
       <div class="who-switch" role="group" aria-label="Who is signing in">
         <a href="../members/">Senior Manager</a>
         <span aria-current="true">Employee</span>
       </div>
-      <h1>Welcome Back</h1>
-      <p class="lead">Sign in with your Employee ID and your PIN.</p>
+      <h2>Sign In</h2>
       <div class="field"><label for="s-no">Employee ID</label><input id="s-no" type="text" inputmode="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
       <div class="field"><label for="s-pin">PIN</label><input id="s-pin" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]*" placeholder="••••••"></div>
       <p class="msg bad" id="s-msg" role="alert" hidden></p>
@@ -162,17 +184,22 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
         <button class="btn btn-primary" type="submit" id="s-ok">Sign In</button>
         <button class="link" type="button" id="to-activate">First time here?</button>
       </div>
-      <p class="fine" style="text-align:center;margin-top:16px">Lost your PIN? Ask Staffing and Recruitment for a new activation code.</p>
+      <p class="fine" style="text-align:center;margin-top:18px">Lost your PIN? Ask Staffing and Recruitment for a new activation code.</p>
     </form>
   </section>
 
-  <section id="v-activate" class="narrow" hidden>
+  <section id="v-activate" class="auth" hidden>
+    <div class="auth-intro">
+      <img class="auth-mark" src="../assets/sinaglikha-mark.png" alt="" width="512" height="512">
+      <h1>Welcome to SINAGLIKHA</h1>
+      <p>One place for our Senior Managers and employees. Choose who you are, then sign in.</p>
+    </div>
     <form class="card" id="f-activate" novalidate>
       <div class="who-switch" role="group" aria-label="Who is signing in">
         <a href="../members/">Senior Manager</a>
         <span aria-current="true">Employee</span>
       </div>
-      <h1>Choose Your PIN</h1>
+      <h2>Choose Your PIN</h2>
       <p class="lead">Use the Employee ID and activation code Staffing and Recruitment gave you, then pick a 6-digit PIN that only you know.</p>
       <div class="field"><label for="a-no">Employee ID</label><input id="a-no" type="text" autocomplete="username" autocapitalize="characters" placeholder="SNG-0001" maxlength="8"></div>
       <div class="field"><label for="a-code">Activation Code</label><input id="a-code" type="text" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" maxlength="10"></div>
