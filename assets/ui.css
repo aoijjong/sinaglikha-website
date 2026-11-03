@@ -263,8 +263,21 @@ button.lmain{cursor:pointer}
 .lname{font-family:var(--serif);font-weight:400;font-size:1.12rem;line-height:1.25;color:var(--brown)}
 .lmeta{font-size:.88rem}
 .dpanel{background:none;border:0;box-shadow:none;overflow:visible}
-.dp-head{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);margin-bottom:10px}
-.dp-head .di{background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.6)}
+.dp-head{flex-wrap:wrap;padding:22px 24px;background:linear-gradient(135deg,#FFF4C9 0%,#FCD9A0 60%,#F8BE8E 100%);border:1px solid rgba(232,112,26,.18);border-radius:26px;box-shadow:0 18px 34px -20px rgba(200,90,20,.5);margin-bottom:12px}
+.dp-head .di{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.7);color:#B3361A;box-shadow:none}
+.dp-head .di .icon{width:24px;height:24px;stroke-width:1.6}
+.dp-head .dp-title h2{color:var(--brown)}
+.dp-head .dp-title p{color:#5A4538}
+.dp-head .dp-sum{background:rgba(255,255,255,.65);color:var(--brown);padding:7px 15px;border-radius:999px;text-align:center;white-space:nowrap}
+.dp-switch{flex:0 0 100%;margin-top:6px;padding-top:14px;border-top:1px solid rgba(74,46,34,.12)}
+.dp-tabs{margin:0;gap:8px}
+.dp-tabs .pill{background:rgba(255,255,255,.7)}
+.dp-tabs .pill[aria-pressed="true"]{background:var(--brown)}
+.dp-pick{display:none}
+.dp-pick select{width:100%;appearance:none;-webkit-appearance:none;border-radius:999px;border:1px solid rgba(74,46,34,.18);padding:12px 46px 12px 18px;font:inherit;font-weight:700;color:var(--brown);cursor:pointer;background:rgba(255,255,255,.85) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A2E22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center/18px}
+.dp-pick select:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15)}
+@media (max-width:760px){.dp-tabs{display:none}.dp-pick{display:block}}
+@media (max-width:640px){.dp-head{padding:18px 18px}.dp-head .dp-title{flex:1 1 calc(100% - 72px)}.dp-head .dp-sum{width:auto;margin-left:70px;text-align:center}}
 .dpanel .rows{display:grid}
 .dpanel .lrow{padding:14px 18px 14px 14px}
 .list-card>.es{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}

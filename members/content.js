@@ -100,9 +100,14 @@
     var mine = myDept();
     var order = DEPT_ORDER.slice();
     if (mine && order.indexOf(mine) > 0) { order.splice(order.indexOf(mine), 1); order.unshift(mine); }
-    pills.innerHTML = order.map(function (d) {
+    // the department switcher lives inside the department's header card: pills on wide screens, a dropdown on narrow ones
+    pills.innerHTML = '';
+    pills.hidden = true;
+    var switcher = '<div class="dp-switch"><div class="dp-tabs pills" role="group" aria-label="Departments">' + order.map(function (d) {
       return '<button class="pill" type="button" data-dept="' + d + '" aria-pressed="' + (d === cs.dept) + '">' + I(DEPT_ICON[d]) + esc(app.depts[d] || d) + '</button>';
-    }).join('');
+    }).join('') + '</div><label class="dp-pick"><span class="sr-only">Department</span><select data-deptsel aria-label="Switch department">' + order.map(function (d) {
+      return '<option value="' + d + '"' + (d === cs.dept ? ' selected' : '') + '>' + esc(app.depts[d] || d) + '</option>';
+    }).join('') + '</select></label></div>';
     cards.innerHTML = '';
     var res = await sb.from('content_items').select('deliverable,status').neq('kind', 'folder').limit(10000);
     if (cs.view !== 'home') return;
@@ -124,7 +129,7 @@
     if (pub) summary.push(pub + ' published');
     if (drafts) summary.push(drafts + (drafts === 1 ? ' draft waiting' : ' drafts waiting'));
     cards.innerHTML = '<div class="dp-head"><span class="di">' + I(DEPT_ICON[cs.dept]) + '</span><div class="dp-title"><h2>' + esc(app.depts[cs.dept] || cs.dept) + '</h2>' +
-      '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div><ul class="rows">' +
+      '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span>' + switcher + '</div><ul class="rows">' +
       list.map(function (d) {
         var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
         var sp = SPECIAL[d.key], special = !!(sp && window[sp[0]]);
@@ -547,13 +552,14 @@
     if (it.special) openSpecial(it.special, it.tab);
     else if (it.dept) { cs.dept = it.dept; showHome(); }
   });
-  $('#cm-depts').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-dept]');
-    if (!b) return;
-    cs.dept = b.dataset.dept;
+  $('#cm-cards').addEventListener('change', function (e) {
+    if (!e.target.matches('[data-deptsel]')) return;
+    cs.dept = e.target.value;
     showHome();
   });
   $('#cm-cards').addEventListener('click', function (e) {
+    var d = e.target.closest('[data-dept]');
+    if (d) { cs.dept = d.dataset.dept; showHome(); return; }
     var s = e.target.closest('[data-special]');
     if (s) { openSpecial(s.dataset.special); return; }
     var b = e.target.closest('[data-open]');
