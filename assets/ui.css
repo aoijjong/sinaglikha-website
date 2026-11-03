@@ -246,7 +246,18 @@ button.lmain{cursor:pointer}
 /* pill cards: every list row is a rounded card of its own, with a glowing icon tile, a serif title and a soft arrow */
 .rows,.items{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .lrow,.lrow:first-child{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:12px 18px 12px 12px;transition:transform .5s var(--ease),border-color .4s,box-shadow .4s}
-@media (hover:hover) and (pointer:fine){.lrow:hover{background:#fff;transform:translateY(-2px);border-color:rgba(206,32,32,.35)}}
+.lrow{position:relative;overflow:hidden}
+.lrow::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--ease);pointer-events:none}
+.lico,.lrow .go,.lrow .lgo{transition:transform .6s var(--ease)}
+@media (hover:hover) and (pointer:fine){
+  .lrow:hover{background:#fff;transform:translateY(-3px);border-color:rgba(206,32,32,.3);box-shadow:var(--shadow-lg)}
+  .lrow:hover::after{transform:none}
+  .lrow:hover .lico{transform:scale(1.07) rotate(-5deg)}
+  .lrow:hover .go,.lrow:hover .lgo{transform:translateX(5px)}
+}
+.lrow:active{transform:translateY(-1px) scale(.992)}
+.lrow:active::after{transform:none;transition-duration:.3s}
+@media (prefers-reduced-motion:reduce){.lrow,.lrow::after,.lico{transition:none}}
 .lico,.lico.folder{width:48px;height:48px;border-radius:16px;background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.6)}
 .lico .icon{width:24px;height:24px}
 .lname{font-family:var(--serif);font-weight:400;font-size:1.12rem;line-height:1.25;color:var(--brown)}
