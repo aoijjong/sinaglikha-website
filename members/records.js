@@ -63,9 +63,12 @@
   }
 
   function drawKinds() {
-    $('#rc-kind').innerHTML = viewKinds().map(function (k) {
+    var ks = viewKinds();
+    // wide screens: pills; phones: one dropdown (the CSS shows one and hides the other)
+    $('#rc-kind').innerHTML = ks.map(function (k) {
       return '<button class="pill" type="button" data-kind="' + k + '" aria-pressed="' + (rc.kind === k) + '">' + KINDS[k] + '</button>';
-    }).join('');
+    }).join('') + '<label class="dp-pick"><span class="sr-only">Type of record</span><select data-kindsel aria-label="Type of record">' +
+      ks.map(function (k) { return '<option value="' + k + '"' + (rc.kind === k ? ' selected' : '') + '>' + KINDS[k] + '</option>'; }).join('') + '</select></label>';
     // Evaluation Results: the evaluations written on the site, by category, then the uploaded files
     var sub = $('#rc-evsub');
     sub.hidden = rc.kind !== 'evaluation';
@@ -246,6 +249,12 @@
     var b = e.target.closest('[data-kind]');
     if (!b) return;
     rc.kind = b.dataset.kind;
+    drawKinds();
+    load();
+  });
+  $('#rc-kind').addEventListener('change', function (e) {
+    if (!e.target.matches('[data-kindsel]')) return;
+    rc.kind = e.target.value;
     drawKinds();
     load();
   });

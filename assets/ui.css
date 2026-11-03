@@ -319,6 +319,6 @@ button.lmain{cursor:pointer}
   input,select,textarea{font-size:16px!important}
   body{overflow-x:clip}
   /* Records types: three equal pills on one row */
-  #rc-kind{flex-wrap:nowrap;gap:6px}
-  #rc-kind .pill{flex:1 1 0;min-width:0;justify-content:center;text-align:center;padding:8px 6px;font-size:.88rem;line-height:1.15;white-space:normal}
+  #rc-kind .pill{display:none}
+  #rc-kind .dp-pick{display:block;width:100%}
 }
