@@ -69,7 +69,6 @@
     }
     return '<div class="gf-scale" role="group" aria-label="' + esc(q.title) + '">' + (lo ? '<span class="gf-end">' + esc(lo) + '</span>' : '') + html +
       (hi ? '<span class="gf-end">' + esc(hi) + '</span>' : '') + '</div>' +
-      '<div class="gf-pick">' + esc(q.rating ? nameOf(q, f, Number(q.rating)) : '') + '</div>' +
       '<div class="gf-ans"><input type="text" data-k="comment" maxlength="1000" placeholder="Comment (optional)" value="' + esc(q.comment) + '"' + dis + '></div>';
   }
 
@@ -139,8 +138,6 @@
           var m = Number(x.getAttribute('data-n'));
           x.setAttribute('aria-pressed', String(t === 'stars' ? Number(h.q.rating) >= m : Number(h.q.rating) === m));
         });
-        var pk = h.card.querySelector('.gf-pick');
-        if (pk) pk.textContent = h.q.rating ? nameOf(h.q, getF(), Number(h.q.rating)) : '';
       } else if (b.hasAttribute('data-pick')) {
         var o = b.getAttribute('data-pick'), on = picked(h.q).slice(), at = on.indexOf(o);
         if (t === 'checkbox') { if (at === -1) on.push(o); else on.splice(at, 1); }
