@@ -8,7 +8,7 @@
                                                feed and the announcements
   GET /api/employee-content                    just the content
   GET /api/employee-content?file=<item id>     a 5-minute link to open one Published item (links go straight to
-                                               their web address)
+                                               their web address); add &dl=1 for a link that saves the file
   GET /api/employee-content?ann=<id>&i=<n>     a 5-minute link to open file number n attached to an announcement
   GET /api/employee-content?records=1          the employee's OWN compensation records (title, period, date)
   GET /api/employee-content?record=<id>        a 5-minute link to open one of their OWN compensation records
@@ -103,7 +103,7 @@ module.exports = async function handler(req, res) {
   if (q.file !== undefined) {
     const id = String(q.file);
     if (!UUID_RE.test(id)) return E.send(res, 400, { error: 'Bad request.' });
-    const r = await E.rest('GET', `content_items?id=eq.${id}&status=eq.published&audience=in.(employees,public)&select=kind,file_path,external_url`);
+    const r = await E.rest('GET', `content_items?id=eq.${id}&status=eq.published&audience=in.(employees,public)&select=kind,file_path,external_url,title`);
     const item = r.ok && Array.isArray(r.data) && r.data[0];
     const gone = { error: "That item isn't available any more." };
     if (!item) return E.send(res, 404, gone);
@@ -112,8 +112,9 @@ module.exports = async function handler(req, res) {
       return E.send(res, 200, { url: item.external_url });
     }
     if (!item.file_path) return E.send(res, 404, gone);
-    const url = await E.signUrl('content', item.file_path);
+    let url = await E.signUrl('content', item.file_path);
     if (!url) return E.send(res, 502, { error: "Couldn't open that file. Try again in a moment." });
+    if (q.dl !== undefined) url += (url.indexOf('?') === -1 ? '?' : '&') + 'download=' + encodeURIComponent(item.title || '');
     return E.send(res, 200, { url });
   }
 
