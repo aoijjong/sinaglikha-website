@@ -239,6 +239,18 @@ button.dpill{cursor:pointer}
 .items .lmain{flex:1 1 auto}
 .items .lname{white-space:normal;overflow-wrap:anywhere}
 .items .none{padding:14px 20px 18px;color:var(--muted);font-size:.95rem}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:40;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg,0 18px 40px -16px rgba(74,46,34,.35));padding:6px;max-height:340px;overflow:auto;margin:0;list-style:none}
+.sug li{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:14px;cursor:pointer}
+.sug li[aria-selected="true"]{background:var(--cream)}
+@media (hover:hover) and (pointer:fine){.sug li:hover{background:var(--cream)}}
+.sug .sico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--cream);color:#C8321A;font-size:.66rem;font-weight:700;letter-spacing:.04em}
+.sug .stxt{display:flex;flex-direction:column;min-width:0;text-align:left}
+.sug .sname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sug .spath{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sug mark{background:rgba(255,203,27,.5);color:inherit;border-radius:4px;padding:0 1px}
+.sug .sall{justify-content:center;font-weight:700;color:var(--brown)}
+.sug .icon{position:static;transform:none;width:18px;height:18px;stroke:currentColor}
+.sug .snote{cursor:default;color:var(--muted);padding:14px 12px}
 .lgo{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-right:6px}
 .ldesc{font-size:.88rem;color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .back-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
@@ -325,7 +337,7 @@ button.dpill{cursor:pointer}
 
   <section id="v-home" hidden>
     <div class="hello"><h1 id="h-hello"></h1><p id="h-sub"></p></div>
-    <div class="sbox" style="width:100%;margin-bottom:18px"><i data-icon="search"></i><input id="q" type="search" placeholder="Search files and documents" aria-label="Search files and documents" autocomplete="off"></div>
+    <div class="sbox" style="width:100%;margin-bottom:18px"><i data-icon="search"></i><input id="q" type="search" placeholder="Search files and documents" aria-label="Search files and documents" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="q-sug" aria-autocomplete="list" enterkeyhint="search"><ul class="sug" id="q-sug" role="listbox" hidden></ul></div>
     <p class="msg bad" id="h-err" role="alert" hidden></p>
     <div id="home-main" class="home-grid">
       <div class="col-main">

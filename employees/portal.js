@@ -394,11 +394,40 @@
   }
 
   /* ---------- search over files and documents ---------- */
+  var searching = false, sugRows = [], sugAt = -1;
+  function hay(i) { return (i.title + ' ' + i.description + ' ' + i.category + ' ' + nameOf(i.deliverable)).toLowerCase(); }
+  function mark(text, q) {
+    var i = text.toLowerCase().indexOf(q);
+    return i < 0 ? esc(text) : esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+  }
+  function hideSuggest() {
+    $('#q-sug').hidden = true; $('#q').setAttribute('aria-expanded', 'false'); sugAt = -1;
+  }
+  /* a short dropdown under the search box; Enter or "See all results" opens the full list */
+  function suggest() {
+    var raw = $('#q').value.trim(), q = raw.toLowerCase(), box = $('#q-sug');
+    if (!q || searching) { hideSuggest(); return; }
+    var found = content.items.filter(function (i) { return hay(i).indexOf(q) !== -1; });
+    sugAt = -1;
+    sugRows = found.slice(0, 6);
+    box.innerHTML = found.length
+      ? sugRows.map(function (i, n) {
+        return '<li role="option" id="sg' + n + '" data-open="' + esc(i.id) + '"><span class="sico">' + (i.kind === 'link' ? I('link') : esc(extOf(i.title))) + '</span>' +
+          '<span class="stxt"><span class="sname">' + mark(i.title, q) + '</span><span class="spath">' + esc(nameOf(i.deliverable) || 'File') + '</span></span></li>';
+      }).join('') + (found.length > sugRows.length ? '<li class="sall" role="option" data-all="1">See all ' + found.length + ' results</li>' : '')
+      : '<li class="snote" role="presentation">Nothing matches "' + esc(raw) + '".</li>';
+    box.hidden = false;
+    $('#q').setAttribute('aria-expanded', 'true');
+  }
+  function runSearch() { searching = true; hideSuggest(); renderSearch(); }
+
   function renderSearch() {
     var q = $('#q').value.trim().toLowerCase();
-    $('#home-main').hidden = !!q;
-    $('#results').hidden = !q;
-    if (!q) return;
+    if (!q) searching = false;
+    var on = searching && !!q;
+    $('#home-main').hidden = on;
+    $('#results').hidden = !on;
+    if (!on) return;
     var found = content.items.filter(function (i) {
       return (i.title + ' ' + i.description + ' ' + i.category + ' ' + nameOf(i.deliverable)).toLowerCase().indexOf(q) !== -1;
     });
@@ -782,7 +811,27 @@
   document.addEventListener('submit', function (e) {
     if (e.target.hasAttribute('data-reply-form')) { e.preventDefault(); sendReply(e.target); }
   });
-  $('#q').addEventListener('input', renderSearch);
+  $('#q').addEventListener('input', function () { suggest(); renderSearch(); });
+  $('#q').addEventListener('focus', suggest);
+  $('#q').addEventListener('blur', function () { setTimeout(hideSuggest, 120); });
+  $('#q').addEventListener('keydown', function (e) {
+    var opts = Array.prototype.slice.call($('#q-sug').querySelectorAll('li[role="option"]'));
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (!opts.length || $('#q-sug').hidden) return;
+      e.preventDefault();
+      sugAt = (sugAt + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
+      opts.forEach(function (li, n) { li.setAttribute('aria-selected', String(n === sugAt)); });
+      opts[sugAt].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      var li = opts[sugAt];
+      if (li && li.dataset.open) { hideSuggest(); li.click(); } else runSearch();
+    } else if (e.key === 'Escape') hideSuggest();
+  });
+  $('#q-sug').addEventListener('mousedown', function (e) { e.preventDefault(); });
+  $('#q-sug').addEventListener('click', function (e) {
+    if (e.target.closest('[data-all]')) runSearch(); else if (e.target.closest('[data-open]')) hideSuggest();
+  });
   $('#dept-back').addEventListener('click', function () { show('home'); });
   $('#learn-back').addEventListener('click', function () { if (learn.course) renderCourses(); else show('home'); });
 
