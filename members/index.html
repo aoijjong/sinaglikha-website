@@ -234,10 +234,14 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 }
 dialog:not(.viewer){max-height:calc(100dvh - 24px);overflow-y:auto}
 /* sign-in choice: Senior Manager or Employee */
-.who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
-.who-switch>*{text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:background .4s,color .4s}
-.who-switch [aria-current="true"]{background:var(--brown);color:var(--paper)}
-@media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
+.who-switch{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
+.who-switch::before{content:"";position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);border-radius:999px;background:var(--brown);transition:transform .38s var(--ease)}
+.who-switch[data-on="emp"]::before{transform:translateX(100%)}
+.who-switch.no-anim::before,.who-switch.no-anim>*{transition:none}
+.who-switch>*{position:relative;z-index:1;text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:color .3s}
+.who-switch[data-on="sm"]>:nth-child(1),.who-switch[data-on="emp"]>:nth-child(2){color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown)}}
+@media (prefers-reduced-motion:reduce){.who-switch::before{transition:none}}
 
 /* employee directory */
 #an-form{padding:clamp(22px,4vw,32px)}
@@ -444,7 +448,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <p>One place for our Senior Managers and employees. Choose who you are, then sign in.</p>
     </div>
     <form class="card" id="form-login" novalidate>
-      <div class="who-switch" role="group" aria-label="Who is signing in">
+      <div class="who-switch" data-on="sm" role="group" aria-label="Who is signing in">
         <span aria-current="true">Senior Manager</span>
         <a href="../employees/">Employee</a>
       </div>
@@ -858,6 +862,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 <script src="config.js"></script>
 <script src="../assets/ui-icons.js"></script>
 <script src="../assets/eval-form.js"></script>
+<script src="../assets/who-switch.js"></script>
 <script src="members.js"></script>
 <script src="content.js"></script>
 <script src="employees.js"></script>

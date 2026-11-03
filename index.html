@@ -340,7 +340,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .rec-tag{flex:none;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(74,46,34,.3);font-size:.82rem;font-weight:700;letter-spacing:.05em;color:var(--brown)}
 
 .avatar{width:64px;height:64px;border-radius:50%;flex:none;background:var(--yellow);display:grid;place-items:center;color:#B3361A;overflow:hidden;border:3px solid #fff;box-shadow:0 0 0 2px rgba(206,32,32,.25)}
-.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar img{width:100%;height:100%;object-fit:cover;object-position:center 22%}
 .avatar .icon{width:28px;height:28px}
 /* team: one card per Senior Manager */
 .sm-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
@@ -1048,10 +1048,10 @@ const CONFIG = {
     // The names are the placeholders supplied by the project owner; replace them when the final names are approved.
     // photo: path to an image file, e.g. "assets/team/juan.jpg"
     seniorManagers: {
-      staffing:   { name: "Ma. Carmy Dominguez", photo: "" },
-      training:   { name: "Roselyn Obalan", photo: "" },
+      staffing:   { name: "Ma. Carmy Dominguez", photo: "assets/team/sm-staffing.jpg" },
+      training:   { name: "Roselyn Obalan", photo: "assets/team/sm-training.jpg" },
       engagement: { name: "Winona Faith Bagon", photo: "" },
-      rewards:    { name: "Athea Venice Rosales", photo: "" },
+      rewards:    { name: "Athea Venice Rosales", photo: "assets/team/sm-rewards.jpg" },
       legal:      { name: "Ezekiel Aminoso", photo: "" }
     }
   }

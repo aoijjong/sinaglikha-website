@@ -101,10 +101,14 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
   .auth-intro h1{font-size:1.45rem}
   .auth-intro p{display:none}
 }
-.who-switch{display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
-.who-switch>*{text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:background .4s,color .4s}
-.who-switch [aria-current="true"]{background:var(--brown);color:var(--paper)}
-@media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown);background:var(--cream)}}
+.who-switch{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:999px;background:var(--paper);border:1px solid var(--line);margin-bottom:22px}
+.who-switch::before{content:"";position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);border-radius:999px;background:var(--brown);transition:transform .38s var(--ease)}
+.who-switch[data-on="emp"]::before{transform:translateX(100%)}
+.who-switch.no-anim::before,.who-switch.no-anim>*{transition:none}
+.who-switch>*{position:relative;z-index:1;text-align:center;padding:11px 12px;border-radius:999px;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--muted);transition:color .3s}
+.who-switch[data-on="sm"]>:nth-child(1),.who-switch[data-on="emp"]>:nth-child(2){color:var(--paper)}
+@media (hover:hover) and (pointer:fine){.who-switch a:hover{color:var(--brown)}}
+@media (prefers-reduced-motion:reduce){.who-switch::before{transition:none}}
 
 /* dashboard */
 .hello h1{font-size:clamp(1.7rem,3.8vw,2.4rem)}
@@ -245,7 +249,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
       <p>One place for our Senior Managers and employees. Choose who you are, then sign in.</p>
     </div>
     <form class="card" id="f-signin" novalidate>
-      <div class="who-switch" role="group" aria-label="Who is signing in">
+      <div class="who-switch" data-on="emp" role="group" aria-label="Who is signing in">
         <a href="../members/">Senior Manager</a>
         <span aria-current="true">Employee</span>
       </div>
@@ -268,7 +272,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
       <p>One place for our Senior Managers and employees. Choose who you are, then sign in.</p>
     </div>
     <form class="card" id="f-activate" novalidate>
-      <div class="who-switch" role="group" aria-label="Who is signing in">
+      <div class="who-switch" data-on="emp" role="group" aria-label="Who is signing in">
         <a href="../members/">Senior Manager</a>
         <span aria-current="true">Employee</span>
       </div>
@@ -402,6 +406,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="../assets/ui-icons.js"></script>
 <script src="../assets/eval-form.js"></script>
+<script src="../assets/who-switch.js"></script>
 <script src="portal.js"></script>
 </body>
 </html>
