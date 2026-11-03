@@ -263,8 +263,12 @@ button.lmain{cursor:pointer}
 .lname{font-family:var(--serif);font-weight:400;font-size:1.12rem;line-height:1.25;color:var(--brown)}
 .lmeta{font-size:.88rem}
 .dpanel{background:none;border:0;box-shadow:none;overflow:visible}
-.dp-head{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);margin-bottom:10px}
-.dp-head .di{background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.6)}
+.dp-head{padding:22px 24px;background:linear-gradient(135deg,#FFF4C9 0%,#FCD9A0 60%,#F8BE8E 100%);border:1px solid rgba(232,112,26,.18);border-radius:26px;box-shadow:0 18px 34px -20px rgba(200,90,20,.5);margin-bottom:12px}
+.dp-head .di{width:54px;height:54px;border-radius:17px;background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.6)}
+.dp-head .dp-title h2{color:var(--brown)}
+.dp-head .dp-title p{color:#5A4538}
+.dp-head .dp-sum{background:rgba(255,255,255,.65);color:var(--brown);padding:7px 15px;border-radius:999px;text-align:center;white-space:nowrap}
+@media (max-width:640px){.dp-head{padding:18px 18px}.dp-head .dp-title{flex:1 1 calc(100% - 72px)}.dp-head .dp-sum{width:auto;margin-left:70px;text-align:center}}
 .dpanel .rows{display:grid}
 .dpanel .lrow{padding:14px 18px 14px 14px}
 .list-card>.es{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}
