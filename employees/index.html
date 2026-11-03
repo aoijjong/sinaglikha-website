@@ -199,7 +199,10 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .panel.plist{background:none;border:0;box-shadow:none;overflow:visible}
 .panel.plist .panel-h{padding:2px 4px 10px}
 .panel.plist .items .none{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}
-#att-recent{display:block}
+.panel:not(.plist) .items{padding:4px 14px 16px}
+.panel:not(.plist) .items:not(#att-recent) .lrow{box-shadow:none;border-radius:22px;background:#fff}
+@media (hover:hover) and (pointer:fine){.panel:not(.plist) .items:not(#att-recent) .lrow:hover{box-shadow:0 12px 26px -16px rgba(120,50,20,.4)}}
+#att-recent{display:block;padding:0}
 #att-recent .lrow{background:none;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;transform:none;padding:10px 12px}
 #att-recent .lrow:first-child{border-top:0}
 #att-recent .lname{font-family:inherit;font-weight:600;font-size:1rem}
@@ -318,7 +321,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
             </div>
           </form>
         </section>
-        <div class="panel plist" id="evl-panel" style="order:7" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>Evaluations</h2></div><ul class="items" id="evl-list"></ul></div>
+        <div class="panel" id="evl-panel" style="order:7" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>Evaluations</h2></div><ul class="items" id="evl-list"></ul></div>
       </div>
       <aside class="col-side">
         <div class="panel" id="att-panel" style="order:1" hidden>
@@ -335,9 +338,9 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
           <h3 class="sub-h">Last 7 days</h3>
           <ul class="items" id="att-recent"></ul>
         </div>
-        <div class="panel plist" id="dept-panel" style="order:2"><div class="panel-h"><span class="pi"><i data-icon="folder"></i></span><h2>Departments</h2></div><ul class="items" id="tiles"></ul></div>
-        <div class="panel plist" id="learn-panel" style="order:5" hidden><div class="panel-h"><span class="pi"><i data-icon="book"></i></span><h2>Learning</h2></div><ul class="items" id="learn-list"></ul></div>
-        <div class="panel plist" id="rec-panel" style="order:6" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
+        <div class="panel" id="dept-panel" style="order:2"><div class="panel-h"><span class="pi"><i data-icon="folder"></i></span><h2>Departments</h2></div><ul class="items" id="tiles"></ul></div>
+        <div class="panel" id="learn-panel" style="order:5" hidden><div class="panel-h"><span class="pi"><i data-icon="book"></i></span><h2>Learning</h2></div><ul class="items" id="learn-list"></ul></div>
+        <div class="panel" id="rec-panel" style="order:6" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
       </aside>
     </div>
     <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><div class="panel plist"><ul class="items" id="res"></ul></div></div>
