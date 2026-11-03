@@ -210,8 +210,6 @@ button.lmain{cursor:pointer}
 .gf-card.bad{border-color:#B3261E;box-shadow:inset 6px 0 0 #B3261E}
 .gf-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:4px 2px}
 .gf-bar .l,.gf-bar .r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.gf-score{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.gf-score b{font-family:var(--serif);font-weight:400;font-size:1.8rem;color:var(--brown)}.gf-score span{color:var(--muted);font-size:.9rem}
 .gf-done{text-align:center;padding:34px 22px}
 .gf-done h2{font-family:var(--serif);font-weight:400;color:var(--brown);margin:0 0 6px}
 .gf-chip{display:inline-block;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--cream);color:var(--brown)}

@@ -29,7 +29,7 @@
     peer: { name: 'Peer', long: 'Peer evaluation', who: 'Any employee, about a colleague they name. Optional.' },
     manager: { name: 'Manager', long: 'Manager evaluation', who: 'Any Senior Manager, about an employee.' }
   };
-  var COLS = 'id,employee_id,scorecard_id,scorecard_title,period,scale_max,criteria,overall_comment,score,status,category,evaluator_id,evaluator_employee_id,evaluator_name,finalized_at,created_at,updated_at';
+  var COLS = 'id,employee_id,scorecard_id,scorecard_title,period,scale_max,criteria,overall_comment,status,category,evaluator_id,evaluator_employee_id,evaluator_name,finalized_at,created_at,updated_at';
   var ev = { box: null, ctx: null, mode: 'pms', view: 'list', tab: 'evals', cat: 'manager', cards: [], rows: [], people: [], failed: false, q: '', cur: null, card: null };
   var bd = null;   // the form being built
 
@@ -56,7 +56,6 @@
     var l = card && Array.isArray(card.labels) ? card.labels[n - 1] : '';
     return l ? String(l) : '';
   }
-  function fmtScore(s) { return s === null || s === undefined ? 'Not scored' : String(Number(s)) + '%'; }
 
   /* ---------- data ---------- */
   async function load() {
@@ -180,7 +179,7 @@
     rows.innerHTML = list.map(function (r) {
       var p = person(r.employee_id), cat = CATS[r.category] || CATS.manager;
       var by = r.category === 'self' ? '' : r.evaluator_name ? 'by ' + r.evaluator_name : '';
-      var meta = [r.scorecard_title, r.period, r.status === 'final' ? fmtScore(r.score) : 'Not finalised', by].filter(Boolean).join(' · ');
+      var meta = [r.scorecard_title, r.period, by].filter(Boolean).join(' · ');
       return '<li class="lrow" data-id="' + esc(r.id) + '"><button class="lmain" type="button" data-a="open-eval"><span class="lico">' + I('clipboard') + '</span><span class="ltext"><span class="lname">' +
         esc(p ? p.full_name : 'Unknown employee') + (p ? ' (' + esc(p.employee_no) + ')' : '') + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
         '<div class="lside"><span class="chip plain">' + esc(cat.name) + '</span><span class="chip ' + (r.status === 'final' ? 's-published' : 's-draft') + '">' + (r.status === 'final' ? 'Final' : 'Draft') + '</span><div class="lacts">' +
@@ -198,7 +197,7 @@
   /* ---------- building a form: a page, in the style of Google Forms ---------- */
   function blankQuestion(type) {
     type = type || 'rating';
-    return { id: newId(), type: type, title: '', description: '', weight: 20, required: F.isScored(type), options: F.hasOptions(type) ? ['Option 1'] : [], scale: 5, labels: [] };
+    return { id: newId(), type: type, title: '', description: '', required: F.isScored(type), options: F.hasOptions(type) ? ['Option 1'] : [], scale: 5, labels: [] };
   }
 
   function openBuilder(c) {
@@ -219,7 +218,7 @@
         // a linear scale keeps its own length and names; older ones take the form's, so they become the question's own
         var sc = Number(x.scale) >= 3 && Number(x.scale) <= 10 ? Number(x.scale) : (c.scale_max || 5);
         var nm = Array.isArray(x.labels) ? x.labels.slice() : (c.labels || []).slice(0, sc);
-        return { id: x.id || newId(), type: t, title: x.title || '', description: x.description || '', weight: x.weight || 20, required: F.isRequired(x), options: F.hasOptions(t) && Array.isArray(x.options) ? x.options.slice() : [] , scale: sc, labels: nm };
+        return { id: x.id || newId(), type: t, title: x.title || '', description: x.description || '', required: F.isRequired(x), options: F.hasOptions(t) && Array.isArray(x.options) ? x.options.slice() : [] , scale: sc, labels: nm };
       }) : [blankQuestion('rating')]
     };
     ev.view = 'builder';
@@ -239,8 +238,6 @@
     if (q && card) {
       q.title = $('.gf-q-in', card).value;
       q.description = $('.q-desc', card).value;
-      var w = $('.q-w', card);
-      if (w) q.weight = w.value;
       q.required = $('.q-req', card).checked;
       if (F.hasOptions(q.type)) q.options = Array.prototype.map.call(card.querySelectorAll('.q-opt'), function (inp) { return inp.value; });
       var sc = $('.q-scale', card);
@@ -284,8 +281,7 @@
       '<select data-q="type" aria-label="Question type">' + typeOpts + '</select></div>' +
       '<input class="gf-in q-desc" type="text" maxlength="400" placeholder="Description (optional)" value="' + esc(q.description) + '" aria-label="Description for question ' + (i + 1) + '" style="margin-top:8px">' +
       (F.hasOptions(q.type) ? optionRows(q) : F.preview(q, formCtx())) + (q.type === 'rating' ? scaleRows(q) : '') +
-      '<div class="gf-qfoot">' + (scored ? '<span class="w">Weight <input class="q-w" type="number" min="1" max="100" step="1" value="' + esc(q.weight) + '" aria-label="Weight"></span>' : '') +
-      IB('arrowUp', 'Move up', { 'data-q': 'up' }) + IB('arrowDown', 'Move down', { 'data-q': 'down' }) + IB('copy', 'Duplicate', { 'data-q': 'dup' }) + IB('trash', 'Delete question', { 'data-q': 'del' }, 'danger') +
+      '<div class="gf-qfoot">' + IB('arrowUp', 'Move up', { 'data-q': 'up' }) + IB('arrowDown', 'Move down', { 'data-q': 'down' }) + IB('copy', 'Duplicate', { 'data-q': 'dup' }) + IB('trash', 'Delete question', { 'data-q': 'del' }, 'danger') +
       '<label class="gf-sw"><input class="q-req" type="checkbox"' + (q.required ? ' checked' : '') + '><i></i>Required</label></div>';
   }
 
@@ -375,7 +371,7 @@
     readBuilder();
     var err = $('#bd-err', ev.box), problem = '';
     var qs = bd.questions.map(function (q) {
-      var o = { id: q.id, type: q.type, title: String(q.title).trim(), description: String(q.description).trim(), weight: F.isScored(q.type) ? num(q.weight) : 0, required: !!q.required };
+      var o = { id: q.id, type: q.type, title: String(q.title).trim(), description: String(q.description).trim(), weight: F.isScored(q.type) ? 1 : 0, required: !!q.required };
       if (F.hasOptions(q.type)) o.options = q.options.map(function (x) { return String(x).trim(); }).filter(Boolean);
       if (q.type === 'rating') {
         o.scale = Number(q.scale) >= 3 && Number(q.scale) <= 10 ? Number(q.scale) : 5;
@@ -390,7 +386,6 @@
     else if (bd.opens_on && bd.closes_on && bd.closes_on < bd.opens_on) problem = 'The closing date is before the opening date.';
     else if (qs.some(function (q) { return !q.title; })) problem = 'Every question needs a title. Delete any empty ones.';
     else if (qs.some(function (q) { return F.hasOptions(q.type) && !q.options.length; })) problem = 'Add at least one option to every choice question.';
-    else if (qs.some(function (q) { return F.isScored(q.type) && (q.weight < 1 || q.weight > 100); })) problem = 'Each scored question (linear scale or stars) needs a weight between 1 and 100.';
     if (problem) { err.textContent = problem; err.hidden = false; err.scrollIntoView({ block: 'center' }); return; }
     err.hidden = true;
     var fields = {
@@ -467,7 +462,7 @@
     var crit = card.criteria.map(function (c) {
       var t = F.qType(c);
       var sc = Number(c.scale) >= 3 && Number(c.scale) <= 10 ? Number(c.scale) : card.scale_max;
-      var q = { id: c.id, type: t, title: c.title, description: c.description || '', weight: c.weight || 0, required: F.isRequired(c), options: F.hasOptions(t) && Array.isArray(c.options) ? c.options : [], rating: null, comment: '', picked: [] };
+      var q = { id: c.id, type: t, title: c.title, description: c.description || '', weight: F.isScored(t) ? 1 : 0, required: F.isRequired(c), options: F.hasOptions(t) && Array.isArray(c.options) ? c.options : [], rating: null, comment: '', picked: [] };
       if (t === 'rating') { q.scale = sc; q.labels = Array.isArray(c.labels) ? c.labels : (card.labels || []).slice(0, sc); }
       return q;
     });
@@ -505,19 +500,12 @@
       '<div class="ph">' + IB('back', 'Back to the evaluations', { 'data-a': 'eval-back' }, 'line') + '<div class="ph-main"><h2>' + esc(p ? p.full_name : 'Employee') + '</h2><p class="sub">' + esc(cat.long) + '</p></div></div>' +
       '<div class="gf"><div class="gf-card head"><h1 class="gf-h1">' + esc(r.scorecard_title) + '</h1><div class="gf-meta"><b>' + esc(p ? p.full_name : '') + '</b></div><div class="gf-meta">' + meta.map(esc).join(' · ') + '</div>' +
       '<div class="gf-meta"><span class="gf-chip">' + (r.status === 'final' ? 'Final' : 'Draft') + '</span>' + (r.status === 'final' && r.finalized_at ? '<span>Finalised ' + esc(fmtDay(r.finalized_at)) + '</span>' : '') + '</div></div>' +
-      '<div class="gf-card"><div class="gf-score" id="ee-score"></div></div>' +
       (r.criteria || []).map(function (c, i) { return F.card(c, evalCtx(), ro, i); }).join('') +
       '<div class="gf-card"><div class="gf-qt">Overall comments</div><div class="gf-ans"><textarea id="ee-over" maxlength="3000" rows="3"' + (ro ? ' disabled' : '') + '>' + esc(r.overall_comment || '') + '</textarea></div></div>' +
       '<p class="gf-err" id="ee-err" role="alert" hidden></p>' +
       '<div class="gf-bar"><div class="l"><button class="btn btn-ghost btn-sm" type="button" data-a="eval-back">Close</button><button class="btn btn-ghost btn-sm" type="button" data-a="print">Print or PDF</button>' + (deletable(r) ? '<button class="btn btn-ghost btn-sm" type="button" data-a="del-this">Delete</button>' : '') + '</div><div class="r">' +
       (ro ? (r.status === 'final' && r.category === 'manager' && (r.evaluator_id === myId() || canBuild()) ? '<button class="btn btn-ghost btn-sm" type="button" data-a="reopen">Reopen</button>' : '')
         : '<button class="btn btn-ghost btn-sm" type="button" data-a="save-draft" id="ee-save">Save draft</button><button class="btn btn-primary btn-sm" type="button" data-a="finalise" id="ee-final">Finalise</button>') + '</div></div></div>';
-    paintScore();
-  }
-
-  function paintScore() {
-    var r = ev.cur, n = F.scoredCount(r.criteria), sc = F.score(r.criteria, r.scale_max);
-    $('#ee-score', ev.box).innerHTML = '<b>' + (sc === null ? 'Not scored yet' : sc + '%') + '</b><span>' + n.rated + ' of ' + n.total + ' rated</span>';
   }
 
   function readEval() {
@@ -590,13 +578,13 @@
     if (!list.length) { toast('Nothing to export.', 'bad'); return; }
     var titles = [];
     list.forEach(function (r) { (r.criteria || []).forEach(function (c) { if (titles.indexOf(c.title) === -1) titles.push(c.title); }); });
-    var head = ['Category', 'Employee ID', 'Employee', 'Form', 'Period', 'Status', 'Score (%)', 'Rating scale (max)', 'Evaluated by', 'Finalised on', 'Overall comments'];
+    var head = ['Category', 'Employee ID', 'Employee', 'Form', 'Period', 'Status', 'Rating scale (max)', 'Evaluated by', 'Finalised on', 'Overall comments'];
     titles.forEach(function (t) { head.push(t + ' - rating', t + ' - comment'); });
     var lines = [head.map(csvCell).join(',')];
     list.forEach(function (r) {
       var p = person(r.employee_id);
       var row = [(CATS[r.category] || CATS.manager).name, p ? p.employee_no : '', p ? p.full_name : '', r.scorecard_title, r.period, r.status === 'final' ? 'Final' : 'Draft',
-        r.score === null || r.score === undefined ? '' : r.score, r.scale_max, r.evaluator_name, fmtDay(r.finalized_at), r.overall_comment];
+        r.scale_max, r.evaluator_name, fmtDay(r.finalized_at), r.overall_comment];
       titles.forEach(function (t) {
         var c = (r.criteria || []).filter(function (x) { return x.title === t; })[0];
         row.push(c && c.rating ? c.rating : '', c ? (F.isScored(F.qType(c)) ? c.comment || '' : F.text(c)) : '');
@@ -621,23 +609,21 @@
     if (!w) { toast('Allow pop-ups to print or save a PDF.', 'bad'); return; }
     var rows = (r.criteria || []).map(function (c) {
       var qt = F.qType(c);
-      if (!F.isScored(qt)) return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">-</td><td colspan="2">' + esc(F.text(c)) + '</td></tr>';
+      if (!F.isScored(qt)) return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td colspan="2">' + esc(F.text(c)) + '</td></tr>';
       var mx = F.maxOf(c, { scale_max: r.scale_max }), lab = c.rating && qt === 'rating' ? F.nameOf(c, card || { labels: [] }, Number(c.rating)) : '';
-      return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">' + esc(c.weight) + '</td>' +
+      return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td>' +
         '<td class="c"><b>' + (c.rating ? esc(c.rating) + ' / ' + esc(mx) : 'Not rated') + '</b>' + (lab ? '<div class="m">' + esc(lab) + '</div>' : '') + '</td><td>' + esc(c.comment || '') + '</td></tr>';
     }).join('');
-    var score = r.status === 'final' ? fmtScore(r.score) : 'Draft: ' + (r.score === null || r.score === undefined ? 'not scored' : r.score + '% so far');
     w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Evaluation - ' + esc(p ? p.full_name : '') + ' - ' + esc(r.period) + '</title><style>' +
       'body{font:14px/1.5 Arial,Helvetica,sans-serif;color:#2B1D16;margin:28px}h1{font-size:22px;margin:0 0 2px;color:#4A2E22}h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#B3361A;margin:0 0 14px}' +
-      '.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 24px;margin:12px 0 16px}.meta span{color:#6B5648;font-size:12px}.score{display:inline-block;background:#FFF6DC;border:1px solid #E9C77A;border-radius:10px;padding:8px 14px;font-size:18px;margin:4px 0 14px}' +
+      '.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 24px;margin:12px 0 16px}.meta span{color:#6B5648;font-size:12px}' +
       'table{width:100%;border-collapse:collapse}th,td{border:1px solid #E6D9C4;padding:7px 9px;vertical-align:top;text-align:left}th{background:#FBF3CB;font-size:12px}.c{text-align:center;white-space:nowrap}.m{color:#6B5648;font-size:12px}' +
       '.over{border:1px solid #E6D9C4;border-radius:8px;padding:10px 12px;margin-top:14px;white-space:pre-wrap}.foot{margin-top:22px;color:#6B5648;font-size:11px}@media print{body{margin:14mm}}</style></head><body>' +
       '<h2>SINAGLIKHA &middot; ' + esc(cat.long) + '</h2><h1>' + esc(p ? p.full_name : 'Employee') + '</h1>' +
       '<div class="meta"><div><span>Employee ID</span><br>' + esc(p ? p.employee_no : '') + '</div><div><span>Period</span><br>' + esc(r.period) + '</div>' +
       '<div><span>Form</span><br>' + esc(r.scorecard_title) + '</div><div><span>' + (r.category === 'self' ? 'Written by' : 'Evaluated by') + '</span><br>' + esc(r.category === 'self' ? 'The employee' : r.evaluator_name || '') + '</div>' +
       '<div><span>Status</span><br>' + (r.status === 'final' ? 'Final' : 'Draft') + '</div><div><span>' + (r.status === 'final' ? 'Finalised on' : 'Last saved') + '</span><br>' + esc(fmtDay(r.status === 'final' ? r.finalized_at : r.updated_at)) + '</div></div>' +
-      '<div class="score"><b>Score: ' + esc(score) + '</b></div>' +
-      '<table><thead><tr><th>Question</th><th class="c">Weight</th><th class="c">Rating</th><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<table><thead><tr><th>Question</th><th class="c">Rating</th><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       (r.overall_comment ? '<div class="over"><b>Overall comments</b><br>' + esc(r.overall_comment) + '</div>' : '') +
       '<div class="foot">Confidential. Printed ' + esc(fmtDay(new Date().toISOString())) + '.</div></body></html>');
     w.document.close();
@@ -721,6 +707,6 @@
   function bindAnswers(box) {
     if (box._efBound) return;
     box._efBound = true;
-    F.bind(box, function () { return ev.view === 'eval' && ev.cur ? ev.cur.criteria : []; }, function () { return ev.view === 'eval' && ev.cur ? evalCtx() : { scale_max: 5, labels: [] }; }, function () { if (ev.view === 'eval') paintScore(); });
+    F.bind(box, function () { return ev.view === 'eval' && ev.cur ? ev.cur.criteria : []; }, function () { return ev.view === 'eval' && ev.cur ? evalCtx() : { scale_max: 5, labels: [] }; }, function () {});
   }
 })();
