@@ -318,10 +318,17 @@ function optionsOf(c) {
 function questionsOf(f) {
   return (Array.isArray(f.criteria) ? f.criteria : []).map((c) => {
     const type = qType(c);
-    return {
+    const q = {
       id: String(c.id || ''), type, title: String(c.title || ''), description: String(c.description || ''),
       required: c.required === undefined ? isScored(type) : !!c.required, options: optionsOf(c)
     };
+    // a linear scale carries its own length and names for its points; older ones fall back to the form's
+    if (type === 'rating') {
+      const n = Number(c.scale);
+      if (n >= 3 && n <= 10) q.scale = n;
+      if (Array.isArray(c.labels)) q.labels = c.labels.slice(0, 10).map((l) => String(l || '').slice(0, 40));
+    }
+    return q;
   });
 }
 async function evaluationForms(eid) {

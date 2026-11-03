@@ -24,7 +24,6 @@
   var sb = app.sb, state = app.state, esc = app.esc, toast = app.toast, ask = app.ask, logAction = app.logAction;
   var I = window.SngIcon, IB = window.SngIconButton, F = window.SngEvalForm;
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var DEFAULT_LABELS = ['Needs improvement', 'Below expectations', 'Meets expectations', 'Exceeds expectations', 'Outstanding'];
   var CATS = {
     self: { name: 'Self', long: 'Self-assessment', who: 'Every employee, about themselves. Shown on their dashboard.' },
     peer: { name: 'Peer', long: 'Peer evaluation', who: 'Any employee, about a colleague they name. Optional.' },
@@ -199,7 +198,7 @@
   /* ---------- building a form: a page, in the style of Google Forms ---------- */
   function blankQuestion(type) {
     type = type || 'rating';
-    return { id: newId(), type: type, title: '', description: '', weight: 20, required: F.isScored(type), options: F.hasOptions(type) ? ['Option 1'] : [] };
+    return { id: newId(), type: type, title: '', description: '', weight: 20, required: F.isScored(type), options: F.hasOptions(type) ? ['Option 1'] : [], scale: 5, labels: [] };
   }
 
   function openBuilder(c) {
@@ -212,12 +211,15 @@
       opens_on: c ? c.opens_on || '' : '',
       closes_on: c ? c.closes_on || '' : '',
       scale_max: c ? c.scale_max : 5,
-      labels: c ? (c.labels || []).slice() : DEFAULT_LABELS.slice(),
+      labels: c ? (c.labels || []).slice() : [],
       active: c ? c.active : true,
       sel: 0,
       questions: c ? c.criteria.map(function (x) {
         var t = F.qType(x);
-        return { id: x.id || newId(), type: t, title: x.title || '', description: x.description || '', weight: x.weight || 20, required: F.isRequired(x), options: F.hasOptions(t) && Array.isArray(x.options) ? x.options.slice() : [] };
+        // a linear scale keeps its own length and names; older ones take the form's, so they become the question's own
+        var sc = Number(x.scale) >= 3 && Number(x.scale) <= 10 ? Number(x.scale) : (c.scale_max || 5);
+        var nm = Array.isArray(x.labels) ? x.labels.slice() : (c.labels || []).slice(0, sc);
+        return { id: x.id || newId(), type: t, title: x.title || '', description: x.description || '', weight: x.weight || 20, required: F.isRequired(x), options: F.hasOptions(t) && Array.isArray(x.options) ? x.options.slice() : [] , scale: sc, labels: nm };
       }) : [blankQuestion('rating')]
     };
     ev.view = 'builder';
@@ -233,8 +235,6 @@
     bd.period = $('#bd-period', ev.box).value;
     bd.opens_on = $('#bd-opens', ev.box).value;
     bd.closes_on = $('#bd-closes', ev.box).value;
-    bd.scale_max = Number($('#bd-scale', ev.box).value);
-    Array.prototype.forEach.call(ev.box.querySelectorAll('[data-l]'), function (inp) { bd.labels[Number(inp.dataset.l)] = inp.value.trim(); });
     var q = bd.questions[bd.sel], card = $('.gf-card.on[data-i]', ev.box);
     if (q && card) {
       q.title = $('.gf-q-in', card).value;
@@ -243,6 +243,11 @@
       if (w) q.weight = w.value;
       q.required = $('.q-req', card).checked;
       if (F.hasOptions(q.type)) q.options = Array.prototype.map.call(card.querySelectorAll('.q-opt'), function (inp) { return inp.value; });
+      var sc = $('.q-scale', card);
+      if (sc) {
+        q.scale = Number(sc.value);
+        q.labels = Array.prototype.map.call(card.querySelectorAll('.q-lab'), function (inp) { return inp.value; });
+      }
     }
   }
 
@@ -261,22 +266,30 @@
     }).join('') + '<button class="gf-addopt" type="button" data-q="addopt">Add option</button></div>';
   }
 
+  /* a linear scale: how long it is, and optional names for its points */
+  function scaleRows(q) {
+    var sc = F.scaleOf(q, formCtx()), opts = [3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option value="' + n + '"' + (sc === n ? ' selected' : '') + '>1 to ' + n + '</option>'; }).join('');
+    var names = '';
+    for (var n = 1; n <= sc; n++) {
+      names += '<div class="gf-optrow"><span style="width:22px;font-weight:700;color:var(--brown);text-align:center">' + n + '</span><input class="gf-in q-lab" type="text" maxlength="40" value="' + esc(F.nameOf(q, formCtx(), n)) + '" placeholder="Name for ' + n + ' (optional)" aria-label="Name for rating ' + n + '"></div>';
+    }
+    return '<div class="gf-row" style="margin-top:12px;align-items:center"><label class="gf-lab" style="margin:0;flex:0 0 auto" for="qs-' + esc(q.id) + '">Scale</label><select class="gf-in q-scale" id="qs-' + esc(q.id) + '" style="flex:0 0 120px">' + opts + '</select></div>' +
+      '<details style="margin-top:10px"' + (q.labels && q.labels.some(function (l) { return l; }) ? ' open' : '') + '><summary style="cursor:pointer;color:var(--brown);font-weight:600">Name the ratings (optional)</summary><div class="gf-opts">' + names + '</div></details>';
+  }
+
   function editQ(q, i) {
     var scored = F.isScored(q.type);
-    var typeOpts = F.TYPES.map(function (t) { return '<option value="' + t[0] + '"' + (q.type === t[0] ? ' selected' : '') + '>' + t[1] + (t[0] === 'rating' ? ' (1 to ' + bd.scale_max + ')' : '') + '</option>'; }).join('');
+    var typeOpts = F.TYPES.map(function (t) { return '<option value="' + t[0] + '"' + (q.type === t[0] ? ' selected' : '') + '>' + t[1] + '</option>'; }).join('');
     return '<div class="gf-qtop"><input class="gf-in gf-q-in" type="text" maxlength="160" placeholder="Question" value="' + esc(q.title) + '" aria-label="Question ' + (i + 1) + '">' +
       '<select data-q="type" aria-label="Question type">' + typeOpts + '</select></div>' +
       '<input class="gf-in q-desc" type="text" maxlength="400" placeholder="Description (optional)" value="' + esc(q.description) + '" aria-label="Description for question ' + (i + 1) + '" style="margin-top:8px">' +
-      (F.hasOptions(q.type) ? optionRows(q) : F.preview(q, formCtx())) +
+      (F.hasOptions(q.type) ? optionRows(q) : F.preview(q, formCtx())) + (q.type === 'rating' ? scaleRows(q) : '') +
       '<div class="gf-qfoot">' + (scored ? '<span class="w">Weight <input class="q-w" type="number" min="1" max="100" step="1" value="' + esc(q.weight) + '" aria-label="Weight"></span>' : '') +
       IB('arrowUp', 'Move up', { 'data-q': 'up' }) + IB('arrowDown', 'Move down', { 'data-q': 'down' }) + IB('copy', 'Duplicate', { 'data-q': 'dup' }) + IB('trash', 'Delete question', { 'data-q': 'del' }, 'danger') +
       '<label class="gf-sw"><input class="q-req" type="checkbox"' + (q.required ? ' checked' : '') + '><i></i>Required</label></div>';
   }
 
   function drawBuilder() {
-    var scales = [3, 4, 5, 6, 7, 10].map(function (n) { return '<option value="' + n + '"' + (bd.scale_max === n ? ' selected' : '') + '>1 to ' + n + '</option>'; }).join('');
-    var lbls = '';
-    for (var n = 1; n <= bd.scale_max; n++) lbls += '<div class="gf-row" style="margin-top:4px"><span style="flex:0 0 22px;text-align:center;font-weight:700;color:var(--brown)">' + n + '</span><input class="gf-in" type="text" maxlength="40" data-l="' + (n - 1) + '" value="' + esc(bd.labels[n - 1] || '') + '" placeholder="Name for ' + n + ' (optional)" aria-label="Name for rating ' + n + '"></div>';
     var cats = ['self', 'peer', 'manager'].map(function (k) {
       return '<button class="gf-cat" type="button" data-cat-pick="' + k + '" aria-pressed="' + (bd.category === k) + '"' + (bd.id ? ' disabled' : '') + '><b>' + CATS[k].long + '</b><small>' + esc(CATS[k].who) + '</small></button>';
     }).join('');
@@ -295,8 +308,8 @@
       '<div class="gf-row" style="margin-top:14px"><div><label class="gf-lab" for="bd-period">Period (for example 2026 Q4)</label><input class="gf-in" id="bd-period" type="text" maxlength="60" value="' + esc(bd.period) + '"></div>' +
       '<div><label class="gf-lab" for="bd-opens">Opens on (optional)</label><input class="gf-in" id="bd-opens" type="date" value="' + esc(bd.opens_on) + '"></div>' +
       '<div><label class="gf-lab" for="bd-closes">Closes on (optional)</label><input class="gf-in" id="bd-closes" type="date" value="' + esc(bd.closes_on) + '"></div>' +
-      '<div><label class="gf-lab" for="bd-scale">Rating scale</label><select class="gf-in" id="bd-scale">' + scales + '</select></div></div>' +
-      '<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--brown);font-weight:600">Name the ratings (optional)</summary>' + lbls + '</details></div>' +
+      '</div>' +
+      '</div>' +
       qs + '<p class="gf-err" id="bd-err" role="alert" hidden></p></div>' +
       '<div class="gf-tool">' + IB('plus', 'Add a question', { 'data-a': 'add-q' }) + '</div></div>';
   }
@@ -343,8 +356,9 @@
       q.type = e.target.value;
       q.required = F.isScored(q.type);
       if (F.hasOptions(q.type) && !q.options.length) q.options = ['Option 1'];
+      if (q.type === 'rating' && !(Number(q.scale) >= 3)) { q.scale = 5; q.labels = []; }
       drawBuilder();
-    } else if (e.target.id === 'bd-scale') {
+    } else if (e.target.matches('.q-scale')) {
       readBuilder();
       drawBuilder();
     }
@@ -363,6 +377,11 @@
     var qs = bd.questions.map(function (q) {
       var o = { id: q.id, type: q.type, title: String(q.title).trim(), description: String(q.description).trim(), weight: F.isScored(q.type) ? num(q.weight) : 0, required: !!q.required };
       if (F.hasOptions(q.type)) o.options = q.options.map(function (x) { return String(x).trim(); }).filter(Boolean);
+      if (q.type === 'rating') {
+        o.scale = Number(q.scale) >= 3 && Number(q.scale) <= 10 ? Number(q.scale) : 5;
+        var nm = (q.labels || []).slice(0, o.scale).map(function (x) { return String(x || '').trim(); });
+        o.labels = nm.some(Boolean) ? nm : [];
+      }
       return o;
     });
     if (!bd.title.trim()) problem = 'Give the form a title.';
@@ -447,7 +466,10 @@
     go.disabled = true;
     var crit = card.criteria.map(function (c) {
       var t = F.qType(c);
-      return { id: c.id, type: t, title: c.title, description: c.description || '', weight: c.weight || 0, required: F.isRequired(c), options: F.hasOptions(t) && Array.isArray(c.options) ? c.options : [], rating: null, comment: '', picked: [] };
+      var sc = Number(c.scale) >= 3 && Number(c.scale) <= 10 ? Number(c.scale) : card.scale_max;
+      var q = { id: c.id, type: t, title: c.title, description: c.description || '', weight: c.weight || 0, required: F.isRequired(c), options: F.hasOptions(t) && Array.isArray(c.options) ? c.options : [], rating: null, comment: '', picked: [] };
+      if (t === 'rating') { q.scale = sc; q.labels = Array.isArray(c.labels) ? c.labels : (card.labels || []).slice(0, sc); }
+      return q;
     });
     var res = await sb.from('evaluations').insert({ employee_id: emp, scorecard_id: card.id, scorecard_title: card.title, period: period, scale_max: card.scale_max, criteria: crit, overall_comment: '', status: 'draft' }).select(COLS).maybeSingle();
     go.disabled = false;
@@ -600,7 +622,7 @@
     var rows = (r.criteria || []).map(function (c) {
       var qt = F.qType(c);
       if (!F.isScored(qt)) return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">-</td><td colspan="2">' + esc(F.text(c)) + '</td></tr>';
-      var mx = qt === 'stars' ? 5 : r.scale_max, lab = c.rating && qt === 'rating' ? labelFor(card, Number(c.rating)) : '';
+      var mx = F.maxOf(c, { scale_max: r.scale_max }), lab = c.rating && qt === 'rating' ? F.nameOf(c, card || { labels: [] }, Number(c.rating)) : '';
       return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">' + esc(c.weight) + '</td>' +
         '<td class="c"><b>' + (c.rating ? esc(c.rating) + ' / ' + esc(mx) : 'Not rated') + '</b>' + (lab ? '<div class="m">' + esc(lab) + '</div>' : '') + '</td><td>' + esc(c.comment || '') + '</td></tr>';
     }).join('');

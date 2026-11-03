@@ -1,10 +1,12 @@
 /*
   SINAGLIKHA evaluation forms: the question types, shared by the Senior Manager area (members/evaluations.js)
   and the Employee Portal (employees/portal.js), so a form looks and works the same in both.
-  A question is { id, type, title, description, required, options, weight, rating, comment, picked }:
+  A question is { id, type, title, description, required, options, weight, scale, labels, rating, comment, picked }:
     short, paragraph, date, time    the answer is in "comment"
     choice, dropdown, checkbox      the options picked are in "picked"
     rating (linear scale), stars    the number is in "rating"; only these two add to the score
+                                    a linear scale has its own length (scale, 3 to 10) and optional names for its
+                                    points (labels); older questions without them use the form's scale_max and labels
   "text", used by the first version of the forms, means paragraph.
 */
 (function () {
@@ -27,8 +29,15 @@
   function isScored(t) { return t === 'rating' || t === 'stars'; }
   function hasOptions(t) { return t === 'choice' || t === 'checkbox' || t === 'dropdown'; }
   function isRequired(q) { return q.required === undefined ? isScored(qType(q)) : !!q.required; }
-  function maxOf(q, f) { return qType(q) === 'stars' ? 5 : f.scale_max; }
   function labelOf(f, n) { var l = f && f.labels ? f.labels[n - 1] : ''; return l ? String(l) : ''; }
+  /* how long a linear scale is: its own length, else the form's */
+  function scaleOf(q, f) { var n = Number(q && q.scale); return n >= 3 && n <= 10 ? n : Number((f && f.scale_max) || 5); }
+  function maxOf(q, f) { return qType(q) === 'stars' ? 5 : scaleOf(q, f); }
+  /* the name of point n on a linear scale: the question's own, else (older questions) the form's */
+  function nameOf(q, f, n) {
+    if (q && Array.isArray(q.labels)) return q.labels[n - 1] ? String(q.labels[n - 1]) : '';
+    return labelOf(f, n);
+  }
   function picked(q) { return Array.isArray(q.picked) ? q.picked : []; }
 
   /* the answering control for one question */
@@ -54,12 +63,13 @@
       for (n = 1; n <= 5; n++) html += '<button type="button" class="gf-star" data-n="' + n + '" aria-label="' + n + (n === 1 ? ' star' : ' stars') + '" aria-pressed="' + (Number(q.rating) >= n) + '"' + dis + '>' + STAR + '</button>';
       return '<div class="gf-stars" role="group" aria-label="' + esc(q.title) + '">' + html + '</div><div class="gf-ans"><input type="text" data-k="comment" maxlength="1000" placeholder="Comment (optional)" value="' + esc(q.comment) + '"' + dis + '></div>';
     }
-    for (n = 1; n <= f.scale_max; n++) {
-      html += '<div class="gf-opt"><span>' + n + '</span><button type="button" data-n="' + n + '" aria-label="' + n + (labelOf(f, n) ? ': ' + esc(labelOf(f, n)) : '') + '" aria-pressed="' + (Number(q.rating) === n) + '"' + dis + '></button></div>';
+    var sc = scaleOf(q, f), lo = nameOf(q, f, 1), hi = nameOf(q, f, sc);
+    for (n = 1; n <= sc; n++) {
+      html += '<div class="gf-opt"><span>' + n + '</span><button type="button" data-n="' + n + '" aria-label="' + n + (nameOf(q, f, n) ? ': ' + esc(nameOf(q, f, n)) : '') + '" aria-pressed="' + (Number(q.rating) === n) + '"' + dis + '></button></div>';
     }
-    return '<div class="gf-scale" role="group" aria-label="' + esc(q.title) + '">' + (labelOf(f, 1) ? '<span class="gf-end">' + esc(labelOf(f, 1)) + '</span>' : '') + html +
-      (labelOf(f, f.scale_max) ? '<span class="gf-end">' + esc(labelOf(f, f.scale_max)) + '</span>' : '') + '</div>' +
-      '<div class="gf-pick">' + esc(q.rating ? labelOf(f, Number(q.rating)) : '') + '</div>' +
+    return '<div class="gf-scale" role="group" aria-label="' + esc(q.title) + '">' + (lo ? '<span class="gf-end">' + esc(lo) + '</span>' : '') + html +
+      (hi ? '<span class="gf-end">' + esc(hi) + '</span>' : '') + '</div>' +
+      '<div class="gf-pick">' + esc(q.rating ? nameOf(q, f, Number(q.rating)) : '') + '</div>' +
       '<div class="gf-ans"><input type="text" data-k="comment" maxlength="1000" placeholder="Comment (optional)" value="' + esc(q.comment) + '"' + dis + '></div>';
   }
 
@@ -81,8 +91,9 @@
     }
     if (t === 'dropdown') return '<div class="gf-prev"><ol class="gf-dd">' + (q.options || []).map(function (o, k) { return '<li>' + (k + 1) + '. ' + esc(o || 'Option') + '</li>'; }).join('') + '</ol></div>';
     if (t === 'stars') { for (n = 1; n <= 5; n++) html += '<span class="gf-star">' + STAR + '</span>'; return '<div class="gf-stars gf-prev">' + html + '</div>'; }
-    for (n = 1; n <= f.scale_max; n++) html += '<div class="gf-opt"><span>' + n + '</span><button type="button" disabled tabindex="-1" aria-hidden="true"></button></div>';
-    return '<div class="gf-scale gf-prev">' + (labelOf(f, 1) ? '<span class="gf-end">' + esc(labelOf(f, 1)) + '</span>' : '') + html + (labelOf(f, f.scale_max) ? '<span class="gf-end">' + esc(labelOf(f, f.scale_max)) + '</span>' : '') + '</div>';
+    var psc = scaleOf(q, f), plo = nameOf(q, f, 1), phi = nameOf(q, f, psc);
+    for (n = 1; n <= psc; n++) html += '<div class="gf-opt"><span>' + n + '</span><button type="button" disabled tabindex="-1" aria-hidden="true"></button></div>';
+    return '<div class="gf-scale gf-prev">' + (plo ? '<span class="gf-end">' + esc(plo) + '</span>' : '') + html + (phi ? '<span class="gf-end">' + esc(phi) + '</span>' : '') + '</div>';
   }
 
   /* Wires up the answering controls inside root. Every change updates the question objects in place. */
@@ -129,7 +140,7 @@
           x.setAttribute('aria-pressed', String(t === 'stars' ? Number(h.q.rating) >= m : Number(h.q.rating) === m));
         });
         var pk = h.card.querySelector('.gf-pick');
-        if (pk) pk.textContent = h.q.rating ? labelOf(getF(), Number(h.q.rating)) : '';
+        if (pk) pk.textContent = h.q.rating ? nameOf(h.q, getF(), Number(h.q.rating)) : '';
       } else if (b.hasAttribute('data-pick')) {
         var o = b.getAttribute('data-pick'), on = picked(h.q).slice(), at = on.indexOf(o);
         if (t === 'checkbox') { if (at === -1) on.push(o); else on.splice(at, 1); }
@@ -175,7 +186,7 @@
     questions.forEach(function (q) {
       var t = qType(q);
       if (!isScored(t)) return;
-      var w = Number(q.weight) || 0, mx = t === 'stars' ? 5 : scaleMax;
+      var w = Number(q.weight) || 0, mx = t === 'stars' ? 5 : scaleOf(q, { scale_max: scaleMax });
       if (q.rating) { got += (Number(q.rating) / mx) * w; tot += w; }
       else if (isRequired(q)) { blocked = true; tot += w; }
     });
@@ -194,7 +205,7 @@
   }
 
   window.SngEvalForm = {
-    TYPES: TYPES, qType: qType, isScored: isScored, hasOptions: hasOptions, isRequired: isRequired, maxOf: maxOf, labelOf: labelOf,
+    TYPES: TYPES, qType: qType, isScored: isScored, hasOptions: hasOptions, isRequired: isRequired, maxOf: maxOf, labelOf: labelOf, scaleOf: scaleOf, nameOf: nameOf,
     control: control, card: card, preview: preview, bind: bind, answered: answered, missing: missing, markMissing: markMissing,
     answers: answers, score: score, scoredCount: scoredCount, text: text
   };

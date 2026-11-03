@@ -52,10 +52,12 @@ function snapshot(form, answers) {
     const options = E.optionsOf(c);
     let comment = String(a.comment === undefined || a.comment === null ? '' : a.comment).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\r\n?/g, '\n').trim().slice(0, type === 'short' ? 300 : 1000);
     let rating = null, picked = [];
+    const own = Number(c.scale);
+    const maxRating = type === 'stars' ? 5 : own >= 3 && own <= 10 ? own : form.scale_max;
     if (E.isScored(type)) {
       if (a.rating !== null && a.rating !== undefined && a.rating !== '') {
         rating = Number(a.rating);
-        if (!Number.isInteger(rating) || rating < 1 || rating > (type === 'stars' ? 5 : form.scale_max)) return null;
+        if (!Number.isInteger(rating) || rating < 1 || rating > maxRating) return null;
       }
     } else if (E.hasOptions(type)) {
       comment = '';
@@ -70,7 +72,9 @@ function snapshot(form, answers) {
     }
     out.push({
       id: c.id, type, title: c.title, description: c.description || '', weight: c.weight || 0,
-      required: c.required === undefined ? E.isScored(type) : !!c.required, options, rating, comment, picked
+      required: c.required === undefined ? E.isScored(type) : !!c.required, options, rating, comment, picked,
+      scale: type === 'rating' ? maxRating : undefined,
+      labels: type === 'rating' && Array.isArray(c.labels) ? c.labels.slice(0, 10).map((l) => String(l || '').slice(0, 40)) : undefined
     });
   }
   return out.length ? out : null;
