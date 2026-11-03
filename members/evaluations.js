@@ -117,7 +117,7 @@
       var c = CATS[ev.cat] || CATS.manager;
       $('#ev-note', ev.box).textContent = ev.cat === 'manager'
         ? 'Manager evaluations of employees, written by the Senior Managers.'
-        : ev.cat === 'self' ? 'Employees' self-assessments.' : 'Peer evaluations. The colleague never sees who wrote them.';
+        : ev.cat === 'self' ? 'Self-assessments by the employees.' : 'Peer evaluations. The colleague never sees who wrote them.';
       drawActions();
       drawRows();
       return;
