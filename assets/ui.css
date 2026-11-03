@@ -297,3 +297,22 @@ button.lmain{cursor:pointer}
 .dpanel .rows{display:grid}
 .dpanel .lrow{padding:14px 18px 14px 14px}
 .list-card>.es{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}
+
+/* phones: everything at 80% so headers, controls and rows sit on fewer lines */
+@media (max-width:640px){
+  html{font-size:80%}
+  .ib{width:36px;height:36px}
+  .ib .icon{width:18px;height:18px}
+  .ph{gap:6px 8px;margin-bottom:12px}
+  .ph-actions{width:auto}
+  .ph-actions:has(.sbox){width:100%}
+  .sbox input{height:38px}
+  .pill{padding:7px 13px}
+  .chip{font-size:.85rem;padding:3px 10px}
+  .lico{width:38px;height:38px;border-radius:12px;font-size:.8rem}
+  .lrow{gap:8px;padding:8px 10px}
+  .lmain{gap:10px}
+  .screen{padding:14px;border-radius:22px}
+  .screen>.ph{padding-bottom:10px;margin-bottom:12px}
+  .gf-sel{padding:8px 10px}
+}

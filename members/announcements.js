@@ -37,7 +37,7 @@
     A.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
       '<div class="ph-main"><h2>Announcements</h2><p class="sub">Posts for every employee, with files if you like</p></div>' +
       '<div class="ph-actions">' + IB('plus', 'Write an announcement', { 'data-a': 'add' }, 'solid') + '</div></div>' +
-      '<p class="sp-note">Your name and department show on each post. Employees see it on their dashboard as soon as you post it. Hide a post to take it down without deleting it.</p>' +
+      '<p class="sp-note">Posts show your name and go live at once. Hide one to take it down.</p>' +
       '<div class="list-card"><ul class="rows" id="an-rows"></ul><div class="es" id="an-empty" hidden></div></div>' +
       '<div class="busy" id="an-busy" hidden role="status">Loading…</div>';
   }

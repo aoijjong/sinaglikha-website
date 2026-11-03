@@ -117,7 +117,7 @@
       var c = CATS[ev.cat] || CATS.manager;
       $('#ev-note', ev.box).textContent = ev.cat === 'manager'
         ? 'Manager evaluations of employees, written by the Senior Managers.'
-        : ev.cat === 'self' ? 'Self-assessments written by the employees about themselves.' : 'Peer evaluations written by employees about a colleague. You can see who wrote each one; the colleague never can.';
+        : ev.cat === 'self' ? 'Employees' self-assessments.' : 'Peer evaluations. The colleague never sees who wrote them.';
       drawActions();
       drawRows();
       return;
@@ -125,8 +125,8 @@
     if (!$('#ev-tabs', ev.box)) shellList();
     Array.prototype.forEach.call(ev.box.querySelectorAll('[data-tab]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.tab === ev.tab)); });
     $('#ev-note', ev.box).textContent = ev.tab === 'forms'
-      ? 'Total Rewards and the Administrator create the forms. Each one is for self, peer or manager evaluations. Self and peer answers are read in the Records tab, under Evaluation Results.'
-      : 'Any Senior Manager can evaluate an employee and read every manager evaluation. You can edit only your own. Employees never see them.';
+      ? 'Total Rewards builds the forms. Self and peer answers are in Records.'
+      : 'Any Senior Manager can evaluate; you edit only your own. Employees never see these.';
     drawActions();
     drawRows();
   }

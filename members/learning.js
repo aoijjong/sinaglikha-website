@@ -46,7 +46,7 @@
     frame('<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
       '<div class="ph-main"><h2>Learning Management System</h2><p class="sub">Courses and modules for employees</p></div>' +
       '<div class="ph-actions">' + IB('plus', 'Add a course', { 'data-a': 'add-course' }, 'solid') + '</div></div>' +
-      '<p class="sp-note">Employees see a course only after you publish it. They mark modules complete themselves, and only they can see their own progress.</p>' +
+      '<p class="sp-note">Employees see a course once published and track their own progress.</p>' +
       '<div class="list-card" id="lc-list"></div>');
     busy('Loading…');
     var c = await sb.from('learning_courses').select('*').limit(500);

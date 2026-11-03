@@ -69,7 +69,7 @@
       '<button class="pill" type="button" data-a="today" aria-pressed="false">Today</button></div>' +
       '<div class="sp-sum" id="ad-sum"></div>' +
       '<div class="list-card"><ul class="rows" id="ad-rows"></ul><div class="es" id="ad-empty" hidden></div><div class="busy" id="ad-busy" hidden role="status">Loading…</div></div>' +
-      '<p class="fine">Employees record their own time. Corrections are written to the activity log. Times are in UTC+8.</p>';
+      '<p class="fine">Employees clock themselves. Edits are logged. UTC+8.</p>';
     $('#ad-pick', at.box).value = at.date;
   }
 

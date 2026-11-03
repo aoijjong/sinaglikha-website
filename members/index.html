@@ -270,6 +270,7 @@ dialog:not(.viewer){max-height:calc(100dvh - 24px);overflow-y:auto}
 .sp-controls input[type=date]{height:44px;padding:0 14px;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--ink);font:inherit}
 .sp-sum{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .sp-note{background:rgba(248,238,174,.6);border-radius:14px;padding:12px 14px;font-size:.93rem;color:var(--brown);margin:0 0 14px}
+@media (max-width:640px){.sp-controls input[type=date]{height:38px;padding:0 12px}.sp-controls{gap:4px}.sp-sum{gap:6px}}
 .chip.t-complete{background:#E3F3E4;color:#1E6B2A}
 .chip.t-working{background:#DCEBFA;color:#1B4B7A}
 .chip.t-incomplete{background:#FFF0B0;color:#6B4E00}
@@ -526,7 +527,7 @@ dialog[open]{animation:pop .5s var(--ease)}
         <p class="empty" id="empty" hidden></p>
         <div class="busy" id="busy" hidden role="status">Loading…</div>
       </div>
-      <p class="fine">Everyone who can open this area can see and manage every file in it. Only Senior Managers of Staffing and Recruitment and Legal Compliance should be given access.</p>
+      <p class="fine">Anyone with access sees every file here. Limit it to Staffing and Legal.</p>
     </div>
 
     <div id="panel-content" role="tabpanel" aria-labelledby="tab-content" hidden>
@@ -596,7 +597,7 @@ dialog[open]{animation:pop .5s var(--ease)}
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>
-      <p class="msg" id="dept-note" role="status" style="margin:0 0 18px" hidden>Your account has no department yet, so the 201 Files are closed to you. Ask the Administrator to set your department.</p>
+      <p class="msg" id="dept-note" role="status" style="margin:0 0 18px" hidden>No department yet, so the 201 Files are closed. Ask the Administrator.</p>
       <form class="card invite" id="form-invite" novalidate>
         <h2>Invite Someone</h2>
         <p class="lead">They'll join as a Senior Manager. They get an email with a link to set a password, and only people you invite can sign in. The Administrator then sets their department, which decides whether they can open the 201 Files.</p>
@@ -761,7 +762,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <button class="btn btn-ghost btn-sm" type="button" id="an-add">Attach files</button>
       <input type="file" id="an-file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv">
     </div>
-    <p class="fine">Your name and department show on the post. Employees see it as soon as you post it.</p>
+    <p class="fine">Shows your name; live as soon as you post.</p>
     <p class="msg bad" id="an-err" role="alert" hidden></p>
     <div class="actions">
       <button class="btn btn-ghost btn-sm" type="button" id="an-cancel">Cancel</button>
