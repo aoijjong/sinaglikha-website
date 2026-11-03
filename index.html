@@ -274,23 +274,6 @@ section{position:relative;padding-block:clamp(60px,9vw,120px)}
 .hr-box .more-row .more{margin:0;flex:1 1 100%}
 
 /* HR departments: balanced cards that open a popup */
-.facet-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
-.facet{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr auto;column-gap:12px;text-align:left;padding:26px 22px 22px;min-height:320px;border-radius:26px;background:#fff;border:1px solid rgba(74,46,34,.12);color:var(--ink);cursor:pointer;position:relative;overflow:hidden;transition:transform 0.72s var(--ease),box-shadow 0.72s var(--ease),border-color 0.48s}
-.facet::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform 0.8s var(--ease)}
-.facet .f-icon{grid-row:1;grid-column:1;width:56px;height:56px;border-radius:18px;display:grid;place-items:center;color:#fff;background:var(--grad);box-shadow:0 10px 22px -10px rgba(206,32,32,.55);transition:transform 0.8s var(--ease)}
-.facet .f-icon .icon{width:27px;height:27px}
-.facet .f-text{grid-row:2;grid-column:1 / -1;align-self:end;display:flex;flex-direction:column;gap:8px;margin-top:34px}
-.facet .f-name{font-family:var(--serif);font-weight:400;font-size:1.32rem;line-height:1.15;color:var(--brown);letter-spacing:-.01em;min-height:2.3em}
-.facet .f-line{font-size:.94rem;line-height:1.45;color:var(--muted)}
-.facet .f-go{grid-row:3;grid-column:1 / -1;margin-top:18px;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;color:var(--brown)}
-.facet .f-go .icon{width:18px;height:18px;transition:transform 0.8s var(--ease)}
-@media (hover:hover) and (pointer:fine){
-  .facet:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:rgba(206,32,32,.25)}
-  .facet:hover::after{transform:none}
-  .facet:hover .f-icon{transform:scale(1.08) rotate(-5deg)}
-  .facet:hover .f-go .icon{transform:translateX(6px)}
-}
-.facet:active{transform:scale(.985)}
 
 /* popup */
 body:has(dialog[open]){overflow:hidden}
@@ -323,21 +306,12 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 .deliv li::before{content:counter(d);flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#fff;font-size:.78rem;font-weight:700}
 .tp-note{margin-top:22px;font-size:.88rem;color:var(--muted)}
 
-.rec-wrap{margin-top:clamp(52px,7vw,88px)}
 .notice-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
 .notice{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
 .notice h3{font-family:var(--serif);font-weight:400;font-size:1.3rem;line-height:1.2;color:var(--brown);margin:0;overflow-wrap:anywhere}
 .notice .n-meta{font-size:.85rem;color:var(--muted)}
 .notice p{margin:0;font-size:.96rem;color:var(--ink);overflow-wrap:anywhere}
 .notice .btn{align-self:flex-start;margin-top:auto;padding:12px 20px;font-size:.88rem}
-.rec-strip{display:flex;align-items:center;gap:22px;margin-top:18px;padding:22px clamp(22px,3vw,30px);border-radius:26px;background:#fff;border:1px solid rgba(74,46,34,.12);position:relative;overflow:hidden}
-.rec-strip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--grad)}
-.rec-strip .lockbox{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.55);flex:none}
-.rec-strip .lockbox .icon{width:26px;height:26px}
-.rec-strip .rec-text{flex:1 1 220px}
-.rec-strip h3{font-size:clamp(1.3rem,2.2vw,1.6rem)}
-.rec-strip p{color:var(--muted);font-size:.98rem;margin-top:4px;max-width:60ch}
-.rec-tag{flex:none;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(74,46,34,.3);font-size:.82rem;font-weight:700;letter-spacing:.05em;color:var(--brown)}
 
 .avatar{width:64px;height:64px;border-radius:50%;flex:none;background:var(--yellow);display:grid;place-items:center;color:#B3361A;overflow:hidden;border:3px solid #fff;box-shadow:0 0 0 2px rgba(206,32,32,.25)}
 .avatar img{width:100%;height:100%;object-fit:cover;object-position:center 22%}
@@ -368,8 +342,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 }
 .sm:active{transform:scale(.985)}
 .tbd{color:var(--muted);font-style:italic}
-@media (hover:hover) and (pointer:fine){
-}
 
 /* contact */
 .contact-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(28px,5vw,72px);align-items:start}
@@ -437,7 +409,7 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 /* touch devices: press feedback that mirrors the desktop hover.
    Pressing responds quickly; letting go eases back at the normal slow pace. */
 @media (hover:none){
-  a,button,summary,.op,.cell,.facet,.sm,.btile,.val-list li{-webkit-tap-highlight-color:transparent}
+  a,button,summary,.op,.cell,.sm,.btile,.val-list li{-webkit-tap-highlight-color:transparent}
 
   .btn-primary:active{box-shadow:0 18px 30px -12px rgba(206,32,32,.7);transition-duration:.2s}
   .btn-light:active{background:#fff;color:var(--brown);transition-duration:.2s}
@@ -456,10 +428,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .js .cell.is-on{background:#fff;transform:translateY(-6px);box-shadow:var(--shadow-lg);transition-delay:0s}
   .cell.is-on .num{transform:scale(1.08);transform-origin:left}
 
-  .facet:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);border-color:rgba(206,32,32,.25);transition-duration:.25s}
-  .facet:active::after{transform:none;transition-duration:.4s}
-  .facet:active .f-icon{transform:scale(1.08) rotate(-5deg);transition-duration:.3s}
-  .facet:active .f-go .icon{transform:translateX(6px);transition-duration:.3s}
 
 
   .sm:active{transform:translateY(-3px) scale(.985);box-shadow:var(--shadow-lg);background:#fff;transition-duration:.25s}
@@ -485,12 +453,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
 
 /* tablet */
 @media (max-width:1100px){
-  .facet-grid{grid-template-columns:1fr;gap:12px}
-  .facet{grid-template-columns:auto 1fr auto;grid-template-rows:auto;align-items:center;column-gap:18px;min-height:0;padding:18px 22px;border-radius:24px}
-  .facet .f-icon{grid-row:1;grid-column:1}
-  .facet .f-text{grid-row:1;grid-column:2;margin-top:0;gap:3px}
-  .facet .f-name{min-height:0;font-size:1.25rem}
-  .facet .f-go{grid-row:1;grid-column:3;margin-top:0}
 }
 @media (max-width:1000px){
   .identity,.contact-grid,.obj-head{grid-template-columns:1fr}
@@ -554,11 +516,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .hr-box{margin:-48px 14px 0;padding:24px 22px;border-radius:24px}
   .hr-photo{aspect-ratio:4/3;border-radius:24px}
 
-  .facet{padding:16px 18px;column-gap:14px}
-  .facet .f-icon{width:48px;height:48px;border-radius:15px}
-  .facet .f-go span{display:none}
-  .facet .f-name{font-size:1.12rem}
-  .facet .f-line{font-size:.88rem}
   dialog{border-radius:22px;width:calc(100% - 24px);max-height:calc(100dvh - 24px)}
   .dlg{max-height:calc(100dvh - 24px)}
   .dlg-head{padding:18px 20px;gap:14px;align-items:flex-start}
@@ -575,10 +532,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   .dlg-foot .btn{flex:1;padding:13px 10px}
   .dlg-foot .nm{display:none}
   .dlg-foot .dir{display:inline}
-  .rec-strip{align-items:flex-start;padding:18px 20px 18px 24px;gap:16px;border-radius:24px}
-  .rec-strip .lockbox{width:46px;height:46px;border-radius:15px}
-  .rec-strip .rec-text{flex:1 1 0;min-width:0}
-  .rec-tag{display:none}
 
 
   .sm-grid{grid-template-columns:1fr;gap:12px}
@@ -869,31 +822,6 @@ dialog[open]{animation:pop 0.96s var(--ease)}
   </div>
 </section>
 
-<!-- HR FACETS -->
-<section id="facets" data-nav="hr" aria-labelledby="facets-title" style="padding-block:clamp(24px,4vw,48px) 0">
-  <div class="container">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Our HR Areas</span>
-      <h2 id="facets-title">Five Departments. One Workforce.</h2>
-      <p>Select a department to see its deliverables.</p>
-    </div>
-    <div class="facet-grid" id="facet-grid"></div>
-    <noscript><p>Please enable JavaScript to explore the five HR areas.</p></noscript>
-
-    <div class="rec-wrap reveal" id="hr201">
-      <span class="eyebrow">Records and Privacy</span>
-      <div class="rec-strip">
-        <div class="lockbox"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
-        <div class="rec-text">
-          <h3>201 Files</h3>
-          <p>These files are confidential and accessible only to authorized Senior Managers of Staffing and Recruitment and Legal Compliance. Never publish these files on this website.</p>
-        </div>
-        <span class="rec-tag">Confidential</span>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- TEAM -->
 <section class="soft" id="team" data-nav="team" aria-labelledby="team-title">
   <div class="container">
@@ -1057,7 +985,7 @@ const CONFIG = {
   }
 };
 
-/* The five HR areas. "deliv" is shown under Our HR Areas; "roles" (the positions under each
+/* The five HR areas. "deliv" is shown in the deliverables popup; "roles" (the positions under each
    Senior Manager) is shown under Our Team. */
 const FACETS = [
   { key:"staffing", name:"Staffing and Recruitment", icon:"i-userplus",
@@ -1151,13 +1079,6 @@ tapSwitch(".cell");
 tapSwitch(".val-list li");
 
 /* ---------- HR departments + popup ---------- */
-$("#facet-grid").innerHTML = FACETS.map((f, i) => `
-  <button class="facet reveal" style="--d:${i * .06}s" type="button" data-facet="${f.key}" aria-haspopup="dialog" aria-label="${esc(f.name)}: view deliverables">
-    <span class="f-icon">${ico(f.icon)}</span>
-    <span class="f-text"><span class="f-name">${esc(f.name)}</span><span class="f-line">${esc(f.line)}</span></span>
-    <span class="f-go"><span>Explore</span>${ico("i-arrow")}</span>
-  </button>`).join("");
-watch($("#facet-grid"));
 $("#foot-facets").innerHTML = FACETS.map(f => `<li><button type="button" data-facet="${f.key}">${esc(f.name)}</button></li>`).join("");
 
 const dlg = $("#facet-dialog");
