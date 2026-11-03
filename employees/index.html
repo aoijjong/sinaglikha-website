@@ -199,6 +199,34 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .panel.plist{background:none;border:0;box-shadow:none;overflow:visible}
 .panel.plist .panel-h{padding:2px 4px 10px}
 .panel.plist .items .none{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}
+/* a department's own page: a header card, then one card per deliverable that opens to its files */
+.dhero{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:20px 22px;border-radius:26px;background:linear-gradient(135deg,#FFF4C9 0%,#FCD9A0 60%,#F8BE8E 100%);border:1px solid rgba(232,112,26,.18);box-shadow:0 18px 34px -20px rgba(200,90,20,.5);margin-bottom:12px}
+.dh-ic{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.7);color:#B3361A;display:grid;place-items:center;flex:none}
+.dh-ic .icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dh-t{flex:1;min-width:180px}.dh-t h1{font-size:clamp(1.5rem,3.6vw,2.1rem)}.dh-t p{color:#5A4538;margin-top:2px}
+.dh-chip{font-size:.88rem;font-weight:600;color:var(--brown);background:rgba(255,255,255,.65);padding:7px 15px;border-radius:999px;white-space:nowrap}
+.dgroup{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);margin-top:10px;transition:transform .5s var(--ease),border-color .4s,box-shadow .4s}
+.dgroup::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--ease);pointer-events:none}
+@media (hover:hover) and (pointer:fine){.dgroup.has:hover{transform:translateY(-2px);border-color:rgba(206,32,32,.3);box-shadow:var(--shadow-lg)}.dgroup.has:hover::after{transform:none}}
+.dpill{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;padding:10px 16px 10px 10px;font:inherit;color:inherit}
+button.dpill{cursor:pointer}
+.dp-t{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.6)}
+.dp-t .icon{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dp-x{display:flex;flex-direction:column;min-width:0;flex:1}.dp-x b{font-family:var(--serif);font-weight:400;font-size:1.12rem;line-height:1.25;color:var(--brown)}.dp-x small{font-size:.86rem;color:var(--muted)}
+.dp-r{display:flex;align-items:center;gap:8px;flex:none;color:var(--brown)}
+.dp-r .icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transform:rotate(90deg);transition:transform .4s var(--ease)}
+.dgroup.open .dp-r .icon{transform:rotate(-90deg)}
+.dchip{font-size:.78rem;font-weight:700;padding:5px 12px;border-radius:999px;background:#E3F3E4;color:#1E6B2A}.dchip.m{background:#F1EBDD;color:#66554B}
+.dtray{border-top:1px solid var(--line);padding:4px 10px 8px}
+.dfile{display:flex;align-items:center;gap:12px;padding:12px 8px;border-top:1px solid var(--line)}.dfile:first-child{border-top:0}
+.dbadge{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;background:#FCE4DE;color:#9A2A14;font-size:.68rem;font-weight:700;letter-spacing:.04em}
+.dbadge .icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dtext{display:flex;flex-direction:column;min-width:0;flex:1}.dtext b{font-weight:600;font-size:.95rem;overflow-wrap:anywhere}.dtext small{font-size:.82rem;color:var(--muted)}.dtext span{font-size:.88rem;color:var(--ink);margin-top:2px}
+.dacts{display:flex;gap:8px;flex:none}
+.dact{width:38px;height:38px;border-radius:50%;border:1px solid rgba(43,33,28,.35);background:#fff;color:#2B211C;display:grid;place-items:center;cursor:pointer;padding:0;transition:background .3s,border-color .3s}
+.dact .icon{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:hover) and (pointer:fine){.dact:hover{background:var(--cream);border-color:#2B211C}}
+@media (max-width:560px){.dfile{align-items:flex-start;flex-wrap:wrap}.dtext{flex:1 1 calc(100% - 52px)}.dacts{margin-left:52px}.dp-x small{display:none}}
 #att-recent{display:block}
 #att-recent .lrow{background:none;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;transform:none;padding:10px 12px}
 #att-recent .lrow:first-child{border-top:0}
@@ -346,7 +374,6 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
   <section id="v-dept" hidden>
     <div class="back-row">
       <button class="ib line" id="dept-back" type="button" aria-label="Back to the dashboard" data-tip="Back"><i data-icon="back"></i></button>
-      <div><h1 id="dept-name" style="font-size:clamp(1.7rem,4vw,2.4rem)"></h1><p class="fine">Everything published for employees in this department.</p></div>
     </div>
     <div id="dept-body"></div>
   </section>

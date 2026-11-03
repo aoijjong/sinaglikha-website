@@ -405,17 +405,73 @@
     $('#res').innerHTML = listHtml(found, 'Nothing matches "' + $('#q').value.trim() + '".', true);
   }
 
+  var DEPT_LINE = {
+    staffing: 'Finding and welcoming the right people.', training: 'Building skills for a future-ready workforce.', engagement: 'Culture, communication, and community.',
+    rewards: 'Fair pay, benefits, and recognition.', legal: 'Fair, lawful, and safe workplaces.'
+  };
+  var DELIV_ICON = {
+    company_files: 'file', talent_flow: 'file', training_materials: 'book', lms: 'book', career_dev: 'award', communication: 'chat', forum: 'chat',
+    daily_activity: 'calendar', csr: 'users', wellness: 'users', comp_packages: 'file', pms: 'clipboard', incentive_plan: 'award', handbook: 'book',
+    disciplinary_guidelines: 'scale', risk_plan: 'lock'
+  };
+  var PREVIEW_EXT = /^(pdf|png|jpe?g|gif|webp|txt)$/i;
+
+  /* one file in a deliverable's tray: its type, name and details, and round Preview and Download buttons */
+  function fileLine(it) {
+    var meta = [];
+    if (it.folder) meta.push(it.folder);
+    if (it.category) meta.push(it.category);
+    if (it.kind === 'link') meta.push('Link'); else if (it.size) meta.push(fmtSize(it.size));
+    if (it.version) meta.push('Version ' + it.version);
+    if (it.published_at) meta.push(fmtDate(it.published_at));
+    var ext = it.kind === 'link' ? '' : extOf(it.title), acts = '';
+    if (it.kind === 'link') acts = '<button class="dact" type="button" data-open="' + esc(it.id) + '" aria-label="Open the link: ' + esc(it.title) + '" data-tip="Open link">' + I('external') + '</button>';
+    else {
+      if (PREVIEW_EXT.test(ext)) acts += '<button class="dact" type="button" data-open="' + esc(it.id) + '" aria-label="Preview ' + esc(it.title) + '" data-tip="Preview">' + I('eye') + '</button>';
+      acts += '<button class="dact" type="button" data-dl="' + esc(it.id) + '" aria-label="Download ' + esc(it.title) + '" data-tip="Download">' + I('download') + '</button>';
+    }
+    return '<div class="dfile"><span class="dbadge">' + (it.kind === 'link' ? I('link') : esc(ext || 'FILE')) + '</span><span class="dtext"><b>' + esc(it.title) + '</b><small>' + esc(meta.join(' · ')) + '</small>' +
+      (it.description ? '<span>' + esc(it.description) + '</span>' : '') + '</span><span class="dacts">' + acts + '</span></div>';
+  }
+
   function openDept(key) {
     var dep = DEPTS.filter(function (d) { return d[0] === key; })[0];
     if (!dep) return;
-    $('#dept-name').textContent = dep[1];
-    var html = '';
-    content.deliverables.filter(function (d) { return d.department === key; }).forEach(function (d) {
-      var items = content.items.filter(function (i) { return i.deliverable === d.key; });
-      html += '<div class="panel plist" style="margin-bottom:16px"><div class="panel-h"><h2>' + esc(d.name) + '</h2></div><ul class="items">' + listHtml(items, 'Nothing published yet.', false) + '</ul></div>';
+    var groups = content.deliverables.filter(function (d) { return d.department === key; }).map(function (d) {
+      return { d: d, items: content.items.filter(function (i) { return i.deliverable === d.key; }) };
     });
-    $('#dept-body').innerHTML = html || '<p class="fine">Nothing published yet.</p>';
+    var total = groups.reduce(function (n, g) { return n + g.items.length; }, 0);
+    var first = groups.filter(function (g) { return g.items.length; })[0];
+    var html = '<div class="dhero"><span class="dh-ic">' + I(dep[2]) + '</span><div class="dh-t"><h1>' + esc(dep[1]) + '</h1><p>' + esc(DEPT_LINE[key] || '') + '</p></div>' +
+      '<span class="dh-chip">' + (total ? total + (total === 1 ? ' file published' : ' files published') : 'Nothing published yet') + '</span></div>';
+    groups.forEach(function (g) {
+      var n = g.items.length, open = g === first;
+      var head = '<span class="dp-t">' + I(DELIV_ICON[g.d.key] || 'file') + '</span><span class="dp-x"><b>' + esc(g.d.name) + '</b><small>' + (n ? 'Published for employees' : 'Nothing published yet') + '</small></span>' +
+        '<span class="dp-r"><span class="dchip' + (n ? '' : ' m') + '">' + (n ? n + (n === 1 ? ' file' : ' files') : 'Empty') + '</span>' + (n ? I('chevron') : '') + '</span>';
+      html += '<div class="dgroup' + (n ? ' has' : '') + (open ? ' open' : '') + '">' +
+        (n ? '<button class="dpill" type="button" data-dtoggle aria-expanded="' + open + '">' + head + '</button><div class="dtray"' + (open ? '' : ' hidden') + '>' + g.items.map(fileLine).join('') + '</div>'
+           : '<div class="dpill">' + head + '</div>') + '</div>';
+    });
+    if (!groups.length) html += '<p class="fine" style="margin-top:14px">Nothing published yet.</p>';
+    $('#dept-body').innerHTML = html;
     show('dept');
+  }
+
+  /* open or close a deliverable's tray */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-dtoggle]');
+    if (!b) return;
+    var g = b.closest('.dgroup'), tray = g.querySelector('.dtray'), on = tray.hidden;
+    tray.hidden = !on;
+    g.classList.toggle('open', on);
+    b.setAttribute('aria-expanded', String(on));
+  });
+  /* Download: the file is saved by the browser, the page stays where it is */
+  async function downloadUrl(path) {
+    var r = await call('GET', path);
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok || !r.data.url) { toast((r.data && r.data.error) || "Couldn't download that."); return; }
+    window.location.href = r.data.url;
   }
 
   /* ---------- evaluations: the Self and Peer forms, filled in on a page of their own ---------- */
@@ -708,6 +764,7 @@
     var t;
     if ((t = e.target.closest('[data-form]'))) { if (/^https?:\/\//i.test(t.dataset.form)) window.open(t.dataset.form, '_blank', 'noopener'); }
     else if ((t = e.target.closest('[data-annfile]'))) openUrl('/api/employee-content?ann=' + encodeURIComponent(t.dataset.annfile) + '&i=' + encodeURIComponent(t.dataset.i));
+    else if ((t = e.target.closest('[data-dl]'))) downloadUrl('/api/employee-content?dl=1&file=' + encodeURIComponent(t.dataset.dl));
     else if ((t = e.target.closest('[data-open]'))) openUrl('/api/employee-content?file=' + encodeURIComponent(t.dataset.open));
     else if ((t = e.target.closest('[data-rec]'))) openUrl('/api/employee-content?record=' + encodeURIComponent(t.dataset.rec));
     else if ((t = e.target.closest('[data-dept]'))) openDept(t.dataset.dept);
