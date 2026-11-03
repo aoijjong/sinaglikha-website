@@ -318,4 +318,7 @@ button.lmain{cursor:pointer}
   /* iPhones zoom the whole page when a field's text is under 16px, which leaves it swipeable sideways */
   input,select,textarea{font-size:16px!important}
   body{overflow-x:clip}
+  /* Records types: three equal pills on one row */
+  #rc-kind .pill{display:none}
+  #rc-kind .dp-pick{display:block;width:100%}
 }
