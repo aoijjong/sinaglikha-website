@@ -304,11 +304,25 @@ async function learningSummary(eid) {
 /* The Self and Peer evaluation forms that are switched on and open today, for the employee's dashboard.
    Weights stay on the server. A self form also carries this employee's own answers so far; a peer form
    only says how many colleagues they have already evaluated with it, never who. */
+const QTYPES = ['short', 'paragraph', 'choice', 'checkbox', 'dropdown', 'rating', 'stars', 'date', 'time'];
+function qType(c) {
+  const t = c && c.type;
+  if (t === 'text') return 'paragraph';          // the older name for a paragraph question
+  return QTYPES.indexOf(t) !== -1 ? t : 'rating';
+}
+const isScored = (t) => t === 'rating' || t === 'stars';
+const hasOptions = (t) => t === 'choice' || t === 'checkbox' || t === 'dropdown';
+function optionsOf(c) {
+  return hasOptions(qType(c)) && Array.isArray(c.options) ? c.options.map((o) => String(o)) : [];
+}
 function questionsOf(f) {
-  return (Array.isArray(f.criteria) ? f.criteria : []).map((c) => ({
-    id: String(c.id || ''), type: c.type === 'text' ? 'text' : 'rating', title: String(c.title || ''),
-    description: String(c.description || ''), required: c.required === undefined ? c.type !== 'text' : !!c.required
-  }));
+  return (Array.isArray(f.criteria) ? f.criteria : []).map((c) => {
+    const type = qType(c);
+    return {
+      id: String(c.id || ''), type, title: String(c.title || ''), description: String(c.description || ''),
+      required: c.required === undefined ? isScored(type) : !!c.required, options: optionsOf(c)
+    };
+  });
 }
 async function evaluationForms(eid) {
   const today = manilaDate();
@@ -333,7 +347,7 @@ async function evaluationForms(eid) {
       const o = own[f.id];
       return Object.assign(shape(f), {
         status: o ? o.status : 'new',
-        answers: o ? (o.criteria || []).map((c) => ({ id: c.id, rating: c.rating === undefined ? null : c.rating, comment: c.comment || '' })) : [],
+        answers: o ? (o.criteria || []).map((c) => ({ id: c.id, rating: c.rating === undefined ? null : c.rating, comment: c.comment || '', picked: Array.isArray(c.picked) ? c.picked : [] })) : [],
         overall: o ? o.overall_comment || '' : ''
       });
     }),
@@ -366,7 +380,7 @@ async function forumFeed(eid) {
 }
 
 module.exports = {
-  list, namesOf, photoPack, evaluationForms, questionsOf, attendanceRecent, learningSummary, forumFeed,
+  list, namesOf, photoPack, evaluationForms, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,

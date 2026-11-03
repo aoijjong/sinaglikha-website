@@ -20,7 +20,7 @@
   if (!app) return;
 
   var sb = app.sb, state = app.state, esc = app.esc, toast = app.toast, ask = app.ask, logAction = app.logAction;
-  var I = window.SngIcon, IB = window.SngIconButton;
+  var I = window.SngIcon, IB = window.SngIconButton, F = window.SngEvalForm;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var DEFAULT_LABELS = ['Needs improvement', 'Below expectations', 'Meets expectations', 'Exceeds expectations', 'Outstanding'];
   var CATS = {
@@ -54,19 +54,6 @@
   function labelFor(card, n) {
     var l = card && Array.isArray(card.labels) ? card.labels[n - 1] : '';
     return l ? String(l) : '';
-  }
-  function isText(c) { return c && c.type === 'text'; }
-
-  /* The weighted score of the rated questions, as a percentage of the best possible. Same sum as the database. */
-  function scoreOf(criteria, scaleMax) {
-    var got = 0, tot = 0, blocked = false;
-    criteria.forEach(function (c) {
-      if (isText(c)) return;
-      var w = num(c.weight), req = c.required === undefined ? true : !!c.required;
-      if (c.rating) { got += (num(c.rating) / scaleMax) * w; tot += w; }
-      else if (req) { blocked = true; tot += w; }
-    });
-    return blocked || !tot ? null : Math.round((got / tot) * 1000) / 10;
   }
   function fmtScore(s) { return s === null || s === undefined ? 'Not scored' : String(Number(s)) + '%'; }
 
@@ -201,7 +188,8 @@
 
   /* ---------- building a form: a page, in the style of Google Forms ---------- */
   function blankQuestion(type) {
-    return { id: newId(), type: type || 'rating', title: '', description: '', weight: 20, required: type !== 'text' };
+    type = type || 'rating';
+    return { id: newId(), type: type, title: '', description: '', weight: 20, required: F.isScored(type), options: F.hasOptions(type) ? ['Option 1'] : [] };
   }
 
   function openBuilder(c) {
@@ -218,7 +206,8 @@
       active: c ? c.active : true,
       sel: 0,
       questions: c ? c.criteria.map(function (x) {
-        return { id: x.id || newId(), type: x.type === 'text' ? 'text' : 'rating', title: x.title || '', description: x.description || '', weight: x.weight || 20, required: x.required === undefined ? x.type !== 'text' : !!x.required };
+        var t = F.qType(x);
+        return { id: x.id || newId(), type: t, title: x.title || '', description: x.description || '', weight: x.weight || 20, required: F.isRequired(x), options: F.hasOptions(t) && Array.isArray(x.options) ? x.options.slice() : [] };
       }) : [blankQuestion('rating')]
     };
     ev.view = 'builder';
@@ -243,26 +232,33 @@
       var w = $('.q-w', card);
       if (w) q.weight = w.value;
       q.required = $('.q-req', card).checked;
+      if (F.hasOptions(q.type)) q.options = Array.prototype.map.call(card.querySelectorAll('.q-opt'), function (inp) { return inp.value; });
     }
   }
 
-  function scalePreview() {
-    var opts = '';
-    for (var n = 1; n <= bd.scale_max; n++) opts += '<div class="gf-opt"><span>' + n + '</span><button type="button" disabled tabindex="-1" aria-hidden="true"></button></div>';
-    return '<div class="gf-scale gf-prev">' + (bd.labels[0] ? '<span class="gf-end">' + esc(bd.labels[0]) + '</span>' : '') + opts + (bd.labels[bd.scale_max - 1] ? '<span class="gf-end">' + esc(bd.labels[bd.scale_max - 1]) + '</span>' : '') + '</div>';
-  }
+  function formCtx() { return { scale_max: bd.scale_max, labels: bd.labels }; }
   function previewQ(q) {
     var inner = '<div class="gf-qt">' + esc(q.title || 'Untitled question') + (q.required ? '<span class="s">*</span>' : '') + '</div>' + (q.description ? '<div class="gf-qd">' + esc(q.description) + '</div>' : '');
-    return inner + (q.type === 'text' ? '<div class="gf-ans gf-prev"><input type="text" disabled placeholder="Written answer"></div>' : scalePreview());
+    return inner + F.preview(q, formCtx());
+  }
+
+  function optionRows(q) {
+    var sq = q.type === 'checkbox';
+    return '<div class="gf-opts">' + q.options.map(function (o, k) {
+      return '<div class="gf-optrow">' + (q.type === 'dropdown' ? '<span style="width:18px;color:var(--muted)">' + (k + 1) + '.</span>' : '<span class="mark' + (sq ? ' sq' : '') + '"></span>') +
+        '<input class="gf-in q-opt" type="text" maxlength="100" value="' + esc(o) + '" placeholder="Option ' + (k + 1) + '" aria-label="Option ' + (k + 1) + '">' +
+        (q.options.length > 1 ? IB('x', 'Remove this option', { 'data-q': 'rmopt', 'data-oi': k }) : '') + '</div>';
+    }).join('') + '<button class="gf-addopt" type="button" data-q="addopt">Add option</button></div>';
   }
 
   function editQ(q, i) {
+    var scored = F.isScored(q.type);
+    var typeOpts = F.TYPES.map(function (t) { return '<option value="' + t[0] + '"' + (q.type === t[0] ? ' selected' : '') + '>' + t[1] + (t[0] === 'rating' ? ' (1 to ' + bd.scale_max + ')' : '') + '</option>'; }).join('');
     return '<div class="gf-qtop"><input class="gf-in gf-q-in" type="text" maxlength="160" placeholder="Question" value="' + esc(q.title) + '" aria-label="Question ' + (i + 1) + '">' +
-      '<select data-q="type" aria-label="Question type"><option value="rating"' + (q.type === 'rating' ? ' selected' : '') + '>Rating scale (1 to ' + bd.scale_max + ')</option>' +
-      '<option value="text"' + (q.type === 'text' ? ' selected' : '') + '>Written answer</option></select></div>' +
+      '<select data-q="type" aria-label="Question type">' + typeOpts + '</select></div>' +
       '<input class="gf-in q-desc" type="text" maxlength="400" placeholder="Description (optional)" value="' + esc(q.description) + '" aria-label="Description for question ' + (i + 1) + '" style="margin-top:8px">' +
-      (q.type === 'text' ? '<div class="gf-ans gf-prev"><input type="text" disabled placeholder="Written answer"></div>' : scalePreview()) +
-      '<div class="gf-qfoot">' + (q.type === 'rating' ? '<span class="w">Weight <input class="q-w" type="number" min="1" max="100" step="1" value="' + esc(q.weight) + '" aria-label="Weight"></span>' : '') +
+      (F.hasOptions(q.type) ? optionRows(q) : F.preview(q, formCtx())) +
+      '<div class="gf-qfoot">' + (scored ? '<span class="w">Weight <input class="q-w" type="number" min="1" max="100" step="1" value="' + esc(q.weight) + '" aria-label="Weight"></span>' : '') +
       IB('arrowUp', 'Move up', { 'data-q': 'up' }) + IB('arrowDown', 'Move down', { 'data-q': 'down' }) + IB('copy', 'Duplicate', { 'data-q': 'dup' }) + IB('trash', 'Delete question', { 'data-q': 'del' }, 'danger') +
       '<label class="gf-sw"><input class="q-req" type="checkbox"' + (q.required ? ' checked' : '') + '><i></i>Required</label></div>';
   }
@@ -317,6 +313,8 @@
       else if (k === 'up' && i > 0) { bd.questions.splice(i - 1, 0, bd.questions.splice(i, 1)[0]); bd.sel = i - 1; }
       else if (k === 'down' && i < bd.questions.length - 1) { bd.questions.splice(i + 1, 0, bd.questions.splice(i, 1)[0]); bd.sel = i + 1; }
       else if (k === 'dup') { var cp = JSON.parse(JSON.stringify(bd.questions[i])); cp.id = newId(); bd.questions.splice(i + 1, 0, cp); bd.sel = i + 1; }
+      else if (k === 'addopt') { var oq = bd.questions[i]; if (oq.options.length < 30) oq.options.push('Option ' + (oq.options.length + 1)); }
+      else if (k === 'rmopt') { var rq = bd.questions[i]; if (rq.options.length > 1) rq.options.splice(Number(b.dataset.oi), 1); }
       drawBuilder();
       return;
     }
@@ -333,7 +331,8 @@
       readBuilder();
       var q = bd.questions[bd.sel];
       q.type = e.target.value;
-      q.required = q.type !== 'text';
+      q.required = F.isScored(q.type);
+      if (F.hasOptions(q.type) && !q.options.length) q.options = ['Option 1'];
       drawBuilder();
     } else if (e.target.id === 'bd-scale') {
       readBuilder();
@@ -352,14 +351,17 @@
     readBuilder();
     var err = $('#bd-err', ev.box), problem = '';
     var qs = bd.questions.map(function (q) {
-      return { id: q.id, type: q.type, title: String(q.title).trim(), description: String(q.description).trim(), weight: q.type === 'rating' ? num(q.weight) : 0, required: !!q.required };
+      var o = { id: q.id, type: q.type, title: String(q.title).trim(), description: String(q.description).trim(), weight: F.isScored(q.type) ? num(q.weight) : 0, required: !!q.required };
+      if (F.hasOptions(q.type)) o.options = q.options.map(function (x) { return String(x).trim(); }).filter(Boolean);
+      return o;
     });
     if (!bd.title.trim()) problem = 'Give the form a title.';
     else if (!bd.category) problem = 'Choose who fills in this form.';
     else if ((bd.category === 'self' || bd.category === 'peer') && !bd.period.trim()) problem = 'Enter the period for this form, for example 2026 Q4.';
     else if (bd.opens_on && bd.closes_on && bd.closes_on < bd.opens_on) problem = 'The closing date is before the opening date.';
     else if (qs.some(function (q) { return !q.title; })) problem = 'Every question needs a title. Delete any empty ones.';
-    else if (qs.some(function (q) { return q.type === 'rating' && (q.weight < 1 || q.weight > 100); })) problem = 'Each rating question needs a weight between 1 and 100.';
+    else if (qs.some(function (q) { return F.hasOptions(q.type) && !q.options.length; })) problem = 'Add at least one option to every choice question.';
+    else if (qs.some(function (q) { return F.isScored(q.type) && (q.weight < 1 || q.weight > 100); })) problem = 'Each scored question (linear scale or stars) needs a weight between 1 and 100.';
     if (problem) { err.textContent = problem; err.hidden = false; err.scrollIntoView({ block: 'center' }); return; }
     err.hidden = true;
     var fields = {
@@ -434,7 +436,8 @@
     var go = $('#st-go', ev.box);
     go.disabled = true;
     var crit = card.criteria.map(function (c) {
-      return { id: c.id, type: c.type === 'text' ? 'text' : 'rating', title: c.title, description: c.description || '', weight: c.weight || 0, required: c.required === undefined ? c.type !== 'text' : !!c.required, rating: null, comment: '' };
+      var t = F.qType(c);
+      return { id: c.id, type: t, title: c.title, description: c.description || '', weight: c.weight || 0, required: F.isRequired(c), options: F.hasOptions(t) && Array.isArray(c.options) ? c.options : [], rating: null, comment: '', picked: [] };
     });
     var res = await sb.from('evaluations').insert({ employee_id: emp, scorecard_id: card.id, scorecard_title: card.title, period: period, scale_max: card.scale_max, criteria: crit, overall_comment: '', status: 'draft' }).select(COLS).maybeSingle();
     go.disabled = false;
@@ -459,22 +462,7 @@
     window.scrollTo(0, 0);
   }
 
-  function questionCard(c, i, ro) {
-    var r = ev.cur;
-    var req = c.required === undefined ? !isText(c) : !!c.required;
-    var inner = '<div class="gf-qt">' + esc(c.title) + (req && !ro ? '<span class="s">*</span>' : '') + '</div>' + (c.description ? '<div class="gf-qd">' + esc(c.description) + '</div>' : '');
-    if (isText(c)) {
-      inner += '<div class="gf-ans"><textarea class="q-text" maxlength="1000" rows="2" placeholder="Your answer"' + (ro ? ' disabled' : '') + '>' + esc(c.comment || '') + '</textarea></div>';
-    } else {
-      var opts = '';
-      for (var n = 1; n <= r.scale_max; n++) opts += '<div class="gf-opt"><span>' + n + '</span><button type="button" data-n="' + n + '" aria-label="' + n + (labelFor(ev.card, n) ? ': ' + esc(labelFor(ev.card, n)) : '') + '" aria-pressed="' + (Number(c.rating) === n) + '"' + (ro ? ' disabled' : '') + '></button></div>';
-      inner += '<div class="gf-scale" role="group" aria-label="' + esc(c.title) + '">' + (labelFor(ev.card, 1) ? '<span class="gf-end">' + esc(labelFor(ev.card, 1)) + '</span>' : '') + opts +
-        (labelFor(ev.card, r.scale_max) ? '<span class="gf-end">' + esc(labelFor(ev.card, r.scale_max)) + '</span>' : '') + '</div>' +
-        '<div class="gf-pick">' + esc(c.rating ? labelFor(ev.card, Number(c.rating)) : '') + '</div>' +
-        '<div class="gf-ans"><input class="q-cmt" type="text" maxlength="1000" placeholder="Comment (optional)" value="' + esc(c.comment || '') + '"' + (ro ? ' disabled' : '') + '></div>';
-    }
-    return '<div class="gf-card" data-i="' + i + '">' + inner + '<div class="gf-err" hidden></div></div>';
-  }
+  function evalCtx() { return { scale_max: ev.cur.scale_max, labels: ev.card && Array.isArray(ev.card.labels) ? ev.card.labels : [] }; }
 
   function drawEval() {
     var r = ev.cur, p = person(r.employee_id), cat = CATS[r.category] || CATS.manager;
@@ -486,7 +474,7 @@
       '<div class="gf"><div class="gf-card head"><h1 class="gf-h1">' + esc(r.scorecard_title) + '</h1><div class="gf-meta"><b>' + esc(p ? p.full_name : '') + '</b></div><div class="gf-meta">' + meta.map(esc).join(' · ') + '</div>' +
       '<div class="gf-meta"><span class="gf-chip">' + (r.status === 'final' ? 'Final' : 'Draft') + '</span>' + (r.status === 'final' && r.finalized_at ? '<span>Finalised ' + esc(fmtDay(r.finalized_at)) + '</span>' : '') + '</div></div>' +
       '<div class="gf-card"><div class="gf-score" id="ee-score"></div></div>' +
-      (r.criteria || []).map(function (c, i) { return questionCard(c, i, ro); }).join('') +
+      (r.criteria || []).map(function (c, i) { return F.card(c, evalCtx(), ro, i); }).join('') +
       '<div class="gf-card"><div class="gf-qt">Overall comments</div><div class="gf-ans"><textarea id="ee-over" maxlength="3000" rows="3"' + (ro ? ' disabled' : '') + '>' + esc(r.overall_comment || '') + '</textarea></div></div>' +
       '<p class="gf-err" id="ee-err" role="alert" hidden></p>' +
       '<div class="gf-bar"><div class="l"><button class="btn btn-ghost btn-sm" type="button" data-a="eval-back">Close</button><button class="btn btn-ghost btn-sm" type="button" data-a="print">Print or PDF</button></div><div class="r">' +
@@ -496,53 +484,21 @@
   }
 
   function paintScore() {
-    var r = ev.cur, rated = r.criteria.filter(function (c) { return !isText(c) && c.rating; }).length, total = r.criteria.filter(function (c) { return !isText(c); }).length;
-    var s = scoreOf(r.criteria, r.scale_max);
-    $('#ee-score', ev.box).innerHTML = '<b>' + (s === null ? 'Not scored yet' : s + '%') + '</b><span>' + rated + ' of ' + total + ' rated</span>';
+    var r = ev.cur, n = F.scoredCount(r.criteria), sc = F.score(r.criteria, r.scale_max);
+    $('#ee-score', ev.box).innerHTML = '<b>' + (sc === null ? 'Not scored yet' : sc + '%') + '</b><span>' + n.rated + ' of ' + n.total + ' rated</span>';
   }
 
   function readEval() {
-    var r = ev.cur;
-    Array.prototype.forEach.call(ev.box.querySelectorAll('.gf-card[data-i]'), function (card) {
-      var c = r.criteria[Number(card.dataset.i)];
-      var t = $('.q-text', card), m = $('.q-cmt', card);
-      if (t) c.comment = t.value.trim();
-      if (m) c.comment = m.value.trim();
-    });
     var over = $('#ee-over', ev.box);
-    if (over) r.overall_comment = over.value.trim();
-  }
-
-  function evalClick(e) {
-    var dot = e.target.closest('.gf-opt button');
-    if (dot && !dot.disabled) {
-      var card = dot.closest('.gf-card'), i = Number(card.dataset.i), n = Number(dot.dataset.n), r = ev.cur;
-      readEval();
-      r.criteria[i].rating = Number(r.criteria[i].rating) === n ? null : n;
-      Array.prototype.forEach.call(card.querySelectorAll('.gf-opt button'), function (b) { b.setAttribute('aria-pressed', String(Number(b.dataset.n) === Number(r.criteria[i].rating))); });
-      $('.gf-pick', card).textContent = r.criteria[i].rating ? labelFor(ev.card, Number(r.criteria[i].rating)) : '';
-      card.classList.remove('bad');
-      $('.gf-err', card).hidden = true;
-      paintScore();
-    }
+    if (over) ev.cur.overall_comment = over.value.trim();
   }
 
   async function saveEval(finalise) {
     var r = ev.cur, err = $('#ee-err', ev.box);
     readEval();
-    var bad = false;
     if (finalise) {
-      Array.prototype.forEach.call(ev.box.querySelectorAll('.gf-card[data-i]'), function (card) {
-        var c = r.criteria[Number(card.dataset.i)];
-        var req = c.required === undefined ? !isText(c) : !!c.required;
-        var miss = req && (isText(c) ? !String(c.comment || '').trim() : !c.rating);
-        card.classList.toggle('bad', miss);
-        var m = $('.gf-err', card);
-        m.hidden = !miss;
-        m.textContent = miss ? 'This is a required question' : '';
-        if (miss) bad = true;
-      });
-      if (bad) { err.textContent = 'Answer every required question before you finalise.'; err.hidden = false; var first = $('.gf-card.bad', ev.box); if (first) first.scrollIntoView({ block: 'center' }); return; }
+      var ids = F.missing(r.criteria);
+      if (ids.length) { F.markMissing(ev.box, ids); err.textContent = 'Answer every required question before you finalise.'; err.hidden = false; return; }
     }
     err.hidden = true;
     var btns = [$('#ee-save', ev.box), $('#ee-final', ev.box)];
@@ -609,7 +565,7 @@
         r.score === null || r.score === undefined ? '' : r.score, r.scale_max, r.evaluator_name, fmtDay(r.finalized_at), r.overall_comment];
       titles.forEach(function (t) {
         var c = (r.criteria || []).filter(function (x) { return x.title === t; })[0];
-        row.push(c && c.rating ? c.rating : '', c ? c.comment || '' : '');
+        row.push(c && c.rating ? c.rating : '', c ? (F.isScored(F.qType(c)) ? c.comment || '' : F.text(c)) : '');
       });
       lines.push(row.map(csvCell).join(','));
     });
@@ -630,10 +586,11 @@
     var w = window.open('', '_blank');
     if (!w) { toast('Allow pop-ups to print or save a PDF.', 'bad'); return; }
     var rows = (r.criteria || []).map(function (c) {
-      if (isText(c)) return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">-</td><td colspan="2">' + esc(c.comment || '') + '</td></tr>';
-      var lab = c.rating ? labelFor(card, Number(c.rating)) : '';
+      var qt = F.qType(c);
+      if (!F.isScored(qt)) return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">-</td><td colspan="2">' + esc(F.text(c)) + '</td></tr>';
+      var mx = qt === 'stars' ? 5 : r.scale_max, lab = c.rating && qt === 'rating' ? labelFor(card, Number(c.rating)) : '';
       return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">' + esc(c.weight) + '</td>' +
-        '<td class="c"><b>' + (c.rating ? esc(c.rating) + ' / ' + esc(r.scale_max) : 'Not rated') + '</b>' + (lab ? '<div class="m">' + esc(lab) + '</div>' : '') + '</td><td>' + esc(c.comment || '') + '</td></tr>';
+        '<td class="c"><b>' + (c.rating ? esc(c.rating) + ' / ' + esc(mx) : 'Not rated') + '</b>' + (lab ? '<div class="m">' + esc(lab) + '</div>' : '') + '</td><td>' + esc(c.comment || '') + '</td></tr>';
     }).join('');
     var score = r.status === 'final' ? fmtScore(r.score) : 'Draft: ' + (r.score === null || r.score === undefined ? 'not scored' : r.score + '% so far');
     w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Evaluation - ' + esc(p ? p.full_name : '') + ' - ' + esc(r.period) + '</title><style>' +
@@ -658,7 +615,6 @@
   /* ---------- clicks ---------- */
   function onClick(e) {
     if (ev.view === 'builder') { builderClick(e); return; }
-    if (ev.view === 'eval') evalClick(e);
     var t = e.target.closest('[data-tab]');
     if (t && ev.view === 'list') { ev.tab = t.dataset.tab; drawList(); return; }
     var cat = e.target.closest('[data-cat]');
@@ -703,6 +659,10 @@
       shellList();
       box.onclick = onClick;
       box.onchange = onChange;
+      if (!box._efBound) {
+        box._efBound = true;
+        F.bind(box, function () { return ev.view === 'eval' && ev.cur ? ev.cur.criteria : []; }, function () { return ev.view === 'eval' && ev.cur ? evalCtx() : { scale_max: 5, labels: [] }; }, function () { if (ev.view === 'eval') paintScore(); });
+      }
       await load();
       drawList();
     }

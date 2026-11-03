@@ -215,3 +215,27 @@ button.lmain{cursor:pointer}
 .gf-done{text-align:center;padding:34px 22px}
 .gf-done h2{font-family:var(--serif);font-weight:400;color:var(--brown);margin:0 0 6px}
 .gf-chip{display:inline-block;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--cream);color:var(--brown)}
+.gf-choices{display:grid;gap:4px;margin-top:10px}
+.gf-ch{display:flex;align-items:center;gap:12px;background:none;border:0;padding:6px 2px;font:inherit;color:var(--ink);cursor:pointer;text-align:left;overflow-wrap:anywhere}
+.gf-ch i{width:20px;height:20px;border:2px solid #8C7F73;border-radius:50%;flex:none;display:grid;place-items:center;background:#fff;transition:border-color .15s}
+.gf-ch.sq i{border-radius:4px}
+.gf-ch i::after{content:"";width:10px;height:10px;border-radius:50%;background:#C21E1E;transform:scale(0);transition:transform .15s}
+.gf-ch.sq i::after{border-radius:2px}
+.gf-ch[aria-pressed="true"] i{border-color:#C21E1E}.gf-ch[aria-pressed="true"] i::after{transform:scale(1)}
+.gf-ch:disabled{cursor:default;opacity:.85}
+.gf-prev.gf-choices .gf-ch{cursor:default}
+.gf-sel{width:100%;max-width:340px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#fff;font:inherit;color:var(--ink)}
+.gf-sel:focus{outline:none;border-color:#C21E1E;box-shadow:0 0 0 3px rgba(206,32,32,.14)}
+.gf-dd{margin:10px 0 0;padding:0 0 0 2px;list-style:none;color:var(--muted);display:grid;gap:4px}
+.gf-stars{display:flex;gap:2px;margin-top:12px}
+.gf-star{background:none;border:0;padding:2px;cursor:pointer;color:#B8AA9B;line-height:0}
+.gf-star svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.5}
+.gf-star[aria-pressed="true"]{color:#E8A317}.gf-star[aria-pressed="true"] svg{fill:currentColor}
+.gf-star:disabled{cursor:default}
+.gf-stars.gf-prev .gf-star{cursor:default}
+.gf-opts{display:grid;gap:6px;margin-top:10px}
+.gf-optrow{display:flex;align-items:center;gap:8px}
+.gf-optrow .mark{width:18px;height:18px;border:2px solid #B8AA9B;border-radius:50%;flex:none}.gf-optrow .mark.sq{border-radius:4px}
+.gf-optrow .gf-in{flex:1;min-width:0}
+.gf-addopt{background:none;border:0;color:#1A5FB4;font:inherit;font-size:.92rem;cursor:pointer;padding:6px 2px;text-align:left}
+.gf-addopt:hover{text-decoration:underline}

@@ -420,7 +420,8 @@
 
   /* ---------- evaluations: the Self and Peer forms, filled in on a page of their own ---------- */
   var evals = { self: [], peer: [] };
-  var ef = null;   // the form being filled in: { kind, form, name, answers, overall, step, readonly }
+  var ef = null;   // the form being filled in: { kind, form, qs, name, overall, step, readonly }
+  var F = window.SngEvalForm;
 
   function renderEvals() {
     var all = (evals.self || []).length + (evals.peer || []).length;
@@ -448,23 +449,6 @@
       (ef.readonly ? '<div class="gf-meta"><span class="gf-chip">Submitted</span></div>' : ''), 'head');
   }
 
-  function efQuestion(q, i) {
-    var a = ef.answers[q.id] || {};
-    var star = q.required && !ef.readonly ? '<span class="s">*</span>' : '';
-    var inner = '<div class="gf-qt">' + esc(q.title) + star + '</div>' + (q.description ? '<div class="gf-qd">' + esc(q.description) + '</div>' : '');
-    if (q.type === 'text') {
-      inner += '<div class="gf-ans"><textarea data-ans="' + esc(q.id) + '" maxlength="1000" rows="2" placeholder="Your answer"' + (ef.readonly ? ' disabled' : '') + '>' + esc(a.comment || '') + '</textarea></div>';
-    } else {
-      var f = ef.form, opts = '';
-      for (var n = 1; n <= f.scale_max; n++) {
-        opts += '<div class="gf-opt"><span>' + n + '</span><button type="button" data-rate="' + esc(q.id) + '" data-n="' + n + '" aria-label="' + n + (f.labels[n - 1] ? ': ' + esc(f.labels[n - 1]) : '') + '" aria-pressed="' + (Number(a.rating) === n) + '"' + (ef.readonly ? ' disabled' : '') + '></button></div>';
-      }
-      inner += '<div class="gf-scale" role="group" aria-label="' + esc(q.title) + '">' + (f.labels[0] ? '<span class="gf-end">' + esc(f.labels[0]) + '</span>' : '') + opts +
-        (f.labels[f.scale_max - 1] ? '<span class="gf-end">' + esc(f.labels[f.scale_max - 1]) + '</span>' : '') + '</div>';
-    }
-    return '<div class="gf-card" data-q="' + esc(q.id) + '">' + inner + '<div class="gf-err" hidden></div></div>';
-  }
-
   function drawEval() {
     var f = ef.form, html = efHead(f);
     if (ef.step === 'who') {
@@ -474,10 +458,10 @@
     } else if (ef.step === 'done') {
       html += efCard('<div class="gf-done"><h2>Thank you</h2><p>' + (ef.kind === 'self' ? 'Your self-assessment has been submitted.' : 'Your evaluation has been sent.') + '</p>' +
         '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">' +
-        (ef.kind === 'peer' && !ef.form.closed ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-again">Evaluate another colleague</button>' : '') +
+        (ef.kind === 'peer' ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-again">Evaluate another colleague</button>' : '') +
         '<button class="btn btn-primary btn-sm" type="button" id="ef-home">Back to the dashboard</button></div></div>');
     } else {
-      html += f.questions.map(efQuestion).join('');
+      html += ef.qs.map(function (q, i) { return F.card(q, f, ef.readonly, i); }).join('');
       html += efCard('<div class="gf-qt">Anything else you would like to add?</div><div class="gf-ans"><textarea id="ef-over" maxlength="3000" rows="3" placeholder="Optional"' + (ef.readonly ? ' disabled' : '') + '>' + esc(ef.overall) + '</textarea></div>');
       if (!ef.readonly) {
         html += '<div class="gf-bar"><div class="l"><button class="btn btn-primary btn-sm" type="button" id="ef-send">' + (ef.kind === 'self' ? 'Submit' : 'Send evaluation') + '</button>' +
@@ -490,42 +474,29 @@
   function openEvalForm(kind, id) {
     var f = (evals[kind] || []).filter(function (x) { return x.id === id; })[0];
     if (!f) return;
-    ef = { kind: kind, form: f, name: '', answers: {}, overall: '', step: kind === 'peer' ? 'who' : 'form', readonly: kind === 'self' && f.status === 'final' };
-    if (kind === 'self') {
-      f.answers.forEach(function (a) { ef.answers[a.id] = { rating: a.rating, comment: a.comment }; });
-      ef.overall = f.overall || '';
-    }
+    var mine = {};
+    if (kind === 'self') (f.answers || []).forEach(function (a) { mine[a.id] = a; });
+    ef = {
+      kind: kind, form: f, name: '', overall: kind === 'self' ? f.overall || '' : '', step: kind === 'peer' ? 'who' : 'form', readonly: kind === 'self' && f.status === 'final',
+      qs: f.questions.map(function (q) {
+        var a = mine[q.id] || {};
+        return Object.assign({}, q, { rating: a.rating || null, comment: a.comment || '', picked: Array.isArray(a.picked) ? a.picked.slice() : [] });
+      })
+    };
     $('#eval-title').textContent = kind === 'self' ? 'Self-assessment' : 'Evaluate a colleague';
     drawEval();
     show('eval');
   }
 
-  function efCollect() {
+  function efPayload(extra) {
     var over = $('#ef-over');
     if (over) ef.overall = over.value;
-    Array.prototype.forEach.call(document.querySelectorAll('#eval-body [data-ans]'), function (t) {
-      ef.answers[t.getAttribute('data-ans')] = Object.assign(ef.answers[t.getAttribute('data-ans')] || {}, { comment: t.value });
-    });
-  }
-  function efPayload(extra) {
-    efCollect();
-    var answers = ef.form.questions.map(function (q) {
-      var a = ef.answers[q.id] || {};
-      return { id: q.id, rating: q.type === 'rating' && a.rating ? Number(a.rating) : null, comment: q.type === 'text' ? (a.comment || '') : '' };
-    });
-    return Object.assign({ form_id: ef.form.id, answers: answers, overall: ef.overall }, extra);
+    return Object.assign({ form_id: ef.form.id, answers: F.answers(ef.qs), overall: ef.overall }, extra);
   }
   function efMissing() {
-    efCollect();
-    var bad = false;
-    ef.form.questions.forEach(function (q) {
-      var a = ef.answers[q.id] || {}, card = document.querySelector('#eval-body [data-q="' + q.id + '"]');
-      var empty = q.type === 'text' ? !String(a.comment || '').trim() : !a.rating;
-      var miss = q.required && empty;
-      if (card) { card.classList.toggle('bad', miss); var e = card.querySelector('.gf-err'); e.hidden = !miss; e.textContent = miss ? 'This is a required question' : ''; }
-      if (miss) bad = true;
-    });
-    return bad;
+    var ids = F.missing(ef.qs);
+    F.markMissing($('#eval-body'), ids);
+    return ids.length > 0;
   }
   async function refreshEvals() {
     var r = await call('GET', '/api/employee-evaluate');
@@ -534,7 +505,7 @@
 
   async function efSubmit(kind) {
     var msg = $('#ef-msg');
-    if (kind !== 'draft' && efMissing()) { msg.textContent = 'Please answer the required questions.'; var first = document.querySelector('#eval-body .gf-card.bad'); if (first) first.scrollIntoView({ block: 'center' }); return; }
+    if (kind !== 'draft' && efMissing()) { msg.textContent = 'Please answer the required questions.'; return; }
     msg.textContent = '';
     var btns = Array.prototype.slice.call(document.querySelectorAll('#ef-send,#ef-draft'));
     btns.forEach(function (b) { b.disabled = true; });
@@ -551,24 +522,23 @@
     refreshEvals();
   }
 
+  // the answering controls on the page: one binding that survives every redraw
+  F.bind($('#eval-body'), function () { return ef ? ef.qs : []; }, function () { return ef ? ef.form : {}; });
+
   document.addEventListener('click', function (e) {
     var t;
     if ((t = e.target.closest('[data-evself]'))) openEvalForm('self', t.getAttribute('data-evself'));
     else if ((t = e.target.closest('[data-evpeer]'))) openEvalForm('peer', t.getAttribute('data-evpeer'));
     if (!ef || $('#v-eval').hidden) return;
-    if ((t = e.target.closest('#eval-body [data-rate]'))) {
-      var id = t.getAttribute('data-rate'), n = Number(t.getAttribute('data-n'));
-      efCollect();
-      var cur = ef.answers[id] || {};
-      cur.rating = Number(cur.rating) === n ? null : n;
-      ef.answers[id] = cur;
-      Array.prototype.forEach.call(document.querySelectorAll('#eval-body [data-rate="' + id + '"]'), function (b) { b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-n')) === Number(cur.rating))); });
-      var card = t.closest('.gf-card'); card.classList.remove('bad'); card.querySelector('.gf-err').hidden = true;
-    } else if (e.target.closest('#ef-send')) efSubmit('send');
+    if (e.target.closest('#ef-send')) efSubmit('send');
     else if (e.target.closest('#ef-draft')) efSubmit('draft');
     else if (e.target.closest('#ef-home')) { show('home'); }
-    else if (e.target.closest('#ef-again')) { ef.name = ''; ef.answers = {}; ef.overall = ''; ef.step = 'who'; drawEval(); window.scrollTo(0, 0); }
-    else if (e.target.closest('#ef-next')) efLookup();
+    else if (e.target.closest('#ef-again')) {
+      ef.name = ''; ef.overall = ''; ef.step = 'who';
+      ef.qs = ef.form.questions.map(function (q) { return Object.assign({}, q, { rating: null, comment: '', picked: [] }); });
+      drawEval();
+      window.scrollTo(0, 0);
+    } else if (e.target.closest('#ef-next')) efLookup();
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && e.target && e.target.id === 'ef-name') { e.preventDefault(); efLookup(); }

@@ -9,7 +9,8 @@
   POST /api/employee-evaluate { "action": "peer", "form_id", "name": "...", "answers": [...], "overall" }
                                                     submit a peer evaluation of the colleague with that exact name
 
-  answers = [{ "id": "<question id>", "rating": 4, "comment": "..." }]
+  answers = [{ "id": "<question id>", "rating": 4, "comment": "...", "picked": ["Option A"] }]
+  Question types: short, paragraph, choice, checkbox, dropdown, rating (linear scale), stars, date, time.
 
   Who is evaluating comes from the sign-in cookie, never from the request. There is no list or search of
   colleagues: the employee types a full name, and it must match exactly one active employee. Lookups are
@@ -47,16 +48,29 @@ function snapshot(form, answers) {
   const out = [];
   for (const c of Array.isArray(form.criteria) ? form.criteria : []) {
     const a = by[String(c.id)] || {};
-    const type = c.type === 'text' ? 'text' : 'rating';
-    const comment = String(a.comment === undefined || a.comment === null ? '' : a.comment).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\r\n?/g, '\n').trim().slice(0, 1000);
-    let rating = null;
-    if (type === 'rating' && a.rating !== null && a.rating !== undefined && a.rating !== '') {
-      rating = Number(a.rating);
-      if (!Number.isInteger(rating) || rating < 1 || rating > form.scale_max) return null;
+    const type = E.qType(c);
+    const options = E.optionsOf(c);
+    let comment = String(a.comment === undefined || a.comment === null ? '' : a.comment).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\r\n?/g, '\n').trim().slice(0, type === 'short' ? 300 : 1000);
+    let rating = null, picked = [];
+    if (E.isScored(type)) {
+      if (a.rating !== null && a.rating !== undefined && a.rating !== '') {
+        rating = Number(a.rating);
+        if (!Number.isInteger(rating) || rating < 1 || rating > (type === 'stars' ? 5 : form.scale_max)) return null;
+      }
+    } else if (E.hasOptions(type)) {
+      comment = '';
+      const want = Array.isArray(a.picked) ? a.picked.map((x) => String(x)) : [];
+      picked = options.filter((o) => want.indexOf(o) !== -1);                 // only the form's own options
+      if (picked.length !== new Set(want).size) return null;
+      if (type !== 'checkbox' && picked.length > 1) return null;
+    } else if (type === 'date') {
+      if (comment && !/^\d{4}-\d{2}-\d{2}$/.test(comment)) return null;
+    } else if (type === 'time') {
+      if (comment && !/^\d{2}:\d{2}$/.test(comment)) return null;
     }
     out.push({
       id: c.id, type, title: c.title, description: c.description || '', weight: c.weight || 0,
-      required: c.required === undefined ? type !== 'text' : !!c.required, rating, comment
+      required: c.required === undefined ? E.isScored(type) : !!c.required, options, rating, comment, picked
     });
   }
   return out.length ? out : null;
