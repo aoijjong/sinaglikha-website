@@ -4,7 +4,7 @@
   A question is { id, type, title, description, required, options, scale, labels, rating, comment, picked }:
     short, paragraph, date, time    the answer is in "comment"
     choice, dropdown, checkbox      the options picked are in "picked"
-    rating (linear scale), stars    the number is in "rating"; only these two add to the score
+    rating (linear scale), stars    the number is in "rating"
                                     a linear scale has its own length (scale, 3 to 10) and optional names for its
                                     points (labels); older questions without them use the form's scale_max and labels
   "text", used by the first version of the forms, means paragraph.
@@ -180,23 +180,6 @@
       return { id: q.id, rating: isScored(t) && q.rating ? Number(q.rating) : null, comment: hasOptions(t) ? '' : String(q.comment || ''), picked: hasOptions(t) ? picked(q) : [] };
     });
   }
-  /* the score: the rated questions count equally, as a percentage of the best possible; null until every required one is rated.
-     (Evaluations written when questions still had weights keep theirs: a missing weight counts as 1.) */
-  function score(questions, scaleMax) {
-    var got = 0, tot = 0, blocked = false;
-    questions.forEach(function (q) {
-      var t = qType(q);
-      if (!isScored(t)) return;
-      var w = q.weight === undefined || q.weight === null ? 1 : Number(q.weight) || 0, mx = t === 'stars' ? 5 : scaleOf(q, { scale_max: scaleMax });
-      if (q.rating) { got += (Number(q.rating) / mx) * w; tot += w; }
-      else if (isRequired(q)) { blocked = true; tot += w; }
-    });
-    return blocked || !tot ? null : Math.round((got / tot) * 1000) / 10;
-  }
-  function scoredCount(questions) {
-    var all = questions.filter(function (q) { return isScored(qType(q)); });
-    return { rated: all.filter(function (q) { return q.rating; }).length, total: all.length };
-  }
   /* an answer as plain text, for spreadsheets and printing */
   function text(q) {
     var t = qType(q);
@@ -208,6 +191,6 @@
   window.SngEvalForm = {
     TYPES: TYPES, qType: qType, isScored: isScored, hasOptions: hasOptions, isRequired: isRequired, maxOf: maxOf, labelOf: labelOf, scaleOf: scaleOf, nameOf: nameOf,
     control: control, card: card, preview: preview, bind: bind, answered: answered, missing: missing, markMissing: markMissing,
-    answers: answers, score: score, scoredCount: scoredCount, text: text
+    answers: answers, text: text
   };
 })();
