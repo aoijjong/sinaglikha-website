@@ -315,4 +315,7 @@ button.lmain{cursor:pointer}
   .screen{padding:14px;border-radius:22px}
   .screen>.ph{padding-bottom:10px;margin-bottom:12px}
   .gf-sel{padding:8px 10px}
+  /* iPhones zoom the whole page when a field's text is under 16px, which leaves it swipeable sideways */
+  input,select,textarea{font-size:16px!important}
+  body{overflow-x:clip}
 }
