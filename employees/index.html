@@ -122,7 +122,6 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 
 /* dashboard: announcements and the community feed on the left, the personal tools on the right */
 .home-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:20px;align-items:stretch}
-#evl-panel{flex:1 1 auto}
 .col-main,.col-side{display:flex;flex-direction:column;gap:16px;min-width:0}
 @media (max-width:960px){
   .home-grid{display:flex;flex-direction:column;align-items:stretch;gap:16px}
@@ -192,7 +191,14 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .att-btns .btn{min-width:0;padding:11px 12px;font-size:.92rem;white-space:nowrap}
 .att-btns .btn .icon{width:18px;height:18px}
 .att-btns .btn[disabled]{opacity:.45;cursor:not-allowed}
-.items .lrow{padding-inline:12px;flex-wrap:nowrap}
+.items .lrow{flex-wrap:nowrap}
+.panel.plist{background:none;border:0;box-shadow:none;overflow:visible}
+.panel.plist .panel-h{padding:2px 4px 10px}
+.panel.plist .items .none{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow)}
+#att-recent{display:block}
+#att-recent .lrow{background:none;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;transform:none;padding:10px 12px}
+#att-recent .lrow:first-child{border-top:0}
+#att-recent .lname{font-family:inherit;font-weight:600;font-size:1rem}
 .items .lmain{flex:1 1 auto}
 .items .lname{white-space:normal;overflow-wrap:anywhere}
 .items .none{padding:14px 20px 18px;color:var(--muted);font-size:.95rem}
@@ -308,7 +314,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
             </div>
           </form>
         </section>
-        <div class="panel" id="evl-panel" style="order:7" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>Evaluations</h2></div><ul class="items" id="evl-list"></ul></div>
+        <div class="panel plist" id="evl-panel" style="order:7" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>Evaluations</h2></div><ul class="items" id="evl-list"></ul></div>
       </div>
       <aside class="col-side">
         <div class="panel" id="att-panel" style="order:1" hidden>
@@ -325,12 +331,12 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
           <h3 class="sub-h">Last 7 days</h3>
           <ul class="items" id="att-recent"></ul>
         </div>
-        <div class="panel" id="dept-panel" style="order:2"><div class="panel-h"><span class="pi"><i data-icon="folder"></i></span><h2>Departments</h2></div><ul class="items" id="tiles"></ul></div>
-        <div class="panel" id="learn-panel" style="order:5" hidden><div class="panel-h"><span class="pi"><i data-icon="book"></i></span><h2>Learning</h2></div><ul class="items" id="learn-list"></ul></div>
-        <div class="panel" id="rec-panel" style="order:6" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
+        <div class="panel plist" id="dept-panel" style="order:2"><div class="panel-h"><span class="pi"><i data-icon="folder"></i></span><h2>Departments</h2></div><ul class="items" id="tiles"></ul></div>
+        <div class="panel plist" id="learn-panel" style="order:5" hidden><div class="panel-h"><span class="pi"><i data-icon="book"></i></span><h2>Learning</h2></div><ul class="items" id="learn-list"></ul></div>
+        <div class="panel plist" id="rec-panel" style="order:6" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
       </aside>
     </div>
-    <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><div class="panel"><ul class="items" id="res"></ul></div></div>
+    <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><div class="panel plist"><ul class="items" id="res"></ul></div></div>
   </section>
 
   <section id="v-dept" hidden>

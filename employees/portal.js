@@ -412,7 +412,7 @@
     var html = '';
     content.deliverables.filter(function (d) { return d.department === key; }).forEach(function (d) {
       var items = content.items.filter(function (i) { return i.deliverable === d.key; });
-      html += '<div class="panel" style="margin-bottom:16px"><div class="panel-h"><h2>' + esc(d.name) + '</h2></div><ul class="items">' + listHtml(items, 'Nothing published yet.', false) + '</ul></div>';
+      html += '<div class="panel plist" style="margin-bottom:16px"><div class="panel-h"><h2>' + esc(d.name) + '</h2></div><ul class="items">' + listHtml(items, 'Nothing published yet.', false) + '</ul></div>';
     });
     $('#dept-body').innerHTML = html || '<p class="fine">Nothing published yet.</p>';
     show('dept');
@@ -648,7 +648,7 @@
     $('#learn-title').textContent = c.title;
     $('#learn-body').innerHTML = (c.description ? '<p class="fine" style="margin-bottom:12px">' + esc(c.description) + '</p>' : '') +
       '<div class="panel" style="padding:16px 20px;margin-bottom:14px">' + bar(done, learn.modules.length) + '<p class="fine" style="margin-top:8px">' + esc(progressText(done, learn.modules.length)) + '. Only you can see your progress.</p></div>' +
-      '<div class="panel"><ul class="items">' + (learn.modules.length ? learn.modules.map(function (m) {
+      '<div class="panel plist"><ul class="items">' + (learn.modules.length ? learn.modules.map(function (m) {
         return '<li class="lrow"><button class="ib ' + (m.done ? 'good' : '') + '" type="button" data-toggle="' + esc(m.id) + '" aria-label="' + (m.done ? 'Mark as not done' : 'Mark as done') + '" data-tip="' + (m.done ? 'Mark as not done' : 'Mark as done') + '"' +
           (m.done ? ' style="color:#1E6B2A"' : '') + '>' + I(m.done ? 'checkCircle' : 'circle') + '</button>' +
           '<button class="lmain" type="button" data-module="' + esc(m.id) + '" aria-label="Open ' + esc(m.title) + '"><span class="lico">' + (m.kind === 'link' ? I('link') : I('file')) + '</span><span class="ltext"><span class="lname">' + esc(m.title) + '</span>' +
