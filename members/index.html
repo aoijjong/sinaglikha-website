@@ -580,12 +580,14 @@ dialog[open]{animation:pop .5s var(--ease)}
         </div>
       </div>
       <div class="pills" id="rc-kind" role="group" aria-label="Type of record"></div>
+      <div class="pills" id="rc-evsub" role="group" aria-label="Evaluation results by category" hidden></div>
       <p class="fine" id="rc-rule" style="margin:-4px 0 14px"></p>
-      <div class="list-card">
+      <div class="list-card" id="rc-list">
         <ul class="rows" id="rc-rows"></ul>
         <div class="es" id="rc-empty" hidden></div>
         <div class="busy" id="rc-busy" hidden role="status">Loading…</div>
       </div>
+      <div id="rc-eval" hidden></div>
     </div>
 
     <div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden>

@@ -20,13 +20,14 @@
   var KINDS = { compensation: 'Compensation', evaluation: 'Evaluation Results', disciplinary: 'Disciplinary Cases' };
   var RULES = {
     compensation: 'Compensation records can be opened by every Senior Manager, and each employee can open their own. Total Rewards uploads them.',
-    evaluation: 'Evaluation results can be opened only by Total Rewards. Employees do not see them. Total Rewards uploads them.',
+    evaluation: 'Uploaded evaluation files can be opened only by Total Rewards and the Administrator. Employees do not see them. Total Rewards uploads them.',
     disciplinary: 'Disciplinary cases can be opened by every Senior Manager. Employees do not see them. Legal Compliance uploads them.'
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var I = window.SngIcon, IB = window.SngIconButton;
-  var rc = { people: [], rows: [], kind: '', ready: false, failed: false, token: 0 };
+  var rc = { people: [], rows: [], kind: '', evsub: 'manager', ready: false, failed: false, token: 0 };
+  var EVSUBS = [['manager', 'Manager'], ['self', 'Self'], ['peer', 'Peer'], ['files', 'Uploaded files']];
 
   function dept() { return state.profile && state.profile.department; }
   function viewKinds() {
@@ -65,10 +66,27 @@
     $('#rc-kind').innerHTML = viewKinds().map(function (k) {
       return '<button class="pill" type="button" data-kind="' + k + '" aria-pressed="' + (rc.kind === k) + '">' + KINDS[k] + '</button>';
     }).join('');
+    // Evaluation Results: the evaluations written on the site, by category, then the uploaded files
+    var sub = $('#rc-evsub');
+    sub.hidden = rc.kind !== 'evaluation';
+    sub.innerHTML = rc.kind !== 'evaluation' ? '' : EVSUBS.map(function (c) {
+      return '<button class="pill" type="button" data-evsub="' + c[0] + '" aria-pressed="' + (rc.evsub === c[0]) + '">' + c[1] + '</button>';
+    }).join('');
   }
 
   async function load() {
     var kind = rc.kind;
+    // the evaluations written on the site, by category, are listed by the evaluations module
+    var results = kind === 'evaluation' && rc.evsub !== 'files' && !!window.MembersEvaluations;
+    $('#rc-eval').hidden = !results;
+    $('#rc-list').hidden = results;
+    $('#rc-rule').hidden = results;
+    $('#rc-search').closest('.ph-actions').hidden = results;
+    if (results) {
+      rc.token++;
+      await window.MembersEvaluations.openResults($('#rc-eval'), rc.evsub);
+      return;
+    }
     $('#rc-rule').textContent = RULES[kind] || '';
     if (rc.failed) { rc.rows = []; render(); return; }
     var token = ++rc.token;
@@ -202,6 +220,13 @@
     var b = e.target.closest('[data-kind]');
     if (!b) return;
     rc.kind = b.dataset.kind;
+    drawKinds();
+    load();
+  });
+  $('#rc-evsub').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-evsub]');
+    if (!b) return;
+    rc.evsub = b.dataset.evsub;
     drawKinds();
     load();
   });

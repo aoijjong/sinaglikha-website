@@ -11,7 +11,9 @@
   A spreadsheet (CSV) of the evaluations can be downloaded and one evaluation can be printed or saved as a
   PDF; both are written to the activity log. The database rules in supabase/phase5.sql and phase6.sql
   decide who can do what; this screen only shows it. Opened from the Performance Management System card
-  in the Content tab (see content.js).
+  in the Content tab (see content.js). That screen lists only manager evaluations of employees. Every
+  evaluation, by category (manager, self, peer), is also listed in the Records tab under Evaluation Results,
+  which opens this module in its results mode (openResults).
 */
 (function () {
   'use strict';
@@ -29,7 +31,7 @@
     manager: { name: 'Manager', long: 'Manager evaluation', who: 'Any Senior Manager, about an employee.' }
   };
   var COLS = 'id,employee_id,scorecard_id,scorecard_title,period,scale_max,criteria,overall_comment,score,status,category,evaluator_id,evaluator_employee_id,evaluator_name,finalized_at,created_at,updated_at';
-  var ev = { box: null, ctx: null, view: 'list', tab: 'evals', cat: 'all', cards: [], rows: [], people: [], failed: false, q: '', cur: null, card: null };
+  var ev = { box: null, ctx: null, mode: 'pms', view: 'list', tab: 'evals', cat: 'manager', cards: [], rows: [], people: [], failed: false, q: '', cur: null, card: null };
   var bd = null;   // the form being built
 
   function canBuild() { return !!(state.isAdmin || (state.profile && state.profile.department === 'rewards')); }
@@ -80,13 +82,20 @@
     var build = canBuild();
     ev.box.innerHTML =
       '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
-      '<div class="ph-main"><h2>Performance Management System</h2><p class="sub">Evaluation forms and employee evaluations</p></div>' +
-      '<div class="ph-actions" id="ev-actions"></div></div>' +
+      '<div class="ph-main"><h2>Performance Management System</h2><p class="sub">Evaluation forms and manager evaluations</p></div></div>' +
       '<p class="sp-note" id="ev-note"></p>' +
-      '<div class="pills" id="ev-tabs" role="group" aria-label="Show">' +
-      '<button class="pill" type="button" data-tab="evals" aria-pressed="true">Evaluations</button>' +
+      '<div class="ev-bar"><div class="pills" id="ev-tabs" role="group" aria-label="Show">' +
+      '<button class="pill" type="button" data-tab="evals" aria-pressed="true">Manager evaluations</button>' +
       (build ? '<button class="pill" type="button" data-tab="forms" aria-pressed="false">Evaluation forms</button>' : '') + '</div>' +
-      '<div class="pills" id="ev-cats" role="group" aria-label="Category"></div>' +
+      '<div class="ph-actions" id="ev-actions"></div></div>' +
+      '<div class="list-card" id="ev-wrap" style="position:relative"><ul class="rows" id="ev-rows"></ul><div class="es" id="ev-empty" hidden></div>' +
+      '<div class="busy" id="ev-busy" hidden role="status">Loading…</div></div>';
+  }
+
+  /* the same list, opened from the Records tab: the results of one category */
+  function shellResults() {
+    ev.box.innerHTML =
+      '<div class="ev-bar"><p class="fine" id="ev-note" style="margin:0;flex:1 1 260px"></p><div class="ph-actions" id="ev-actions"></div></div>' +
       '<div class="list-card" id="ev-wrap" style="position:relative"><ul class="rows" id="ev-rows"></ul><div class="es" id="ev-empty" hidden></div>' +
       '<div class="busy" id="ev-busy" hidden role="status">Loading…</div></div>';
   }
@@ -99,26 +108,27 @@
     }
     a.innerHTML = '<div class="sbox">' + I('search') + '<input id="ev-search" type="search" placeholder="Search" aria-label="Search by employee, form or period" autocomplete="off" value="' + esc(ev.q) + '"></div>' +
       IB('download', 'Download these evaluations as a spreadsheet', { 'data-a': 'export' }) +
-      IB('plus', 'Evaluate an employee', { 'data-a': 'new-eval' }, 'solid');
+      (ev.mode === 'pms' ? '<button class="btn btn-primary btn-sm" type="button" data-a="new-eval">Evaluate an employee</button>' : '');
     var s = $('#ev-search', ev.box);
     s.addEventListener('input', function () { ev.q = s.value; drawRows(); });
   }
 
   function drawList() {
+    if (ev.mode === 'results') {
+      if (!$('#ev-rows', ev.box)) shellResults();
+      var c = CATS[ev.cat] || CATS.manager;
+      $('#ev-note', ev.box).textContent = ev.cat === 'manager'
+        ? 'Manager evaluations of employees, written by the Senior Managers.'
+        : ev.cat === 'self' ? 'Self-assessments written by the employees about themselves.' : 'Peer evaluations written by employees about a colleague. You can see who wrote each one; the colleague never can.';
+      drawActions();
+      drawRows();
+      return;
+    }
     if (!$('#ev-tabs', ev.box)) shellList();
     Array.prototype.forEach.call(ev.box.querySelectorAll('[data-tab]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.tab === ev.tab)); });
     $('#ev-note', ev.box).textContent = ev.tab === 'forms'
-      ? 'Total Rewards and the Administrator build the forms. Each one is for Self, Peer or Manager.'
-      : canBuild()
-        ? 'Manager evaluations can be read by every Senior Manager. Self and peer answers are read only by Total Rewards and the Administrator.'
-        : 'Any Senior Manager can evaluate an employee. You can read every manager evaluation and edit your own. Employees never see them.';
-    var cats = $('#ev-cats', ev.box);
-    if (ev.tab === 'evals' && canBuild()) {
-      cats.hidden = false;
-      cats.innerHTML = [['all', 'All'], ['manager', 'Manager'], ['self', 'Self'], ['peer', 'Peer']].map(function (c) {
-        return '<button class="pill" type="button" data-cat="' + c[0] + '" aria-pressed="' + (ev.cat === c[0]) + '">' + c[1] + '</button>';
-      }).join('');
-    } else cats.hidden = true;
+      ? 'Total Rewards and the Administrator create the forms. Each one is for self, peer or manager evaluations. Self and peer answers are read in the Records tab, under Evaluation Results.'
+      : 'Any Senior Manager can evaluate an employee and read every manager evaluation. You can edit only your own. Employees never see them.';
     drawActions();
     drawRows();
   }
@@ -126,7 +136,7 @@
   function visibleRows() {
     var q = ev.q.trim().toLowerCase();
     return ev.rows.filter(function (r) {
-      if (ev.cat !== 'all' && canBuild() && r.category !== ev.cat) return false;
+      if (ev.cat !== 'all' && r.category !== ev.cat) return false;
       var p = person(r.employee_id);
       return !q || (p && (p.full_name.toLowerCase().indexOf(q) !== -1 || p.employee_no.toLowerCase().indexOf(q) !== -1)) ||
         r.scorecard_title.toLowerCase().indexOf(q) !== -1 || r.period.toLowerCase().indexOf(q) !== -1 || (r.evaluator_name || '').toLowerCase().indexOf(q) !== -1;
@@ -178,7 +188,7 @@
         (deletable(r) ? IB('trash', 'Delete this evaluation', { 'data-a': 'del-eval' }, 'danger') : '') + '</div></div></li>';
     }).join('');
     if (!ev.rows.length) {
-      empty.innerHTML = emptyHtml('clipboard', 'No evaluations yet', 'Press ' + I('plus', 'inline') + ' to evaluate an employee.');
+      empty.innerHTML = emptyHtml('clipboard', 'No evaluations yet', ev.mode === 'pms' ? 'Press Evaluate an employee to write the first one.' : 'None have been submitted yet.');
       empty.hidden = false;
     } else if (!list.length) {
       empty.innerHTML = emptyHtml('search', 'Nothing matches', 'Try another search or category.');
@@ -543,7 +553,7 @@
   async function backToEvals() {
     ev.view = 'list';
     ev.tab = 'evals';
-    shellList();
+    if (ev.mode === 'results') shellResults(); else shellList();
     await reloadAndDraw();
   }
 
@@ -655,19 +665,40 @@
     open: async function (box, ctx) {
       ev.box = box;
       ev.ctx = ctx;
+      ev.mode = 'pms';
       ev.view = 'list';
       ev.tab = 'evals';
-      ev.cat = 'all';
+      ev.cat = 'manager';
       ev.q = '';
       shellList();
       box.onclick = onClick;
       box.onchange = onChange;
-      if (!box._efBound) {
-        box._efBound = true;
-        F.bind(box, function () { return ev.view === 'eval' && ev.cur ? ev.cur.criteria : []; }, function () { return ev.view === 'eval' && ev.cur ? evalCtx() : { scale_max: 5, labels: [] }; }, function () { if (ev.view === 'eval') paintScore(); });
-      }
+      bindAnswers(box);
+      await load();
+      drawList();
+    },
+    /* Records tab, Evaluation Results: the evaluations of one category (manager, self or peer) */
+    openResults: async function (box, category) {
+      ev.box = box;
+      ev.ctx = null;
+      ev.mode = 'results';
+      ev.view = 'list';
+      ev.tab = 'evals';
+      ev.cat = category;
+      ev.q = '';
+      shellResults();
+      box.onclick = onClick;
+      box.onchange = onChange;
+      bindAnswers(box);
       await load();
       drawList();
     }
   };
+
+  /* the answering controls on an evaluation page: bound once per box, whichever screen hosts it */
+  function bindAnswers(box) {
+    if (box._efBound) return;
+    box._efBound = true;
+    F.bind(box, function () { return ev.view === 'eval' && ev.cur ? ev.cur.criteria : []; }, function () { return ev.view === 'eval' && ev.cur ? evalCtx() : { scale_max: 5, labels: [] }; }, function () { if (ev.view === 'eval') paintScore(); });
+  }
 })();
