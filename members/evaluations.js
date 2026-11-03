@@ -136,7 +136,7 @@
     return r.category === 'manager' && r.status === 'draft' && (r.evaluator_id === myId() || canBuild());
   }
   function deletable(r) {
-    if (r.category === 'manager') return r.status === 'draft' && (r.evaluator_id === myId() || canBuild());
+    if (r.category === 'manager') return r.evaluator_id === myId() || canBuild();
     return canBuild();
   }
 
@@ -395,7 +395,7 @@
     busy('Deleting…');
     var res = await sb.from('scorecards').delete().eq('id', c.id).select('id');
     busy('');
-    if (res.error || !(res.data || []).length) { toast("Couldn't delete that. You may not have permission.", 'bad'); return; }
+    if (res.error || !(res.data || []).length) { toast("Couldn't delete that form. " + (res.error && res.error.message ? res.error.message : 'You may not have permission.'), 'bad'); return; }
     logAction('evalform.delete', c.title, { id: c.id });
     toast('Deleted.', 'ok');
     await reloadAndDraw();
@@ -477,7 +477,7 @@
       (r.criteria || []).map(function (c, i) { return F.card(c, evalCtx(), ro, i); }).join('') +
       '<div class="gf-card"><div class="gf-qt">Overall comments</div><div class="gf-ans"><textarea id="ee-over" maxlength="3000" rows="3"' + (ro ? ' disabled' : '') + '>' + esc(r.overall_comment || '') + '</textarea></div></div>' +
       '<p class="gf-err" id="ee-err" role="alert" hidden></p>' +
-      '<div class="gf-bar"><div class="l"><button class="btn btn-ghost btn-sm" type="button" data-a="eval-back">Close</button><button class="btn btn-ghost btn-sm" type="button" data-a="print">Print or PDF</button></div><div class="r">' +
+      '<div class="gf-bar"><div class="l"><button class="btn btn-ghost btn-sm" type="button" data-a="eval-back">Close</button><button class="btn btn-ghost btn-sm" type="button" data-a="print">Print or PDF</button>' + (deletable(r) ? '<button class="btn btn-ghost btn-sm" type="button" data-a="del-this">Delete</button>' : '') + '</div><div class="r">' +
       (ro ? (r.status === 'final' && r.category === 'manager' && (r.evaluator_id === myId() || canBuild()) ? '<button class="btn btn-ghost btn-sm" type="button" data-a="reopen">Reopen</button>' : '')
         : '<button class="btn btn-ghost btn-sm" type="button" data-a="save-draft" id="ee-save">Save draft</button><button class="btn btn-primary btn-sm" type="button" data-a="finalise" id="ee-final">Finalise</button>') + '</div></div></div>';
     paintScore();
@@ -527,15 +527,17 @@
 
   async function removeEval(r) {
     var p = person(r.employee_id);
-    var ok = await ask({ title: 'Delete This Evaluation?', text: 'The ' + (CATS[r.category] || CATS.manager).long.toLowerCase() + (p ? ' of ' + p.full_name : '') + ' will be deleted.' + (r.category === 'manager' ? ' A finalised evaluation cannot be deleted.' : ''), ok: 'Delete', danger: true });
+    var ok = await ask({ title: 'Delete This Evaluation?', text: 'The ' + (CATS[r.category] || CATS.manager).long.toLowerCase() + (p ? ' of ' + p.full_name : '') + (r.status === 'final' ? ' is finalised. It' : '') + ' will be permanently deleted. This is written to the activity log.', ok: 'Delete', danger: true });
     if (!ok) return;
     busy('Deleting…');
     var res = await sb.from('evaluations').delete().eq('id', r.id).select('id');
     busy('');
-    if (res.error || !(res.data || []).length) { toast("Couldn't delete that. You may not have permission.", 'bad'); return; }
+    if (res.error || !(res.data || []).length) { toast("Couldn't delete that. " + (res.error && res.error.message ? res.error.message : 'You may not have permission.'), 'bad'); return false; }
     logAction('evaluation.delete', (p ? p.employee_no : r.employee_id) + ' / ' + r.period, { id: r.id });
     toast('Deleted.', 'ok');
-    await reloadAndDraw();
+    ev.rows = ev.rows.filter(function (x) { return x.id !== r.id; });
+    if (ev.view === 'list') await reloadAndDraw();
+    return true;
   }
 
   async function backToEvals() {
@@ -632,6 +634,7 @@
     if (a === 'save-draft') { saveEval(false); return; }
     if (a === 'finalise') { saveEval(true); return; }
     if (a === 'reopen') { reopen(); return; }
+    if (a === 'del-this') { removeEval(ev.cur).then(function (ok) { if (ok) backToEvals(); }); return; }
     var li = e.target.closest('li.lrow'), id = li && li.dataset.id;
     if (!id) return;
     if (ev.tab === 'forms') {

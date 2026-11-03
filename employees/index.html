@@ -150,9 +150,10 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
 .pbtn .icon{width:18px;height:18px}
 .pbtn.push{margin-left:auto}
 @media (min-width:961px){
-  .dept-wide{grid-column:1/-1}
-  .dept-wide .items{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;padding:8px 20px 20px}
-  .dept-wide .items .lrow{border:1px solid var(--line);border-radius:16px;padding:8px 10px}
+  .wide{grid-column:1/-1}
+  .wide .items{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;padding:8px 20px 20px}
+  .wide .items .lrow{border:1px solid var(--line);border-radius:16px;padding:8px 10px}
+  .wide .items .lmeta{white-space:normal}
 }
 .reply .pbtn.push{padding:4px 8px;font-size:.82rem}
 @media (hover:hover) and (pointer:fine){.pbtn:hover{background:var(--cream);color:var(--brown)}}
@@ -328,11 +329,11 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
           <h3 class="sub-h">Last 7 days</h3>
           <ul class="items" id="att-recent"></ul>
         </div>
-        <div class="panel" id="evl-panel" style="order:2" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>Evaluations</h2></div><ul class="items" id="evl-list"></ul></div>
+        <div class="panel" id="dept-panel" style="order:2"><div class="panel-h"><span class="pi"><i data-icon="folder"></i></span><h2>Departments</h2></div><ul class="items" id="tiles"></ul></div>
         <div class="panel" id="learn-panel" style="order:5" hidden><div class="panel-h"><span class="pi"><i data-icon="book"></i></span><h2>Learning</h2></div><ul class="items" id="learn-list"></ul></div>
         <div class="panel" id="rec-panel" style="order:6" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
       </aside>
-      <div class="panel dept-wide" id="dept-panel" style="order:7"><div class="panel-h"><span class="pi"><i data-icon="folder"></i></span><h2>Departments</h2></div><ul class="items" id="tiles"></ul></div>
+      <div class="panel wide" id="evl-panel" style="order:7" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>Evaluations</h2></div><ul class="items" id="evl-list"></ul></div>
     </div>
     <div id="results" hidden><h2 class="sec" style="margin-top:0">Search results</h2><div class="panel"><ul class="items" id="res"></ul></div></div>
   </section>
