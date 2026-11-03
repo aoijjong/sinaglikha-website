@@ -45,7 +45,7 @@
     csr: 'Community activities and their photos',
     wellness: 'Wellness programs and learning material',
     comp_packages: 'General compensation and benefits information',
-    pms: 'Build scorecards and evaluate employees (private to Total Rewards)',
+    pms: 'Evaluation forms for Self, Peer and Manager, and the evaluations',
     incentive_plan: 'Incentive and recognition plan information',
     handbook: 'The current Employee Handbook, with its versions',
     disciplinary_guidelines: 'The approved guidelines for disciplinary action',
@@ -53,7 +53,7 @@
   };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Scorecards and employee evaluations'] };
+  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 

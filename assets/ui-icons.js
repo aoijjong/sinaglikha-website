@@ -42,6 +42,7 @@
     camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
     arrowUp: '<path d="M12 19V5M5 12l7-7 7 7"/>',
     arrowDown: '<path d="M12 5v14M19 12l-7 7-7-7"/>',
     unlock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',

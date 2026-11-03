@@ -2,7 +2,8 @@
   Everything an employee reads, in one function (Vercel's free plan allows 12 functions).
 
   GET /api/employee-content?home=1             the WHOLE dashboard in one answer, fetched in parallel: the
-                                               employee, Published content, own time
+                                               employee, Published content, the open Self and Peer
+                                               evaluation forms, own time
                                                records, own compensation records, learning progress, the forum
                                                feed and the announcements
   GET /api/employee-content                    just the content
@@ -77,13 +78,14 @@ module.exports = async function handler(req, res) {
 
   /* ---- the whole dashboard, every piece fetched at the same time ---- */
   if (q.home !== undefined) {
-    const [content, attendance, records, learning, forum, announcements, av] = await Promise.all([
+    const [content, attendance, records, learning, forum, announcements, evaluations, av] = await Promise.all([
       contentPayload(),
       E.attendanceRecent(eid),
       ownRecords(eid),
       E.learningSummary(eid),
       E.forumFeed(eid),
       announcementList(),
+      E.evaluationForms(eid),
       // Read on its own so a missing photo column never stops anyone from seeing their dashboard.
       E.rest('GET', `employees?id=eq.${eid}&select=avatar`)
     ]);
@@ -93,7 +95,7 @@ module.exports = async function handler(req, res) {
     return E.send(res, 200, {
       employee: { employee_no: me.emp.employee_no, full_name: me.emp.full_name, position: me.emp.position, avatar },
       deliverables: content.deliverables, items: content.items,
-      attendance, records, learning, forum, announcements: announcements.items, announcementPhotos: announcements.photos
+      attendance, records, learning, forum, evaluations, announcements: announcements.items, announcementPhotos: announcements.photos
     });
   }
 

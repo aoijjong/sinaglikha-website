@@ -328,6 +328,7 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
           <h3 class="sub-h">Last 7 days</h3>
           <ul class="items" id="att-recent"></ul>
         </div>
+        <div class="panel" id="evl-panel" style="order:2" hidden><div class="panel-h"><span class="pi"><i data-icon="clipboard"></i></span><h2>Evaluations</h2></div><ul class="items" id="evl-list"></ul></div>
         <div class="panel" id="learn-panel" style="order:5" hidden><div class="panel-h"><span class="pi"><i data-icon="book"></i></span><h2>Learning</h2></div><ul class="items" id="learn-list"></ul></div>
         <div class="panel" id="rec-panel" style="order:6" hidden><div class="panel-h"><span class="pi"><i data-icon="lock"></i></span><h2>My compensation records</h2></div><p class="fine" style="padding:0 20px 4px">Only you can see these.</p><ul class="items" id="recs"></ul></div>
       </aside>
@@ -350,6 +351,14 @@ main{flex:1;padding-block:clamp(24px,4vw,52px)}
       <h1 id="learn-title" style="font-size:clamp(1.7rem,4vw,2.4rem)">Learning</h1>
     </div>
     <div id="learn-body"></div>
+  </section>
+
+  <section id="v-eval" hidden>
+    <div class="back-row">
+      <button class="ib line" id="eval-back" type="button" aria-label="Back to the dashboard" data-tip="Back"><i data-icon="back"></i></button>
+      <h1 id="eval-title" style="font-size:clamp(1.7rem,4vw,2.4rem)">Evaluation</h1>
+    </div>
+    <div id="eval-body"></div>
   </section>
 
   <section id="v-profile" class="narrow" hidden>

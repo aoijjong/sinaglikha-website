@@ -14,8 +14,8 @@
 
   var $ = function (s) { return document.querySelector(s); };
   var I = window.SngIcon, IB = window.SngIconButton;
-  var VIEWS = ['loading', 'signin', 'activate', 'home', 'dept', 'learn', 'profile'];
-  var SIGNED_IN = ['home', 'dept', 'learn', 'profile'];
+  var VIEWS = ['loading', 'signin', 'activate', 'home', 'dept', 'learn', 'eval', 'profile'];
+  var SIGNED_IN = ['home', 'dept', 'learn', 'eval', 'profile'];
   var DEPTS = [
     ['staffing', 'Staffing and Recruitment', 'users'], ['training', 'Training and Development', 'book'], ['engagement', 'Employee Engagement', 'chat'],
     ['rewards', 'Total Rewards', 'award'], ['legal', 'Legal Compliance', 'scale']
@@ -189,6 +189,7 @@
     learn.courses = d.learning || [];
     forum = { cats: (d.forum && d.forum.categories) || [], threads: (d.forum && d.forum.threads) || [] };
     anns = d.announcements || [];
+    evals = d.evaluations || { self: [], peer: [] };
     annPhotos = d.announcementPhotos || [];
     forum.photos = (d.forum && d.forum.photos) || [];
     annShown = 3;
@@ -233,6 +234,7 @@
     renderAnnouncements();
     renderForum();
     renderAttendance();
+    renderEvals();
     renderLearningPanel();
     renderRecords();
     $('#tiles').innerHTML = DEPTS.map(function (d) {
@@ -415,6 +417,178 @@
     $('#dept-body').innerHTML = html || '<p class="fine">Nothing published yet.</p>';
     show('dept');
   }
+
+  /* ---------- evaluations: the Self and Peer forms, filled in on a page of their own ---------- */
+  var evals = { self: [], peer: [] };
+  var ef = null;   // the form being filled in: { kind, form, name, answers, overall, step, readonly }
+
+  function renderEvals() {
+    var all = (evals.self || []).length + (evals.peer || []).length;
+    $('#evl-panel').hidden = !all;
+    if (!all) return;
+    var rows = (evals.self || []).map(function (f) {
+      var chip = f.status === 'final' ? ['s-published', 'Submitted'] : f.status === 'draft' ? ['s-draft', 'Draft'] : ['plain', 'Not started'];
+      return '<li class="lrow"><button class="lmain" type="button" data-evself="' + esc(f.id) + '"><span class="lico">' + I('clipboard') + '</span><span class="ltext"><span class="lname">' + esc(f.title) +
+        '</span><span class="lmeta">' + esc(['Self-assessment', f.period].filter(Boolean).join(' · ')) + '</span></span></button><span class="chip ' + chip[0] + '" style="margin-right:6px">' + chip[1] + '</span></li>';
+    }).concat((evals.peer || []).map(function (f) {
+      return '<li class="lrow"><button class="lmain" type="button" data-evpeer="' + esc(f.id) + '"><span class="lico">' + I('users') + '</span><span class="ltext"><span class="lname">' + esc(f.title) +
+        '</span><span class="lmeta">' + esc(['Evaluate a colleague', f.period, f.done ? f.done + ' sent' : 'Optional'].filter(Boolean).join(' · ')) + '</span></span></button>' + I('chevron', 'lgo') + '</li>';
+    }));
+    $('#evl-list').innerHTML = rows.join('');
+  }
+
+  function efCard(inner, cls) { return '<div class="gf-card' + (cls ? ' ' + cls : '') + '">' + inner + '</div>'; }
+
+  function efHead(f) {
+    var meta = [f.period, f.closes_on ? 'Open until ' + fmtDate(f.closes_on + 'T00:00:00+08:00') : ''].filter(Boolean);
+    var who = ef.kind === 'peer' && ef.name ? '<div class="gf-meta">Evaluating <b>' + esc(ef.name) + '</b></div>' : '';
+    return efCard('<h1 class="gf-h1">' + esc(f.title) + '</h1>' + (f.description ? '<div class="gf-desc">' + esc(f.description) + '</div>' : '') +
+      (meta.length ? '<div class="gf-meta">' + meta.map(esc).join(' · ') + '</div>' : '') + who +
+      (ef.step === 'form' && !ef.readonly ? '<div class="gf-req">* Required</div>' : '') +
+      (ef.readonly ? '<div class="gf-meta"><span class="gf-chip">Submitted</span></div>' : ''), 'head');
+  }
+
+  function efQuestion(q, i) {
+    var a = ef.answers[q.id] || {};
+    var star = q.required && !ef.readonly ? '<span class="s">*</span>' : '';
+    var inner = '<div class="gf-qt">' + esc(q.title) + star + '</div>' + (q.description ? '<div class="gf-qd">' + esc(q.description) + '</div>' : '');
+    if (q.type === 'text') {
+      inner += '<div class="gf-ans"><textarea data-ans="' + esc(q.id) + '" maxlength="1000" rows="2" placeholder="Your answer"' + (ef.readonly ? ' disabled' : '') + '>' + esc(a.comment || '') + '</textarea></div>';
+    } else {
+      var f = ef.form, opts = '';
+      for (var n = 1; n <= f.scale_max; n++) {
+        opts += '<div class="gf-opt"><span>' + n + '</span><button type="button" data-rate="' + esc(q.id) + '" data-n="' + n + '" aria-label="' + n + (f.labels[n - 1] ? ': ' + esc(f.labels[n - 1]) : '') + '" aria-pressed="' + (Number(a.rating) === n) + '"' + (ef.readonly ? ' disabled' : '') + '></button></div>';
+      }
+      inner += '<div class="gf-scale" role="group" aria-label="' + esc(q.title) + '">' + (f.labels[0] ? '<span class="gf-end">' + esc(f.labels[0]) + '</span>' : '') + opts +
+        (f.labels[f.scale_max - 1] ? '<span class="gf-end">' + esc(f.labels[f.scale_max - 1]) + '</span>' : '') + '</div>';
+    }
+    return '<div class="gf-card" data-q="' + esc(q.id) + '">' + inner + '<div class="gf-err" hidden></div></div>';
+  }
+
+  function drawEval() {
+    var f = ef.form, html = efHead(f);
+    if (ef.step === 'who') {
+      html += efCard('<div class="gf-qt">Who would you like to evaluate? <span class="s">*</span></div><div class="gf-qd">Type your colleague\'s full name. Your answers are private: they will not see them, or that you wrote them.</div>' +
+        '<div class="gf-ans"><input id="ef-name" type="text" maxlength="120" autocomplete="off" placeholder="Full name" value="' + esc(ef.name) + '"></div><div class="gf-err" id="ef-who-err" hidden></div>' +
+        '<div class="gf-bar" style="margin-top:14px"><span></span><button class="btn btn-primary btn-sm" type="button" id="ef-next">Continue</button></div>');
+    } else if (ef.step === 'done') {
+      html += efCard('<div class="gf-done"><h2>Thank you</h2><p>' + (ef.kind === 'self' ? 'Your self-assessment has been submitted.' : 'Your evaluation has been sent.') + '</p>' +
+        '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">' +
+        (ef.kind === 'peer' && !ef.form.closed ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-again">Evaluate another colleague</button>' : '') +
+        '<button class="btn btn-primary btn-sm" type="button" id="ef-home">Back to the dashboard</button></div></div>');
+    } else {
+      html += f.questions.map(efQuestion).join('');
+      html += efCard('<div class="gf-qt">Anything else you would like to add?</div><div class="gf-ans"><textarea id="ef-over" maxlength="3000" rows="3" placeholder="Optional"' + (ef.readonly ? ' disabled' : '') + '>' + esc(ef.overall) + '</textarea></div>');
+      if (!ef.readonly) {
+        html += '<div class="gf-bar"><div class="l"><button class="btn btn-primary btn-sm" type="button" id="ef-send">' + (ef.kind === 'self' ? 'Submit' : 'Send evaluation') + '</button>' +
+          (ef.kind === 'self' ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-draft">Save draft</button>' : '') + '</div><span class="fine" id="ef-msg" role="alert"></span></div>';
+      }
+    }
+    $('#eval-body').innerHTML = '<div class="gf">' + html + '</div>';
+  }
+
+  function openEvalForm(kind, id) {
+    var f = (evals[kind] || []).filter(function (x) { return x.id === id; })[0];
+    if (!f) return;
+    ef = { kind: kind, form: f, name: '', answers: {}, overall: '', step: kind === 'peer' ? 'who' : 'form', readonly: kind === 'self' && f.status === 'final' };
+    if (kind === 'self') {
+      f.answers.forEach(function (a) { ef.answers[a.id] = { rating: a.rating, comment: a.comment }; });
+      ef.overall = f.overall || '';
+    }
+    $('#eval-title').textContent = kind === 'self' ? 'Self-assessment' : 'Evaluate a colleague';
+    drawEval();
+    show('eval');
+  }
+
+  function efCollect() {
+    var over = $('#ef-over');
+    if (over) ef.overall = over.value;
+    Array.prototype.forEach.call(document.querySelectorAll('#eval-body [data-ans]'), function (t) {
+      ef.answers[t.getAttribute('data-ans')] = Object.assign(ef.answers[t.getAttribute('data-ans')] || {}, { comment: t.value });
+    });
+  }
+  function efPayload(extra) {
+    efCollect();
+    var answers = ef.form.questions.map(function (q) {
+      var a = ef.answers[q.id] || {};
+      return { id: q.id, rating: q.type === 'rating' && a.rating ? Number(a.rating) : null, comment: q.type === 'text' ? (a.comment || '') : '' };
+    });
+    return Object.assign({ form_id: ef.form.id, answers: answers, overall: ef.overall }, extra);
+  }
+  function efMissing() {
+    efCollect();
+    var bad = false;
+    ef.form.questions.forEach(function (q) {
+      var a = ef.answers[q.id] || {}, card = document.querySelector('#eval-body [data-q="' + q.id + '"]');
+      var empty = q.type === 'text' ? !String(a.comment || '').trim() : !a.rating;
+      var miss = q.required && empty;
+      if (card) { card.classList.toggle('bad', miss); var e = card.querySelector('.gf-err'); e.hidden = !miss; e.textContent = miss ? 'This is a required question' : ''; }
+      if (miss) bad = true;
+    });
+    return bad;
+  }
+  async function refreshEvals() {
+    var r = await call('GET', '/api/employee-evaluate');
+    if (r.ok) { evals = { self: r.data.self || [], peer: r.data.peer || [] }; renderEvals(); }
+  }
+
+  async function efSubmit(kind) {
+    var msg = $('#ef-msg');
+    if (kind !== 'draft' && efMissing()) { msg.textContent = 'Please answer the required questions.'; var first = document.querySelector('#eval-body .gf-card.bad'); if (first) first.scrollIntoView({ block: 'center' }); return; }
+    msg.textContent = '';
+    var btns = Array.prototype.slice.call(document.querySelectorAll('#ef-send,#ef-draft'));
+    btns.forEach(function (b) { b.disabled = true; });
+    var r = ef.kind === 'self'
+      ? await call('POST', '/api/employee-evaluate', efPayload({ action: 'self', submit: kind !== 'draft' }))
+      : await call('POST', '/api/employee-evaluate', efPayload({ action: 'peer', name: ef.name }));
+    btns.forEach(function (b) { b.disabled = false; });
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { msg.textContent = (r.data && r.data.error) || "Couldn't send that. Try again."; return; }
+    if (kind === 'draft') { toast('Draft saved.'); refreshEvals(); return; }
+    ef.step = 'done';
+    drawEval();
+    window.scrollTo(0, 0);
+    refreshEvals();
+  }
+
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-evself]'))) openEvalForm('self', t.getAttribute('data-evself'));
+    else if ((t = e.target.closest('[data-evpeer]'))) openEvalForm('peer', t.getAttribute('data-evpeer'));
+    if (!ef || $('#v-eval').hidden) return;
+    if ((t = e.target.closest('#eval-body [data-rate]'))) {
+      var id = t.getAttribute('data-rate'), n = Number(t.getAttribute('data-n'));
+      efCollect();
+      var cur = ef.answers[id] || {};
+      cur.rating = Number(cur.rating) === n ? null : n;
+      ef.answers[id] = cur;
+      Array.prototype.forEach.call(document.querySelectorAll('#eval-body [data-rate="' + id + '"]'), function (b) { b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-n')) === Number(cur.rating))); });
+      var card = t.closest('.gf-card'); card.classList.remove('bad'); card.querySelector('.gf-err').hidden = true;
+    } else if (e.target.closest('#ef-send')) efSubmit('send');
+    else if (e.target.closest('#ef-draft')) efSubmit('draft');
+    else if (e.target.closest('#ef-home')) { show('home'); }
+    else if (e.target.closest('#ef-again')) { ef.name = ''; ef.answers = {}; ef.overall = ''; ef.step = 'who'; drawEval(); window.scrollTo(0, 0); }
+    else if (e.target.closest('#ef-next')) efLookup();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target && e.target.id === 'ef-name') { e.preventDefault(); efLookup(); }
+  });
+  async function efLookup() {
+    var input = $('#ef-name'), err = $('#ef-who-err'), name = input.value.trim();
+    if (!name) { err.textContent = 'Type your colleague\'s full name.'; err.hidden = false; return; }
+    err.hidden = true;
+    var btn = $('#ef-next');
+    btn.disabled = true;
+    var r = await call('POST', '/api/employee-evaluate', { action: 'peer_lookup', name: name });
+    btn.disabled = false;
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) { err.textContent = (r.data && r.data.error) || "Couldn't check that name."; err.hidden = false; return; }
+    ef.name = r.data.name;
+    ef.step = 'form';
+    drawEval();
+    window.scrollTo(0, 0);
+  }
+  $('#eval-back').addEventListener('click', function () { show('home'); });
 
   /* ---------- attendance: time in and time out ---------- */
   var TZ = { timeZone: 'Asia/Manila' };

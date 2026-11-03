@@ -301,6 +301,46 @@ async function learningSummary(eid) {
   });
 }
 
+/* The Self and Peer evaluation forms that are switched on and open today, for the employee's dashboard.
+   Weights stay on the server. A self form also carries this employee's own answers so far; a peer form
+   only says how many colleagues they have already evaluated with it, never who. */
+function questionsOf(f) {
+  return (Array.isArray(f.criteria) ? f.criteria : []).map((c) => ({
+    id: String(c.id || ''), type: c.type === 'text' ? 'text' : 'rating', title: String(c.title || ''),
+    description: String(c.description || ''), required: c.required === undefined ? c.type !== 'text' : !!c.required
+  }));
+}
+async function evaluationForms(eid) {
+  const today = manilaDate();
+  const r = await rest('GET', 'scorecards?active=eq.true&category=in.(self,peer)&select=id,title,description,category,period,scale_max,labels,criteria,opens_on,closes_on&order=created_at.desc&limit=50');
+  // Before supabase/phase6.sql has been run there is simply nothing to show.
+  const forms = list(r).filter((f) => (!f.opens_on || f.opens_on <= today) && (!f.closes_on || f.closes_on >= today));
+  if (!forms.length) return { self: [], peer: [] };
+  const [mine, given] = await Promise.all([
+    rest('GET', `evaluations?employee_id=eq.${eid}&category=eq.self&select=scorecard_id,status,criteria,overall_comment`),
+    rest('GET', `evaluations?evaluator_employee_id=eq.${eid}&category=eq.peer&select=scorecard_id`)
+  ]);
+  const own = {}, done = {};
+  list(mine).forEach((x) => { own[x.scorecard_id] = x; });
+  list(given).forEach((x) => { done[x.scorecard_id] = (done[x.scorecard_id] || 0) + 1; });
+  const shape = (f) => ({
+    id: f.id, title: f.title, description: f.description || '', period: f.period || '', scale_max: f.scale_max,
+    labels: Array.isArray(f.labels) ? f.labels.map((l) => String(l || '')) : [], questions: questionsOf(f),
+    closes_on: f.closes_on || null
+  });
+  return {
+    self: forms.filter((f) => f.category === 'self').map((f) => {
+      const o = own[f.id];
+      return Object.assign(shape(f), {
+        status: o ? o.status : 'new',
+        answers: o ? (o.criteria || []).map((c) => ({ id: c.id, rating: c.rating === undefined ? null : c.rating, comment: c.comment || '' })) : [],
+        overall: o ? o.overall_comment || '' : ''
+      });
+    }),
+    peer: forms.filter((f) => f.category === 'peer').map((f) => Object.assign(shape(f), { done: done[f.id] || 0 }))
+  };
+}
+
 /* The open forum categories and the latest threads across them, with reply counts and author names. */
 async function forumFeed(eid) {
   const c = await rest('GET', 'forum_categories?active=eq.true&select=id,name,description&order=position,created_at');
@@ -326,7 +366,7 @@ async function forumFeed(eid) {
 }
 
 module.exports = {
-  list, namesOf, photoPack, attendanceRecent, learningSummary, forumFeed,
+  list, namesOf, photoPack, evaluationForms, questionsOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
