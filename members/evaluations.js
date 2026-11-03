@@ -434,14 +434,16 @@
       '<div class="ph">' + IB('back', 'Back to the evaluations', { 'data-a': 'start-back' }, 'line') + '<div class="ph-main"><h2>Evaluate an employee</h2><p class="sub">Manager evaluation</p></div></div>' +
       '<div class="gf"><div class="gf-card head"><h1 class="gf-h1">Evaluate an employee</h1><div class="gf-desc">Choose the employee and the form to use. You can save a draft and finish later.</div></div>' +
       (forms.length
-        ? '<div class="gf-card"><label class="gf-lab" for="st-emp" style="margin-top:0">Employee</label><select class="gf-in" id="st-emp"><option value="">Choose an employee</option>' +
-          people.map(function (p) { return '<option value="' + esc(p.id) + '">' + esc(p.full_name) + ' (' + esc(p.employee_no) + ')</option>'; }).join('') + '</select>' +
+        ? '<div class="gf-card"><label class="gf-lab" for="st-emp-q" style="margin-top:0">Employee</label>' +
+          '<div class="cbx" id="st-cbx"><input class="gf-in" id="st-emp-q" type="text" role="combobox" aria-expanded="false" aria-controls="st-list" aria-autocomplete="list" autocomplete="off" placeholder="Search by name or employee ID">' +
+          '<button class="cbx-btn" type="button" tabindex="-1" aria-label="Show the list of employees" id="st-cbx-btn">' + I('chevron') + '</button><ul class="cbx-list" id="st-list" role="listbox" hidden></ul><input type="hidden" id="st-emp"></div>' +
           '<label class="gf-lab" for="st-form">Form</label><select class="gf-in" id="st-form">' + forms.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.title) + '</option>'; }).join('') + '</select>' +
           '<label class="gf-lab" for="st-period">Period</label><input class="gf-in" id="st-period" type="text" maxlength="60" placeholder="For example 2026 Q4">' +
           '<p class="gf-err" id="st-err" role="alert" hidden></p>' +
           '<div class="gf-bar" style="margin-top:16px"><span></span><div class="r"><button class="btn btn-ghost btn-sm" type="button" data-a="start-back">Cancel</button><button class="btn btn-primary btn-sm" type="button" data-a="start-go" id="st-go">Start</button></div></div></div>'
         : '<div class="gf-card"><div class="gf-qt">There is no open Manager form yet.</div><div class="gf-qd">' + (canBuild() ? 'Create one in the Evaluation forms tab.' : 'Ask Total Rewards to create one.') + '</div></div>') +
       '</div>';
+    if ($('#st-cbx', ev.box)) employeePicker(people);
     var fsel = $('#st-form', ev.box);
     if (fsel) {
       var prefill = function () { var c = ev.cards.filter(function (x) { return x.id === fsel.value; })[0]; $('#st-period', ev.box).value = c ? c.period || '' : ''; };
@@ -451,10 +453,65 @@
     window.scrollTo(0, 0);
   }
 
+  /* A search box with a dropdown: type part of a name or an employee ID, then pick from the list. */
+  function employeePicker(people) {
+    var input = $('#st-emp-q', ev.box), list = $('#st-list', ev.box), hidden = $('#st-emp', ev.box), btn = $('#st-cbx-btn', ev.box);
+    var shown = [], active = -1;
+    function label(p) { return p.full_name + ' (' + p.employee_no + ')'; }
+    function mark(text, q) {
+      var i = q ? text.toLowerCase().indexOf(q) : -1;
+      return i === -1 ? esc(text) : esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+    }
+    function draw() {
+      var q = input.value.trim().toLowerCase();
+      shown = people.filter(function (p) { return !q || p.full_name.toLowerCase().indexOf(q) !== -1 || p.employee_no.toLowerCase().indexOf(q) !== -1; }).slice(0, 60);
+      if (active >= shown.length) active = shown.length ? 0 : -1;
+      list.innerHTML = shown.length ? shown.map(function (p, i) {
+        return '<li role="option" id="st-opt-' + i + '" data-i="' + i + '" aria-selected="' + (i === active) + '"><span>' + mark(p.full_name, q) + '</span><small>' + mark(p.employee_no, q) + '</small></li>';
+      }).join('') : '<li class="none">No employee matches that.</li>';
+    }
+    function open() { draw(); list.hidden = false; input.setAttribute('aria-expanded', 'true'); }
+    function close() { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; }
+    function choose(i) {
+      var p = shown[i];
+      if (!p) return;
+      hidden.value = p.id;
+      input.value = label(p);
+      close();
+    }
+    function move(d) {
+      if (list.hidden) open();
+      if (!shown.length) return;
+      active = (active + d + shown.length) % shown.length;
+      draw();
+      var el = $('#st-opt-' + active, ev.box);
+      if (el) { input.setAttribute('aria-activedescendant', el.id); el.scrollIntoView({ block: 'nearest' }); }
+    }
+    input.addEventListener('input', function () { hidden.value = ''; active = input.value.trim() ? 0 : -1; open(); });
+    input.addEventListener('focus', function () { input.select(); open(); });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+      else if (e.key === 'Enter') { if (!list.hidden && active >= 0) { e.preventDefault(); choose(active); } }
+      else if (e.key === 'Escape') { close(); }
+    });
+    list.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      var li = e.target.closest('li[data-i]');
+      if (li) choose(Number(li.dataset.i));
+    });
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); if (list.hidden) { input.focus(); open(); } else close(); });
+    input.addEventListener('blur', function () {
+      close();
+      // text that is not a pick does not count as one
+      if (!hidden.value) input.value = input.value.trim() ? input.value : '';
+    });
+  }
+
   async function startEval() {
     var err = $('#st-err', ev.box), emp = $('#st-emp', ev.box).value, cid = $('#st-form', ev.box).value, period = $('#st-period', ev.box).value.trim();
     var card = ev.cards.filter(function (c) { return c.id === cid; })[0];
-    if (!emp) { err.textContent = 'Choose an employee.'; err.hidden = false; return; }
+    if (!emp) { err.textContent = 'Pick an employee from the list.'; err.hidden = false; return; }
     if (!period) { err.textContent = 'Enter the period, for example 2026 Q4.'; err.hidden = false; return; }
     err.hidden = true;
     var go = $('#st-go', ev.box);
