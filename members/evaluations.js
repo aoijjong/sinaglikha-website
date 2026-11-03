@@ -198,7 +198,7 @@
   /* ---------- building a form: a page, in the style of Google Forms ---------- */
   function blankQuestion(type) {
     type = type || 'rating';
-    return { id: newId(), type: type, title: '', description: '', weight: 20, required: F.isScored(type), options: F.hasOptions(type) ? ['Option 1'] : [], scale: 5, labels: [] };
+    return { id: newId(), type: type, title: '', description: '', required: F.isScored(type), options: F.hasOptions(type) ? ['Option 1'] : [], scale: 5, labels: [] };
   }
 
   function openBuilder(c) {
@@ -219,7 +219,7 @@
         // a linear scale keeps its own length and names; older ones take the form's, so they become the question's own
         var sc = Number(x.scale) >= 3 && Number(x.scale) <= 10 ? Number(x.scale) : (c.scale_max || 5);
         var nm = Array.isArray(x.labels) ? x.labels.slice() : (c.labels || []).slice(0, sc);
-        return { id: x.id || newId(), type: t, title: x.title || '', description: x.description || '', weight: x.weight || 20, required: F.isRequired(x), options: F.hasOptions(t) && Array.isArray(x.options) ? x.options.slice() : [] , scale: sc, labels: nm };
+        return { id: x.id || newId(), type: t, title: x.title || '', description: x.description || '', required: F.isRequired(x), options: F.hasOptions(t) && Array.isArray(x.options) ? x.options.slice() : [] , scale: sc, labels: nm };
       }) : [blankQuestion('rating')]
     };
     ev.view = 'builder';
@@ -239,8 +239,6 @@
     if (q && card) {
       q.title = $('.gf-q-in', card).value;
       q.description = $('.q-desc', card).value;
-      var w = $('.q-w', card);
-      if (w) q.weight = w.value;
       q.required = $('.q-req', card).checked;
       if (F.hasOptions(q.type)) q.options = Array.prototype.map.call(card.querySelectorAll('.q-opt'), function (inp) { return inp.value; });
       var sc = $('.q-scale', card);
@@ -284,8 +282,7 @@
       '<select data-q="type" aria-label="Question type">' + typeOpts + '</select></div>' +
       '<input class="gf-in q-desc" type="text" maxlength="400" placeholder="Description (optional)" value="' + esc(q.description) + '" aria-label="Description for question ' + (i + 1) + '" style="margin-top:8px">' +
       (F.hasOptions(q.type) ? optionRows(q) : F.preview(q, formCtx())) + (q.type === 'rating' ? scaleRows(q) : '') +
-      '<div class="gf-qfoot">' + (scored ? '<span class="w">Weight <input class="q-w" type="number" min="1" max="100" step="1" value="' + esc(q.weight) + '" aria-label="Weight"></span>' : '') +
-      IB('arrowUp', 'Move up', { 'data-q': 'up' }) + IB('arrowDown', 'Move down', { 'data-q': 'down' }) + IB('copy', 'Duplicate', { 'data-q': 'dup' }) + IB('trash', 'Delete question', { 'data-q': 'del' }, 'danger') +
+      '<div class="gf-qfoot">' + IB('arrowUp', 'Move up', { 'data-q': 'up' }) + IB('arrowDown', 'Move down', { 'data-q': 'down' }) + IB('copy', 'Duplicate', { 'data-q': 'dup' }) + IB('trash', 'Delete question', { 'data-q': 'del' }, 'danger') +
       '<label class="gf-sw"><input class="q-req" type="checkbox"' + (q.required ? ' checked' : '') + '><i></i>Required</label></div>';
   }
 
@@ -375,7 +372,7 @@
     readBuilder();
     var err = $('#bd-err', ev.box), problem = '';
     var qs = bd.questions.map(function (q) {
-      var o = { id: q.id, type: q.type, title: String(q.title).trim(), description: String(q.description).trim(), weight: F.isScored(q.type) ? num(q.weight) : 0, required: !!q.required };
+      var o = { id: q.id, type: q.type, title: String(q.title).trim(), description: String(q.description).trim(), weight: F.isScored(q.type) ? 1 : 0, required: !!q.required };
       if (F.hasOptions(q.type)) o.options = q.options.map(function (x) { return String(x).trim(); }).filter(Boolean);
       if (q.type === 'rating') {
         o.scale = Number(q.scale) >= 3 && Number(q.scale) <= 10 ? Number(q.scale) : 5;
@@ -390,7 +387,6 @@
     else if (bd.opens_on && bd.closes_on && bd.closes_on < bd.opens_on) problem = 'The closing date is before the opening date.';
     else if (qs.some(function (q) { return !q.title; })) problem = 'Every question needs a title. Delete any empty ones.';
     else if (qs.some(function (q) { return F.hasOptions(q.type) && !q.options.length; })) problem = 'Add at least one option to every choice question.';
-    else if (qs.some(function (q) { return F.isScored(q.type) && (q.weight < 1 || q.weight > 100); })) problem = 'Each scored question (linear scale or stars) needs a weight between 1 and 100.';
     if (problem) { err.textContent = problem; err.hidden = false; err.scrollIntoView({ block: 'center' }); return; }
     err.hidden = true;
     var fields = {
@@ -467,7 +463,7 @@
     var crit = card.criteria.map(function (c) {
       var t = F.qType(c);
       var sc = Number(c.scale) >= 3 && Number(c.scale) <= 10 ? Number(c.scale) : card.scale_max;
-      var q = { id: c.id, type: t, title: c.title, description: c.description || '', weight: c.weight || 0, required: F.isRequired(c), options: F.hasOptions(t) && Array.isArray(c.options) ? c.options : [], rating: null, comment: '', picked: [] };
+      var q = { id: c.id, type: t, title: c.title, description: c.description || '', weight: F.isScored(t) ? 1 : 0, required: F.isRequired(c), options: F.hasOptions(t) && Array.isArray(c.options) ? c.options : [], rating: null, comment: '', picked: [] };
       if (t === 'rating') { q.scale = sc; q.labels = Array.isArray(c.labels) ? c.labels : (card.labels || []).slice(0, sc); }
       return q;
     });
@@ -621,9 +617,9 @@
     if (!w) { toast('Allow pop-ups to print or save a PDF.', 'bad'); return; }
     var rows = (r.criteria || []).map(function (c) {
       var qt = F.qType(c);
-      if (!F.isScored(qt)) return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">-</td><td colspan="2">' + esc(F.text(c)) + '</td></tr>';
+      if (!F.isScored(qt)) return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td colspan="2">' + esc(F.text(c)) + '</td></tr>';
       var mx = F.maxOf(c, { scale_max: r.scale_max }), lab = c.rating && qt === 'rating' ? F.nameOf(c, card || { labels: [] }, Number(c.rating)) : '';
-      return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td><td class="c">' + esc(c.weight) + '</td>' +
+      return '<tr><td><b>' + esc(c.title) + '</b>' + (c.description ? '<div class="m">' + esc(c.description) + '</div>' : '') + '</td>' +
         '<td class="c"><b>' + (c.rating ? esc(c.rating) + ' / ' + esc(mx) : 'Not rated') + '</b>' + (lab ? '<div class="m">' + esc(lab) + '</div>' : '') + '</td><td>' + esc(c.comment || '') + '</td></tr>';
     }).join('');
     var score = r.status === 'final' ? fmtScore(r.score) : 'Draft: ' + (r.score === null || r.score === undefined ? 'not scored' : r.score + '% so far');
@@ -637,7 +633,7 @@
       '<div><span>Form</span><br>' + esc(r.scorecard_title) + '</div><div><span>' + (r.category === 'self' ? 'Written by' : 'Evaluated by') + '</span><br>' + esc(r.category === 'self' ? 'The employee' : r.evaluator_name || '') + '</div>' +
       '<div><span>Status</span><br>' + (r.status === 'final' ? 'Final' : 'Draft') + '</div><div><span>' + (r.status === 'final' ? 'Finalised on' : 'Last saved') + '</span><br>' + esc(fmtDay(r.status === 'final' ? r.finalized_at : r.updated_at)) + '</div></div>' +
       '<div class="score"><b>Score: ' + esc(score) + '</b></div>' +
-      '<table><thead><tr><th>Question</th><th class="c">Weight</th><th class="c">Rating</th><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<table><thead><tr><th>Question</th><th class="c">Rating</th><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       (r.overall_comment ? '<div class="over"><b>Overall comments</b><br>' + esc(r.overall_comment) + '</div>' : '') +
       '<div class="foot">Confidential. Printed ' + esc(fmtDay(new Date().toISOString())) + '.</div></body></html>');
     w.document.close();

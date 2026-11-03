@@ -1,7 +1,7 @@
 /*
   SINAGLIKHA evaluation forms: the question types, shared by the Senior Manager area (members/evaluations.js)
   and the Employee Portal (employees/portal.js), so a form looks and works the same in both.
-  A question is { id, type, title, description, required, options, weight, scale, labels, rating, comment, picked }:
+  A question is { id, type, title, description, required, options, scale, labels, rating, comment, picked }:
     short, paragraph, date, time    the answer is in "comment"
     choice, dropdown, checkbox      the options picked are in "picked"
     rating (linear scale), stars    the number is in "rating"; only these two add to the score
@@ -180,13 +180,14 @@
       return { id: q.id, rating: isScored(t) && q.rating ? Number(q.rating) : null, comment: hasOptions(t) ? '' : String(q.comment || ''), picked: hasOptions(t) ? picked(q) : [] };
     });
   }
-  /* the weighted score of the rated questions, as a percentage of the best possible; null until every required one is rated */
+  /* the score: the rated questions count equally, as a percentage of the best possible; null until every required one is rated.
+     (Evaluations written when questions still had weights keep theirs: a missing weight counts as 1.) */
   function score(questions, scaleMax) {
     var got = 0, tot = 0, blocked = false;
     questions.forEach(function (q) {
       var t = qType(q);
       if (!isScored(t)) return;
-      var w = Number(q.weight) || 0, mx = t === 'stars' ? 5 : scaleOf(q, { scale_max: scaleMax });
+      var w = q.weight === undefined || q.weight === null ? 1 : Number(q.weight) || 0, mx = t === 'stars' ? 5 : scaleOf(q, { scale_max: scaleMax });
       if (q.rating) { got += (Number(q.rating) / mx) * w; tot += w; }
       else if (isRequired(q)) { blocked = true; tot += w; }
     });

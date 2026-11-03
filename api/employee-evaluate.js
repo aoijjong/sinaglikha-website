@@ -71,7 +71,7 @@ function snapshot(form, answers) {
       if (comment && !/^\d{2}:\d{2}$/.test(comment)) return null;
     }
     out.push({
-      id: c.id, type, title: c.title, description: c.description || '', weight: c.weight || 0,
+      id: c.id, type, title: c.title, description: c.description || '', weight: E.isScored(type) ? 1 : 0,
       required: c.required === undefined ? E.isScored(type) : !!c.required, options, rating, comment, picked,
       scale: type === 'rating' ? maxRating : undefined,
       labels: type === 'rating' && Array.isArray(c.labels) ? c.labels.slice(0, 10).map((l) => String(l || '').slice(0, 40)) : undefined
