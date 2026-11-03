@@ -1106,7 +1106,7 @@
   var showInactive = false;
 
   function roleControl(p, label, me) {
-    if (!state.isAdmin) return '<div class="pfield"><span class="plabel">Role</span><span class="role-tag">' + (p.role === 'admin' ? 'Administrator' : 'Senior Manager') + '</span></div>';
+    if (!state.isAdmin) return '<div class="pfield"><span class="plabel">Role</span><span class="pctl"><span class="role-tag">' + (p.role === 'admin' ? 'Administrator' : 'Senior Manager') + '</span></span></div>';
     return '<label class="pfield"><span class="plabel">Role</span><select data-act="role" aria-label="Role for ' + label + '"' + (me ? ' disabled' : '') + '>' +
       '<option value="senior_manager"' + (p.role === 'senior_manager' ? ' selected' : '') + '>Senior Manager</option>' +
       '<option value="admin"' + (p.role === 'admin' ? ' selected' : '') + '>Administrator</option></select></label>';
@@ -1117,8 +1117,8 @@
   function deptControl(p, label) {
     if (!state.deptKnown || p.role === 'admin') return '';
     if (!state.isAdmin) {
-      return '<div class="pfield pdept"><span class="plabel">Department</span><span class="role-tag' + (p.department ? '' : ' is-none') + '">' +
-        esc(p.department ? DEPTS[p.department] || p.department : 'Not set') + '</span></div>';
+      return '<div class="pfield pdept"><span class="plabel">Department</span><span class="pctl"><span class="role-tag' + (p.department ? '' : ' is-none') + '">' +
+        esc(p.department ? DEPTS[p.department] || p.department : 'Not set') + '</span></span></div>';
     }
     return '<label class="pfield pdept"><span class="plabel">Department</span><select data-act="dept" aria-label="Department for ' + label + '">' +
       '<option value=""' + (p.department ? '' : ' selected') + '>Not set</option>' +
@@ -1140,7 +1140,7 @@
       '<div class="pid"><span class="pav" aria-hidden="true">' + avatarHtml(p) + '</span>' +
       '<div class="row-text"><span class="row-name">' + nameLine + '</span>' +
       '<span class="row-meta">' + esc(p.email || '') + (!p.full_name && me ? ' (you)' : '') + '</span></div></div>' +
-      '<div class="pfield"><span class="plabel">Status</span><span class="status ' + (p.active ? 'on' : 'off') + '">' + (p.active ? 'Active' : 'Deactivated') + '</span></div>' +
+      '<div class="pfield"><span class="plabel">Status</span><span class="pctl"><span class="status ' + (p.active ? 'on' : 'off') + '">' + (p.active ? 'Active' : 'Deactivated') + '</span></span></div>' +
       roleControl(p, label, me) + deptControl(p, label) + '<div class="pactions">' + actions + '</div></li>';
   }
 
