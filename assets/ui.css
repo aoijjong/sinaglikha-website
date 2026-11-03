@@ -251,6 +251,16 @@ button.lmain{cursor:pointer}
 .ev-bar .pills{margin:0}
 .ev-bar .ph-actions{margin-left:auto}
 
+/* underline tabs: a second level of choice under the pills, quieter than them */
+.ut-row{display:flex;gap:24px;border-bottom:1px solid var(--line);margin:0 0 14px;overflow-x:auto;scrollbar-width:none}
+.ut-row::-webkit-scrollbar{display:none}
+.ut-row[hidden]{display:none}
+.ut{flex:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 2px;font:inherit;font-weight:600;font-size:.95rem;color:var(--muted);cursor:pointer;white-space:nowrap;transition:color .3s,border-color .3s}
+.ut small{margin-left:6px;font-weight:600;font-size:.78rem;color:#9A8A7D;background:var(--cream);padding:2px 8px;border-radius:999px}
+.ut[aria-selected="true"]{color:#B3361A;border-bottom-color:#CE2020}
+.ut[aria-selected="true"] small{background:#FDE3DC;color:#B3361A}
+@media (hover:hover) and (pointer:fine){.ut[aria-selected="false"]:hover{color:var(--brown)}}
+
 /* pill cards: every list row is a rounded card of its own, with a glowing icon tile, a serif title and a soft arrow */
 .rows,.items{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .lrow,.lrow:first-child{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:12px 18px 12px 12px;transition:transform .5s var(--ease),border-color .4s,box-shadow .4s}

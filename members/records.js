@@ -26,7 +26,7 @@
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var I = window.SngIcon, IB = window.SngIconButton;
-  var rc = { people: [], rows: [], kind: '', evsub: 'manager', ready: false, failed: false, token: 0 };
+  var rc = { people: [], rows: [], kind: '', evsub: 'manager', counts: null, ready: false, failed: false, token: 0 };
   var EVSUBS = [['manager', 'Manager'], ['self', 'Self'], ['peer', 'Peer'], ['files', 'Uploaded files']];
 
   function dept() { return state.profile && state.profile.department; }
@@ -70,8 +70,34 @@
     var sub = $('#rc-evsub');
     sub.hidden = rc.kind !== 'evaluation';
     sub.innerHTML = rc.kind !== 'evaluation' ? '' : EVSUBS.map(function (c) {
-      return '<button class="pill" type="button" data-evsub="' + c[0] + '" aria-pressed="' + (rc.evsub === c[0]) + '">' + c[1] + '</button>';
+      var n = rc.counts ? rc.counts[c[0]] : null;
+      return '<button class="ut" type="button" role="tab" data-evsub="' + c[0] + '" aria-selected="' + (rc.evsub === c[0]) + '">' + c[1] + (n === null || n === undefined ? '' : '<small>' + n + '</small>') + '</button>';
     }).join('');
+    if (rc.kind === 'evaluation') loadCounts();
+  }
+
+  /* how many evaluations there are in each category, and how many uploaded files, for the little numbers on the tabs */
+  var countsBusy = false;
+  async function loadCounts() {
+    if (countsBusy) return;
+    countsBusy = true;
+    var r = await Promise.all([
+      sb.from('evaluations').select('category').limit(5000),
+      sb.from('restricted_records').select('id').eq('kind', 'evaluation').limit(5000)
+    ]);
+    countsBusy = false;
+    if (r[0].error && r[1].error) return;
+    var c = { manager: 0, self: 0, peer: 0, files: (r[1].data || []).length };
+    (r[0].data || []).forEach(function (x) { if (c[x.category] !== undefined) c[x.category]++; });
+    var changed = !rc.counts || ['manager', 'self', 'peer', 'files'].some(function (k) { return rc.counts[k] !== c[k]; });
+    rc.counts = c;
+    if (changed && rc.kind === 'evaluation') {
+      Array.prototype.forEach.call($('#rc-evsub').querySelectorAll('[data-evsub]'), function (b) {
+        var small = b.querySelector('small'), n = c[b.getAttribute('data-evsub')];
+        if (small) small.textContent = n;
+        else b.insertAdjacentHTML('beforeend', '<small>' + n + '</small>');
+      });
+    }
   }
 
   async function load() {
