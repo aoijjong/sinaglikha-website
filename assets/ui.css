@@ -322,3 +322,26 @@ button.lmain{cursor:pointer}
   #rc-kind .pill{display:none}
   #rc-kind .dp-pick{display:block;width:100%}
 }
+
+/* Staffing: today's attendance at a glance, one tap opens the full tracker */
+.attc{display:grid;gap:10px;width:100%;text-align:left;font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:14px 18px;margin:0 0 12px;cursor:pointer;transition:transform .4s,box-shadow .4s}
+@media (hover:hover) and (pointer:fine){.attc:not(.is-loading):hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}}
+.attc .icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.attc-h{display:flex;align-items:center;gap:10px}
+.attc-i{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--soft-warm);color:var(--brown)}
+.attc-h b{font-family:var(--serif);font-weight:400;font-size:1.1rem;color:var(--brown);flex:1;min-width:0}
+.attc-d{font-size:.85rem;color:var(--muted);white-space:nowrap}
+.attc-go{width:30px;height:30px;border:1px solid rgba(74,46,34,.28);border-radius:50%;display:grid;place-items:center;flex:none;color:var(--brown)}
+.attc-bar{display:flex;height:8px;border-radius:4px;background:#EFEAE4;overflow:hidden}
+.attc-bar i{display:block;height:100%;transition:width .6s}
+.attc-bar .g{background:#3E9A4D}
+.attc-bar .b{background:#378ADD}
+.attc-chips{display:flex;gap:6px;flex-wrap:wrap}
+.attc-miss{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+.attc-avs{display:flex;gap:4px}
+.attc-av{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--cream);color:#C8321A;font-size:.7rem;font-weight:700}
+.attc.is-loading{cursor:default}
+.skl{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--cream),#fff,var(--cream));background-size:200% 100%;animation:sklsk 1.2s linear infinite}
+@keyframes sklsk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skl{animation:none}}
+@media (max-width:640px){.attc{padding:12px 14px}.attc-d{display:none}}
