@@ -322,3 +322,19 @@ button.lmain{cursor:pointer}
   #rc-kind .pill{display:none}
   #rc-kind .dp-pick{display:block;width:100%}
 }
+
+/* Attendance Tracker: clickable status filters and the search box with suggestions */
+.sp-search{width:100%;margin:0 0 12px}
+.sp-sum button.chip{border:0;cursor:pointer;font-family:inherit}
+.sp-sum button.chip[aria-pressed="true"]{box-shadow:0 0 0 2px var(--brown)}
+@media (hover:hover) and (pointer:fine){.sp-sum button.chip:hover{filter:brightness(.96)}}
+.asug{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:40;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:6px;max-height:340px;overflow:auto;margin:0;list-style:none}
+.asug li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;cursor:pointer}
+.asug li[aria-selected="true"]{background:var(--cream)}
+@media (hover:hover) and (pointer:fine){.asug li[data-pick]:hover{background:var(--cream)}}
+.asug .asug-av{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--cream);color:#C8321A;font-size:.7rem;font-weight:700}
+.asug .asug-t{display:flex;flex-direction:column;min-width:0;flex:1;text-align:left}
+.asug .asug-n{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asug .asug-s{font-size:.82rem;color:var(--muted)}
+.asug mark{background:rgba(255,203,27,.5);color:inherit;border-radius:4px;padding:0 1px}
+.asug .asug-more{cursor:default;color:var(--muted);font-size:.9rem;justify-content:center;padding:12px}

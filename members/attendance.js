@@ -18,7 +18,7 @@
   var I = window.SngIcon, IB = window.SngIconButton;
   var TZ = { timeZone: 'Asia/Manila' };
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var at = { box: null, ctx: null, date: '', people: [], recs: [], failed: false, token: 0 };
+  var at = { box: null, ctx: null, date: '', people: [], recs: [], failed: false, token: 0, filter: '', q: '' };
 
   function canReview() { return state.isAdmin || (state.profile && state.profile.department === 'staffing'); }
   function today() { return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10); }
@@ -67,10 +67,12 @@
       '<div class="sp-controls">' + IB('back', 'Previous day', { 'data-a': 'prev' }, 'line') +
       '<input type="date" id="ad-pick" aria-label="Choose a day">' + IB('chevron', 'Next day', { 'data-a': 'next' }, 'line') +
       '<button class="pill" type="button" data-a="today" aria-pressed="false">Today</button></div>' +
+      '<div class="sbox sp-search">' + I('search') + '<input id="ad-q" type="search" placeholder="Search by name or ID" aria-label="Search employees" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="ad-sug" aria-autocomplete="list" enterkeyhint="search"><ul class="asug" id="ad-sug" role="listbox" hidden></ul></div>' +
       '<div class="sp-sum" id="ad-sum"></div>' +
       '<div class="list-card"><ul class="rows" id="ad-rows"></ul><div class="es" id="ad-empty" hidden></div><div class="busy" id="ad-busy" hidden role="status">Loading…</div></div>' +
       '<p class="fine">Employees clock themselves. Edits are logged. UTC+8.</p>';
     $('#ad-pick', at.box).value = at.date;
+    $('#ad-q', at.box).value = at.q;
   }
 
   async function load() {
@@ -93,10 +95,14 @@
     var list = at.people.filter(function (p) { return p.active || at.recs.some(function (r) { return r.employee_id === p.id; }); })
       .sort(function (a, b) { return a.employee_no.localeCompare(b.employee_no); });
     var counts = { complete: 0, working: 0, incomplete: 0, none: 0 };
+    var q = at.q.trim().toLowerCase();
+    var shown = 0;
     rows.innerHTML = list.map(function (p) {
       var r = at.recs.filter(function (x) { return x.employee_id === p.id; })[0] || null;
       var st = statusOf(r, at.date);
       counts[st[0]]++;
+      if ((at.filter && st[0] !== at.filter) || (q && (p.full_name + ' ' + p.employee_no).toLowerCase().indexOf(q) === -1)) return '';
+      shown++;
       var meta = [p.employee_no];
       if (r && r.time_in) meta.push(fmtTime(r.time_in) + ' to ' + (r.time_out ? fmtTime(r.time_out) : 'no time out'));
       if (hours(r)) meta.push(hours(r) + ' h');
@@ -107,17 +113,19 @@
         '<div class="lside"><span class="chip t-' + st[0] + '">' + esc(st[1]) + '</span><div class="lacts">' +
         IB('pencil', r ? 'Correct this record' : 'Add a record for this day', { 'data-a': 'edit' }) + '</div></div></li>';
     }).join('');
-    $('#ad-sum', box).innerHTML =
-      '<span class="chip t-complete">' + counts.complete + ' complete</span>' +
-      '<span class="chip t-working">' + counts.working + ' timed in</span>' +
-      '<span class="chip t-incomplete">' + counts.incomplete + ' no time out</span>' +
-      '<span class="chip t-none">' + counts.none + (at.date === today() ? ' not yet in' : ' no record') + '</span>';
+    var chip = function (key, text) {
+      return '<button type="button" class="chip t-' + key + '" data-a="filter" data-f="' + key + '" aria-pressed="' + (at.filter === key) + '">' + counts[key] + ' ' + text + '</button>';
+    };
+    $('#ad-sum', box).innerHTML = chip('complete', 'complete') + chip('working', 'timed in') + chip('incomplete', 'no time out') + chip('none', at.date === today() ? 'not yet in' : 'no record');
     $('[data-a=today]', box).setAttribute('aria-pressed', String(at.date === today()));
     if (at.failed) {
       empty.innerHTML = '<span class="eic">' + I('clock') + '</span><b>Not set up yet</b><p>Run supabase/phase2.sql in the Supabase SQL editor, then reload this page.</p>';
       empty.hidden = false;
     } else if (!list.length) {
       empty.innerHTML = '<span class="eic">' + I('users') + '</span><b>No employees yet</b><p>Add people in the Employees tab first.</p>';
+      empty.hidden = false;
+    } else if (!shown) {
+      empty.innerHTML = '<span class="eic">' + I('search') + '</span><b>No one matches</b><p>Clear the filter or the search to see everyone.</p>';
       empty.hidden = false;
     } else empty.hidden = true;
   }
@@ -197,8 +205,62 @@
     toast('Spreadsheet downloaded.', 'ok');
   }
 
+  /* ---------- search suggestions: names and IDs, with the day's status ---------- */
+  var sugAt = -1;
+  function hideSug() {
+    var s = $('#ad-sug', at.box), i = $('#ad-q', at.box);
+    if (s) s.hidden = true;
+    if (i) i.setAttribute('aria-expanded', 'false');
+    sugAt = -1;
+  }
+  function mark(text, q) {
+    var i = text.toLowerCase().indexOf(q);
+    return i < 0 ? esc(text) : esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+  }
+  function showSug() {
+    var raw = $('#ad-q', at.box).value.trim(), q = raw.toLowerCase(), box = $('#ad-sug', at.box);
+    if (!q) { hideSug(); return; }
+    var found = at.people.filter(function (p) { return (p.full_name + ' ' + p.employee_no).toLowerCase().indexOf(q) !== -1; });
+    sugAt = -1;
+    box.innerHTML = found.length ? found.slice(0, 6).map(function (p) {
+      var r = at.recs.filter(function (x) { return x.employee_id === p.id; })[0] || null, st = statusOf(r, at.date);
+      return '<li role="option" data-pick="' + esc(p.id) + '"><span class="asug-av">' + esc(initials(p.full_name)) + '</span><span class="asug-t"><span class="asug-n">' + mark(p.full_name, q) + '</span><span class="asug-s">' + esc(p.employee_no) + '</span></span><span class="chip t-' + st[0] + '">' + esc(st[1]) + '</span></li>';
+    }).join('') + (found.length > 6 ? '<li class="asug-more" role="presentation">' + (found.length - 6) + ' more: keep typing to narrow it down</li>' : '')
+      : '<li class="asug-more" role="presentation">No one matches "' + esc(raw) + '".</li>';
+    box.hidden = false;
+    $('#ad-q', at.box).setAttribute('aria-expanded', 'true');
+  }
+  function applySearch(text) {
+    at.q = text;
+    $('#ad-q', at.box).value = text;
+    hideSug();
+    render();
+  }
+  function onInput(e) {
+    if (e.target.id !== 'ad-q') return;
+    at.q = e.target.value;
+    showSug();
+    render();
+  }
+  function onKey(e) {
+    if (e.target.id !== 'ad-q') return;
+    var opts = Array.prototype.slice.call($('#ad-sug', at.box).querySelectorAll('li[data-pick]'));
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && opts.length && !$('#ad-sug', at.box).hidden) {
+      e.preventDefault();
+      sugAt = (sugAt + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
+      opts.forEach(function (li, n) { li.setAttribute('aria-selected', String(n === sugAt)); });
+      opts[sugAt].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      var li = opts[sugAt], p = li && person(li.dataset.pick);
+      applySearch(p ? p.full_name : e.target.value);
+    } else if (e.key === 'Escape') hideSug();
+  }
+
   /* ---------- wiring ---------- */
   function onClick(e) {
+    var pick = e.target.closest('[data-pick]');
+    if (pick) { var pp = person(pick.dataset.pick); if (pp) applySearch(pp.full_name); return; }
     var b = e.target.closest('[data-a]');
     if (!b) return;
     var a = b.dataset.a;
@@ -207,6 +269,7 @@
     else if (a === 'next') { at.date = addDays(at.date, 1); load(); }
     else if (a === 'today') { at.date = today(); load(); }
     else if (a === 'export') exportMonth();
+    else if (a === 'filter') { at.filter = at.filter === b.dataset.f ? '' : b.dataset.f; render(); }
     else if (a === 'edit') {
       var li = e.target.closest('li.lrow'), p = li && person(li.dataset.emp);
       if (p) openDialog(p);
@@ -224,8 +287,15 @@
         return;
       }
       at.date = today();
+      at.filter = '';
+      at.q = '';
       shell();
       box.onclick = onClick;
+      box.oninput = onInput;
+      box.onkeydown = onKey;
+      box.onfocusin = function (e) { if (e.target.id === 'ad-q') showSug(); };
+      box.onfocusout = function (e) { if (e.target.id === 'ad-q') setTimeout(hideSug, 150); };
+      $('#ad-sug', box).onmousedown = function (e) { e.preventDefault(); };
       $('#ad-pick', box).onchange = function () { if (this.value) { at.date = this.value; load(); } };
       var res = await sb.rpc('employee_options');
       at.people = res.error || !Array.isArray(res.data) ? [] : res.data;
