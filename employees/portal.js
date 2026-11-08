@@ -297,7 +297,7 @@
         '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' reply' : ' replies') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
-    }).join('') : '<div class="none">No discussions yet. Start the first one above.</div>';
+    }).join('') : '<div class="none">No discussions yet. Start the first one below.</div>';
   }
 
   async function refreshFeed() {
