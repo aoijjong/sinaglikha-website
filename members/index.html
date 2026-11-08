@@ -134,7 +134,7 @@ main{flex:1;padding-block:clamp(28px,5vw,64px)}
 .suggest mark{background:rgba(255,203,27,.5);color:inherit;border-radius:4px;padding:0 1px}
 .suggest .snote{padding:14px 12px;color:var(--muted);font-size:.92rem;cursor:default}
 @media (hover:hover) and (pointer:fine){.suggest li:not(.snote):hover{background:var(--cream)}}
-.row.flash{animation:flash 2.8s ease}
+.row.flash,.lrow.flash{animation:flash 2.8s ease}
 @keyframes flash{0%,55%{background:#FFF0B0}100%{background:transparent}}
 .toolbar .btn{min-height:44px;padding:0 20px}
 .crumbs button{min-height:40px;display:inline-flex;align-items:center}
@@ -508,17 +508,14 @@ dialog[open]{animation:pop .5s var(--ease)}
     </div>
 
     <div id="panel-library" class="screen" role="tabpanel" aria-labelledby="tab-library">
-      <div class="toolbar">
-        <div class="path-row">
-          <button class="btn btn-ghost btn-sm" id="btn-back" type="button" aria-label="Back to the parent folder" hidden>
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back
-          </button>
-          <nav class="crumbs" id="crumbs" aria-label="Folder path"></nav>
-        </div>
-        <div class="tools">
-          <div class="search" id="search-box">
+      <div class="ph">
+        <button class="ib line" id="btn-back" type="button" aria-label="Back to the parent folder" data-tip="Back" hidden><i data-icon="back"></i></button>
+        <div class="ph-main"><h2 id="lib-title">201 Files</h2><nav class="trail" id="crumbs" aria-label="Folder path"></nav></div>
+        <div class="ph-actions">
+          <div class="sbox" id="search-box">
+            <i data-icon="search"></i>
             <label class="sr-only" for="search">Search all files and folders</label>
-            <input id="search" type="search" placeholder="Search files and folders" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
+            <input id="search" type="search" placeholder="Search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
             <ul class="suggest" id="suggest" role="listbox" aria-label="Suggestions" hidden></ul>
           </div>
           <button class="ib manager-only" id="btn-folder" type="button" aria-label="New folder" data-tip="New folder" hidden><i data-icon="folderPlus"></i></button>
@@ -528,7 +525,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       </div>
       <div class="list-card" id="drop">
         <ul class="rows" id="rows"></ul>
-        <p class="empty" id="empty" hidden></p>
+        <div class="es" id="empty" hidden></div>
         <div class="busy" id="busy" hidden role="status">Loading…</div>
       </div>
       <p class="fine">Anyone with access sees every file here. Limit it to Staffing and Legal.</p>

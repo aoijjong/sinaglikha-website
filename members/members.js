@@ -479,27 +479,29 @@
     var html = '<button type="button" data-go="0"' + (state.path.length ? '' : ' aria-current="true"') + '>201 Files</button>';
     state.path.forEach(function (seg, i) {
       var last = i === state.path.length - 1;
-      html += '<span class="sep" aria-hidden="true">/</span><button type="button" data-go="' + (i + 1) + '"' +
+      html += '<span class="sep" aria-hidden="true">›</span><button type="button" data-go="' + (i + 1) + '"' +
         (last ? ' aria-current="true"' : '') + '>' + esc(seg) + '</button>';
     });
     $('#crumbs').innerHTML = html;
+    $('#lib-title').textContent = state.path.length ? state.path[state.path.length - 1] : '201 Files';
   }
 
+  /* the same pill rows, icon tiles and round icon buttons as the Content tab */
+  var SI = window.SngIcon, SIB = window.SngIconButton;
   function rowHtml(e) {
     var n = esc(e.name);
-    var del = state.canUse
-      ? '<button class="icon-btn danger" type="button" data-act="delete" aria-label="Delete ' + (e.folder ? 'folder ' : '') + n + '">' + ICON_TRASH + '</button>'
-      : '';
+    var del = state.canUse ? SIB('trash', 'Delete ' + (e.folder ? 'folder ' : '') + e.name, { 'data-act': 'delete' }, 'danger') : '';
     if (e.folder) {
-      return '<li class="row" data-name="' + n + '" data-kind="folder">' +
-        '<button class="row-main" type="button" data-act="open"><span class="ico folder">' + ICON_FOLDER + '</span>' +
-        '<span class="row-text"><span class="row-name">' + n + '</span><span class="row-meta">Folder</span></span></button>' + del + '</li>';
+      return '<li class="lrow" data-name="' + n + '" data-kind="folder">' +
+        '<button class="lmain" type="button" data-act="open"><span class="lico folder">' + SI('folder') + '</span>' +
+        '<span class="ltext"><span class="lname">' + n + '</span><span class="lmeta">Folder</span></span></button>' +
+        '<div class="lside"><div class="lacts">' + del + '</div></div></li>';
     }
     var meta = [fmtSize(e.size), fmtDate(e.updated)].filter(Boolean).join(' · ');
-    return '<li class="row" data-name="' + n + '" data-kind="file">' +
-      '<button class="row-main" type="button" data-act="preview" title="' + (isPdf(e.name) ? 'Preview' : 'Open in a new tab') + '"><span class="ico">' + esc(extOf(e.name)) + '</span>' +
-      '<span class="row-text"><span class="row-name">' + n + '</span><span class="row-meta">' + esc(meta) + '</span></span></button>' +
-      '<button class="icon-btn" type="button" data-act="download" aria-label="Download ' + n + '">' + ICON_DOWN + '</button>' + del + '</li>';
+    return '<li class="lrow" data-name="' + n + '" data-kind="file">' +
+      '<button class="lmain" type="button" data-act="preview" title="' + (isPdf(e.name) ? 'Preview' : 'Open in a new tab') + '"><span class="lico">' + esc(extOf(e.name)) + '</span>' +
+      '<span class="ltext"><span class="lname">' + n + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
+      '<div class="lside"><div class="lacts">' + SIB('download', 'Download ' + e.name, { 'data-act': 'download' }) + del + '</div></div></li>';
   }
 
   function render() {
@@ -509,13 +511,12 @@
     var items = state.entries.filter(function (e) { return !q || e.name.toLowerCase().indexOf(q) !== -1; });
     $('#rows').innerHTML = items.map(rowHtml).join('');
     var empty = $('#empty');
+    var emptyBox = function (icon, title, text) { return '<span class="eic">' + SI(icon) + '</span><b>' + title + '</b><p>' + text + '</p>'; };
     if (!state.entries.length) {
-      empty.textContent = state.canUse
-        ? 'This folder is empty. Upload files or drag them here.'
-        : 'This folder is empty.';
+      empty.innerHTML = emptyBox('inbox', 'This folder is empty', state.canUse ? 'Upload files or drop them onto this list.' : 'Nothing has been added yet.');
       empty.hidden = false;
     } else if (!items.length) {
-      empty.textContent = 'Nothing in this folder matches "' + $('#search').value.trim() + '". Choose a suggestion to jump to another folder.';
+      empty.innerHTML = emptyBox('search', 'No matches', 'Nothing in this folder matches "' + esc($('#search').value.trim()) + '". Choose a suggestion to jump to another folder.');
       empty.hidden = false;
     } else {
       empty.hidden = true;
@@ -671,7 +672,7 @@
     state.path = item.folder ? item.path.split('/') : (item.dir ? item.dir.split('/') : []);
     await loadFolder();
     if (!item.folder) {
-      var row = $$('#rows li.row').filter(function (li) { return li.dataset.name === item.name; })[0];
+      var row = $$('#rows li.lrow').filter(function (li) { return li.dataset.name === item.name; })[0];
       if (row) {
         row.scrollIntoView({ block: 'center', behavior: 'smooth' });
         row.classList.add('flash');
@@ -1013,7 +1014,7 @@
 
   $('#rows').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-act]');
-    var li = e.target.closest('li.row');
+    var li = e.target.closest('li.lrow');
     if (!btn || !li) return;
     var name = li.dataset.name;
     var folder = li.dataset.kind === 'folder';
