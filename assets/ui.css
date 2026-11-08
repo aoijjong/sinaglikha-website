@@ -370,3 +370,10 @@ button.lmain{cursor:pointer}
 /* an employee's photo fills the tile instead of their initials */
 .lico.has-photo,.asug-av.has-photo{background:var(--cream);padding:0;overflow:hidden}
 .lico.has-photo img,.asug-av.has-photo img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+
+/* Engagement: announcement and forum preview cards side by side */
+.eng-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:0 0 12px}
+.eng-grid .attc{margin:0;align-content:start}
+.attc-t{font-weight:600;color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.attc-m{font-size:.85rem;color:var(--muted);margin-top:-6px}
+.chip.is-red{background:#FDECEA;color:#B91C1C}

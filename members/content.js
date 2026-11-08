@@ -124,6 +124,9 @@
     if (cs.attTimer) { clearInterval(cs.attTimer); cs.attTimer = null; }
     /* Announcements are posts, not files, so they have no row in the deliverables table */
     if (cs.dept === 'engagement') list = [{ key: 'announcements', name: 'Announcements', department: 'engagement', kind: 'post' }].concat(list);
+    // Engagement moderators get two small cards (latest announcement, forum activity); they replace the two rows
+    var eng = cs.dept === 'engagement' && canModerate() && !!window.MembersAnnouncements && !!window.MembersForum;
+    if (eng) list = list.filter(function (d) { return d.key !== 'announcements' && d.key !== 'forum'; });
     var pub = 0, drafts = 0;
     list.forEach(function (d) {
       var n = counts[d.key];
@@ -134,7 +137,8 @@
     if (drafts) summary.push(drafts + (drafts === 1 ? ' draft waiting' : ' drafts waiting'));
     cards.innerHTML = '<div class="dp-head"><span class="di">' + I(DEPT_ICON[cs.dept]) + '</span><div class="dp-title"><h2>' + esc(app.depts[cs.dept] || cs.dept) + '</h2>' +
       '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div>' +
-      (glance ? '<div id="cm-glance">' + glanceSkeleton() + '</div>' : '') + '<ul class="rows">' +
+      (glance ? '<div id="cm-glance">' + glanceSkeleton() + '</div>' : '') +
+      (eng ? '<div class="eng-grid" id="cm-eng">' + glanceSkeleton() + glanceSkeleton() + '</div>' : '') + '<ul class="rows">' +
       list.map(function (d) {
         var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
         var sp = SPECIAL[d.key], special = !!(sp && window[sp[0]]);
@@ -153,10 +157,71 @@
         return '<li class="lrow"><button class="lmain" type="button" ' + open + '><span class="lico">' + I(KIND_ICON[d.kind] || 'file') + '</span><span class="ltext"><span class="lname">' + esc(d.name) +
           '</span><span class="lmeta">' + esc(line) + '</span></span>' + I('chevron', 'go go-main') + '</button><div class="lside">' + chips + I('chevron', 'go go-side') + '</div></li>';
       }).join('') + '</ul>';
-    if (glance) {
-      loadGlance();
-      cs.attTimer = setInterval(function () { if (cs.view === 'home' && cs.dept === 'staffing') loadGlance(); else { clearInterval(cs.attTimer); cs.attTimer = null; } }, 60000);
+    if (glance || eng) {
+      var again = glance ? loadGlance : loadEng, where = cs.dept;
+      again();
+      cs.attTimer = setInterval(function () { if (cs.view === 'home' && cs.dept === where) again(); else { clearInterval(cs.attTimer); cs.attTimer = null; } }, 60000);
     }
+  }
+
+  /* ---------- Engagement: the latest announcement and the forum at a glance ---------- */
+  function shortText(s, n) {
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s;
+  }
+  function agoOf(iso) {
+    var m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+    if (m < 1) return 'just now';
+    if (m < 60) return m + ' min ago';
+    if (m < 1440) return Math.round(m / 60) + ' h ago';
+    return Math.round(m / 1440) + ' d ago';
+  }
+  function manilaDay(iso) { return new Date(Date.parse(iso) + 8 * 3600000).toISOString().slice(0, 10); }
+  function engCard(key, icon, title, headline, meta, chips) {
+    return '<button class="attc" type="button" data-special="' + key + '" aria-label="Open ' + esc(title) + '">' +
+      '<span class="attc-h"><span class="attc-i">' + I(icon) + '</span><b>' + esc(title) + '</b><span class="attc-go">' + I('chevron') + '</span></span>' +
+      '<span class="attc-t">' + esc(headline) + '</span><span class="attc-m">' + esc(meta) + '</span><span class="attc-chips">' + chips + '</span></button>';
+  }
+  async function loadEng() {
+    var box = $('#cm-eng');
+    if (!box) return;
+    var res = await Promise.all([
+      sb.from('announcements').select('id,title,body,author_name,created_at,published').order('created_at', { ascending: false }).limit(100),
+      sb.from('forum_threads').select('id,title,created_at,hidden').order('created_at', { ascending: false }).limit(200),
+      sb.from('forum_posts').select('thread_id,created_at,hidden').order('created_at', { ascending: false }).limit(500),
+      sb.from('forum_reports').select('id').eq('resolved', false).limit(500)
+    ]);
+    box = $('#cm-eng');
+    if (!box || cs.view !== 'home' || cs.dept !== 'engagement') return;
+    var html = '';
+    if (!res[0].error && Array.isArray(res[0].data)) {
+      var an = res[0].data, live = an.filter(function (a) { return a.published; });
+      var last = live[0] || an[0], week = live.filter(function (a) { return Date.now() - Date.parse(a.created_at) < 7 * 86400000; }).length;
+      var hid = an.length - live.length;
+      html += last
+        ? engCard('announcements', 'chat', 'Announcements', last.title || shortText(last.body, 70), (last.author_name || 'A Senior Manager') + ' · ' + agoOf(last.created_at),
+          '<span class="chip">' + week + ' this week</span>' + (hid ? '<span class="chip">' + hid + ' hidden</span>' : ''))
+        : engCard('announcements', 'chat', 'Announcements', 'No announcements yet', 'Write the first one for your employees.', '');
+    }
+    if (!res[1].error && Array.isArray(res[1].data)) {
+      var threads = res[1].data.filter(function (t) { return !t.hidden; }), posts = (res[2].data || []).filter(function (x) { return !x.hidden; });
+      var replies = {}, act = {};
+      threads.forEach(function (t) { act[t.id] = Date.parse(t.created_at); replies[t.id] = 0; });
+      posts.forEach(function (x) {
+        if (act[x.thread_id] === undefined) return;
+        replies[x.thread_id]++;
+        act[x.thread_id] = Math.max(act[x.thread_id], Date.parse(x.created_at));
+      });
+      var top = threads.slice().sort(function (a, b) { return act[b.id] - act[a.id]; })[0];
+      var today = manilaToday(), fresh = threads.filter(function (t) { return manilaDay(t.created_at) === today; }).length;
+      var reps = res[3].error || !Array.isArray(res[3].data) ? 0 : res[3].data.length;
+      var chips = '<span class="chip">' + fresh + ' new today</span>' +
+        (reps ? '<span class="chip is-red" data-gtab="reports">' + plural(reps, 'report', 'reports') + '</span>' : '<span class="chip">No reports</span>');
+      html += top
+        ? engCard('forum', 'users', 'Employee forum', top.title, plural(replies[top.id], 'reply', 'replies') + ' · active ' + agoOf(new Date(act[top.id]).toISOString()), chips)
+        : engCard('forum', 'users', 'Employee forum', 'No discussions yet', 'Employees can start one from their dashboard.', chips);
+    }
+    box.innerHTML = html;
   }
 
   /* ---------- Staffing: today's attendance at a glance ---------- */
@@ -223,7 +288,7 @@
     }
 
     var extra = [];
-    if (canModerate()) {
+    if (canModerate() && cs.dept !== 'engagement') {
       extra.push(sb.from('forum_reports').select('id').eq('resolved', false).limit(500).then(function (r) {
         var n = r.error || !r.data ? 0 : r.data.length;
         if (n) items.push({ icon: 'flag', text: plural(n, 'forum report needs', 'forum reports need') + ' a moderator', special: 'forum', tab: 'reports' });
@@ -612,7 +677,7 @@
   });
   $('#cm-cards').addEventListener('click', function (e) {
     var s = e.target.closest('[data-special]');
-    if (s) { openSpecial(s.dataset.special); return; }
+    if (s) { var g = e.target.closest('[data-gtab]'); openSpecial(s.dataset.special, g ? g.dataset.gtab : undefined); return; }
     var b = e.target.closest('[data-open]');
     if (b) openDeliverable(b.dataset.open);
   });
