@@ -294,19 +294,6 @@
         if (n) items.push({ icon: 'flag', text: plural(n, 'forum report needs', 'forum reports need') + ' a moderator', special: 'forum', tab: 'reports' });
       }));
     }
-    if (canReview() && cs.dept !== 'staffing') {
-      extra.push(Promise.all([
-        sb.rpc('employee_options'),
-        sb.from('attendance_records').select('employee_id,time_in').eq('work_date', manilaToday()).limit(5000)
-      ]).then(function (res) {
-        if (res[1].error || !Array.isArray(res[0].data)) return;
-        var active = res[0].data.filter(function (p) { return p.active; });
-        var timedIn = {};
-        (res[1].data || []).forEach(function (r) { if (r.time_in) timedIn[r.employee_id] = true; });
-        var missing = active.filter(function (p) { return !timedIn[p.id]; }).length;
-        if (active.length && missing) items.push({ icon: 'clock', text: missing + ' of ' + active.length + ' employees have not timed in today', special: 'attendance' });
-      }));
-    }
     await Promise.all(extra);
     if (cs.view !== 'home' || !items.length) return;
     box.innerHTML = items.map(function (it, i) {
