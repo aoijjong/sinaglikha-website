@@ -666,16 +666,21 @@
     tickClock();
     var rec = att.records.filter(function (r) { return r.work_date === att.today; })[0];
     var inAt = rec && rec.time_in, outAt = rec && rec.time_out;
-    $('#att-status').textContent = !inAt ? "You haven't timed in yet today."
+    // a shift that started yesterday and is still open can be closed this morning (the server allows 18 hours)
+    var prevDay = new Date(Date.parse(att.today + 'T00:00:00Z') - 86400000).toISOString().slice(0, 10);
+    var overnight = !inAt ? att.records.filter(function (r) {
+      return r.work_date === prevDay && r.time_in && !r.time_out && Date.now() - Date.parse(r.time_in) < 18 * 3600000;
+    })[0] : null;
+    $('#att-status').textContent = overnight ? 'Timed in yesterday at ' + fmtTime(overnight.time_in) + '. Time out when your shift ends.' : !inAt ? "You haven't timed in yet today."
       : !outAt ? 'Timed in at ' + fmtTime(rec.time_in) + '. Remember to time out at the end of your day.'
       : 'Timed in ' + fmtTime(rec.time_in) + ' · Timed out ' + fmtTime(rec.time_out) + '. Thank you for today.';
     $('#att-in').disabled = !!inAt;
-    $('#att-out').disabled = !inAt || !!outAt;
+    $('#att-out').disabled = !overnight && (!inAt || !!outAt);
     // only the last 7 days (today and the 6 days before it) show here
     var from = new Date(Date.parse(att.today + 'T00:00:00Z') - 6 * 86400000).toISOString().slice(0, 10);
     var week = att.records.filter(function (r) { return r.work_date >= from; });
     $('#att-recent').innerHTML = !week.length ? '<li class="none">No time records in the last 7 days.</li>' : week.map(function (r) {
-      var chip = r.time_in && r.time_out ? ['s-published', 'Complete'] : r.work_date === att.today ? ['s-draft', 'Today'] : ['s-archived', 'No time out'];
+      var chip = r.time_in && r.time_out ? ['s-published', 'Complete'] : r.work_date === att.today ? ['s-draft', 'Today'] : overnight && r.id === overnight.id ? ['s-draft', 'Open'] : ['s-archived', 'No time out'];
       return '<li class="lrow"><div class="lmain" style="cursor:default"><span class="ltext"><span class="lname">' + esc(fmtDay(r.work_date)) + '</span><span class="lmeta">' +
         esc((r.time_in ? fmtTime(r.time_in) : '—') + ' to ' + (r.time_out ? fmtTime(r.time_out) : '—')) + '</span></span></div>' +
         '<span class="chip ' + chip[0] + '" style="margin-right:6px">' + chip[1] + '</span></li>';

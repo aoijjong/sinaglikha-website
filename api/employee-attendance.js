@@ -7,13 +7,16 @@
   The employee comes from the sign-in cookie, never from the request, so nobody can record or read
   another person's attendance. The server clock decides the time and the day (Philippine time,
   UTC+8); the page can't choose either. One time in and one time out per day: a second try is
-  refused with a plain message. Each action is written to the activity log.
+  refused with a plain message. A shift that runs past midnight can be closed the next morning: with no
+  time in today, "out" closes yesterday's record if it is still open and was started less than 18 hours ago.
+  Each action is written to the activity log.
   Needs supabase/phase2.sql.
 */
 
 const E = require('./_employee');
 
 const FIELDS = 'id,work_date,time_in,time_out,note';
+const OVERNIGHT_MS = 18 * 3600000;
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
@@ -47,7 +50,7 @@ module.exports = async function handler(req, res) {
   if (action === 'in') {
     if (rec && rec.time_in) return E.send(res, 409, { error: 'You already timed in today.', record: rec });
     const saved = rec
-      ? await E.rest('PATCH', `attendance_records?id=eq.${rec.id}`, { time_in: now }, 'return=representation')
+      ? await E.rest('PATCH', `attendance_records?id=eq.${rec.id}&time_in=is.null`, { time_in: now }, 'return=representation')
       : await E.rest('POST', 'attendance_records', { employee_id: id, work_date: today, time_in: now }, 'return=representation');
     if (!saved.ok || !Array.isArray(saved.data) || !saved.data[0]) {
       // two taps at the same moment: the database allows only one record per day
@@ -57,10 +60,18 @@ module.exports = async function handler(req, res) {
     return E.send(res, 200, { ok: true, record: saved.data[0] });
   }
 
-  if (!rec || !rec.time_in) return E.send(res, 409, { error: 'Time in first, then time out at the end of your day.' });
-  if (rec.time_out) return E.send(res, 409, { error: 'You already timed out today.', record: rec });
-  const saved = await E.rest('PATCH', `attendance_records?id=eq.${rec.id}&time_out=is.null`, { time_out: now }, 'return=representation');
+  let target = rec;
+  if (!target || !target.time_in) {
+    // no time in today: close a shift that started yesterday and is still open
+    const yday = E.manilaDate(Date.now() - 86400000);
+    const prev = await E.rest('GET', `attendance_records?employee_id=eq.${id}&work_date=eq.${yday}&time_in=not.is.null&time_out=is.null&select=${FIELDS}`);
+    const open = prev.ok && Array.isArray(prev.data) ? prev.data[0] : null;
+    if (open && Date.now() - Date.parse(open.time_in) < OVERNIGHT_MS) target = open;
+  }
+  if (!target || !target.time_in) return E.send(res, 409, { error: 'Time in first, then time out at the end of your day.' });
+  if (target.time_out) return E.send(res, 409, { error: 'You already timed out today.', record: target });
+  const saved = await E.rest('PATCH', `attendance_records?id=eq.${target.id}&time_out=is.null`, { time_out: now }, 'return=representation');
   if (!saved.ok || !Array.isArray(saved.data) || !saved.data[0]) return E.send(res, 409, { error: 'You already timed out today.' });
-  await E.logAudit('attendance.out', me.emp.employee_no, { date: today });
+  await E.logAudit('attendance.out', me.emp.employee_no, { date: saved.data[0].work_date });
   return E.send(res, 200, { ok: true, record: saved.data[0] });
 };
