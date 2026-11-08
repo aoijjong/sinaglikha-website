@@ -361,3 +361,8 @@ button.lmain{cursor:pointer}
 @keyframes sklsk{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.skl{animation:none}}
 @media (max-width:640px){.attc{padding:12px 14px}.attc-d{display:none}}
+
+/* the Attendance today card wears the same icon tile as the deliverable rows below it */
+.attc-i{width:48px;height:48px;border-radius:16px;background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px rgba(206,32,32,.6)}
+.attc .attc-i .icon{width:24px;height:24px}
+@media (max-width:640px){.attc-i{width:38px;height:38px;border-radius:12px}.attc .attc-i .icon{width:20px;height:20px}}
