@@ -483,7 +483,10 @@
         (last ? ' aria-current="true"' : '') + '>' + esc(seg) + '</button>';
     });
     $('#crumbs').innerHTML = html;
-    $('#lib-title').textContent = state.path.length ? state.path[state.path.length - 1] : '201 Files';
+    // the page already says "201 Files" above, so the root shows no title or trail; inside a folder they show where you are
+    $('#lib-title').textContent = state.path.length ? state.path[state.path.length - 1] : '';
+    $('#lib-title').hidden = !state.path.length;
+    $('#crumbs').hidden = !state.path.length;
   }
 
   /* the same pill rows, icon tiles and round icon buttons as the Content tab */
