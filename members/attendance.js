@@ -18,7 +18,7 @@
   var I = window.SngIcon, IB = window.SngIconButton;
   var TZ = { timeZone: 'Asia/Manila' };
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var at = { box: null, ctx: null, date: '', people: [], recs: [], failed: false, token: 0, filter: '', q: '' };
+  var at = { box: null, ctx: null, date: '', people: [], recs: [], failed: false, token: 0, filter: '', q: '', photos: {} };
 
   function canReview() { return state.isAdmin || (state.profile && state.profile.department === 'staffing'); }
   function today() { return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10); }
@@ -51,6 +51,13 @@
     var w = String(name || '').trim().split(/\s+/).filter(Boolean);
     return ((w[0] ? Array.from(w[0])[0] : '?') + (w.length > 1 ? Array.from(w[w.length - 1])[0] : '')).toUpperCase();
   }
+  // an employee's photo (a data: image from the portal) or, without one, their initials
+  var PHOTO_RE = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/;
+  function face(p) {
+    var src = at.photos[p.id];
+    return src ? '<img src="' + esc(src) + '" alt="" loading="lazy">' : esc(initials(p.full_name));
+  }
+  function hasPhoto(p) { return at.photos[p.id] ? ' has-photo' : ''; }
   function busy(text) {
     var b = $('#ad-busy', at.box);
     if (!b) return;
@@ -108,7 +115,7 @@
       if (hours(r)) meta.push(hours(r) + ' h');
       if (r && r.note) meta.push('Note: ' + r.note);
       return '<li class="lrow" data-emp="' + esc(p.id) + '">' +
-        '<div class="lmain" style="cursor:default"><span class="lico">' + esc(initials(p.full_name)) + '</span>' +
+        '<div class="lmain" style="cursor:default"><span class="lico' + hasPhoto(p) + '">' + face(p) + '</span>' +
         '<span class="ltext"><span class="lname">' + esc(p.full_name) + '</span><span class="lmeta">' + esc(meta.join(' · ')) + '</span></span></div>' +
         '<div class="lside"><span class="chip t-' + st[0] + '">' + esc(st[1]) + '</span><div class="lacts">' +
         IB('pencil', r ? 'Correct this record' : 'Add a record for this day', { 'data-a': 'edit' }) + '</div></div></li>';
@@ -224,7 +231,7 @@
     sugAt = -1;
     box.innerHTML = found.length ? found.slice(0, 6).map(function (p) {
       var r = at.recs.filter(function (x) { return x.employee_id === p.id; })[0] || null, st = statusOf(r, at.date);
-      return '<li role="option" data-pick="' + esc(p.id) + '"><span class="asug-av">' + esc(initials(p.full_name)) + '</span><span class="asug-t"><span class="asug-n">' + mark(p.full_name, q) + '</span><span class="asug-s">' + esc(p.employee_no) + '</span></span><span class="chip t-' + st[0] + '">' + esc(st[1]) + '</span></li>';
+      return '<li role="option" data-pick="' + esc(p.id) + '"><span class="asug-av' + hasPhoto(p) + '">' + face(p) + '</span><span class="asug-t"><span class="asug-n">' + mark(p.full_name, q) + '</span><span class="asug-s">' + esc(p.employee_no) + '</span></span><span class="chip t-' + st[0] + '">' + esc(st[1]) + '</span></li>';
     }).join('') + (found.length > 6 ? '<li class="asug-more" role="presentation">' + (found.length - 6) + ' more: keep typing to narrow it down</li>' : '')
       : '<li class="asug-more" role="presentation">No one matches "' + esc(raw) + '".</li>';
     box.hidden = false;
@@ -300,6 +307,12 @@
       var res = await sb.rpc('employee_options');
       at.people = res.error || !Array.isArray(res.data) ? [] : res.data;
       await load();
+      // photos come after the list is on screen; without them (or before supabase/employee_photos.sql is run) initials stay
+      sb.rpc('employee_photos').then(function (r) {
+        if (r.error || !Array.isArray(r.data)) return;
+        r.data.forEach(function (x) { if (x && typeof x.avatar === 'string' && PHOTO_RE.test(x.avatar)) at.photos[x.id] = x.avatar; });
+        if (at.box === box) render();
+      });
     }
   };
 })();
