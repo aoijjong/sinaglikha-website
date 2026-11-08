@@ -517,8 +517,9 @@
 
   function renderEvals() {
     var all = (evals.self || []).length + (evals.peer || []).length;
-    $('#evl-panel').hidden = !all;
-    if (!all) return;
+    // the box always shows, so the dashboard keeps its shape; it says so when no form is open
+    $('#evl-panel').hidden = false;
+    if (!all) { $('#evl-list').innerHTML = '<li class="none">No evaluations are open right now. When one opens, it will appear here.</li>'; return; }
     var rows = (evals.self || []).map(function (f) {
       var chip = f.status === 'final' ? ['s-published', 'Submitted'] : f.status === 'draft' ? ['s-draft', 'Draft'] : ['plain', 'Not started'];
       return '<li class="lrow"><button class="lmain" type="button" data-evself="' + esc(f.id) + '"><span class="lico">' + I('clipboard') + '</span><span class="ltext"><span class="lname">' + esc(f.title) +
