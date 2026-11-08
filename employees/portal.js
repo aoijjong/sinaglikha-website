@@ -51,6 +51,8 @@
     hidePins();
     VIEWS.forEach(function (v) { $('#v-' + v).hidden = v !== name; });
     $('#top-right').hidden = SIGNED_IN.indexOf(name) === -1;
+    // remember that someone was signed in, so the next visit can show the dashboard's shape while it loads
+    try { if (name === 'signin') localStorage.removeItem('sng-emp-seen'); else if (name === 'home') localStorage.setItem('sng-emp-seen', '1'); } catch (e) { /* no storage: the spinner shows instead */ }
     var first = { signin: '#s-no', activate: '#a-no' }[name];
     if (first) $(first).focus();
     window.scrollTo(0, 0);
@@ -165,7 +167,12 @@
   function skeleton() {
     var lines = '<div class="skel" style="width:70%"></div><div class="skel" style="width:90%"></div><div class="skel" style="width:55%"></div>';
     $('#ann-feed').innerHTML = lines;
-    $('#tiles').innerHTML = '';
+    $('#tiles').innerHTML = '<li class="skp"></li><li class="skp"></li><li class="skp"></li><li class="skp"></li><li class="skp"></li>';
+    $('#att-panel').hidden = false;
+    $('#att-in').disabled = true;
+    $('#att-out').disabled = true;
+    $('#att-status').textContent = '';
+    $('#att-recent').innerHTML = lines;
   }
 
   function enter(employee) {
@@ -960,6 +967,9 @@
 
   /* ---------- start: one request tells us who is signed in AND fills the dashboard ---------- */
   (async function boot() {
+    var seen = false;
+    try { seen = localStorage.getItem('sng-emp-seen') === '1'; } catch (e) { seen = false; }
+    if (seen) { skeleton(); show('home'); }
     var r = await call('GET', '/api/employee-content?home=1');
     if (r.ok && r.data.employee) {
       me = Object.assign({ avatar: null }, r.data.employee);
