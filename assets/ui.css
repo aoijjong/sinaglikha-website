@@ -361,3 +361,7 @@ button.lmain{cursor:pointer}
 @keyframes sklsk{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.skl{animation:none}}
 @media (max-width:640px){.attc{padding:12px 14px}.attc-d{display:none}}
+
+/* an employee's photo fills the tile instead of their initials */
+.lico.has-photo,.asug-av.has-photo{background:var(--cream);padding:0;overflow:hidden}
+.lico.has-photo img,.asug-av.has-photo img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
