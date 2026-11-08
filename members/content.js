@@ -118,6 +118,10 @@
       if (c[r.status] !== undefined) c[r.status]++;
     });
     var list = cs.deliverables.filter(function (d) { return d.department === cs.dept; });
+    // Staffing and the Administrator get a small "attendance today" card above the list; it replaces the tracker row
+    var glance = cs.dept === 'staffing' && canReview() && !!window.MembersAttendance;
+    if (glance) list = list.filter(function (d) { return d.key !== 'attendance'; });
+    if (cs.attTimer) { clearInterval(cs.attTimer); cs.attTimer = null; }
     /* Announcements are posts, not files, so they have no row in the deliverables table */
     if (cs.dept === 'engagement') list = [{ key: 'announcements', name: 'Announcements', department: 'engagement', kind: 'post' }].concat(list);
     var pub = 0, drafts = 0;
@@ -129,7 +133,8 @@
     if (pub) summary.push(pub + ' published');
     if (drafts) summary.push(drafts + (drafts === 1 ? ' draft waiting' : ' drafts waiting'));
     cards.innerHTML = '<div class="dp-head"><span class="di">' + I(DEPT_ICON[cs.dept]) + '</span><div class="dp-title"><h2>' + esc(app.depts[cs.dept] || cs.dept) + '</h2>' +
-      '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div><ul class="rows">' +
+      '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div>' +
+      (glance ? '<div id="cm-glance">' + glanceSkeleton() + '</div>' : '') + '<ul class="rows">' +
       list.map(function (d) {
         var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
         var sp = SPECIAL[d.key], special = !!(sp && window[sp[0]]);
@@ -148,6 +153,48 @@
         return '<li class="lrow"><button class="lmain" type="button" ' + open + '><span class="lico">' + I(KIND_ICON[d.kind] || 'file') + '</span><span class="ltext"><span class="lname">' + esc(d.name) +
           '</span><span class="lmeta">' + esc(line) + '</span></span>' + I('chevron', 'go go-main') + '</button><div class="lside">' + chips + I('chevron', 'go go-side') + '</div></li>';
       }).join('') + '</ul>';
+    if (glance) {
+      loadGlance();
+      cs.attTimer = setInterval(function () { if (cs.view === 'home' && cs.dept === 'staffing') loadGlance(); else { clearInterval(cs.attTimer); cs.attTimer = null; } }, 60000);
+    }
+  }
+
+  /* ---------- Staffing: today's attendance at a glance ---------- */
+  function glanceSkeleton() {
+    return '<div class="attc is-loading" role="status"><span class="sr-only">Loading attendance</span><div class="skl" style="width:40%"></div><div class="skl" style="height:8px"></div><div class="skl" style="width:70%"></div></div>';
+  }
+  function initialsOf(name) {
+    var w = String(name || '').trim().split(/\s+/).filter(Boolean);
+    return ((w[0] ? Array.from(w[0])[0] : '?') + (w.length > 1 ? Array.from(w[w.length - 1])[0] : '')).toUpperCase();
+  }
+  async function loadGlance() {
+    var box = $('#cm-glance');
+    if (!box) return;
+    var today = manilaToday();
+    var res = await Promise.all([
+      sb.rpc('employee_options'),
+      sb.from('attendance_records').select('employee_id,time_in,time_out').eq('work_date', today).limit(5000)
+    ]);
+    box = $('#cm-glance');
+    if (!box || cs.view !== 'home' || cs.dept !== 'staffing') return;
+    if (res[1].error || !Array.isArray(res[0].data)) { box.innerHTML = ''; return; }
+    var active = res[0].data.filter(function (p) { return p.active; });
+    var rec = {};
+    (res[1].data || []).forEach(function (r) { if (r.time_in) rec[r.employee_id] = r; });
+    var done = 0, working = 0, missing = [];
+    active.forEach(function (p) {
+      var r = rec[p.id];
+      if (!r) missing.push(p); else if (r.time_out) done++; else working++;
+    });
+    var n = active.length || 1;
+    var date = new Date(today + 'T00:00:00+08:00').toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Manila' });
+    var names = missing.slice(0, 4).map(function (p) { return '<span class="attc-av" title="' + esc(p.full_name) + '">' + esc(initialsOf(p.full_name)) + '</span>'; }).join('');
+    box.innerHTML = '<button class="attc" type="button" data-special="attendance" aria-label="Open the full Attendance Tracker">' +
+      '<span class="attc-h"><span class="attc-i">' + I('clock') + '</span><b>Attendance today</b><span class="attc-d">' + esc(date) + '</span><span class="attc-go">' + I('chevron') + '</span></span>' +
+      '<span class="attc-bar" aria-hidden="true"><i class="g" style="width:' + (done / n * 100) + '%"></i><i class="b" style="width:' + (working / n * 100) + '%"></i></span>' +
+      '<span class="attc-chips"><span class="chip t-complete">' + done + ' complete</span><span class="chip t-working">' + working + ' timed in</span><span class="chip t-none">' + missing.length + ' not yet in</span></span>' +
+      (missing.length ? '<span class="attc-miss"><span class="attc-avs">' + names + '</span><span>' + (missing.length > 4 ? '+' + (missing.length - 4) + ' more not yet in' : 'not yet in') + '</span></span>' : '') +
+      '</button>';
   }
 
   /* ---------- the "needs attention" strip: only what applies to this person ---------- */
@@ -182,7 +229,7 @@
         if (n) items.push({ icon: 'flag', text: plural(n, 'forum report needs', 'forum reports need') + ' a moderator', special: 'forum', tab: 'reports' });
       }));
     }
-    if (canReview()) {
+    if (canReview() && cs.dept !== 'staffing') {
       extra.push(Promise.all([
         sb.rpc('employee_options'),
         sb.from('attendance_records').select('employee_id,time_in').eq('work_date', manilaToday()).limit(5000)
