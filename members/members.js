@@ -941,7 +941,7 @@
   });
 
   function viewImages(name) {
-    var pics = state.entries.filter(function (e) { return !e.folder && SngViewer.isImage(e.name); });
+    var pics = state.entries.filter(function (e) { return !e.folder && SngViewer.kindOf(e.name) && !isPdf(e.name); });
     var where = state.path.length ? state.path.join(' / ') : '201 Files';
     SngViewer.open(pics.map(function (e) {
       return {
@@ -955,7 +955,7 @@
 
   async function preview(name) {
     if (isPdf(name)) { openViewer(name); return; }
-    if (window.SngViewer && SngViewer.isImage(name)) { viewImages(name); return; }
+    if (window.SngViewer && SngViewer.kindOf(name)) { viewImages(name); return; }
     var w = window.open('about:blank', '_blank');
     try {
       var url = await signedUrl(name, false);

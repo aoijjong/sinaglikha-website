@@ -541,3 +541,13 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 .at-stpick{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;border:0;padding:0;margin:0;-webkit-appearance:none;appearance:none}
 .at-stpick:disabled{cursor:progress}
 .at-sttag:focus-within{outline:3px solid #CE2020;outline-offset:2px}
+
+/* the file viewer: PDFs drawn page by page, and text files */
+.sv-doc{position:absolute;inset:0;overflow:auto;padding:8px 8px 24px;background:rgba(0,0,0,.25);border-radius:16px}
+.sv-pg{margin:0 auto 10px;background:#fff;box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+.sv-pg canvas{display:block;width:100%;height:100%}
+.sv-text{position:absolute;inset:0;overflow:auto;margin:0;padding:16px;background:#fff;color:var(--ink);font:.9rem/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:16px}
+.sv-doc[hidden],.sv-text[hidden],.sv-zoomer[hidden]{display:none}
+.sv-zoomer{display:inline-flex;align-items:center;gap:2px}
+.sv-zoomer .sv-link{text-decoration:none;min-width:30px;text-align:center}
+.sv-link:disabled{opacity:.4;cursor:default}

@@ -455,7 +455,6 @@
     disciplinary_guidelines: 'scale', risk_plan: 'lock'
   };
   var PREVIEW_EXT = /^(pdf|png|jpe?g|gif|webp|txt)$/i;
-  var PIC_EXT = /^(png|jpe?g|gif|webp)$/i;
 
   /* one file in a deliverable's tray: its type, name and details, and round Preview and Download buttons */
   function fileLine(it) {
@@ -806,13 +805,15 @@
       return r.data.url;
     });
   }
+  // what the viewer can show, by the file's type
+  function viewKind(ext) { ext = String(ext || '').toLowerCase(); return ext === 'pdf' ? 'pdf' : ext === 'txt' ? 'text' : /^(png|jpe?g|gif|webp)$/.test(ext) ? 'image' : ''; }
   function viewImage(id) {
     var V = window.SngViewer, it = content.items.filter(function (x) { return x.id === id; })[0];
-    if (!V || !it || it.kind === 'link' || !PIC_EXT.test(typeOf(it))) return false;
-    var group = content.items.filter(function (x) { return x.deliverable === it.deliverable && (x.folder || '') === (it.folder || '') && x.kind !== 'link' && PIC_EXT.test(typeOf(x)); });
+    if (!V || !it || it.kind === 'link' || !viewKind(typeOf(it))) return false;
+    var group = content.items.filter(function (x) { return x.deliverable === it.deliverable && (x.folder || '') === (it.folder || '') && x.kind !== 'link' && viewKind(typeOf(x)); });
     V.open(group.map(function (x) {
       return {
-        name: x.title, sub: nameOf(x.deliverable),
+        name: x.title, sub: nameOf(x.deliverable), kind: viewKind(typeOf(x)),
         src: function () { return employeeLink('/api/employee-content?file=' + encodeURIComponent(x.id)); },
         download: function () { return employeeLink('/api/employee-content?dl=1&file=' + encodeURIComponent(x.id)); }
       };
@@ -821,11 +822,11 @@
   }
   function viewAnnouncementImage(annId, i) {
     var V = window.SngViewer, a = anns.filter(function (x) { return x.id === annId; })[0];
-    if (!V || !a || !a.files || !a.files[i] || !V.isImage(a.files[i].name)) return false;
+    if (!V || !a || !a.files || !a.files[i] || !V.kindOf(a.files[i].name)) return false;
     var at = [];
-    a.files.forEach(function (f, n) { if (V.isImage(f.name)) at.push(n); });
+    a.files.forEach(function (f, n) { if (V.kindOf(f.name)) at.push(n); });
     V.open(at.map(function (n) {
-      return { name: a.files[n].name, sub: a.title || 'Announcement from ' + a.author, src: function () { return employeeLink('/api/employee-content?ann=' + encodeURIComponent(a.id) + '&i=' + n); } };
+      return { name: a.files[n].name, sub: a.title || 'Announcement from ' + a.author, kind: V.kindOf(a.files[n].name), src: function () { return employeeLink('/api/employee-content?ann=' + encodeURIComponent(a.id) + '&i=' + n); } };
     }), Math.max(0, at.indexOf(i)));
     return true;
   }

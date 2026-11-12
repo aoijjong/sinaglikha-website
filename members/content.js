@@ -547,7 +547,7 @@
     return m && !new RegExp('\\.' + m[1] + '$', 'i').test(x.title) ? x.title + '.' + m[1].toLowerCase() : x.title;
   }
   function viewImages(it) {
-    var pics = cs.items.filter(function (x) { return x.kind === 'file' && x.file_path && SngViewer.isImage(x.file_path); });
+    var pics = cs.items.filter(function (x) { return x.kind === 'file' && x.file_path && SngViewer.kindOf(x.file_path); });
     var d = deliverable(cs.key), where = cs.path.length ? cs.path.join(' / ') : (d ? d.name : '');
     var signed = function (x, save) {
       return sb.storage.from(BUCKET).createSignedUrl(x.file_path, 300, save ? { download: saveName(x) } : undefined).then(function (r) {
@@ -556,7 +556,7 @@
       });
     };
     SngViewer.open(pics.map(function (x) {
-      return { name: x.title, sub: where, src: function () { return signed(x, false); }, download: function () { return signed(x, true); } };
+      return { name: x.title, sub: where, kind: SngViewer.kindOf(x.file_path), src: function () { return signed(x, false); }, download: function () { return signed(x, true); } };
     }), Math.max(0, pics.indexOf(it)));
   }
 
@@ -567,7 +567,7 @@
       else toast('That link is not a web address.', 'bad');
       return;
     }
-    if (window.SngViewer && it.file_path && SngViewer.isImage(it.file_path)) { viewImages(it); return; }
+    if (window.SngViewer && it.file_path && SngViewer.kindOf(it.file_path)) { viewImages(it); return; }
     var w = window.open('', '_blank');
     var res = await sb.storage.from(BUCKET).createSignedUrl(it.file_path, 300);
     if (res.error || !res.data) {
