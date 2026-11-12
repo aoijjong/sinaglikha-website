@@ -540,6 +540,21 @@
     await load();
   }
 
+  /* ---------- images open in the viewer, with the other images of the same folder one arrow away ---------- */
+  function viewImages(it) {
+    var pics = cs.items.filter(function (x) { return x.kind === 'file' && x.file_path && SngViewer.isImage(x.title); });
+    var d = deliverable(cs.key), where = cs.path.length ? cs.path.join(' / ') : (d ? d.name : '');
+    var signed = function (x, save) {
+      return sb.storage.from(BUCKET).createSignedUrl(x.file_path, 300, save ? { download: x.title } : undefined).then(function (r) {
+        if (r.error || !r.data) throw new Error('link');
+        return r.data.signedUrl;
+      });
+    };
+    SngViewer.open(pics.map(function (x) {
+      return { name: x.title, sub: where, src: function () { return signed(x, false); }, download: function () { return signed(x, true); } };
+    }), Math.max(0, pics.indexOf(it)));
+  }
+
   /* ---------- opening a file or a link ---------- */
   async function preview(it) {
     if (it.kind === 'link') {
@@ -547,6 +562,7 @@
       else toast('That link is not a web address.', 'bad');
       return;
     }
+    if (window.SngViewer && it.file_path && SngViewer.isImage(it.title)) { viewImages(it); return; }
     var w = window.open('', '_blank');
     var res = await sb.storage.from(BUCKET).createSignedUrl(it.file_path, 300);
     if (res.error || !res.data) {

@@ -793,6 +793,38 @@
     }).join('');
   }
 
+  /* images open in the viewer, with the other images of the same list one arrow away */
+  function employeeLink(path) {
+    return call('GET', path).then(function (r) {
+      if (r.status === 401) { show('signin'); throw new Error('signed out'); }
+      if (!r.ok || !r.data.url) throw new Error('link');
+      return r.data.url;
+    });
+  }
+  function viewImage(id) {
+    var V = window.SngViewer, it = content.items.filter(function (x) { return x.id === id; })[0];
+    if (!V || !it || it.kind === 'link' || !V.isImage(it.title)) return false;
+    var group = content.items.filter(function (x) { return x.deliverable === it.deliverable && (x.folder || '') === (it.folder || '') && x.kind !== 'link' && V.isImage(x.title); });
+    V.open(group.map(function (x) {
+      return {
+        name: x.title, sub: nameOf(x.deliverable),
+        src: function () { return employeeLink('/api/employee-content?file=' + encodeURIComponent(x.id)); },
+        download: function () { return employeeLink('/api/employee-content?dl=1&file=' + encodeURIComponent(x.id)); }
+      };
+    }), Math.max(0, group.indexOf(it)));
+    return true;
+  }
+  function viewAnnouncementImage(annId, i) {
+    var V = window.SngViewer, a = anns.filter(function (x) { return x.id === annId; })[0];
+    if (!V || !a || !a.files || !a.files[i] || !V.isImage(a.files[i].name)) return false;
+    var at = [];
+    a.files.forEach(function (f, n) { if (V.isImage(f.name)) at.push(n); });
+    V.open(at.map(function (n) {
+      return { name: a.files[n].name, sub: a.title || 'Announcement from ' + a.author, src: function () { return employeeLink('/api/employee-content?ann=' + encodeURIComponent(a.id) + '&i=' + n); } };
+    }), Math.max(0, at.indexOf(i)));
+    return true;
+  }
+
   async function openUrl(path) {
     var w = window.open('', '_blank');
     var r = await call('GET', path);
@@ -805,9 +837,9 @@
   document.addEventListener('click', function (e) {
     var t;
     if ((t = e.target.closest('[data-form]'))) { if (/^https?:\/\//i.test(t.dataset.form)) window.open(t.dataset.form, '_blank', 'noopener'); }
-    else if ((t = e.target.closest('[data-annfile]'))) openUrl('/api/employee-content?ann=' + encodeURIComponent(t.dataset.annfile) + '&i=' + encodeURIComponent(t.dataset.i));
+    else if ((t = e.target.closest('[data-annfile]'))) { if (!viewAnnouncementImage(t.dataset.annfile, Number(t.dataset.i))) openUrl('/api/employee-content?ann=' + encodeURIComponent(t.dataset.annfile) + '&i=' + encodeURIComponent(t.dataset.i)); }
     else if ((t = e.target.closest('[data-dl]'))) downloadUrl('/api/employee-content?dl=1&file=' + encodeURIComponent(t.dataset.dl));
-    else if ((t = e.target.closest('[data-open]'))) openUrl('/api/employee-content?file=' + encodeURIComponent(t.dataset.open));
+    else if ((t = e.target.closest('[data-open]'))) { if (!viewImage(t.dataset.open)) openUrl('/api/employee-content?file=' + encodeURIComponent(t.dataset.open)); }
     else if ((t = e.target.closest('[data-rec]'))) openUrl('/api/employee-content?record=' + encodeURIComponent(t.dataset.rec));
     else if ((t = e.target.closest('[data-dept]'))) openDept(t.dataset.dept);
     else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course);
