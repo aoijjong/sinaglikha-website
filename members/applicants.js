@@ -60,7 +60,8 @@
       '<div class="at-sum" id="at-sum"></div>' +
       '<div class="fl-row"><select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
       '<select id="at-pos" class="fl-pill" aria-label="Filter by position applied for"></select>' +
-      '<span class="fl-date" title="Date received">' + I('calendar') + '<input id="at-from" type="date" aria-label="Received from"><span>to</span><input id="at-to" type="date" aria-label="Received to"></span>' +
+      '<span class="fl-dates"><label class="fl-date"><span>From</span><input id="at-from" type="date" aria-label="Received from"></label>' +
+      '<label class="fl-date"><span>To</span><input id="at-to" type="date" aria-label="Received to"></label></span>' +
       '<button class="fl-clear" type="button" id="at-clear" data-a="clear" hidden>Clear filters</button></div>' +
       '<div class="list-card" id="at-wrap"><div class="at-scroll"><table class="at-tbl"><thead><tr><th>Reference</th><th>Applicant</th><th>Position applied for</th><th>Date received</th><th>Status</th><th>Last updated</th></tr></thead><tbody id="at-rows"></tbody></table></div>' +
       '<div class="es" id="at-empty" hidden></div></div>' +

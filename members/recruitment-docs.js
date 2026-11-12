@@ -47,7 +47,8 @@
       IB('upload', 'Upload a document', { 'data-a': 'add' }, 'solid') + '</div></div>' +
       '<div class="pills" id="rd-pills" role="group" aria-label="Category"></div>' +
       '<div class="fl-row"><select id="rd-pos" class="fl-pill" aria-label="Filter by position"></select>' +
-      '<span class="fl-date" title="Date uploaded">' + I('calendar') + '<input id="rd-from" type="date" aria-label="Uploaded from"><span>to</span><input id="rd-to" type="date" aria-label="Uploaded to"></span>' +
+      '<span class="fl-dates"><label class="fl-date"><span>From</span><input id="rd-from" type="date" aria-label="Uploaded from"></label>' +
+      '<label class="fl-date"><span>To</span><input id="rd-to" type="date" aria-label="Uploaded to"></label></span>' +
       '<button class="fl-clear" type="button" id="rd-clear" data-a="clear" hidden>Clear filters</button></div>' +
       '<div class="list-card"><ul class="rows" id="rd-rows"></ul><div class="es" id="rd-empty" hidden></div></div>' +
       '<div class="busy" id="rd-busy" hidden role="status">Loading…</div>' +
