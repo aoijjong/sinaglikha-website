@@ -23,8 +23,15 @@
   var LABEL = {}, KEYS = [];
   STATUSES.forEach(function (s) { LABEL[s[0]] = s[1]; KEYS.push(s[0]); });
   var CHIP = { new: 't-working', screening: 's-draft', shortlisted: 's-draft', interview: 's-draft', work_sample: 's-draft', final_review: 's-draft', selected: 's-published', not_selected: 'is-red', placed: 's-published', withdrawn: 's-archived' };
-  var CARDS = [['all', 'Total Applicants'], ['new', 'New Applications'], ['screening', 'For Initial Screening'], ['shortlisted', 'Shortlisted'], ['interview', 'For Interview'],
-    ['work_sample', 'For Work Sample'], ['final_review', 'For Final Review'], ['selected', 'Selected'], ['not_selected', 'Not Selected'], ['placed', 'Placed']];
+  // the summary groups the stages, so the screen stays calm; every single stage is still in the Stage filter
+  var GROUPS = {
+    new: ['new'],
+    active: ['screening', 'shortlisted', 'interview', 'work_sample', 'final_review'],
+    won: ['selected', 'placed'],
+    closed: ['not_selected', 'withdrawn']
+  };
+  var GROUP_LABEL = { all: 'All stages', new: 'New applications', active: 'In progress (screening to final review)', won: 'Selected or placed', closed: 'Not selected or withdrawn' };
+  function inGroup(status, key) { return key === 'all' || (GROUPS[key] ? GROUPS[key].indexOf(status) !== -1 : status === key); }
   var PAGE = 100;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var A = { box: null, ctx: null, rows: [], vacancies: [], failed: false, q: '', status: 'all', pos: '', from: '', to: '', shown: PAGE, open: null, importing: null };
@@ -50,11 +57,11 @@
       '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div>' +
       IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
       '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
-      '<div class="at-cards" id="at-cards"></div>' +
-      '<div class="rd-filters"><label><span>Position applied for</span><select id="at-pos" aria-label="Filter by position"></select></label>' +
-      '<label><span>Status</span><select id="at-status" aria-label="Filter by status"></select></label>' +
-      '<label><span>Received from</span><input id="at-from" type="date" aria-label="Received from"></label>' +
-      '<label><span>Received to</span><input id="at-to" type="date" aria-label="Received to"></label></div>' +
+      '<div class="at-sum" id="at-sum"></div>' +
+      '<div class="fl-row"><select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
+      '<select id="at-pos" class="fl-pill" aria-label="Filter by position applied for"></select>' +
+      '<span class="fl-date" title="Date received">' + I('calendar') + '<input id="at-from" type="date" aria-label="Received from"><span>to</span><input id="at-to" type="date" aria-label="Received to"></span>' +
+      '<button class="fl-clear" type="button" id="at-clear" data-a="clear" hidden>Clear filters</button></div>' +
       '<div class="list-card" id="at-wrap"><div class="at-scroll"><table class="at-tbl"><thead><tr><th>Reference</th><th>Applicant</th><th>Position applied for</th><th>Date received</th><th>Status</th><th>Last updated</th></tr></thead><tbody id="at-rows"></tbody></table></div>' +
       '<div class="es" id="at-empty" hidden></div></div>' +
       '<button class="btn btn-ghost btn-sm" type="button" id="at-more" data-a="more" hidden style="margin-top:12px">Show more</button>' +
@@ -79,18 +86,25 @@
     var counts = { all: A.rows.length };
     KEYS.forEach(function (k) { counts[k] = 0; });
     A.rows.forEach(function (a) { counts[a.status] = (counts[a.status] || 0) + 1; });
-    $('#at-cards', A.box).innerHTML = CARDS.map(function (c) {
-      return '<button class="vc-k" type="button" data-status="' + c[0] + '" aria-pressed="' + (A.status === c[0]) + '"><b>' + (counts[c[0]] || 0) + '</b><span>' + esc(c[1]) + '</span></button>';
-    }).join('');
+    var grp = {};
+    Object.keys(GROUPS).forEach(function (g) { grp[g] = GROUPS[g].reduce(function (n, k) { return n + (counts[k] || 0); }, 0); });
+    var tile = function (key, n, label) { return '<button class="vc-k" type="button" data-status="' + key + '" aria-pressed="' + (A.status === key) + '"><b>' + n + '</b><span>' + label + '</span></button>'; };
+    var seg = function (key, color) { return grp[key] ? '<i style="width:' + (grp[key] / counts.all * 100) + '%;background:' + color + '"></i>' : ''; };
+    var dot = function (key, label, color) { return '<button type="button" class="at-dot" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '">' + label + ' <b>' + grp[key] + '</b></button>'; };
+    $('#at-sum', A.box).innerHTML = '<div class="at-k4">' + tile('all', counts.all, 'Total applicants') + tile('new', grp.new, 'New') + tile('active', grp.active, 'In progress') + tile('won', grp.won, 'Selected or placed') + '</div>' +
+      (counts.all ? '<div class="at-bar" aria-hidden="true">' + seg('new', '#E0A21B') + seg('active', '#378ADD') + seg('won', '#3E9A4D') + seg('closed', '#B9AEA4') + '</div>' +
+      '<div class="at-lg">' + dot('new', 'New', '#E0A21B') + dot('active', 'In progress', '#378ADD') + dot('won', 'Selected or placed', '#3E9A4D') + dot('closed', 'Not selected or withdrawn', '#B9AEA4') + '</div>' : '');
     var positions = {};
     A.rows.forEach(function (a) { if (a.position_title) positions[a.position_title] = true; });
-    $('#at-pos', A.box).innerHTML = '<option value="">All positions</option>' + Object.keys(positions).sort().map(function (p) { return '<option value="' + esc(p) + '"' + (A.pos === p ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('');
-    $('#at-status', A.box).innerHTML = '<option value="all">All statuses</option>' + STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (A.status === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('');
+    $('#at-pos', A.box).innerHTML = '<option value="">Any position</option>' + Object.keys(positions).sort().map(function (p) { return '<option value="' + esc(p) + '"' + (A.pos === p ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('');
+    $('#at-status', A.box).innerHTML = ['all', 'new', 'active', 'won', 'closed'].map(function (g) { return '<option value="' + g + '"' + (A.status === g ? ' selected' : '') + '>' + esc(GROUP_LABEL[g]) + '</option>'; }).join('') +
+      '<optgroup label="One stage">' + STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (A.status === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('') + '</optgroup>';
+    $('#at-clear', A.box).hidden = !(A.status !== 'all' || A.pos || A.from || A.to);
     $('#at-from', A.box).value = A.from;
     $('#at-to', A.box).value = A.to;
     var q = A.q.trim().toLowerCase();
     var list = A.rows.filter(function (a) {
-      if (A.status !== 'all' && a.status !== A.status) return false;
+      if (!inGroup(a.status, A.status)) return false;
       if (A.pos && a.position_title !== A.pos) return false;
       if (A.from && a.received_on < A.from) return false;
       if (A.to && a.received_on > A.to) return false;
@@ -373,6 +387,7 @@
     if (a === 'add') { openNew(); return; }
     if (a === 'import') { $('#at-file', A.box).click(); return; }
     if (a === 'more') { A.shown += PAGE; render(); return; }
+    if (a === 'clear') { A.status = 'all'; A.pos = ''; A.from = ''; A.to = ''; A.q = ''; var qi = $('#at-q', A.box); if (qi) qi.value = ''; A.shown = PAGE; render(); return; }
     if (a === 'open') { var tr = e.target.closest('tr'); if (tr) openDetail(tr.dataset.id); }
   }
 
@@ -382,7 +397,7 @@
       A.ctx = ctx;
       A.q = ''; A.pos = ''; A.from = ''; A.to = ''; A.shown = PAGE;
       // the Recruitment card on the Staffing page can open this screen on one status
-      A.status = ctx && ctx.tab && (ctx.tab === 'all' || LABEL[ctx.tab]) ? ctx.tab : 'all';
+      A.status = ctx && ctx.tab && (ctx.tab === 'all' || LABEL[ctx.tab] || GROUPS[ctx.tab]) ? ctx.tab : 'all';
       if (!canManage()) {
         box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Applicant Tracking</h2></div></div>' +
           '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Staffing and Recruitment only</b><p>Applicant records can be opened by Staffing and Recruitment.</p></div></div>';
