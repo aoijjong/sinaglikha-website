@@ -28,10 +28,17 @@
 @media (max-width:760px){.cr-tabs{display:none}.cr-pick{display:block}}
 .cr-count{margin-left:auto;font-size:.9rem;color:var(--muted)}
 @media (max-width:760px){.cr-count{margin-left:0;width:100%}}
-.cr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:clamp(14px,2vw,22px)}
-.cv{font:inherit;color:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:0;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+.cr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:clamp(14px,2vw,22px)}
+.cv{font:inherit;color:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:0;overflow:hidden;display:flex;flex-direction:column;transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
 @media (hover:hover) and (pointer:fine){.cv:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}}
-.cv:focus-visible{outline:3px solid #CE2020;outline-offset:3px}
+.cv-open{font:inherit;color:inherit;text-align:left;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;flex:1;width:100%}
+.cv-open:focus-visible{outline:3px solid #CE2020;outline-offset:-3px;border-radius:22px}
+.cv-act{padding:0 16px 16px;display:flex}
+.cv-apply,.cv-view{flex:1;text-align:center;font:inherit;font-weight:700;font-size:.92rem;line-height:1.2;padding:12px 18px;border-radius:999px;cursor:pointer;text-decoration:none;transition:transform .4s var(--ease),background .3s,box-shadow .3s}
+.cv-apply{background:var(--grad-btn);color:#fff;border:0;box-shadow:0 10px 22px -12px rgba(206,32,32,.65)}
+.cv-view{background:#fff;color:var(--brown);border:1.5px solid rgba(74,46,34,.28)}
+@media (hover:hover) and (pointer:fine){.cv-apply:hover{transform:translateY(-2px)}.cv-view:hover{background:var(--cream)}}
+.cv-apply:focus-visible,.cv-view:focus-visible{outline:3px solid #CE2020;outline-offset:3px}
 .cv .pic{aspect-ratio:360/509;background:var(--soft-warm);overflow:hidden}
 .cv .pic img{width:100%;height:100%;object-fit:cover}
 .cv .cap{padding:14px 16px 16px;display:grid;gap:6px}
@@ -66,7 +73,7 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
 .lb-stage{min-height:0;display:grid;place-items:center;overflow:auto;border-radius:18px}
 .lb-stage img{max-height:100%;width:auto;max-width:100%;height:auto;border-radius:14px;background:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-width:640px){.cr-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cv{border-radius:16px}.cv .cap{padding:10px 12px 12px}.cv .cap b{font-size:1rem}.cv .tagd,.cv .tagx{font-size:.72rem;padding:2px 8px}}
+@media (max-width:640px){.cr-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cv{border-radius:16px}.cv-act{padding:0 12px 12px}.cv-apply,.cv-view{padding:10px 12px;font-size:.85rem}.cv .cap{padding:10px 12px 12px}.cv .cap b{font-size:1rem}.cv .tagd,.cv .tagx{font-size:.72rem;padding:2px 8px}}
 .site-footer .foot-top{grid-template-columns:1.3fr 1fr}
 @media (max-width:720px){.site-footer .foot-top{grid-template-columns:1fr}}
 </style>
@@ -283,10 +290,16 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
     $('#cr-count').textContent = state.shown.length + (state.shown.length === 1 ? ' open position' : ' open positions');
     $('#cr-out').innerHTML = '<div class="cr-grid">' + state.shown.map(function (r, i) {
       var extra = [r.employment_type, r.location, r.closes_on ? 'Apply by ' + fmtDate(r.closes_on) : ''].filter(Boolean);
-      return '<button class="cv" type="button" data-i="' + i + '" aria-label="Open the poster for ' + esc(r.title) + '">' +
+      var link = /^https:\/\/[^\s]+$/i.test(r.apply_url || '') ? r.apply_url : '';
+      // with a department already chosen the department tag would repeat on every card
+      var tag = state.dept === 'all' ? '<span class="tagd">' + esc(NAME[r.department] || r.department) + '</span>' : '';
+      var meta = tag + extra.map(function (x) { return '<span class="tagx">' + esc(x) + '</span>'; }).join('');
+      return '<article class="cv"><button class="cv-open" type="button" data-i="' + i + '" aria-label="Open the poster for ' + esc(r.title) + '">' +
         '<span class="pic"><img src="' + esc(img(r.thumb_path || r.poster_path)) + '" alt="" loading="lazy" width="360" height="509"></span>' +
-        '<span class="cap"><b>' + esc(r.title) + '</b><span class="meta"><span class="tagd">' + esc(NAME[r.department] || r.department) + '</span>' +
-        extra.map(function (x) { return '<span class="tagx">' + esc(x) + '</span>'; }).join('') + '</span></span></button>';
+        '<span class="cap"><b>' + esc(r.title) + '</b>' + (meta ? '<span class="meta">' + meta + '</span>' : '') + '</span></button>' +
+        '<div class="cv-act">' + (link
+          ? '<a class="cv-apply" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="Apply now for ' + esc(r.title) + '">Apply now</a>'
+          : '<button class="cv-view" type="button" data-i="' + i + '">View poster</button>') + '</div></article>';
     }).join('') + '</div>';
   }
 
