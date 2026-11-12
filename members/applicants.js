@@ -113,10 +113,10 @@
     var show = list.slice(0, A.shown);
     $('#at-rows', A.box).innerHTML = show.map(function (a) {
       return '<tr data-id="' + esc(a.id) + '"><td data-l="Reference">' + esc(a.reference || '') + '</td>' +
-        '<td data-l="Applicant"><button class="at-name" type="button" data-a="open">' + esc(a.full_name) + '</button></td>' +
+        '<td data-l="Applicant"><button class="at-name" type="button" data-a="open" title="Open the record">' + esc(a.full_name) + '</button></td>' +
         '<td data-l="Position">' + esc(a.position_title || 'Not stated') + '</td>' +
         '<td data-l="Received">' + esc(app.fmtDate(a.received_on)) + '</td>' +
-        '<td data-l="Status"><span class="chip ' + (CHIP[a.status] || '') + '">' + esc(LABEL[a.status] || a.status) + '</span></td>' +
+        '<td data-l="Status"><select class="chip at-stsel ' + (CHIP[a.status] || '') + '" data-stfor="' + esc(a.id) + '" aria-label="Change the status of ' + esc(a.full_name) + '">' + options(a.status) + '</select></td>' +
         '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td></tr>';
     }).join('');
     $('#at-more', A.box).hidden = list.length <= A.shown;
@@ -228,6 +228,24 @@
     }
     await load();
     openDetail(a.id);
+  }
+
+  /* ---------- changing a status straight from the table ---------- */
+  async function quickStatus(sel) {
+    var a = A.rows.filter(function (x) { return x.id === sel.dataset.stfor; })[0];
+    if (!a || sel.value === a.status) return;
+    var to = sel.value;
+    sel.disabled = true;
+    var r = await sb.rpc('applicant_set_status', { p_id: a.id, p_status: to, p_note: '' });
+    if (r.error) {
+      sel.disabled = false;
+      sel.value = a.status;
+      toast("Couldn't change the status. You may not have permission.", 'bad');
+      return;
+    }
+    logAction('applicant.status', a.reference + ' ' + a.status + ' to ' + to, { id: a.id });
+    toast(a.full_name + ' is now ' + LABEL[to] + '.', 'ok');
+    await load();
   }
 
   /* ---------- adding one by hand ---------- */
@@ -412,6 +430,7 @@
         else if (e.target.id === 'at-to') { A.to = e.target.value; A.shown = PAGE; render(); }
       };
       box.onchange = function (e) {
+        if (e.target.dataset && e.target.dataset.stfor) { quickStatus(e.target); return; }
         if (e.target.id === 'at-pos') { A.pos = e.target.value; A.shown = PAGE; render(); }
         else if (e.target.id === 'at-status') { A.status = e.target.value; A.shown = PAGE; render(); }
         else if (e.target.id === 'at-file') {
