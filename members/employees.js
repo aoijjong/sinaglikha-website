@@ -16,7 +16,10 @@
   var ID_RE = /^[A-Z]{3}-\d{4}$/;
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
-  var em = { rows: [], show: 'current', failed: false };
+  var em = { rows: [], show: 'current', failed: false, photos: {} };
+  // profile photos are small data: images that employees add in the portal; they reach this list through the
+  // employee_photos() function (supabase/employee_photos.sql), the same one the Attendance Tracker uses
+  var PHOTO_RE = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/;
 
   function busy(text) {
     var b = $('#em-busy');
@@ -70,7 +73,7 @@
       acts += IB('userCheck', 'Reactivate', { 'data-act': 'reactivate' }, 'good');
     }
     return '<li class="lrow" data-id="' + esc(r.id) + '">' +
-      '<div class="lmain"><span class="lico">' + esc(initialsOf(r.full_name)) + '</span>' +
+      '<div class="lmain"><span class="lico' + (em.photos[r.id] ? ' has-photo' : '') + '">' + (em.photos[r.id] ? '<img src="' + esc(em.photos[r.id]) + '" alt="" loading="lazy">' : esc(initialsOf(r.full_name))) + '</span>' +
       '<span class="ltext"><span class="lname">' + esc(r.full_name) + '</span><span class="lmeta">' + esc(meta) + (last ? ' · ' + esc(last) : '') + '</span></span></div>' +
       '<div class="lside"><span class="chip e-' + st[0] + '">' + esc(st[1]) + '</span><div class="lacts">' + acts + '</div></div></li>';
   }
@@ -332,10 +335,18 @@
 
   window.MembersEmployees = {
     /* called each time the Employees tab opens */
-    open: function () { return load(); },
+    open: async function () {
+      await load();
+      // the list is already on screen; photos arrive a moment later, and initials stay for anyone without one
+      var r = await sb.rpc('employee_photos');
+      if (r.error || !Array.isArray(r.data)) return;
+      r.data.forEach(function (x) { if (x && typeof x.avatar === 'string' && PHOTO_RE.test(x.avatar)) em.photos[x.id] = x.avatar; });
+      render();
+    },
     /* called when someone signs out, so the next person starts clean */
     reset: function () {
       em.rows = [];
+      em.photos = {};
       $('#em-rows').innerHTML = '';
       $('#em-search').value = '';
       $('#sl-grid').innerHTML = '';
