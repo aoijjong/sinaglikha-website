@@ -34,7 +34,7 @@
   function inGroup(status, key) { return key === 'all' || (GROUPS[key] ? GROUPS[key].indexOf(status) !== -1 : status === key); }
   var PAGE = 100;
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var A = { box: null, ctx: null, rows: [], vacancies: [], failed: false, q: '', status: 'all', pos: '', from: '', to: '', shown: PAGE, open: null, importing: null };
+  var A = { box: null, ctx: null, rows: [], vacancies: [], failed: false, q: '', status: 'all', pos: '', from: '', to: '', shown: PAGE, open: null, importing: null, fOpen: false };
 
   function canManage() { return state.isAdmin || (state.profile && state.profile.department === 'staffing'); }
   function busy(text) {
@@ -58,7 +58,8 @@
       IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
       '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
       '<div class="at-sum" id="at-sum"></div>' +
-      '<div class="fl-row"><select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
+      '<div class="at-mobile" id="at-mobile"></div>' +
+      '<div class="fl-row" id="at-fl"><select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
       '<select id="at-pos" class="fl-pill" aria-label="Filter by position applied for"></select>' +
       '<span class="fl-dates"><label class="fl-date"><span>From</span><input id="at-from" type="date" aria-label="Received from"></label>' +
       '<label class="fl-date"><span>To</span><input id="at-to" type="date" aria-label="Received to"></label></span>' +
@@ -95,6 +96,13 @@
     $('#at-sum', A.box).innerHTML = '<div class="at-k4">' + tile('all', counts.all, 'Total applicants') + tile('new', grp.new, 'New') + tile('active', grp.active, 'In progress') + tile('won', grp.won, 'Selected or placed') + '</div>' +
       (counts.all ? '<div class="at-bar" aria-hidden="true">' + seg('new', '#E0A21B') + seg('active', '#378ADD') + seg('won', '#3E9A4D') + seg('closed', '#B9AEA4') + '</div>' +
       '<div class="at-lg">' + dot('new', 'New', '#E0A21B') + dot('active', 'In progress', '#378ADD') + dot('won', 'Selected or placed', '#3E9A4D') + dot('closed', 'Not selected or withdrawn', '#B9AEA4') + '</div>' : '');
+    // phones: one sliding row of stage pills and a Filters button; the summary above is hidden there
+    var pill = function (key, label) { return '<button class="pill" type="button" data-status="' + key + '" aria-pressed="' + (A.status === key) + '">' + label + ' <small>' + (key === 'all' ? counts.all : grp[key]) + '</small></button>'; };
+    var extra = A.status !== 'all' && ['new', 'active', 'won', 'closed'].indexOf(A.status) === -1;     // one single stage is chosen
+    var activeFilters = !!(A.pos || A.from || A.to || extra);
+    $('#at-mobile', A.box).innerHTML = '<button class="pill at-ftoggle' + (activeFilters ? ' has' : '') + '" type="button" data-a="filters" aria-expanded="' + A.fOpen + '" aria-controls="at-fl">Filters</button>' +
+      pill('all', 'All') + pill('new', 'New') + pill('active', 'In progress') + pill('won', 'Selected or placed') + pill('closed', 'Closed');
+    $('#at-fl', A.box).classList.toggle('open', A.fOpen);
     var positions = {};
     A.rows.forEach(function (a) { if (a.position_title) positions[a.position_title] = true; });
     $('#at-pos', A.box).innerHTML = '<option value="">Any position</option>' + Object.keys(positions).sort().map(function (p) { return '<option value="' + esc(p) + '"' + (A.pos === p ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('');
@@ -117,7 +125,7 @@
         '<td data-l="Applicant"><button class="at-name" type="button" data-a="open" title="Open the record">' + esc(a.full_name) + '</button></td>' +
         '<td data-l="Position">' + esc(a.position_title || 'Not stated') + '</td>' +
         '<td data-l="Received">' + esc(app.fmtDate(a.received_on)) + '</td>' +
-        '<td data-l="Status"><select class="chip at-stsel ' + (CHIP[a.status] || '') + '" data-stfor="' + esc(a.id) + '" aria-label="Change the status of ' + esc(a.full_name) + '">' + options(a.status) + '</select></td>' +
+        '<td data-l="Status"><select class="chip at-stsel ' + (CHIP[a.status] || '') + '" data-stfor="' + esc(a.id) + '" aria-label="Change the status of ' + esc(a.full_name) + '">' + rowOptions(a.status) + '</select></td>' +
         '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td></tr>';
     }).join('');
     $('#at-more', A.box).hidden = list.length <= A.shown;
@@ -139,6 +147,11 @@
   /* ---------- one applicant ---------- */
   function options(selected) {
     return STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (selected === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('');
+  }
+  // the dropdown inside a table row uses short names so it fits on a phone; the record keeps the full names
+  var SHORT = { new: 'New', screening: 'Screening', shortlisted: 'Shortlisted', interview: 'Interview', work_sample: 'Work sample', final_review: 'Final review', selected: 'Selected', not_selected: 'Not selected', placed: 'Placed', withdrawn: 'Withdrawn' };
+  function rowOptions(selected) {
+    return STATUSES.map(function (s) { return '<option value="' + s[0] + '" title="' + esc(s[1]) + '"' + (selected === s[0] ? ' selected' : '') + '>' + esc(SHORT[s[0]]) + '</option>'; }).join('');
   }
   function positionList() {
     var names = {};
@@ -397,6 +410,8 @@
   }
 
   function onClick(e) {
+    var row = e.target.closest('#at-rows tr');
+    if (row && !e.target.closest('select, button, a')) { openDetail(row.dataset.id); return; }
     var card = e.target.closest('[data-status]');
     if (card) { A.status = card.dataset.status; A.shown = PAGE; render(); return; }
     var b = e.target.closest('[data-a]');
@@ -406,7 +421,8 @@
     if (a === 'add') { openNew(); return; }
     if (a === 'import') { $('#at-file', A.box).click(); return; }
     if (a === 'more') { A.shown += PAGE; render(); return; }
-    if (a === 'clear') { A.status = 'all'; A.pos = ''; A.from = ''; A.to = ''; A.q = ''; var qi = $('#at-q', A.box); if (qi) qi.value = ''; A.shown = PAGE; render(); return; }
+    if (a === 'clear') { A.status = 'all'; A.pos = ''; A.from = ''; A.to = ''; A.q = ''; A.fOpen = false; var qi = $('#at-q', A.box); if (qi) qi.value = ''; A.shown = PAGE; render(); return; }
+    if (a === 'filters') { A.fOpen = !A.fOpen; render(); return; }
     if (a === 'open') { var tr = e.target.closest('tr'); if (tr) openDetail(tr.dataset.id); }
   }
 
@@ -414,7 +430,7 @@
     open: function (box, ctx) {
       A.box = box;
       A.ctx = ctx;
-      A.q = ''; A.pos = ''; A.from = ''; A.to = ''; A.shown = PAGE;
+      A.q = ''; A.pos = ''; A.from = ''; A.to = ''; A.shown = PAGE; A.fOpen = false;
       // the Recruitment card on the Staffing page can open this screen on one status
       A.status = ctx && ctx.tab && (ctx.tab === 'all' || LABEL[ctx.tab] || GROUPS[ctx.tab]) ? ctx.tab : 'all';
       if (!canManage()) {

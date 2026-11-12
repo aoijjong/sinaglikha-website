@@ -508,3 +508,33 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 .at-stsel:disabled{opacity:.6;cursor:progress}
 .at-stsel:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
 .chip.at-stsel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A2E22' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 9px center!important;background-size:12px!important}
+
+/* Applicant Tracking on a phone: compact cards, stage pills, filters behind one button */
+.at-mobile{display:none}
+.at-tbl tbody tr{cursor:pointer}
+@media (max-width:640px){
+  .at-sum{display:none}
+  .at-mobile{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px;padding-bottom:4px;scrollbar-width:none}
+  .at-mobile::-webkit-scrollbar{display:none}
+  .at-mobile .pill{flex:none;padding:8px 14px;font-size:.88rem}
+  .at-mobile .pill small{font-weight:700;opacity:.75;margin-left:2px}
+  .at-ftoggle{position:relative}
+  .at-ftoggle[aria-expanded="true"]{background:var(--cream);border-color:var(--brown);color:var(--brown)}
+  .at-ftoggle.has::after{content:"";width:8px;height:8px;border-radius:50%;background:#CE2020;margin-left:2px}
+  #at-fl{display:none}
+  #at-fl.open{display:flex}
+  #at-wrap{background:transparent;border:0;box-shadow:none}
+  .at-tbl,.at-tbl tbody{display:block}
+  .at-tbl tbody{display:grid;gap:8px}
+  .at-tbl tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name status" "pos pos" "ref rec";gap:3px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow)}
+  .at-tbl tbody tr:first-child{border-top:1px solid var(--line)}
+  .at-tbl td{display:block;padding:0;border:0;min-width:0}
+  .at-tbl td::before{display:none}
+  .at-tbl td[data-l="Applicant"]{grid-area:name;font-size:1rem}
+  .at-tbl td[data-l="Status"]{grid-area:status;justify-self:end}
+  .at-tbl td[data-l="Position"]{grid-area:pos;font-size:.88rem;color:var(--muted)}
+  .at-tbl td[data-l="Reference"]{grid-area:ref;font-size:.78rem;color:var(--muted)}
+  .at-tbl td[data-l="Received"]{grid-area:rec;font-size:.78rem;color:var(--muted);justify-self:end}
+  .at-tbl td[data-l="Updated"]{display:none}
+  .at-stsel{max-width:150px;font-size:.74rem}
+}
