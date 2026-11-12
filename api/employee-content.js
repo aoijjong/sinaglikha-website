@@ -29,12 +29,16 @@ async function contentPayload() {
   const [d, c] = await Promise.all([
     E.rest('GET', 'deliverables?kind=neq.special&select=key,name,department&order=name'),
     E.rest('GET', 'content_items?status=eq.published&audience=in.(employees,public)&kind=neq.folder' +
-      '&select=id,deliverable,kind,folder_path,title,description,category,version,external_url,extra,published_at' +
+      '&select=id,deliverable,kind,folder_path,title,description,category,version,external_url,extra,file_path,published_at' +
       '&order=published_at.desc&limit=1000')
   ]);
   if (!d.ok || !c.ok || !Array.isArray(d.data) || !Array.isArray(c.data)) return null;
+  // a title often has no extension ("Organizational Structure"), so the type comes from the stored file's name;
+  // only the type goes out, the path stays here
+  const extOf = (p) => { const m = /\.([A-Za-z0-9]{1,5})$/.exec(String(p || '')); return m ? m[1].toLowerCase() : ''; };
   const items = c.data.map((i) => ({
     id: i.id, deliverable: i.deliverable, kind: i.kind, folder: i.folder_path || '', title: i.title,
+    ext: i.kind === 'link' ? '' : extOf(i.file_path),
     description: i.description || '', category: i.category || '', version: i.version || '',
     link: i.kind === 'link' ? i.external_url : null,
     size: i.extra && typeof i.extra.size === 'number' ? i.extra.size : null,
@@ -114,7 +118,13 @@ module.exports = async function handler(req, res) {
     if (!item.file_path) return E.send(res, 404, gone);
     let url = await E.signUrl('content', item.file_path);
     if (!url) return E.send(res, 502, { error: "Couldn't open that file. Try again in a moment." });
-    if (q.dl !== undefined) url += (url.indexOf('?') === -1 ? '?' : '&') + 'download=' + encodeURIComponent(item.title || '');
+    if (q.dl !== undefined) {
+      // save it as "Title.pdf" even when the title itself has no extension
+      const m = /\.([A-Za-z0-9]{1,5})$/.exec(item.file_path);
+      const title = item.title || 'file';
+      const name = m && !new RegExp('\\.' + m[1] + '$', 'i').test(title) ? title + '.' + m[1].toLowerCase() : title;
+      url += (url.indexOf('?') === -1 ? '?' : '&') + 'download=' + encodeURIComponent(name);
+    }
     return E.send(res, 200, { url });
   }
 

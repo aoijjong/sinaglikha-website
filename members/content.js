@@ -442,7 +442,7 @@
     if (s !== 'published' && s !== 'unpublished') acts += IB('trash', 'Delete', { 'data-act': 'delete' }, 'danger');
     return '<li class="lrow" data-id="' + esc(it.id) + '">' +
       '<button class="lmain" type="button" data-act="preview" title="' + (it.kind === 'link' ? 'Open the link' : 'Open in a new tab') + '"><span class="lico">' +
-      (it.kind === 'link' ? I('link') : esc(app.extOf(it.title))) + '</span>' +
+      (it.kind === 'link' ? I('link') : esc(app.extOf(it.file_path ? it.file_path.split('/').pop() : it.title))) + '</span>' +
       '<span class="ltext"><span class="lname">' + n + '</span><span class="lmeta">' + esc(meta.filter(Boolean).join(' · ')) + '</span></span></button>' +
       '<div class="lside"><span class="chip s-' + esc(s) + '">' + esc(STATUS[s] || s) + '</span><div class="lacts">' + acts + '</div></div></li>';
   }
@@ -541,11 +541,16 @@
   }
 
   /* ---------- images open in the viewer, with the other images of the same folder one arrow away ---------- */
+  // the title may have no extension, so a saved copy takes it from the stored file's name
+  function saveName(x) {
+    var m = /\.([A-Za-z0-9]{1,5})$/.exec(x.file_path || '');
+    return m && !new RegExp('\\.' + m[1] + '$', 'i').test(x.title) ? x.title + '.' + m[1].toLowerCase() : x.title;
+  }
   function viewImages(it) {
-    var pics = cs.items.filter(function (x) { return x.kind === 'file' && x.file_path && SngViewer.isImage(x.title); });
+    var pics = cs.items.filter(function (x) { return x.kind === 'file' && x.file_path && SngViewer.isImage(x.file_path); });
     var d = deliverable(cs.key), where = cs.path.length ? cs.path.join(' / ') : (d ? d.name : '');
     var signed = function (x, save) {
-      return sb.storage.from(BUCKET).createSignedUrl(x.file_path, 300, save ? { download: x.title } : undefined).then(function (r) {
+      return sb.storage.from(BUCKET).createSignedUrl(x.file_path, 300, save ? { download: saveName(x) } : undefined).then(function (r) {
         if (r.error || !r.data) throw new Error('link');
         return r.data.signedUrl;
       });
@@ -562,7 +567,7 @@
       else toast('That link is not a web address.', 'bad');
       return;
     }
-    if (window.SngViewer && it.file_path && SngViewer.isImage(it.title)) { viewImages(it); return; }
+    if (window.SngViewer && it.file_path && SngViewer.isImage(it.file_path)) { viewImages(it); return; }
     var w = window.open('', '_blank');
     var res = await sb.storage.from(BUCKET).createSignedUrl(it.file_path, 300);
     if (res.error || !res.data) {

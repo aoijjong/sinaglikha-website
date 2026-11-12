@@ -136,6 +136,10 @@
     if (typeof b !== 'number') return '';
     return b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
   }
+  // the type of a published file: from the server (the stored file's name), else from the title
+  function typeOf(it) {
+    return it.kind === 'link' ? '' : (it.ext ? String(it.ext).toUpperCase() : extOf(it.title));
+  }
   function extOf(name) {
     var i = String(name).lastIndexOf('.');
     return i > 0 && i < name.length - 1 ? name.slice(i + 1, i + 5).toUpperCase() : 'FILE';
@@ -221,7 +225,7 @@
     if (it.version) meta.push('Version ' + it.version);
     if (it.published_at) meta.push(fmtDate(it.published_at));
     return '<li class="lrow"><button class="lmain" type="button" data-open="' + esc(it.id) + '" aria-label="Open ' + esc(it.title) + '">' +
-      '<span class="lico">' + (it.kind === 'link' ? I('link') : esc(extOf(it.title))) + '</span>' +
+      '<span class="lico">' + (it.kind === 'link' ? I('link') : esc(typeOf(it))) + '</span>' +
       '<span class="ltext"><span class="lname">' + esc(it.title) + '</span><span class="lmeta">' + esc(meta.join(' · ')) + '</span>' +
       (it.description ? '<span class="ldesc">' + esc(it.description) + '</span>' : '') + '</span></button>' + I('external', 'lgo') + '</li>';
   }
@@ -451,6 +455,7 @@
     disciplinary_guidelines: 'scale', risk_plan: 'lock'
   };
   var PREVIEW_EXT = /^(pdf|png|jpe?g|gif|webp|txt)$/i;
+  var PIC_EXT = /^(png|jpe?g|gif|webp)$/i;
 
   /* one file in a deliverable's tray: its type, name and details, and round Preview and Download buttons */
   function fileLine(it) {
@@ -460,7 +465,7 @@
     if (it.kind === 'link') meta.push('Link'); else if (it.size) meta.push(fmtSize(it.size));
     if (it.version) meta.push('Version ' + it.version);
     if (it.published_at) meta.push(fmtDate(it.published_at));
-    var ext = it.kind === 'link' ? '' : extOf(it.title), acts = '';
+    var ext = typeOf(it), acts = '';
     if (it.kind === 'link') acts = '<button class="dact" type="button" data-open="' + esc(it.id) + '" aria-label="Open the link: ' + esc(it.title) + '" data-tip="Open link">' + I('external') + '</button>';
     else {
       if (PREVIEW_EXT.test(ext)) acts += '<button class="dact" type="button" data-open="' + esc(it.id) + '" aria-label="Preview ' + esc(it.title) + '" data-tip="Preview">' + I('eye') + '</button>';
@@ -803,8 +808,8 @@
   }
   function viewImage(id) {
     var V = window.SngViewer, it = content.items.filter(function (x) { return x.id === id; })[0];
-    if (!V || !it || it.kind === 'link' || !V.isImage(it.title)) return false;
-    var group = content.items.filter(function (x) { return x.deliverable === it.deliverable && (x.folder || '') === (it.folder || '') && x.kind !== 'link' && V.isImage(x.title); });
+    if (!V || !it || it.kind === 'link' || !PIC_EXT.test(typeOf(it))) return false;
+    var group = content.items.filter(function (x) { return x.deliverable === it.deliverable && (x.folder || '') === (it.folder || '') && x.kind !== 'link' && PIC_EXT.test(typeOf(x)); });
     V.open(group.map(function (x) {
       return {
         name: x.title, sub: nameOf(x.deliverable),
