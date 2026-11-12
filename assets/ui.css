@@ -393,3 +393,63 @@ button.lmain{cursor:pointer}
 .vc-sel{width:100%;appearance:none;-webkit-appearance:none;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);padding:12px 46px 12px 18px;font:inherit;color:var(--ink);cursor:pointer;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A2E22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center/18px}
 .vc-sel:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15)}
 .vc-show{font-size:.85rem;color:var(--muted);margin:8px 0 0}
+
+/* Recruitment and Selection Records, Applicant Tracking */
+.rd-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 14px}
+.rd-filters label span{display:block;font-size:.8rem;color:var(--muted);margin:0 0 4px}
+.rd-filters select,.rd-filters input{width:100%;padding:10px 14px;border-radius:999px;border:1.5px solid rgba(74,46,34,.28);background:#fff;font:inherit;color:var(--ink)}
+.at-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px;margin:0 0 14px}
+.at-scroll{overflow-x:auto}
+.at-tbl{width:100%;border-collapse:collapse;font-size:.92rem}
+.at-tbl th{text-align:left;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.at-tbl td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:middle}
+.at-tbl tbody tr:first-child td{border-top:0}
+@media (hover:hover) and (pointer:fine){.at-tbl tbody tr:hover{background:rgba(251,243,203,.45)}}
+.at-name{font:inherit;font-weight:700;color:var(--brown);background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px}
+.at-name:hover{text-decoration-color:currentColor}
+@media (max-width:640px){
+  .at-tbl thead{display:none}
+  .at-tbl tr{display:block;padding:12px 14px;border-top:1px solid var(--line)}
+  .at-tbl tbody tr:first-child{border-top:0}
+  .at-tbl td{display:flex;justify-content:space-between;gap:12px;align-items:center;border:0;padding:3px 0}
+  .at-tbl td::before{content:attr(data-l);color:var(--muted);font-size:.8rem}
+}
+#rd-dlg,#ap-dlg,#imp-dlg,#an2-dlg{width:min(640px,100% - 32px);max-height:calc(100% - 32px);overflow:auto}
+#an2-dlg{width:min(520px,100% - 32px)}
+#rd-form,#an2-form,.imp-in{padding:clamp(22px,4vw,32px)}
+#rd-form h2,#an2-form h2,.imp-in h2{font-size:1.5rem;margin-bottom:14px}
+#rd-form .field input,#rd-form .field select,#rd-form .field textarea,#an2-form .field input,#an2-form .field select{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+#rd-form .field textarea{min-height:80px;resize:vertical}
+#rd-form .actions,#an2-form .actions,.imp-in .actions{justify-content:flex-end;margin-top:14px}
+#ap-body{padding:clamp(20px,4vw,30px)}
+.ap-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:0 0 6px}
+.ap-head h2{font-size:1.6rem}
+.ap-head p{color:var(--muted);font-size:.9rem;margin-top:4px}
+.ap-sec{margin:18px 0 0}
+.ap-sec h3{font-family:var(--sans);font-weight:700;font-size:.95rem;color:var(--brown);margin:0 0 8px}
+.ap-row{display:flex;gap:8px;align-items:center;margin:0 0 8px;flex-wrap:wrap}
+.ap-row select{flex:1 1 200px}
+#ap-body select,#ap-body input,#ap-body textarea{width:100%;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+#ap-body textarea{resize:vertical;margin:0 0 8px}
+#ap-body input#ap-snote{margin:0}
+.ap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 10px}
+@media (max-width:640px){.ap-grid{grid-template-columns:1fr}}
+.ap-grid label{font-size:.82rem;color:var(--muted);display:grid;gap:4px}
+.ap-hist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ap-hist li{padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--paper);display:grid;gap:2px}
+.ap-hist b{font-size:.92rem}
+.ap-hist small{color:var(--muted)}
+.ap-hist p{margin:4px 0 0;font-size:.92rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.ap-note{border-color:#E7D58A;background:#FFFAE6}
+.imp-sum{margin:0 0 12px;padding-left:20px;display:grid;gap:4px}
+.imp-sample{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+.imp-sample .at-tbl{font-size:.85rem}
+
+/* Staffing: the Recruitment card */
+.rc-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px}
+.rc-kpis>span{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:1px}
+.rc-kpis b{font-family:var(--serif);font-weight:400;font-size:1.5rem;line-height:1.1;color:var(--brown)}
+.rc-kpis small{font-size:.8rem;color:var(--muted)}
+@media (max-width:640px){.rc-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.at-tbl td[data-l="Reference"],.at-tbl td[data-l="Received"],.at-tbl td[data-l="Updated"]{white-space:nowrap}

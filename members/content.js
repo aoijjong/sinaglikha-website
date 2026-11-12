@@ -24,7 +24,7 @@
   var DEPT_ORDER = ['staffing', 'training', 'engagement', 'rewards', 'legal'];
   var DEPT_SHORT = { staffing: 'Staffing', training: 'Training', engagement: 'Engagement', rewards: 'Rewards', legal: 'Legal' };
   var DEPT_ICON = { staffing: 'users', training: 'book', engagement: 'chat', rewards: 'award', legal: 'scale' };
-  var KIND_ICON = { vacancies: 'users', post: 'chat', document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
+  var KIND_ICON = { applicants: 'userCheck', recdocs: 'clipboard', vacancies: 'users', post: 'chat', document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
   var DEPT_LINE = {
     staffing: 'Finding and welcoming the right people.',
     training: 'Building skills for a future-ready workforce.',
@@ -34,6 +34,8 @@
   };
   var DELIV_LINE = {
     vacancies: 'The positions shown on the public Careers page',
+    applicants: 'Applicants, their status, history and notes',
+    recdocs: 'Interview schedules, rating forms, work samples, results and placements',
     announcements: 'Write a post for every employee. It shows your name, and you can attach files',
     attendance: 'Time in and time out records, with corrections and a monthly spreadsheet',
     company_files: 'Company documents for the team and, where you allow it, the public',
@@ -55,7 +57,7 @@
   };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
+  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], applicants: ['MembersApplicants', 'Follow each applicant from application to placement'], recdocs: ['MembersRecruitmentDocs', 'Interview, rating, selection and placement documents'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
@@ -127,7 +129,12 @@
     if (cs.dept === 'engagement') list = [{ key: 'announcements', name: 'Announcements', department: 'engagement', kind: 'post' }].concat(list);
     // Engagement moderators get two small cards (latest announcement, forum activity); they replace the two rows
     /* Staffing manages the vacancies shown on the public Careers page */
-    if (cs.dept === 'staffing' && canReview() && window.MembersVacancies) list = [{ key: 'vacancies', name: 'Vacancies', department: 'staffing', kind: 'vacancies' }].concat(list);
+    if (cs.dept === 'staffing' && canReview() && window.MembersVacancies) {
+      var rec = [{ key: 'vacancies', name: 'Vacancies', department: 'staffing', kind: 'vacancies' }];
+      if (window.MembersApplicants) rec.push({ key: 'applicants', name: 'Applicant Tracking', department: 'staffing', kind: 'applicants' });
+      if (window.MembersRecruitmentDocs) rec.push({ key: 'recdocs', name: 'Recruitment and Selection Records', department: 'staffing', kind: 'recdocs' });
+      list = rec.concat(list);
+    }
     var eng = cs.dept === 'engagement' && canModerate() && !!window.MembersAnnouncements && !!window.MembersForum;
     if (eng) list = list.filter(function (d) { return d.key !== 'announcements' && d.key !== 'forum'; });
     var pub = 0, drafts = 0;
@@ -140,7 +147,7 @@
     if (drafts) summary.push(drafts + (drafts === 1 ? ' draft waiting' : ' drafts waiting'));
     cards.innerHTML = '<div class="dp-head"><span class="di">' + I(DEPT_ICON[cs.dept]) + '</span><div class="dp-title"><h2>' + esc(app.depts[cs.dept] || cs.dept) + '</h2>' +
       '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div>' +
-      (glance ? '<div id="cm-glance">' + glanceSkeleton() + '</div>' : '') +
+      (glance ? '<div id="cm-glance">' + glanceSkeleton() + '</div>' + (window.MembersApplicants ? '<div id="cm-rec"></div>' : '') : '') +
       (eng ? '<div class="eng-grid" id="cm-eng">' + glanceSkeleton() + glanceSkeleton() + '</div>' : '') + '<ul class="rows">' +
       list.map(function (d) {
         var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
@@ -161,7 +168,7 @@
           '</span><span class="lmeta">' + esc(line) + '</span></span>' + I('chevron', 'go go-main') + '</button><div class="lside">' + chips + I('chevron', 'go go-side') + '</div></li>';
       }).join('') + '</ul>';
     if (glance || eng) {
-      var again = glance ? loadGlance : loadEng, where = cs.dept;
+      var again = glance ? function () { loadGlance(); loadRecruit(); } : loadEng, where = cs.dept;
       again();
       cs.attTimer = setInterval(function () { if (cs.view === 'home' && cs.dept === where) again(); else { clearInterval(cs.attTimer); cs.attTimer = null; } }, 60000);
     }
@@ -235,6 +242,27 @@
     var w = String(name || '').trim().split(/\s+/).filter(Boolean);
     return ((w[0] ? Array.from(w[0])[0] : '?') + (w.length > 1 ? Array.from(w[w.length - 1])[0] : '')).toUpperCase();
   }
+  /* ---------- Staffing: the recruitment numbers at a glance (counted from the stored applicants) ---------- */
+  async function loadRecruit() {
+    var box = $('#cm-rec');
+    if (!box) return;
+    var res = await Promise.all([
+      sb.from('applicants').select('status').limit(5000),
+      sb.from('vacancies').select('id').eq('status', 'published').limit(500)
+    ]);
+    box = $('#cm-rec');
+    if (!box || cs.view !== 'home' || cs.dept !== 'staffing') return;
+    // before supabase/recruitment.sql has been run the table is missing, so the card simply stays away
+    if (res[0].error || !Array.isArray(res[0].data)) { box.innerHTML = ''; return; }
+    var n = { all: res[0].data.length };
+    res[0].data.forEach(function (r) { n[r.status] = (n[r.status] || 0) + 1; });
+    var open = res[1].error || !Array.isArray(res[1].data) ? 0 : res[1].data.length;
+    var tiles = [['all', 'Total applicants'], ['new', 'New'], ['interview', 'For interview'], ['work_sample', 'For work sample'], ['selected', 'Selected'], ['placed', 'Placed']];
+    box.innerHTML = '<button class="attc" type="button" data-special="applicants" aria-label="Open Applicant Tracking">' +
+      '<span class="attc-h"><span class="attc-i">' + I('userCheck') + '</span><b>Recruitment</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span><span class="attc-go">' + I('chevron') + '</span></span>' +
+      '<span class="rc-kpis">' + tiles.map(function (t) { return '<span data-gtab="' + t[0] + '"><b>' + (n[t[0]] || 0) + '</b><small>' + t[1] + '</small></span>'; }).join('') + '</span></button>';
+  }
+
   async function loadGlance() {
     var box = $('#cm-glance');
     if (!box) return;

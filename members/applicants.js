@@ -1,0 +1,425 @@
+/*
+  SINAGLIKHA Applicant Tracking: where the recruitment team follows each applicant from the first
+  application to placement. Applications are NOT made on this website: applicants use the QR code on the
+  vacancy poster, which goes to the application form kept outside the site. Applicants reach this screen
+  by CSV import (for example the responses exported from that form) or by being typed in. Nothing here is
+  synchronised automatically.
+  The summary numbers are counted from the stored applicants. A status changes only through the database
+  function applicant_set_status(), which also writes the history entry; notes go through
+  applicant_add_note(). The rules in supabase/recruitment.sql allow only the Administrator and the Staffing
+  and Recruitment Senior Manager to read or change any of it; this screen only shows what those rules allow.
+  Opened from the Applicant Tracking row (or the Recruitment card) of the Staffing panel in the Content tab.
+*/
+(function () {
+  'use strict';
+
+  var app = window.MembersApp;
+  if (!app) return;
+
+  var sb = app.sb, state = app.state, esc = app.esc, toast = app.toast, ask = app.ask, logAction = app.logAction;
+  var I = window.SngIcon, IB = window.SngIconButton;
+  var STATUSES = [['new', 'New Application'], ['screening', 'For Initial Screening'], ['shortlisted', 'Shortlisted'], ['interview', 'For Interview'], ['work_sample', 'For Work Sample'],
+    ['final_review', 'For Final Review'], ['selected', 'Selected'], ['not_selected', 'Not Selected'], ['placed', 'Placed'], ['withdrawn', 'Withdrawn']];
+  var LABEL = {}, KEYS = [];
+  STATUSES.forEach(function (s) { LABEL[s[0]] = s[1]; KEYS.push(s[0]); });
+  var CHIP = { new: 't-working', screening: 's-draft', shortlisted: 's-draft', interview: 's-draft', work_sample: 's-draft', final_review: 's-draft', selected: 's-published', not_selected: 'is-red', placed: 's-published', withdrawn: 's-archived' };
+  var CARDS = [['all', 'Total Applicants'], ['new', 'New Applications'], ['screening', 'For Initial Screening'], ['shortlisted', 'Shortlisted'], ['interview', 'For Interview'],
+    ['work_sample', 'For Work Sample'], ['final_review', 'For Final Review'], ['selected', 'Selected'], ['not_selected', 'Not Selected'], ['placed', 'Placed']];
+  var PAGE = 100;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var A = { box: null, ctx: null, rows: [], vacancies: [], failed: false, q: '', status: 'all', pos: '', from: '', to: '', shown: PAGE, open: null, importing: null };
+
+  function canManage() { return state.isAdmin || (state.profile && state.profile.department === 'staffing'); }
+  function busy(text) {
+    var b = $('#at-busy', A.box);
+    if (!b) return;
+    b.textContent = text || 'Loading…';
+    b.hidden = !text;
+  }
+  function today() { return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10); }
+  function stamp(iso) {
+    return new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+
+  /* ---------- the screen ---------- */
+  function shell() {
+    A.box.style.position = 'relative';
+    A.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
+      '<div class="ph-main"><h2>Applicant Tracking</h2><p class="sub">Applicants apply through the QR code on each poster</p></div>' +
+      '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div>' +
+      IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
+      '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
+      '<div class="at-cards" id="at-cards"></div>' +
+      '<div class="rd-filters"><label><span>Position applied for</span><select id="at-pos" aria-label="Filter by position"></select></label>' +
+      '<label><span>Status</span><select id="at-status" aria-label="Filter by status"></select></label>' +
+      '<label><span>Received from</span><input id="at-from" type="date" aria-label="Received from"></label>' +
+      '<label><span>Received to</span><input id="at-to" type="date" aria-label="Received to"></label></div>' +
+      '<div class="list-card" id="at-wrap"><div class="at-scroll"><table class="at-tbl"><thead><tr><th>Reference</th><th>Applicant</th><th>Position applied for</th><th>Date received</th><th>Status</th><th>Last updated</th></tr></thead><tbody id="at-rows"></tbody></table></div>' +
+      '<div class="es" id="at-empty" hidden></div></div>' +
+      '<button class="btn btn-ghost btn-sm" type="button" id="at-more" data-a="more" hidden style="margin-top:12px">Show more</button>' +
+      '<div class="busy" id="at-busy" hidden role="status">Loading…</div>' +
+      '<p class="fine">Only Staffing and Recruitment can see applicant details.</p>';
+  }
+
+  async function load() {
+    busy('Loading…');
+    var res = await Promise.all([
+      sb.from('applicants').select('*').order('received_on', { ascending: false }).order('created_at', { ascending: false }).limit(5000),
+      sb.from('vacancies').select('id,title').order('title', { ascending: true }).limit(500)
+    ]);
+    busy('');
+    A.failed = !!res[0].error;
+    A.rows = res[0].error ? [] : res[0].data || [];
+    A.vacancies = res[1].error ? [] : res[1].data || [];
+    render();
+  }
+
+  function render() {
+    var counts = { all: A.rows.length };
+    KEYS.forEach(function (k) { counts[k] = 0; });
+    A.rows.forEach(function (a) { counts[a.status] = (counts[a.status] || 0) + 1; });
+    $('#at-cards', A.box).innerHTML = CARDS.map(function (c) {
+      return '<button class="vc-k" type="button" data-status="' + c[0] + '" aria-pressed="' + (A.status === c[0]) + '"><b>' + (counts[c[0]] || 0) + '</b><span>' + esc(c[1]) + '</span></button>';
+    }).join('');
+    var positions = {};
+    A.rows.forEach(function (a) { if (a.position_title) positions[a.position_title] = true; });
+    $('#at-pos', A.box).innerHTML = '<option value="">All positions</option>' + Object.keys(positions).sort().map(function (p) { return '<option value="' + esc(p) + '"' + (A.pos === p ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('');
+    $('#at-status', A.box).innerHTML = '<option value="all">All statuses</option>' + STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (A.status === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('');
+    $('#at-from', A.box).value = A.from;
+    $('#at-to', A.box).value = A.to;
+    var q = A.q.trim().toLowerCase();
+    var list = A.rows.filter(function (a) {
+      if (A.status !== 'all' && a.status !== A.status) return false;
+      if (A.pos && a.position_title !== A.pos) return false;
+      if (A.from && a.received_on < A.from) return false;
+      if (A.to && a.received_on > A.to) return false;
+      return !q || (a.full_name + ' ' + a.reference + ' ' + a.position_title).toLowerCase().indexOf(q) !== -1;
+    });
+    var show = list.slice(0, A.shown);
+    $('#at-rows', A.box).innerHTML = show.map(function (a) {
+      return '<tr data-id="' + esc(a.id) + '"><td data-l="Reference">' + esc(a.reference || '') + '</td>' +
+        '<td data-l="Applicant"><button class="at-name" type="button" data-a="open">' + esc(a.full_name) + '</button></td>' +
+        '<td data-l="Position">' + esc(a.position_title || 'Not stated') + '</td>' +
+        '<td data-l="Received">' + esc(app.fmtDate(a.received_on)) + '</td>' +
+        '<td data-l="Status"><span class="chip ' + (CHIP[a.status] || '') + '">' + esc(LABEL[a.status] || a.status) + '</span></td>' +
+        '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td></tr>';
+    }).join('');
+    $('#at-more', A.box).hidden = list.length <= A.shown;
+    $('#at-more', A.box).textContent = 'Show more (' + (list.length - A.shown) + ' left)';
+    $('.at-scroll', A.box).hidden = !show.length;
+    var empty = $('#at-empty', A.box);
+    if (A.failed) {
+      empty.innerHTML = '<span class="eic">' + I('lock') + '</span><b>Not set up yet</b><p>Run supabase/recruitment.sql in the Supabase SQL editor, then reload this page.</p>';
+      empty.hidden = false;
+    } else if (!A.rows.length) {
+      empty.innerHTML = '<span class="eic">' + I('inbox') + '</span><b>No applicants yet</b><p>Tap ' + I('fileUp', 'inline') + ' to import a CSV file of applicants, or ' + I('userPlus', 'inline') + ' to add one by hand. Applicants are never made up.</p>';
+      empty.hidden = false;
+    } else if (!list.length) {
+      empty.innerHTML = '<span class="eic">' + I('search') + '</span><b>No matches</b><p>Clear a filter or the search to see everyone.</p>';
+      empty.hidden = false;
+    } else empty.hidden = true;
+  }
+
+  /* ---------- one applicant ---------- */
+  function options(selected) {
+    return STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (selected === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('');
+  }
+  function positionList() {
+    var names = {};
+    A.vacancies.forEach(function (v) { names[v.title] = true; });
+    A.rows.forEach(function (a) { if (a.position_title) names[a.position_title] = true; });
+    return '<datalist id="at-positions">' + Object.keys(names).sort().map(function (n) { return '<option value="' + esc(n) + '"></option>'; }).join('') + '</datalist>';
+  }
+  function vacancyFor(title) {
+    var t = norm(title);
+    var v = t && A.vacancies.filter(function (x) { return norm(x.title) === t; })[0];
+    return v ? v.id : null;
+  }
+
+  async function openDetail(id) {
+    var a = A.rows.filter(function (x) { return x.id === id; })[0];
+    if (!a) return;
+    A.open = a;
+    var dlg = $('#ap-dlg');
+    $('#ap-body').innerHTML = '<p class="fine" style="padding:24px">Loading…</p>';
+    if (!dlg.open) dlg.showModal();
+    var res = await sb.from('applicant_events').select('*').eq('applicant_id', id).order('created_at', { ascending: false }).limit(300);
+    if (A.open !== a) return;
+    var events = res.error ? [] : res.data || [];
+    $('#ap-body').innerHTML =
+      '<div class="ap-head"><div><h2>' + esc(a.full_name) + '</h2><p>' + esc([a.reference, a.position_title || 'Position not stated', 'Received ' + app.fmtDate(a.received_on)].filter(Boolean).join(' · ')) + '</p></div>' +
+      '<span class="chip ' + (CHIP[a.status] || '') + '">' + esc(LABEL[a.status] || a.status) + '</span></div>' +
+      '<div class="ap-sec"><h3>Recruitment status</h3><div class="ap-row"><select id="ap-status" aria-label="New status">' + options(a.status) + '</select>' +
+      '<button class="btn btn-primary btn-sm" type="button" data-ap="status">Update status</button></div>' +
+      '<input id="ap-snote" type="text" maxlength="300" placeholder="Remark with this change (optional)" autocomplete="off"></div>' +
+      '<div class="ap-sec"><h3>Details</h3><div class="ap-grid"><label>Name<input id="ap-name" type="text" maxlength="120" value="' + esc(a.full_name) + '" autocomplete="off"></label>' +
+      '<label>Position applied for<input id="ap-pos" type="text" maxlength="120" list="at-positions" value="' + esc(a.position_title) + '" autocomplete="off"></label>' +
+      '<label>Date received<input id="ap-date" type="date" value="' + esc(a.received_on) + '"></label></div>' + positionList() +
+      '<button class="btn btn-ghost btn-sm" type="button" data-ap="save">Save details</button></div>' +
+      '<div class="ap-sec"><h3>Internal notes</h3><textarea id="ap-note" maxlength="2000" rows="3" placeholder="Visible only to Staffing and Recruitment"></textarea>' +
+      '<button class="btn btn-ghost btn-sm" type="button" data-ap="note">Add note</button></div>' +
+      '<div class="ap-sec"><h3>History</h3><ul class="ap-hist">' + (events.length ? events.map(function (ev) {
+        var who = ev.by_name ? ' · ' + esc(ev.by_name) : '';
+        var head = ev.kind === 'status' ? 'Status changed: ' + esc(LABEL[ev.from_status] || ev.from_status) + ' to ' + esc(LABEL[ev.to_status] || ev.to_status)
+          : ev.kind === 'note' ? 'Note' : 'Added as ' + esc(LABEL[ev.to_status] || ev.to_status);
+        return '<li class="ap-' + ev.kind + '"><b>' + head + '</b><small>' + esc(stamp(ev.created_at)) + who + '</small>' + (ev.note ? '<p>' + esc(ev.note) + '</p>' : '') + '</li>';
+      }).join('') : '<li><small>No history yet.</small></li>') + '</ul></div>' +
+      '<p class="msg bad" id="ap-err" role="alert" hidden></p>' +
+      '<div class="actions" style="justify-content:space-between"><button class="btn btn-ghost btn-sm btn-warn" type="button" data-ap="del">Delete applicant</button>' +
+      '<button class="btn btn-primary btn-sm" type="button" data-ap="close">Close</button></div>';
+  }
+
+  function fail(text) { var e = $('#ap-err'); if (e) { e.textContent = text; e.hidden = false; } }
+
+  async function detailAction(kind) {
+    var a = A.open;
+    if (!a) return;
+    if (kind === 'close') { $('#ap-dlg').close(); return; }
+    var err = $('#ap-err');
+    err.hidden = true;
+    if (kind === 'status') {
+      var to = $('#ap-status').value, note = $('#ap-snote').value.trim();
+      if (to === a.status) { fail('That is already the current status.'); return; }
+      var r = await sb.rpc('applicant_set_status', { p_id: a.id, p_status: to, p_note: note });
+      if (r.error) { fail("Couldn't change the status. You may not have permission."); return; }
+      logAction('applicant.status', a.reference + ' ' + a.status + ' to ' + to, { id: a.id });
+      toast('Status updated.', 'ok');
+    } else if (kind === 'note') {
+      var text = $('#ap-note').value.trim();
+      if (!text) { fail('Write a note first.'); return; }
+      var n = await sb.rpc('applicant_add_note', { p_id: a.id, p_note: text });
+      if (n.error) { fail("Couldn't save the note. You may not have permission."); return; }
+      logAction('applicant.note', a.reference, { id: a.id });
+      toast('Note added.', 'ok');
+    } else if (kind === 'save') {
+      var name = $('#ap-name').value.trim(), pos = $('#ap-pos').value.trim(), date = $('#ap-date').value;
+      if (!name) { fail('Enter the applicant\'s name.'); return; }
+      if (!date) { fail('Enter the date received.'); return; }
+      var u = await sb.from('applicants').update({ full_name: name, position_title: pos, vacancy_id: vacancyFor(pos), received_on: date }).eq('id', a.id).select('id').maybeSingle();
+      if (u.error || !u.data) { fail("Couldn't save that. You may not have permission."); return; }
+      logAction('applicant.edit', a.reference, { id: a.id });
+      toast('Saved.', 'ok');
+    } else if (kind === 'del') {
+      var ok = await ask({ title: 'Delete This Applicant?', text: a.full_name + ' (' + a.reference + ') and their history and notes will be permanently deleted.', ok: 'Delete', danger: true });
+      if (!ok) return;
+      var d = await sb.from('applicants').delete().eq('id', a.id).select('id');
+      if (d.error || !(d.data || []).length) { fail("Couldn't delete that. You may not have permission."); return; }
+      logAction('applicant.delete', a.reference, { id: a.id });
+      $('#ap-dlg').close();
+      toast('Deleted.', 'ok');
+      A.open = null;
+      await load();
+      return;
+    }
+    await load();
+    openDetail(a.id);
+  }
+
+  /* ---------- adding one by hand ---------- */
+  function openNew() {
+    var dlg = $('#an2-dlg'), form = $('#an2-form'), err = $('#an2-err');
+    $('#an2-name').value = '';
+    $('#an2-pos').value = '';
+    $('#an2-date').value = today();
+    $('#an2-status').innerHTML = options('new');
+    $('#an2-list').innerHTML = positionList().replace('id="at-positions"', 'id="an2-positions"');
+    err.hidden = true;
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      var name = $('#an2-name').value.trim(), pos = $('#an2-pos').value.trim(), date = $('#an2-date').value;
+      if (!name) { err.textContent = "Enter the applicant's name."; err.hidden = false; return; }
+      if (!date) { err.textContent = 'Enter the date received.'; err.hidden = false; return; }
+      err.hidden = true;
+      $('#an2-ok').disabled = true;
+      var res = await sb.from('applicants').insert({ full_name: name, position_title: pos, vacancy_id: vacancyFor(pos), received_on: date, status: $('#an2-status').value, source: 'manual' }).select('id,reference').maybeSingle();
+      $('#an2-ok').disabled = false;
+      if (res.error || !res.data) { err.textContent = "Couldn't add that. You may not have permission."; err.hidden = false; return; }
+      dlg.close();
+      logAction('applicant.add', res.data.reference, { id: res.data.id });
+      toast('Added as ' + res.data.reference + '.', 'ok');
+      load();
+    };
+    $('#an2-cancel').onclick = function () { dlg.close(); };
+    dlg.showModal();
+    $('#an2-name').focus();
+  }
+
+  /* ---------- CSV import ---------- */
+  function parseCsv(text) {
+    var rows = [], row = [], cell = '', q = false, i = 0;
+    text = text.replace(/^﻿/, '');
+    var delim = (text.split('\n')[0].match(/\t/g) || []).length > (text.split('\n')[0].match(/,/g) || []).length ? '\t' : ',';
+    for (; i < text.length; i++) {
+      var c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === delim) { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+      else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (x) { return String(x).trim() !== ''; }); });
+  }
+  function parseDate(s) {
+    s = String(s || '').trim();
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (m) return m[1] + '-' + m[2] + '-' + m[3];
+    m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s);
+    if (m) {
+      var a = Number(m[1]), b = Number(m[2]);
+      var mo = a > 12 ? b : a, d = a > 12 ? a : b;           // month/day/year, or day/month/year when the first number can't be a month
+      if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) return m[3] + '-' + ('0' + mo).slice(-2) + '-' + ('0' + d).slice(-2);
+    }
+    return '';
+  }
+  var COLS = {
+    reference: ['reference', 'referenceno', 'referencenumber', 'applicationreference', 'applicationreferencenumber', 'refno'],
+    name: ['name', 'fullname', 'applicantname', 'applicant', 'nameofapplicant'],
+    position: ['position', 'positionappliedfor', 'positionapplied', 'jobtitle', 'job', 'appliedfor', 'positionapplyingfor'],
+    date: ['date', 'datereceived', 'received', 'applicationdate', 'dateapplied', 'timestamp'],
+    status: ['status', 'recruitmentstatus', 'currentrecruitmentstatus', 'currentstatus']
+  };
+
+  function prepareImport(text, fileName) {
+    var table = parseCsv(text);
+    if (table.length < 2) return { error: 'That file has no rows to import.' };
+    var head = table[0].map(norm), at = {};
+    Object.keys(COLS).forEach(function (k) { at[k] = head.findIndex(function (h) { return COLS[k].indexOf(h) !== -1; }); });
+    if (at.name < 0) return { error: 'The file needs a Name column (also accepted: Full name, Applicant name).' };
+    var statusKey = {};
+    STATUSES.forEach(function (s) { statusKey[norm(s[0])] = s[0]; statusKey[norm(s[1])] = s[0]; });
+    var known = {};
+    A.rows.forEach(function (a) { if (a.reference) known[a.reference.toLowerCase()] = true; });
+    var seen = {}, out = [], sum = { skipped: 0, duplicates: 0, badStatus: 0, noDate: 0 };
+    table.slice(1).forEach(function (r) {
+      var name = String(r[at.name] || '').trim();
+      if (!name) { sum.skipped++; return; }
+      var ref = at.reference >= 0 ? String(r[at.reference] || '').trim() : '';
+      if (ref && (known[ref.toLowerCase()] || seen[ref.toLowerCase()])) { sum.duplicates++; return; }
+      if (ref) seen[ref.toLowerCase()] = true;
+      var pos = at.position >= 0 ? String(r[at.position] || '').trim().slice(0, 120) : '';
+      var date = at.date >= 0 ? parseDate(r[at.date]) : '';
+      if (!date) { sum.noDate++; date = today(); }
+      var st = 'new';
+      if (at.status >= 0 && String(r[at.status] || '').trim()) {
+        st = statusKey[norm(r[at.status])] || '';
+        if (!st) { sum.badStatus++; st = 'new'; }
+      }
+      var row = { full_name: name.slice(0, 120), position_title: pos, vacancy_id: vacancyFor(pos), received_on: date, status: st, source: 'import' };
+      if (ref) row.reference = ref.slice(0, 40);
+      out.push(row);
+    });
+    return { rows: out, sum: sum, fileName: fileName, hasRef: at.reference >= 0 };
+  }
+
+  function showImport(p) {
+    A.importing = p;
+    var s = p.sum, dlg = $('#imp-dlg');
+    var lines = ['<li><b>' + p.rows.length + '</b> ' + (p.rows.length === 1 ? 'applicant is' : 'applicants are') + ' ready to import.</li>'];
+    if (s.skipped) lines.push('<li>' + s.skipped + ' ' + (s.skipped === 1 ? 'row has' : 'rows have') + ' no name and will be skipped.</li>');
+    if (s.duplicates) lines.push('<li>' + s.duplicates + ' ' + (s.duplicates === 1 ? 'row repeats' : 'rows repeat') + ' a reference that already exists and will be skipped.</li>');
+    if (s.badStatus) lines.push('<li>' + s.badStatus + ' ' + (s.badStatus === 1 ? 'row has' : 'rows have') + ' a status that is not recognised and will start as New Application.</li>');
+    if (s.noDate) lines.push('<li>' + s.noDate + ' ' + (s.noDate === 1 ? 'row has' : 'rows have') + ' no usable date, so today\'s date is used.</li>');
+    if (!p.hasRef) lines.push('<li>There is no Reference column, so new references are created. Importing the same file twice would add everyone twice.</li>');
+    $('#imp-body').innerHTML = '<ul class="imp-sum">' + lines.join('') + '</ul>' +
+      (p.rows.length ? '<div class="imp-sample"><table class="at-tbl"><thead><tr><th>Name</th><th>Position</th><th>Received</th><th>Status</th></tr></thead><tbody>' +
+        p.rows.slice(0, 5).map(function (r) { return '<tr><td>' + esc(r.full_name) + '</td><td>' + esc(r.position_title || '—') + '</td><td>' + esc(app.fmtDate(r.received_on)) + '</td><td>' + esc(LABEL[r.status]) + '</td></tr>'; }).join('') +
+        '</tbody></table>' + (p.rows.length > 5 ? '<p class="fine">…and ' + (p.rows.length - 5) + ' more.</p>' : '') + '</div>' : '') +
+      '<p class="msg bad" id="imp-err" role="alert" hidden></p>';
+    $('#imp-ok').disabled = !p.rows.length;
+    $('#imp-ok').onclick = runImport;
+    $('#imp-cancel').onclick = function () { dlg.close(); A.importing = null; };
+    dlg.showModal();
+  }
+
+  async function runImport() {
+    var p = A.importing;
+    if (!p || !p.rows.length) return;
+    var err = $('#imp-err');
+    err.hidden = true;
+    $('#imp-ok').disabled = true;
+    var done = 0;
+    for (var i = 0; i < p.rows.length; i += 200) {
+      $('#imp-ok').textContent = 'Importing ' + Math.min(i + 200, p.rows.length) + ' of ' + p.rows.length + '…';
+      var res = await sb.from('applicants').insert(p.rows.slice(i, i + 200)).select('id');
+      if (res.error) {
+        err.textContent = (done ? done + ' applicants were imported before this stopped. ' : '') + "Couldn't import the rest. You may not have permission, or a reference is already in use.";
+        err.hidden = false;
+        $('#imp-ok').textContent = 'Try again';
+        $('#imp-ok').disabled = false;
+        if (done) load();
+        return;
+      }
+      done += (res.data || []).length;
+    }
+    $('#imp-ok').textContent = 'Import';
+    $('#imp-dlg').close();
+    A.importing = null;
+    logAction('applicants.import', done + ' applicants', { file: p.fileName, count: done });
+    toast(done + (done === 1 ? ' applicant imported.' : ' applicants imported.'), 'ok');
+    A.status = 'all';
+    load();
+  }
+
+  function onClick(e) {
+    var card = e.target.closest('[data-status]');
+    if (card) { A.status = card.dataset.status; A.shown = PAGE; render(); return; }
+    var b = e.target.closest('[data-a]');
+    if (!b) return;
+    var a = b.dataset.a;
+    if (a === 'back') { A.ctx.back(); return; }
+    if (a === 'add') { openNew(); return; }
+    if (a === 'import') { $('#at-file', A.box).click(); return; }
+    if (a === 'more') { A.shown += PAGE; render(); return; }
+    if (a === 'open') { var tr = e.target.closest('tr'); if (tr) openDetail(tr.dataset.id); }
+  }
+
+  window.MembersApplicants = {
+    open: function (box, ctx) {
+      A.box = box;
+      A.ctx = ctx;
+      A.q = ''; A.pos = ''; A.from = ''; A.to = ''; A.shown = PAGE;
+      // the Recruitment card on the Staffing page can open this screen on one status
+      A.status = ctx && ctx.tab && (ctx.tab === 'all' || LABEL[ctx.tab]) ? ctx.tab : 'all';
+      if (!canManage()) {
+        box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Applicant Tracking</h2></div></div>' +
+          '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Staffing and Recruitment only</b><p>Applicant records can be opened by Staffing and Recruitment.</p></div></div>';
+        box.onclick = onClick;
+        return;
+      }
+      shell();
+      box.onclick = onClick;
+      box.oninput = function (e) {
+        if (e.target.id === 'at-q') { A.q = e.target.value; A.shown = PAGE; render(); }
+        else if (e.target.id === 'at-from') { A.from = e.target.value; A.shown = PAGE; render(); }
+        else if (e.target.id === 'at-to') { A.to = e.target.value; A.shown = PAGE; render(); }
+      };
+      box.onchange = function (e) {
+        if (e.target.id === 'at-pos') { A.pos = e.target.value; A.shown = PAGE; render(); }
+        else if (e.target.id === 'at-status') { A.status = e.target.value; A.shown = PAGE; render(); }
+        else if (e.target.id === 'at-file') {
+          var f = e.target.files[0];
+          e.target.value = '';
+          if (!f) return;
+          if (f.size > 5 * 1048576) { toast('That file is over 5 MB.', 'bad'); return; }
+          var rd = new FileReader();
+          rd.onload = function () {
+            var p = prepareImport(String(rd.result || ''), f.name);
+            if (p.error) toast(p.error, 'bad'); else showImport(p);
+          };
+          rd.onerror = function () { toast("Couldn't read that file.", 'bad'); };
+          rd.readAsText(f);
+        }
+      };
+      return load();
+    }
+  };
+
+  // the dialogs belong to the page, so they are wired once
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('#ap-dlg [data-ap]');
+    if (b) detailAction(b.dataset.ap);
+  });
+})();

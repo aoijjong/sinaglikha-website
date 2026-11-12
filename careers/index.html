@@ -16,6 +16,7 @@
 .cr-hero h1{font-size:clamp(2.2rem,5.5vw,3.6rem);margin-bottom:12px}
 .cr-hero p{max-width:60ch;color:var(--muted);font-size:1.05rem}
 .cr-list{padding-block:0 clamp(60px,9vw,110px)}
+.cr-h{font-size:clamp(1.5rem,3vw,2rem);margin:0 0 16px}
 .cr-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 22px}
 .cr-tabs{display:flex;gap:8px;flex-wrap:wrap}
 .cr-tab{font:inherit;font-weight:600;font-size:.9rem;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:background .3s,color .3s,border-color .3s}
@@ -48,7 +49,7 @@
 .cr-empty p{max-width:44ch}
 dialog.lb{border:0;padding:0;background:transparent;max-width:none;max-height:none;width:100%;height:100%;overflow:hidden}
 dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
-.lb-in{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px;padding:14px;max-width:760px;margin-inline:auto}
+.lb-in{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:14px;max-width:760px;margin-inline:auto}
 .lb-top{display:flex;align-items:center;gap:10px;color:#fff}
 .lb-top div{flex:1;min-width:0}
 .lb-top b{display:block;font-family:var(--serif);font-weight:400;font-size:1.25rem;line-height:1.2}
@@ -56,6 +57,11 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
 .lb-btn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;display:grid;place-items:center;cursor:pointer;flex:none;font:inherit}
 .lb-btn .icon{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .lb-btn[hidden]{display:none}
+.lb-foot{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;color:#fff;font-size:.88rem}
+.lb-foot span{flex:1 1 200px;opacity:.85}
+.lb-link{color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.lb-apply{background:var(--grad-btn);color:#fff;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:999px;box-shadow:0 10px 22px -10px rgba(206,32,32,.65)}
+.lb-apply[hidden]{display:none}
 .lb-btn.next .icon{transform:scaleX(-1)}
 .lb-stage{min-height:0;display:grid;place-items:center;overflow:auto;border-radius:18px}
 .lb-stage img{max-height:100%;width:auto;max-width:100%;height:auto;border-radius:14px;background:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
@@ -157,6 +163,7 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
 
   <section class="cr-list" aria-label="Open positions">
     <div class="container">
+      <h2 class="cr-h">We Are Hiring!</h2>
       <div class="cr-bar">
         <div class="cr-tabs" id="cr-tabs" role="group" aria-label="Departments"></div>
         <label class="cr-pick"><span class="sr-only">Department</span><select id="cr-select" aria-label="Department"></select></label>
@@ -205,6 +212,11 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
       <button class="lb-btn" type="button" id="lb-close" aria-label="Close"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="lb-stage"><img id="lb-img" alt=""></div>
+    <div class="lb-foot">
+      <span>Scan the QR code on the poster to apply.</span>
+      <a class="lb-link" id="lb-full" href="#" target="_blank" rel="noopener">Open full size</a>
+      <a class="lb-apply" id="lb-apply" href="#" target="_blank" rel="noopener" hidden>Apply Now</a>
+    </div>
   </div>
 </dialog>
 
@@ -281,10 +293,15 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
   async function load() {
     skeleton();
     if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) { message('Careers is not available yet', 'Please check back soon.'); return; }
-    var url = CFG.SUPABASE_URL + '/rest/v1/vacancies?select=id,slug,title,department,summary,employment_type,location,openings,closes_on,poster_path,thumb_path,sort_order&order=sort_order.asc,title.asc&limit=200';
+    var cols = 'id,slug,title,department,summary,employment_type,location,openings,closes_on,poster_path,thumb_path,sort_order';
+    var get = function (select) {
+      return fetch(CFG.SUPABASE_URL + '/rest/v1/vacancies?select=' + select + '&order=sort_order.asc,title.asc&limit=200', { headers: { apikey: CFG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CFG.SUPABASE_ANON_KEY } });
+    };
     var res;
-    try { res = await fetch(url, { headers: { apikey: CFG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CFG.SUPABASE_ANON_KEY } }); }
-    catch (e) { message("We couldn't load the positions", 'Check your connection and try again.'); return; }
+    try {
+      res = await get(cols + ',apply_url');
+      if (!res.ok) res = await get(cols);     // the application-link column arrives with supabase/recruitment.sql
+    } catch (e) { message("We couldn't load the positions", 'Check your connection and try again.'); return; }
     if (!res.ok) { message("We couldn't load the positions", 'Please try again in a moment.'); return; }
     var data = await res.json();
     state.rows = (Array.isArray(data) ? data : []).filter(function (r) { return r.poster_path || r.thumb_path; });
@@ -311,6 +328,12 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
     im.alt = 'Job poster: ' + r.title;
     im.src = img(r.poster_path || r.thumb_path);
     $('#lb-prev').hidden = $('#lb-next').hidden = n < 2;
+    var full = img(r.poster_path || r.thumb_path), ap = $('#lb-apply');
+    $('#lb-full').href = full;
+    // the Apply Now button only appears for a link that was supplied and starts with https
+    var link = /^https:\/\/[^\s]+$/i.test(r.apply_url || '') ? r.apply_url : '';
+    ap.hidden = !link;
+    if (link) ap.href = link;
     if (n > 1) { new Image().src = img(state.shown[(state.open + 1) % n].poster_path); }
   }
   $('#cr-out').addEventListener('click', function (e) {

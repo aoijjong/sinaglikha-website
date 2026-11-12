@@ -80,7 +80,7 @@
     };
     $('#vc-dash', V.box).innerHTML = '<div class="vc-dh">Vacancy dashboard</div>' +
       '<div class="vc-kpis">' + tile('all', counts.all, 'Total vacancies') + tile('published', counts.published, 'Published') + tile('draft', counts.draft, 'Drafts') + tile('closed', counts.closed, 'Closed') + '</div>' +
-      '<p class="vc-note">' + (counts.published ? 'The published vacancies list ' + (openings ? openings + (openings === 1 ? ' opening' : ' openings') : 'no opening count yet') + '. ' : '') + 'Applicant numbers will appear here once applications are open.</p>' +
+      '<p class="vc-note">' + (counts.published ? 'The published vacancies list ' + (openings ? openings + (openings === 1 ? ' opening' : ' openings') : 'no opening count yet') + '. ' : '') + 'Applicants apply through the QR code on each poster. Follow them in Applicant Tracking.</p>' +
       '<label class="vc-fl" for="vc-dept-filter">Filter by department</label>' +
       '<select id="vc-dept-filter" class="vc-sel">' + [['all', 'All Departments']].concat(DEPT_KEYS.map(function (k) { return [k, app.depts[k] || k]; })).map(function (d) {
         return '<option value="' + d[0] + '"' + (V.dept === d[0] ? ' selected' : '') + '>' + esc(d[1]) + (d[0] === 'all' ? ' (' + V.rows.length + ')' : ' (' + (perDept[d[0]] || 0) + ')') + '</option>';
@@ -153,6 +153,7 @@
     $('#vc-type').value = v ? v.employment_type : '';
     $('#vc-loc').value = v ? v.location : '';
     $('#vc-open').value = v && v.openings ? v.openings : '';
+    $('#vc-apply').value = v && v.apply_url ? v.apply_url : '';
     $('#vc-from').value = v && v.opens_on ? v.opens_on : '';
     $('#vc-to').value = v && v.closes_on ? v.closes_on : '';
     $('#vc-file').value = '';
@@ -180,16 +181,19 @@
     form.onsubmit = async function (e) {
       e.preventDefault();
       var title = $('#vc-name').value.trim();
-      var from = $('#vc-from').value, to = $('#vc-to').value, openings = $('#vc-open').value.trim();
+      var from = $('#vc-from').value, to = $('#vc-to').value, openings = $('#vc-open').value.trim(), apply = $('#vc-apply').value.trim();
       if (!title) { err.textContent = 'Enter the position title.'; err.hidden = false; return; }
       if (from && to && to < from) { err.textContent = 'The closing date is before the opening date.'; err.hidden = false; return; }
       if (openings && (!/^\d+$/.test(openings) || Number(openings) < 1 || Number(openings) > 999)) { err.textContent = 'Openings must be a whole number from 1 to 999.'; err.hidden = false; return; }
+      if (apply && !/^https:\/\/[^\s]+$/i.test(apply)) { err.textContent = 'The application link must start with https://'; err.hidden = false; return; }
       err.hidden = true;
       $('#vc-ok').disabled = true;
       var fields = {
         title: title, department: $('#vc-dept').value, summary: $('#vc-sum').value.trim(), responsibilities: $('#vc-resp').value.trim(), qualifications: $('#vc-qual').value.trim(),
         employment_type: $('#vc-type').value.trim(), location: $('#vc-loc').value.trim(), openings: openings ? Number(openings) : null, opens_on: from || null, closes_on: to || null
       };
+      // the column comes with supabase/recruitment.sql, so it is only sent when there is something to save
+      if (apply || (v && v.apply_url)) fields.apply_url = apply;
       var uploaded = [];
       if (V.poster) {
         try {

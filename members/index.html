@@ -794,7 +794,7 @@ dialog[open]{animation:pop .5s var(--ease)}
       <div class="field"><label for="vc-type">Employment type (Optional)</label><input id="vc-type" type="text" maxlength="60" autocomplete="off" placeholder="For example Full-time"></div>
       <div class="field"><label for="vc-loc">Work location (Optional)</label><input id="vc-loc" type="text" maxlength="120" autocomplete="off"></div>
       <div class="field"><label for="vc-open">Number of openings (Optional)</label><input id="vc-open" type="number" min="1" max="999" inputmode="numeric"></div>
-      <div class="field"></div>
+      <div class="field"><label for="vc-apply">Apply Now link (Optional)</label><input id="vc-apply" type="url" inputmode="url" maxlength="500" autocomplete="off" placeholder="https://"></div>
       <div class="field"><label for="vc-from">Opens on (Optional)</label><input id="vc-from" type="date"></div>
       <div class="field"><label for="vc-to">Closes on (Optional)</label><input id="vc-to" type="date"></div>
     </div>
@@ -810,6 +810,62 @@ dialog[open]{animation:pop .5s var(--ease)}
       <button class="btn btn-primary btn-sm" type="submit" id="vc-ok">Add as draft</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="rd-dlg" aria-labelledby="rd-title">
+  <form id="rd-form" novalidate>
+    <h2 id="rd-title">Upload Document</h2>
+    <div class="field"><label for="rd-name">Document title</label><input id="rd-name" type="text" maxlength="160" autocomplete="off" placeholder="For example Interview schedule, November batch"></div>
+    <div class="field"><label for="rd-cat">Category</label><select id="rd-cat"></select></div>
+    <div class="field"><label for="rd-desc">Short description or remarks (Optional)</label><textarea id="rd-desc" maxlength="1000"></textarea></div>
+    <div class="vc-grid">
+      <div class="field"><label for="rd-vac">Position (Optional)</label><select id="rd-vac"></select></div>
+      <div class="field"><label for="rd-batch">Recruitment batch (Optional)</label><input id="rd-batch" type="text" maxlength="80" autocomplete="off" placeholder="For example Batch 1"></div>
+    </div>
+    <div class="field"><label>File</label>
+      <p class="fine" id="rd-cur" style="margin:0 0 8px"></p>
+      <button class="btn btn-ghost btn-sm" type="button" id="rd-pick">Choose a file</button>
+      <input type="file" id="rd-file" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp">
+      <p class="fine">PDF, Word, Excel, CSV, text or an image, up to 15 MB. Stored privately.</p>
+    </div>
+    <p class="msg bad" id="rd-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="rd-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="rd-ok">Upload</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="ap-dlg" aria-label="Applicant record"><div id="ap-body"></div></dialog>
+
+<dialog id="an2-dlg" aria-labelledby="an2-title">
+  <form id="an2-form" novalidate>
+    <h2 id="an2-title">Add Applicant</h2>
+    <div class="field"><label for="an2-name">Name</label><input id="an2-name" type="text" maxlength="120" autocomplete="off"></div>
+    <div class="field"><label for="an2-pos">Position applied for (Optional)</label><input id="an2-pos" type="text" maxlength="120" list="an2-positions" autocomplete="off"><span id="an2-list"></span></div>
+    <div class="vc-grid">
+      <div class="field"><label for="an2-date">Date received</label><input id="an2-date" type="date"></div>
+      <div class="field"><label for="an2-status">Status</label><select id="an2-status"></select></div>
+    </div>
+    <p class="fine">A reference number is created for you. Only the details recruiting needs are kept.</p>
+    <p class="msg bad" id="an2-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="an2-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="an2-ok">Add applicant</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="imp-dlg" aria-labelledby="imp-title">
+  <div class="imp-in">
+    <h2 id="imp-title">Import Applicants</h2>
+    <p class="fine" style="margin:0 0 10px">Columns read from the first row: Reference (optional), Name, Position, Date received, Status (optional).</p>
+    <div id="imp-body"></div>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="imp-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="button" id="imp-ok">Import</button>
+    </div>
+  </div>
 </dialog>
 
 <dialog id="lc-dlg" aria-labelledby="lc-title">
@@ -916,5 +972,7 @@ dialog[open]{animation:pop .5s var(--ease)}
 <script src="forum.js"></script>
 <script src="announcements.js"></script>
 <script src="vacancies.js"></script>
+<script src="recruitment-docs.js"></script>
+<script src="applicants.js"></script>
 </body>
 </html>
