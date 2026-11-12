@@ -249,6 +249,16 @@ dialog:not(.viewer){max-height:calc(100dvh - 24px);overflow-y:auto}
 @media (prefers-reduced-motion:reduce){.who-switch::before{transition:none}}
 
 /* employee directory */
+#vc-dlg{width:min(640px,100% - 32px);max-height:calc(100% - 32px);overflow:auto}
+#vc-form{padding:clamp(22px,4vw,32px)}
+#vc-form h2{font-size:1.5rem;margin-bottom:14px}
+#vc-form .field input,#vc-form .field select,#vc-form .field textarea{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit}
+#vc-form .field textarea{min-height:92px;resize:vertical}
+#vc-form .actions{justify-content:flex-end;margin-top:14px}
+.vc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media (max-width:560px){.vc-grid{grid-template-columns:1fr}}
+#vc-poster{margin:0 0 10px}
+#vc-poster img{width:140px;border-radius:12px;border:1px solid var(--line);background:#fff}
 #an-form{padding:clamp(22px,4vw,32px)}
 #an-form h2{font-size:1.5rem;margin-bottom:14px}
 #an-form .field input[type=text]{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink)}
@@ -772,6 +782,36 @@ dialog[open]{animation:pop .5s var(--ease)}
   </form>
 </dialog>
 
+<dialog id="vc-dlg" aria-labelledby="vc-title">
+  <form id="vc-form" novalidate>
+    <h2 id="vc-title">New Vacancy</h2>
+    <div class="field"><label for="vc-name">Position title</label><input id="vc-name" type="text" maxlength="120" autocomplete="off" placeholder="For example HRIS Specialist"></div>
+    <div class="field"><label for="vc-dept">Department</label><select id="vc-dept"></select></div>
+    <div class="field"><label for="vc-sum">Job summary (Optional)</label><textarea id="vc-sum" maxlength="1000"></textarea></div>
+    <div class="field"><label for="vc-resp">Responsibilities (Optional)</label><textarea id="vc-resp" maxlength="4000"></textarea></div>
+    <div class="field"><label for="vc-qual">Qualifications and competencies (Optional)</label><textarea id="vc-qual" maxlength="4000"></textarea></div>
+    <div class="vc-grid">
+      <div class="field"><label for="vc-type">Employment type (Optional)</label><input id="vc-type" type="text" maxlength="60" autocomplete="off" placeholder="For example Full-time"></div>
+      <div class="field"><label for="vc-loc">Work location (Optional)</label><input id="vc-loc" type="text" maxlength="120" autocomplete="off"></div>
+      <div class="field"><label for="vc-open">Number of openings (Optional)</label><input id="vc-open" type="number" min="1" max="999" inputmode="numeric"></div>
+      <div class="field"></div>
+      <div class="field"><label for="vc-from">Opens on (Optional)</label><input id="vc-from" type="date"></div>
+      <div class="field"><label for="vc-to">Closes on (Optional)</label><input id="vc-to" type="date"></div>
+    </div>
+    <div class="field"><label>Poster</label>
+      <div id="vc-poster"></div>
+      <button class="btn btn-ghost btn-sm" type="button" id="vc-pick">Choose a poster image</button>
+      <input type="file" id="vc-file" accept="image/png,image/jpeg,image/webp" hidden>
+    </div>
+    <p class="fine">Nothing shows on Careers until you publish it.</p>
+    <p class="msg bad" id="vc-err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="vc-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" type="submit" id="vc-ok">Add as draft</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="lc-dlg" aria-labelledby="lc-title">
   <form id="lc-form" novalidate>
     <h2 id="lc-title">Course</h2>
@@ -875,5 +915,6 @@ dialog[open]{animation:pop .5s var(--ease)}
 <script src="learning.js"></script>
 <script src="forum.js"></script>
 <script src="announcements.js"></script>
+<script src="vacancies.js"></script>
 </body>
 </html>

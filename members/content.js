@@ -24,7 +24,7 @@
   var DEPT_ORDER = ['staffing', 'training', 'engagement', 'rewards', 'legal'];
   var DEPT_SHORT = { staffing: 'Staffing', training: 'Training', engagement: 'Engagement', rewards: 'Rewards', legal: 'Legal' };
   var DEPT_ICON = { staffing: 'users', training: 'book', engagement: 'chat', rewards: 'award', legal: 'scale' };
-  var KIND_ICON = { post: 'chat', document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
+  var KIND_ICON = { vacancies: 'users', post: 'chat', document: 'file', program: 'calendar', module: 'book', evaluation: 'clipboard', special: 'clock' };
   var DEPT_LINE = {
     staffing: 'Finding and welcoming the right people.',
     training: 'Building skills for a future-ready workforce.',
@@ -33,6 +33,7 @@
     legal: 'Fair, lawful, and safe workplaces.'
   };
   var DELIV_LINE = {
+    vacancies: 'The positions shown on the public Careers page',
     announcements: 'Write a post for every employee. It shows your name, and you can attach files',
     attendance: 'Time in and time out records, with corrections and a monthly spreadsheet',
     company_files: 'Company documents for the team and, where you allow it, the public',
@@ -54,7 +55,7 @@
   };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
+  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
@@ -125,6 +126,8 @@
     /* Announcements are posts, not files, so they have no row in the deliverables table */
     if (cs.dept === 'engagement') list = [{ key: 'announcements', name: 'Announcements', department: 'engagement', kind: 'post' }].concat(list);
     // Engagement moderators get two small cards (latest announcement, forum activity); they replace the two rows
+    /* Staffing manages the vacancies shown on the public Careers page */
+    if (cs.dept === 'staffing' && canReview() && window.MembersVacancies) list = [{ key: 'vacancies', name: 'Vacancies', department: 'staffing', kind: 'vacancies' }].concat(list);
     var eng = cs.dept === 'engagement' && canModerate() && !!window.MembersAnnouncements && !!window.MembersForum;
     if (eng) list = list.filter(function (d) { return d.key !== 'announcements' && d.key !== 'forum'; });
     var pub = 0, drafts = 0;
