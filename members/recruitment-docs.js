@@ -46,9 +46,9 @@
       '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="rd-q" type="search" placeholder="Search" aria-label="Search documents" autocomplete="off"></div>' +
       IB('upload', 'Upload a document', { 'data-a': 'add' }, 'solid') + '</div></div>' +
       '<div class="pills" id="rd-pills" role="group" aria-label="Category"></div>' +
-      '<div class="rd-filters"><label><span>Position</span><select id="rd-pos" aria-label="Filter by position"></select></label>' +
-      '<label><span>Uploaded from</span><input id="rd-from" type="date" aria-label="Uploaded from"></label>' +
-      '<label><span>Uploaded to</span><input id="rd-to" type="date" aria-label="Uploaded to"></label></div>' +
+      '<div class="fl-row"><select id="rd-pos" class="fl-pill" aria-label="Filter by position"></select>' +
+      '<span class="fl-date" title="Date uploaded">' + I('calendar') + '<input id="rd-from" type="date" aria-label="Uploaded from"><span>to</span><input id="rd-to" type="date" aria-label="Uploaded to"></span>' +
+      '<button class="fl-clear" type="button" id="rd-clear" data-a="clear" hidden>Clear filters</button></div>' +
       '<div class="list-card"><ul class="rows" id="rd-rows"></ul><div class="es" id="rd-empty" hidden></div></div>' +
       '<div class="busy" id="rd-busy" hidden role="status">Loading…</div>' +
       '<p class="fine">These files never show on Careers or to other employees.</p>';
@@ -78,8 +78,9 @@
     // the position filter lists the positions that have at least one document
     var used = {};
     D.rows.forEach(function (d) { if (d.vacancy_id) used[d.vacancy_id] = true; });
-    $('#rd-pos', D.box).innerHTML = '<option value="">All positions</option><option value="none"' + (D.pos === 'none' ? ' selected' : '') + '>Not linked to a position</option>' +
+    $('#rd-pos', D.box).innerHTML = '<option value="">Any position</option><option value="none"' + (D.pos === 'none' ? ' selected' : '') + '>Not linked to a position</option>' +
       D.vacancies.filter(function (v) { return used[v.id]; }).map(function (v) { return '<option value="' + esc(v.id) + '"' + (D.pos === v.id ? ' selected' : '') + '>' + esc(v.title) + '</option>'; }).join('');
+    $('#rd-clear', D.box).hidden = !(D.cat !== 'all' || D.pos || D.from || D.to);
     $('#rd-from', D.box).value = D.from;
     $('#rd-to', D.box).value = D.to;
     var q = D.q.trim().toLowerCase();
@@ -222,6 +223,7 @@
     var a = b.dataset.a;
     if (a === 'back') { D.ctx.back(); return; }
     if (a === 'add') { openDialog(null); return; }
+    if (a === 'clear') { D.cat = 'all'; D.pos = ''; D.from = ''; D.to = ''; D.q = ''; var qi = $('#rd-q', D.box); if (qi) qi.value = ''; render(); return; }
     var li = e.target.closest('li.lrow'), row = li && D.rows.filter(function (x) { return x.id === li.dataset.id; })[0];
     if (!row) return;
     if (a === 'edit') openDialog(row);
