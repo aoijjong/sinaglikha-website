@@ -125,7 +125,9 @@
         '<td data-l="Applicant"><button class="at-name" type="button" data-a="open" title="Open the record">' + esc(a.full_name) + '</button></td>' +
         '<td data-l="Position">' + esc(a.position_title || 'Not stated') + '</td>' +
         '<td data-l="Received">' + esc(app.fmtDate(a.received_on)) + '</td>' +
-        '<td data-l="Status"><select class="chip at-stsel ' + (CHIP[a.status] || '') + '" data-stfor="' + esc(a.id) + '" aria-label="Change the status of ' + esc(a.full_name) + '">' + rowOptions(a.status) + '</select></td>' +
+        '<td data-l="Status"><span class="at-sttag chip ' + (CHIP[a.status] || '') + '"><span class="at-sttx">' + esc(SHORT[a.status] || LABEL[a.status] || a.status) + '</span>' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
+        '<select class="at-stpick" data-stfor="' + esc(a.id) + '" aria-label="Change the status of ' + esc(a.full_name) + '">' + rowOptions(a.status) + '</select></span></td>' +
         '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td></tr>';
     }).join('');
     $('#at-more', A.box).hidden = list.length <= A.shown;
@@ -250,10 +252,13 @@
     if (!a || sel.value === a.status) return;
     var to = sel.value;
     sel.disabled = true;
+    var tx = sel.parentElement.querySelector('.at-sttx');
+    if (tx) tx.textContent = SHORT[to] || LABEL[to];
     var r = await sb.rpc('applicant_set_status', { p_id: a.id, p_status: to, p_note: '' });
     if (r.error) {
       sel.disabled = false;
       sel.value = a.status;
+      if (tx) tx.textContent = SHORT[a.status] || LABEL[a.status];
       toast("Couldn't change the status. You may not have permission.", 'bad');
       return;
     }
