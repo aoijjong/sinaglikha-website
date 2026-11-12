@@ -18,7 +18,7 @@
   var DEPT_KEYS = ['staffing', 'training', 'engagement', 'rewards', 'legal'];
   var STATUS = { draft: ['s-draft', 'Draft'], published: ['s-published', 'Published'], closed: ['t-incomplete', 'Closed'], archived: ['s-archived', 'Archived'] };
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var V = { box: null, ctx: null, rows: [], failed: false, q: '', show: 'all', poster: null };
+  var V = { box: null, ctx: null, rows: [], failed: false, q: '', show: 'all', dept: 'all', poster: null };
 
   function canManage() { return state.isAdmin || (state.profile && state.profile.department === 'staffing'); }
   function busy(text) {
@@ -46,6 +46,7 @@
       '<div class="ph-main"><h2>Vacancies</h2><p class="sub">Drafts stay private until you publish them</p></div>' +
       '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="vc-q" type="search" placeholder="Search" aria-label="Search vacancies" autocomplete="off"></div>' +
       IB('external', 'Open the public Careers page', { 'data-a': 'site' }) + IB('plus', 'Add a vacancy', { 'data-a': 'add' }, 'solid') + '</div></div>' +
+      '<div class="vc-dash" id="vc-dash"></div>' +
       '<div class="pills" id="vc-pills" role="group" aria-label="Show"></div>' +
       '<div class="list-card"><ul class="rows" id="vc-rows"></ul><div class="es" id="vc-empty" hidden></div></div>' +
       '<div class="busy" id="vc-busy" hidden role="status">Loading…</div>' +
@@ -67,13 +68,29 @@
   }
 
   function render() {
-    var counts = { all: V.rows.length, published: 0, draft: 0, closed: 0, archived: 0 };
-    V.rows.forEach(function (v) { counts[v.status] = (counts[v.status] || 0) + 1; });
+    // the department chosen in the dashboard narrows the numbers, the pills and the list together
+    var scope = V.rows.filter(function (v) { return V.dept === 'all' || v.department === V.dept; });
+    var counts = { all: scope.length, published: 0, draft: 0, closed: 0, archived: 0 };
+    scope.forEach(function (v) { counts[v.status] = (counts[v.status] || 0) + 1; });
+    var perDept = {};
+    V.rows.forEach(function (v) { perDept[v.department] = (perDept[v.department] || 0) + 1; });
+    var openings = scope.filter(function (v) { return v.status === 'published'; }).reduce(function (n, v) { return n + (v.openings || 0); }, 0);
+    var tile = function (key, n, label) {
+      return '<button class="vc-k" type="button" data-show="' + key + '" aria-pressed="' + (V.show === key) + '"><b>' + n + '</b><span>' + label + '</span></button>';
+    };
+    $('#vc-dash', V.box).innerHTML = '<div class="vc-dh">Vacancy dashboard</div>' +
+      '<div class="vc-kpis">' + tile('all', counts.all, 'Total vacancies') + tile('published', counts.published, 'Published') + tile('draft', counts.draft, 'Drafts') + tile('closed', counts.closed, 'Closed') + '</div>' +
+      '<p class="vc-note">' + (counts.published ? 'The published vacancies list ' + (openings ? openings + (openings === 1 ? ' opening' : ' openings') : 'no opening count yet') + '. ' : '') + 'Applicant numbers will appear here once applications are open.</p>' +
+      '<label class="vc-fl" for="vc-dept-filter">Filter by department</label>' +
+      '<select id="vc-dept-filter" class="vc-sel">' + [['all', 'All Departments']].concat(DEPT_KEYS.map(function (k) { return [k, app.depts[k] || k]; })).map(function (d) {
+        return '<option value="' + d[0] + '"' + (V.dept === d[0] ? ' selected' : '') + '>' + esc(d[1]) + (d[0] === 'all' ? ' (' + V.rows.length + ')' : ' (' + (perDept[d[0]] || 0) + ')') + '</option>';
+      }).join('') + '</select>' +
+      '<p class="vc-show">Showing vacancy records for: ' + esc(V.dept === 'all' ? 'All Departments' : app.depts[V.dept] || V.dept) + '</p>';
     $('#vc-pills', V.box).innerHTML = [['all', 'All'], ['published', 'Published'], ['draft', 'Drafts'], ['closed', 'Closed'], ['archived', 'Archived']].map(function (s) {
       return '<button class="pill" type="button" data-show="' + s[0] + '" aria-pressed="' + (V.show === s[0]) + '">' + s[1] + ' <small>' + (counts[s[0]] || 0) + '</small></button>';
     }).join('');
     var q = V.q.trim().toLowerCase();
-    var list = V.rows.filter(function (v) {
+    var list = scope.filter(function (v) {
       return (V.show === 'all' || v.status === V.show) && (!q || (v.title + ' ' + (app.depts[v.department] || '')).toLowerCase().indexOf(q) !== -1);
     });
     $('#vc-rows', V.box).innerHTML = list.map(function (v) {
@@ -269,6 +286,7 @@
       V.ctx = ctx;
       V.q = '';
       V.show = 'all';
+      V.dept = 'all';
       if (!canManage()) {
         box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Vacancies</h2></div></div>' +
           '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Staffing and Recruitment only</b><p>Vacancies can be managed by Staffing and Recruitment.</p></div></div>';
@@ -278,6 +296,7 @@
       shell();
       box.onclick = onClick;
       box.oninput = function (e) { if (e.target.id === 'vc-q') { V.q = e.target.value; render(); } };
+      box.onchange = function (e) { if (e.target.id === 'vc-dept-filter') { V.dept = e.target.value; render(); } };
       return load();
     }
   };
