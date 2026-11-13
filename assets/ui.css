@@ -1012,3 +1012,15 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 @media (max-width:640px){.vc-kpis{gap:6px}.vc-k{padding:8px 12px;border-radius:12px;gap:0}.vc-k b{font-size:1.5rem}.vc-k span{font-size:.74rem}}
 .vc-k[aria-pressed="true"],.vc-k[aria-pressed="true"]:hover{border-color:transparent}
 .vc-kpis+.vc-fl{margin-top:16px}
+
+/* vacancies: one filter row (search, department, archived) above the cards */
+.vc-row{margin:0 0 14px;flex-wrap:wrap}
+.vc-row .fl-search{flex:1 1 200px;min-width:160px;max-width:340px;width:auto}
+.vc-row .fl-search input{height:40px}
+.vc-row #vc-dept-filter{flex:1 1 200px;min-width:160px;max-width:300px}
+.vc-arch{flex:none;display:inline-flex;align-items:center;gap:6px;padding:0 16px;cursor:pointer}
+.vc-arch small{font-weight:700;opacity:.7}
+.vc-arch[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:#fff}
+@media (max-width:640px){.vc-row .fl-search{flex:1 1 100%;max-width:none}.vc-row #vc-dept-filter{flex:1 1 140px;max-width:none;min-width:0}.vc-arch{flex:none}}
+.vc-arch{background-image:none;padding:0 16px}
+.vc-arch[aria-pressed="true"]{background-image:none}
