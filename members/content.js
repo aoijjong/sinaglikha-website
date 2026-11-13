@@ -284,12 +284,16 @@
     });
     var n = active.length || 1;
     var date = new Date(today + 'T00:00:00+08:00').toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Manila' });
-    var names = missing.slice(0, 4).map(function (p) { return '<span class="attc-av" title="' + esc(p.full_name) + '">' + esc(initialsOf(p.full_name)) + '</span>'; }).join('');
-    box.innerHTML = '<button class="attc" type="button" data-special="attendance" aria-label="Open the full Attendance Tracker">' +
+    // the people who have not timed in yet, by name, so a manager can follow up without opening the tracker
+    var SHOW = 5;
+    var rows = missing.slice(0, SHOW).map(function (p) {
+      return '<span class="at-r"><span class="at-n">' + esc(p.full_name) + '</span><small>' + esc(p.employee_no || '') + '</small><span class="chip t-none">Not yet in</span></span>';
+    }).join('');
+    box.innerHTML = '<button class="attc attd" type="button" data-special="attendance" aria-label="Open the full Attendance Tracker">' +
       '<span class="attc-h"><span class="attc-i">' + I('clock') + '</span><b>Attendance today</b><span class="attc-d">' + esc(date) + '</span><span class="attc-go">' + I('chevron') + '</span></span>' +
+      '<span class="at-stats"><span class="at-st is-ok"><b>' + done + '</b>Complete</span><span class="at-st is-work"><b>' + working + '</b>Timed in</span><span class="at-st is-none"><b>' + missing.length + '</b>Not yet in</span></span>' +
       '<span class="attc-bar" aria-hidden="true"><i class="g" style="width:' + (done / n * 100) + '%"></i><i class="b" style="width:' + (working / n * 100) + '%"></i></span>' +
-      '<span class="attc-chips"><span class="chip t-complete">' + done + ' complete</span><span class="chip t-working">' + working + ' timed in</span><span class="chip t-none">' + missing.length + ' not yet in</span></span>' +
-      (missing.length ? '<span class="attc-miss"><span class="attc-avs">' + names + '</span><span>' + (missing.length > 4 ? '+' + (missing.length - 4) + ' more not yet in' : 'not yet in') + '</span></span>' : '') +
+      (missing.length ? '<span class="at-list">' + rows + (missing.length > SHOW ? '<span class="at-more">See all ' + missing.length + ' who have not timed in</span>' : '') + '</span>' : '<span class="attc-miss">Everyone has timed in today.</span>') +
       '</button>';
   }
 
