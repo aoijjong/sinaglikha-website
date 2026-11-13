@@ -132,6 +132,13 @@
       '<button type="button" class="sp-moreb" data-a="morecharts" aria-expanded="' + !!A.moreOpen + '">' + (A.moreOpen ? 'Show fewer charts' : 'Show more charts') + '</button></div>';
   }
 
+  // on a phone the list is far below the dashboard, so choosing a filter there brings the list into view
+  function toList() {
+    if (!window.matchMedia || !window.matchMedia('(max-width:640px)').matches) return;
+    var w = $('#at-wrap', A.box);
+    if (w) w.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function render() {
     var counts = { all: A.rows.length };
     KEYS.forEach(function (k) { counts[k] = 0; });
@@ -542,9 +549,9 @@
     var row = e.target.closest('#at-rows tr');
     if (row && !e.target.closest('select, button, a')) { openDetail(row.dataset.id); return; }
     var pp = e.target.closest('[data-pos]');
-    if (pp) { A.pos = A.pos === pp.dataset.pos ? '' : pp.dataset.pos; A.shown = PAGE; render(); return; }
+    if (pp) { A.pos = A.pos === pp.dataset.pos ? '' : pp.dataset.pos; A.shown = PAGE; render(); toList(); return; }
     var card = e.target.closest('[data-status]');
-    if (card) { A.status = card.dataset.status === A.status ? 'all' : card.dataset.status; A.shown = PAGE; render(); return; }
+    if (card) { var fromDash = !!card.closest('#at-sum'); A.status = card.dataset.status === A.status ? 'all' : card.dataset.status; A.shown = PAGE; render(); if (fromDash) toList(); return; }
     var b = e.target.closest('[data-a]');
     if (!b) return;
     var a = b.dataset.a;

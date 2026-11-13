@@ -627,7 +627,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 
 /* the dashboard inside the Applicant Tracking System: five equal panels; wide: 2 + 4 columns on top, three equal panels below */
 .sp{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;align-items:stretch}
-.sp-p{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;min-width:0;min-height:190px}
+.sp-p{container-type:inline-size;background:#fff;border:1px solid var(--line);box-shadow:0 10px 26px -16px rgba(74,46,34,.35),0 2px 6px -2px rgba(74,46,34,.1);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;min-width:0;min-height:190px}
 .sp-p h3{font-family:inherit;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .sp-p h3 small{font-size:.72rem;font-weight:400;letter-spacing:0;text-transform:none}
 .sp-body{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -635,12 +635,13 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-mid{justify-content:center}
 .p-total{grid-column:span 2}.p-status{grid-column:span 4}.p-month,.p-pos,.p-stage{grid-column:span 2}
 .sp-big{font:inherit;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:var(--brown);display:grid;gap:2px}
-.sp-big b{font-family:var(--serif);font-weight:400;font-size:3rem;line-height:1}
+.sp-big b{font-family:var(--serif);font-weight:400;font-size:3rem;line-height:1.05;margin-bottom:6px}
 .sp-big span{font-size:.88rem;color:var(--muted)}
-.sp-big[aria-pressed="true"] b{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:#E0A21B}
+.sp-big{padding:6px 10px;margin:-6px -10px;border-radius:12px}
+.sp-big[aria-pressed="true"]{background:#FFFBF2;box-shadow:inset 0 0 0 1.5px #E0A21B}
 .sp-sm{margin:10px 0 0;font-size:.85rem;color:var(--muted)}
 .sp-ks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.sp-k{font:inherit;display:grid;gap:4px;text-align:left;background:#FBF8F3;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;color:var(--brown);min-width:0}
+.sp-k{font:inherit;display:grid;gap:4px;text-align:left;background:#fff;border:1px solid var(--line);box-shadow:0 8px 18px -12px rgba(74,46,34,.4),0 1px 3px rgba(74,46,34,.08);border-radius:12px;padding:12px;cursor:pointer;color:var(--brown);min-width:0}
 .sp-k b{font-family:var(--serif);font-weight:400;font-size:2.2rem;line-height:1}
 .sp-k>span:nth-of-type(1){font-size:.82rem;color:var(--muted)}
 .sp-ln{display:block;height:4px;background:#EFEAE4;border-radius:2px;overflow:hidden;margin-top:6px}
@@ -656,7 +657,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-ring{width:104px;height:104px;border-radius:50%;flex:none;display:grid;place-items:center}
 .sp-ring span{width:64px;height:64px;border-radius:50%;background:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:1.4rem;color:var(--brown)}
 .sp-lg{list-style:none;margin:0;padding:0;display:grid;gap:4px;flex:1;min-width:0}
-.sp-lg button,.sp-nb{font:inherit;display:flex;align-items:center;gap:6px;width:100%;font-size:.82rem;color:var(--brown);background:none;border:0;border-radius:8px;padding:2px 4px;text-align:left;cursor:pointer}
+.sp-lg li{min-width:0}
+.sp-lg button,.sp-nb{min-width:0;font:inherit;display:flex;align-items:center;gap:6px;width:100%;font-size:.82rem;color:var(--brown);background:none;border:0;border-radius:8px;padding:2px 4px;text-align:left;cursor:pointer}
 .sp-nb{cursor:default}
 .sp-lg button[aria-pressed="true"]{background:#F4ECE4;font-weight:700}
 .sp-lg i{width:9px;height:9px;border-radius:50%;flex:none}
@@ -681,3 +683,11 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .sp:not(.sp-open) .p-month,.sp:not(.sp-open) .p-pos,.sp:not(.sp-open) .p-stage{display:none}
   .sp-moreb{display:block;order:6;font:inherit;font-size:.9rem;font-weight:600;color:var(--brown);background:#fff;border:1px solid var(--line);border-radius:999px;padding:10px 16px;cursor:pointer}
 }
+
+/* the long position names no longer run out of their panel; narrow panels stack the donut above its legend */
+@container (max-width:380px){.sp-dn{flex-direction:column;align-items:flex-start;gap:12px}.sp-lg{width:100%}}
+/* tap feedback: buttons press in, and the chosen one is clearly marked */
+.sp button{-webkit-tap-highlight-color:transparent;transition:transform .15s ease,background .2s,box-shadow .2s,border-color .2s}
+.sp button:active{transform:scale(.97)}
+.sp-k[aria-pressed="true"]{background:#fff;border-color:var(--c);box-shadow:0 0 0 2px var(--c),0 8px 18px -12px rgba(74,46,34,.4)}
+@media (hover:hover) and (pointer:fine){.sp-k:hover{background:#fff;transform:translateY(-2px);box-shadow:0 12px 22px -12px rgba(74,46,34,.45)}}
