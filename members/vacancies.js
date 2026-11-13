@@ -44,10 +44,12 @@
     V.box.style.position = 'relative';
     V.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
       '<div class="ph-main"><h2>Vacancies</h2><p class="sub">Drafts stay private until you publish them</p></div>' +
-      '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="vc-q" type="search" placeholder="Search" aria-label="Search vacancies" autocomplete="off"></div>' +
+      '<div class="ph-actions">' +
       IB('external', 'Open the public Careers page', { 'data-a': 'site' }) + IB('plus', 'Add a vacancy', { 'data-a': 'add' }, 'solid') + '</div></div>' +
+      '<div class="fl-row vc-row" id="vc-row"><div class="sbox fl-search">' + I('search') + '<input id="vc-q" type="search" placeholder="Search" aria-label="Search vacancies" autocomplete="off"></div>' +
+      '<select id="vc-dept-filter" class="fl-pill" aria-label="Filter by department"></select>' +
+      '<button class="fl-pill vc-arch" id="vc-arch" type="button" data-show="archived" aria-pressed="false">Archived <small>0</small></button></div>' +
       '<div class="vc-dash" id="vc-dash"></div>' +
-      '<div class="pills" id="vc-pills" role="group" aria-label="Show"></div>' +
       '<div class="list-card"><ul class="rows" id="vc-rows"></ul><div class="es" id="vc-empty" hidden></div></div>' +
       '<div class="busy" id="vc-busy" hidden role="status">Loading…</div>' +
       '<p class="fine">Only published vacancies inside their dates show on Careers.</p>';
@@ -72,24 +74,23 @@
     var scope = V.rows.filter(function (v) { return V.dept === 'all' || v.department === V.dept; });
     var counts = { all: scope.length, published: 0, draft: 0, closed: 0, archived: 0 };
     scope.forEach(function (v) { counts[v.status] = (counts[v.status] || 0) + 1; });
+    counts.all = scope.length - counts.archived;
     var perDept = {};
     V.rows.forEach(function (v) { perDept[v.department] = (perDept[v.department] || 0) + 1; });
     var openings = scope.filter(function (v) { return v.status === 'published'; }).reduce(function (n, v) { return n + (v.openings || 0); }, 0);
     var tile = function (key, n, label) {
       return '<button class="vc-k k-' + key + '" type="button" data-show="' + key + '" aria-pressed="' + (V.show === key) + '"><b>' + n + '</b><span>' + label + '</span></button>';
     };
-    $('#vc-dash', V.box).innerHTML = '' +
-      '<div class="vc-kpis">' + tile('all', counts.all, 'Total vacancies') + tile('published', counts.published, 'Published') + tile('draft', counts.draft, 'Drafts') + tile('closed', counts.closed, 'Closed') + '</div>' +
-      '<label class="vc-fl" for="vc-dept-filter">Filter by department</label>' +
-      '<select id="vc-dept-filter" class="vc-sel">' + [['all', 'All Departments']].concat(DEPT_KEYS.map(function (k) { return [k, app.depts[k] || k]; })).map(function (d) {
-        return '<option value="' + d[0] + '"' + (V.dept === d[0] ? ' selected' : '') + '>' + esc(d[1]) + (d[0] === 'all' ? ' (' + V.rows.length + ')' : ' (' + (perDept[d[0]] || 0) + ')') + '</option>';
-      }).join('') + '</select>';
-    $('#vc-pills', V.box).innerHTML = [['all', 'All'], ['published', 'Published'], ['draft', 'Drafts'], ['closed', 'Closed'], ['archived', 'Archived']].map(function (s) {
-      return '<button class="pill" type="button" data-show="' + s[0] + '" aria-pressed="' + (V.show === s[0]) + '">' + s[1] + ' <small>' + (counts[s[0]] || 0) + '</small></button>';
+    $('#vc-dash', V.box).innerHTML = '<div class="vc-kpis">' + tile('all', counts.all, 'Total vacancies') + tile('published', counts.published, 'Published') + tile('draft', counts.draft, 'Drafts') + tile('closed', counts.closed, 'Closed') + '</div>';
+    $('#vc-dept-filter', V.box).innerHTML = [['all', 'All Departments']].concat(DEPT_KEYS.map(function (k) { return [k, app.depts[k] || k]; })).map(function (d) {
+      return '<option value="' + d[0] + '"' + (V.dept === d[0] ? ' selected' : '') + '>' + esc(d[1]) + (d[0] === 'all' ? ' (' + V.rows.length + ')' : ' (' + (perDept[d[0]] || 0) + ')') + '</option>';
     }).join('');
+    var ab = $('#vc-arch', V.box);
+    ab.setAttribute('aria-pressed', String(V.show === 'archived'));
+    ab.innerHTML = 'Archived <small>' + (counts.archived || 0) + '</small>';
     var q = V.q.trim().toLowerCase();
     var list = scope.filter(function (v) {
-      return (V.show === 'all' || v.status === V.show) && (!q || (v.title + ' ' + (app.depts[v.department] || '')).toLowerCase().indexOf(q) !== -1);
+      return (V.show === 'all' ? v.status !== 'archived' : v.status === V.show) && (!q || (v.title + ' ' + (app.depts[v.department] || '')).toLowerCase().indexOf(q) !== -1);
     });
     $('#vc-rows', V.box).innerHTML = list.map(function (v) {
       var st = STATUS[v.status] || ['s-draft', v.status];
@@ -264,7 +265,7 @@
 
   function onClick(e) {
     var pill = e.target.closest('[data-show]');
-    if (pill) { V.show = pill.dataset.show; render(); return; }
+    if (pill) { V.show = V.show === pill.dataset.show ? 'all' : pill.dataset.show; render(); return; }
     var b = e.target.closest('[data-a]');
     if (!b) return;
     var a = b.dataset.a;
