@@ -606,8 +606,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 @media (max-width:640px){.at-tbl td.at-acts{grid-area:act;display:block;text-align:left;margin-top:4px;padding-top:2px;border-top:1px dashed var(--line)}.at-tbl td.at-acts .lacts{display:flex;justify-content:flex-start;gap:4px;margin-left:-8px}}
 
 /* the applicants list sits in its own box so it reads apart from the summary and the filters above it */
-#at-wrap{background:#FFFCF7;border:1px solid var(--line);border-radius:20px;overflow:hidden}
-#at-wrap .at-tbl th{background:#FBF6EF}
+#at-wrap{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+#at-wrap .at-tbl th{background:#fff}
 @media (max-width:640px){#at-wrap{background:#F9F3EA;border-radius:18px}}
 
 /* phone filters: the stage pills above already pick the stage, so only the position and the dates are left here, at a lighter size */
