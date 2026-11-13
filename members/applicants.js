@@ -183,8 +183,7 @@
         '<td data-l="Status"><button type="button" class="at-sttag chip ' + (CHIP[a.status] || '') + '" data-stfor="' + esc(a.id) + '" aria-haspopup="listbox" aria-expanded="false" aria-label="' + esc(a.full_name) + ': ' + esc(LABEL[a.status] || a.status) + '. Change status">' +
         '<span class="at-sttx">' + esc(LABEL[a.status] || a.status) + '</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></td>' +
         '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td>' +
-        '<td data-l="Actions" class="at-acts"><div class="lacts">' + IB('eye', 'View the record of ' + a.full_name, { 'data-a': 'open' }) + IB('chat', 'Add a note for ' + a.full_name, { 'data-a': 'rnote' }) +
-        IB('trash', 'Delete ' + a.full_name, { 'data-a': 'rdel' }, 'danger') + '</div></td></tr>';
+        '<td data-l="Actions" class="at-acts">' + IB('more', 'Actions for ' + a.full_name, { 'data-a': 'amenu', 'aria-haspopup': 'menu', 'aria-expanded': 'false' }) + '</td></tr>';
     }).join('');
     $('#at-more', A.box).hidden = list.length <= A.shown;
     $('#at-more', A.box).textContent = 'Show more (' + (list.length - A.shown) + ' left)';
@@ -311,6 +310,56 @@
   }
 
   /* ---------- changing a status straight from the table ---------- */
+  // the dotted menu on each row: view, add a note, delete (opens downward, like every other menu)
+  function closeAMenu(focusBack) {
+    var m = A.box && $('#at-amenu', A.box);
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    var bt = A.amBtn;
+    A.amBtn = null;
+    if (bt) { bt.setAttribute('aria-expanded', 'false'); if (focusBack && document.body.contains(bt)) bt.focus(); }
+  }
+  function openAMenu(btn) {
+    var tr = btn.closest('tr'), a = tr && A.rows.filter(function (x) { return x.id === tr.dataset.id; })[0];
+    if (!a) return;
+    var m = $('#at-amenu', A.box);
+    if (!m) {
+      m = document.createElement('ul');
+      m.id = 'at-amenu';
+      m.className = 'at-menu am';
+      m.setAttribute('role', 'menu');
+      m.hidden = true;
+      A.box.appendChild(m);
+    }
+    if (!m.hidden && A.amBtn === btn) { closeAMenu(true); return; }
+    closeAMenu(false);
+    closeMenu(false);
+    m.setAttribute('aria-label', 'Actions for ' + a.full_name);
+    m.innerHTML = [['view', 'eye', 'View record'], ['note', 'chat', 'Add a note'], ['del', 'trash', 'Delete applicant']].map(function (x) {
+      return '<li role="menuitem" tabindex="-1" data-am="' + x[0] + '"' + (x[0] === 'del' ? ' class="danger"' : '') + '>' + I(x[1]) + '<span>' + x[2] + '</span></li>';
+    }).join('');
+    m.dataset.for = a.id;
+    m.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    A.amBtn = btn;
+    m.style.maxHeight = '';
+    var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+    var need = mh + 20;
+    if (window.innerHeight - r.bottom < need) { window.scrollBy({ top: need - (window.innerHeight - r.bottom), behavior: 'instant' }); r = btn.getBoundingClientRect(); }
+    var below = window.innerHeight - r.bottom - 14;
+    if (mh > below) m.style.maxHeight = Math.max(140, below) + 'px';
+    m.style.top = Math.max(8, r.bottom + 6) + 'px';
+    m.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
+    m.firstChild.focus();
+  }
+  function chooseAction(kind) {
+    var m = $('#at-amenu', A.box), id = m && m.dataset.for;
+    closeAMenu(false);
+    if (!id) return;
+    if (kind === 'view') openDetail(id);
+    else if (kind === 'note') openDetail(id).then(function () { var n = $('#ap-note'); if (n) n.focus(); });
+    else if (kind === 'del') rowDelete(id);
+  }
   function closeMenu(focusBack) {
     var m = A.box && $('#at-menu', A.box);
     if (!m || m.hidden) return;
@@ -333,6 +382,7 @@
       A.box.appendChild(m);
     }
     if (!m.hidden && A.menuBtn === btn) { closeMenu(true); return; }
+    closeAMenu(false);
     closeMenu(false);
     m.innerHTML = STATUSES.map(function (s) {
       var on = a.status === s[0];
@@ -355,6 +405,16 @@
     (m.querySelector('[aria-selected="true"]') || m.firstChild).focus();
   }
   function menuKey(e) {
+    var am = $('#at-amenu', A.box);
+    if (am && !am.hidden && e.target.closest('#at-amenu')) {
+      var its = [].slice.call(am.querySelectorAll('li')), k = its.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); its[(k + 1) % its.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); its[(k - 1 + its.length) % its.length].focus(); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (its[k]) chooseAction(its[k].dataset.am); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeAMenu(true); }
+      else if (e.key === 'Tab') closeAMenu(false);
+      return;
+    }
     var m = $('#at-menu', A.box);
     if (!m || m.hidden || !e.target.closest('#at-menu')) return;
     var items = [].slice.call(m.querySelectorAll('li')), i = items.indexOf(document.activeElement);
@@ -542,6 +602,10 @@
   }
 
   function onClick(e) {
+    var ai = e.target.closest('#at-amenu li');
+    if (ai) { chooseAction(ai.dataset.am); return; }
+    var ab = e.target.closest('[data-a="amenu"]');
+    if (ab) { openAMenu(ab); return; }
     var item = e.target.closest('#at-menu li');
     if (item) { chooseStatus(item.dataset.v); return; }
     var tag = e.target.closest('.at-sttag');
@@ -610,9 +674,9 @@
   };
 
   // the status menu closes on an outside click, on scrolling and on resizing; wired once
-  document.addEventListener('click', function (e) { if (!e.target.closest('#at-menu, .at-sttag')) closeMenu(false); });
-  window.addEventListener('scroll', function () { closeMenu(false); }, true);
-  window.addEventListener('resize', function () { closeMenu(false); });
+  document.addEventListener('click', function (e) { if (!e.target.closest('#at-menu, .at-sttag')) closeMenu(false); if (!e.target.closest('#at-amenu, [data-a="amenu"]')) closeAMenu(false); });
+  window.addEventListener('scroll', function () { closeMenu(false); closeAMenu(false); }, true);
+  window.addEventListener('resize', function () { closeMenu(false); closeAMenu(false); });
 
   // the dialogs belong to the page, so they are wired once
   document.addEventListener('click', function (e) {
