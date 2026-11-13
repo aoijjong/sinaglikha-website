@@ -18,8 +18,8 @@
 
   var sb = app.sb, state = app.state, esc = app.esc, toast = app.toast, ask = app.ask, logAction = app.logAction;
   var I = window.SngIcon, IB = window.SngIconButton;
-  var STATUSES = [['new', 'New Application'], ['screening', 'For Initial Screening'], ['shortlisted', 'Shortlisted'], ['interview', 'For Interview'], ['work_sample', 'For Work Sample'],
-    ['final_review', 'For Final Review'], ['selected', 'Selected'], ['not_selected', 'Not Selected'], ['placed', 'Placed'], ['withdrawn', 'Withdrawn']];
+  var STATUSES = [['new', 'New'], ['screening', 'Screening'], ['shortlisted', 'Shortlisted'], ['interview', 'Interview'], ['work_sample', 'Work sample'],
+    ['final_review', 'Final review'], ['selected', 'Selected'], ['not_selected', 'Not selected'], ['placed', 'Placed'], ['withdrawn', 'Withdrawn']];
   var LABEL = {}, KEYS = [];
   STATUSES.forEach(function (s) { LABEL[s[0]] = s[1]; KEYS.push(s[0]); });
   var CHIP = { new: 't-working', screening: 's-draft', shortlisted: 's-draft', interview: 's-draft', work_sample: 's-draft', final_review: 's-draft', selected: 's-published', not_selected: 'is-red', placed: 's-published', withdrawn: 's-archived' };
@@ -30,11 +30,11 @@
     won: ['selected', 'placed'],
     closed: ['not_selected', 'withdrawn']
   };
-  var GROUP_LABEL = { all: 'All stages', new: 'New applications', active: 'In progress (screening to final review)', won: 'Selected or placed', closed: 'Not selected or withdrawn' };
+  var GROUP_LABEL = { all: 'All stages', new: 'New', active: 'In progress (5 stages)', won: 'Selected or placed', closed: 'Not selected or withdrawn' };
   function inGroup(status, key) { return key === 'all' || (GROUPS[key] ? GROUPS[key].indexOf(status) !== -1 : status === key); }
   var PAGE = 100;
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var A = { box: null, ctx: null, rows: [], vacancies: [], failed: false, q: '', status: 'all', pos: '', from: '', to: '', shown: PAGE, open: null, importing: null, fOpen: false };
+  var A = { menuBtn: null, box: null, ctx: null, rows: [], vacancies: [], failed: false, q: '', status: 'all', pos: '', from: '', to: '', shown: PAGE, open: null, importing: null, fOpen: false };
 
   function canManage() { return state.isAdmin || (state.profile && state.profile.department === 'staffing'); }
   function busy(text) {
@@ -102,12 +102,16 @@
     var activeFilters = !!(A.pos || A.from || A.to || extra);
     $('#at-mobile', A.box).innerHTML = '<button class="pill at-ftoggle' + (activeFilters ? ' has' : '') + '" type="button" data-a="filters" aria-expanded="' + A.fOpen + '" aria-controls="at-fl">Filters</button>' +
       pill('all', 'All') + pill('new', 'New') + pill('active', 'In progress') + pill('won', 'Selected or placed') + pill('closed', 'Closed');
+    closeMenu(false);
     $('#at-fl', A.box).classList.toggle('open', A.fOpen);
     var positions = {};
     A.rows.forEach(function (a) { if (a.position_title) positions[a.position_title] = true; });
     $('#at-pos', A.box).innerHTML = '<option value="">Any position</option>' + Object.keys(positions).sort().map(function (p) { return '<option value="' + esc(p) + '"' + (A.pos === p ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('');
-    $('#at-status', A.box).innerHTML = ['all', 'new', 'active', 'won', 'closed'].map(function (g) { return '<option value="' + g + '"' + (A.status === g ? ' selected' : '') + '>' + esc(GROUP_LABEL[g]) + '</option>'; }).join('') +
-      '<optgroup label="One stage">' + STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (A.status === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('') + '</optgroup>';
+    // the same ten stages, with the same names, as the status in each row; a summary group (In progress and so on) shows up only while one is chosen
+    var groupOn = ['active', 'won', 'closed'].indexOf(A.status) !== -1;
+    $('#at-status', A.box).innerHTML = '<option value="all"' + (A.status === 'all' ? ' selected' : '') + '>All stages</option>' +
+      (groupOn ? '<option value="' + A.status + '" selected>' + esc(GROUP_LABEL[A.status]) + '</option>' : '') +
+      STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (A.status === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('');
     $('#at-clear', A.box).hidden = !(A.status !== 'all' || A.pos || A.from || A.to);
     $('#at-from', A.box).value = A.from;
     $('#at-to', A.box).value = A.to;
@@ -125,9 +129,8 @@
         '<td data-l="Applicant"><button class="at-name" type="button" data-a="open" title="Open the record">' + esc(a.full_name) + '</button></td>' +
         '<td data-l="Position">' + esc(a.position_title || 'Not stated') + '</td>' +
         '<td data-l="Received">' + esc(app.fmtDate(a.received_on)) + '</td>' +
-        '<td data-l="Status"><span class="at-sttag chip ' + (CHIP[a.status] || '') + '"><span class="at-sttx">' + esc(SHORT[a.status] || LABEL[a.status] || a.status) + '</span>' +
-        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
-        '<select class="at-stpick" data-stfor="' + esc(a.id) + '" aria-label="Change the status of ' + esc(a.full_name) + '">' + rowOptions(a.status) + '</select></span></td>' +
+        '<td data-l="Status"><button type="button" class="at-sttag chip ' + (CHIP[a.status] || '') + '" data-stfor="' + esc(a.id) + '" aria-haspopup="listbox" aria-expanded="false" aria-label="' + esc(a.full_name) + ': ' + esc(LABEL[a.status] || a.status) + '. Change status">' +
+        '<span class="at-sttx">' + esc(LABEL[a.status] || a.status) + '</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></td>' +
         '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td></tr>';
     }).join('');
     $('#at-more', A.box).hidden = list.length <= A.shown;
@@ -149,11 +152,6 @@
   /* ---------- one applicant ---------- */
   function options(selected) {
     return STATUSES.map(function (s) { return '<option value="' + s[0] + '"' + (selected === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('');
-  }
-  // the dropdown inside a table row uses short names so it fits on a phone; the record keeps the full names
-  var SHORT = { new: 'New', screening: 'Screening', shortlisted: 'Shortlisted', interview: 'Interview', work_sample: 'Work sample', final_review: 'Final review', selected: 'Selected', not_selected: 'Not selected', placed: 'Placed', withdrawn: 'Withdrawn' };
-  function rowOptions(selected) {
-    return STATUSES.map(function (s) { return '<option value="' + s[0] + '" title="' + esc(s[1]) + '"' + (selected === s[0] ? ' selected' : '') + '>' + esc(SHORT[s[0]]) + '</option>'; }).join('');
   }
   function positionList() {
     var names = {};
@@ -247,27 +245,88 @@
   }
 
   /* ---------- changing a status straight from the table ---------- */
-  async function quickStatus(sel) {
-    var a = A.rows.filter(function (x) { return x.id === sel.dataset.stfor; })[0];
-    if (!a || sel.value === a.status) return;
-    var to = sel.value;
-    sel.disabled = true;
-    var tx = sel.parentElement.querySelector('.at-sttx');
-    if (tx) tx.textContent = SHORT[to] || LABEL[to];
+  function closeMenu(focusBack) {
+    var m = A.box && $('#at-menu', A.box);
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    var b = A.menuBtn;
+    A.menuBtn = null;
+    if (b) { b.setAttribute('aria-expanded', 'false'); if (focusBack && document.body.contains(b)) b.focus(); }
+  }
+  function openMenu(btn) {
+    var a = A.rows.filter(function (x) { return x.id === btn.dataset.stfor; })[0];
+    if (!a) return;
+    var m = $('#at-menu', A.box);
+    if (!m) {
+      m = document.createElement('ul');
+      m.id = 'at-menu';
+      m.className = 'at-menu';
+      m.setAttribute('role', 'listbox');
+      m.setAttribute('aria-label', 'Choose a status');
+      m.hidden = true;
+      A.box.appendChild(m);
+    }
+    if (!m.hidden && A.menuBtn === btn) { closeMenu(true); return; }
+    closeMenu(false);
+    m.innerHTML = STATUSES.map(function (s) {
+      var on = a.status === s[0];
+      return '<li role="option" tabindex="-1" data-v="' + s[0] + '" aria-selected="' + on + '"><span class="chip ' + (CHIP[s[0]] || '') + '">' + esc(s[1]) + '</span>' +
+        (on ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>' : '') + '</li>';
+    }).join('');
+    m.dataset.for = a.id;
+    m.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    A.menuBtn = btn;
+    m.style.maxHeight = '';
+    var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+    var below = window.innerHeight - r.bottom - 14, above = r.top - 14, top;
+    if (mh <= below) top = r.bottom + 6;                       // fits underneath
+    else if (mh <= above) top = r.top - 6 - mh;                // fits above
+    else if (below >= above) { top = r.bottom + 6; m.style.maxHeight = Math.max(120, below) + 'px'; }     // neither fits: the roomier side, scrolling inside
+    else { m.style.maxHeight = Math.max(120, above) + 'px'; top = r.top - 6 - m.offsetHeight; }
+    m.style.top = Math.max(8, top) + 'px';
+    m.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
+    (m.querySelector('[aria-selected="true"]') || m.firstChild).focus();
+  }
+  function menuKey(e) {
+    var m = $('#at-menu', A.box);
+    if (!m || m.hidden || !e.target.closest('#at-menu')) return;
+    var items = [].slice.call(m.querySelectorAll('li')), i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (items[i]) chooseStatus(items[i].dataset.v); }
+    else if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); }
+    else if (e.key === 'Tab') closeMenu(false);
+  }
+  function chooseStatus(to) {
+    var m = $('#at-menu', A.box), id = m && m.dataset.for;
+    closeMenu(true);
+    if (id) quickStatus(id, to);
+  }
+  async function quickStatus(id, to) {
+    var a = A.rows.filter(function (x) { return x.id === id; })[0];
+    if (!a || to === a.status) return;
+    var btn = A.box.querySelector('.at-sttag[data-stfor="' + id + '"]'), tx = btn && btn.querySelector('.at-sttx');
+    if (btn) btn.disabled = true;
+    if (tx) tx.textContent = LABEL[to];
     var r = await sb.rpc('applicant_set_status', { p_id: a.id, p_status: to, p_note: '' });
     if (r.error) {
-      sel.disabled = false;
-      sel.value = a.status;
-      if (tx) tx.textContent = SHORT[a.status] || LABEL[a.status];
+      if (btn) btn.disabled = false;
+      if (tx) tx.textContent = LABEL[a.status];
       toast("Couldn't change the status. You may not have permission.", 'bad');
       return;
     }
     logAction('applicant.status', a.reference + ' ' + a.status + ' to ' + to, { id: a.id });
-    toast(a.full_name + ' is now ' + LABEL[to] + '.', 'ok');
     await load();
+    var now = A.rows.filter(function (x) { return x.id === id; })[0];
+    // the database said yes; make sure it really changed (an old database rule once undid every change)
+    if (now && now.status !== to) toast("The status didn't save. The database fix for statuses (supabase/recruitment_status_fix.sql) may not have been run yet.", 'bad');
+    else toast(a.full_name + ' is now ' + LABEL[to] + '.', 'ok');
   }
 
-  /* ---------- adding one by hand ---------- */
+
   function openNew() {
     var dlg = $('#an2-dlg'), form = $('#an2-form'), err = $('#an2-err');
     $('#an2-name').value = '';
@@ -341,6 +400,7 @@
     if (at.name < 0) return { error: 'The file needs a Name column (also accepted: Full name, Applicant name).' };
     var statusKey = {};
     STATUSES.forEach(function (s) { statusKey[norm(s[0])] = s[0]; statusKey[norm(s[1])] = s[0]; });
+    ['newapplication:new', 'forinitialscreening:screening', 'initialscreening:screening', 'forinterview:interview', 'forworksample:work_sample', 'forfinalreview:final_review'].forEach(function (p) { statusKey[p.split(':')[0]] = p.split(':')[1]; });
     var known = {};
     A.rows.forEach(function (a) { if (a.reference) known[a.reference.toLowerCase()] = true; });
     var seen = {}, out = [], sum = { skipped: 0, duplicates: 0, badStatus: 0, noDate: 0 };
@@ -415,6 +475,10 @@
   }
 
   function onClick(e) {
+    var item = e.target.closest('#at-menu li');
+    if (item) { chooseStatus(item.dataset.v); return; }
+    var tag = e.target.closest('.at-sttag');
+    if (tag) { openMenu(tag); return; }
     var row = e.target.closest('#at-rows tr');
     if (row && !e.target.closest('select, button, a')) { openDetail(row.dataset.id); return; }
     var card = e.target.closest('[data-status]');
@@ -446,13 +510,13 @@
       }
       shell();
       box.onclick = onClick;
+      box.onkeydown = menuKey;
       box.oninput = function (e) {
         if (e.target.id === 'at-q') { A.q = e.target.value; A.shown = PAGE; render(); }
         else if (e.target.id === 'at-from') { A.from = e.target.value; A.shown = PAGE; render(); }
         else if (e.target.id === 'at-to') { A.to = e.target.value; A.shown = PAGE; render(); }
       };
       box.onchange = function (e) {
-        if (e.target.dataset && e.target.dataset.stfor) { quickStatus(e.target); return; }
         if (e.target.id === 'at-pos') { A.pos = e.target.value; A.shown = PAGE; render(); }
         else if (e.target.id === 'at-status') { A.status = e.target.value; A.shown = PAGE; render(); }
         else if (e.target.id === 'at-file') {
@@ -472,6 +536,11 @@
       return load();
     }
   };
+
+  // the status menu closes on an outside click, on scrolling and on resizing; wired once
+  document.addEventListener('click', function (e) { if (!e.target.closest('#at-menu, .at-sttag')) closeMenu(false); });
+  window.addEventListener('scroll', function () { closeMenu(false); }, true);
+  window.addEventListener('resize', function () { closeMenu(false); });
 
   // the dialogs belong to the page, so they are wired once
   document.addEventListener('click', function (e) {

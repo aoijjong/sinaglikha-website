@@ -503,7 +503,6 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 }
 
 .at-name{text-decoration-color:rgba(74,46,34,.35)!important}
-.chip
 /* Applicant Tracking on a phone: compact cards, stage pills, filters behind one button */
 .at-mobile{display:none}
 .at-tbl tbody tr{cursor:pointer}
@@ -536,11 +535,6 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 /* the status in each applicant row: a small chip like every other, with the real dropdown laid invisibly over it
    (the dropdown keeps a 16px font so iPhones don't zoom the page when it opens) */
 .at-name{text-decoration-color:rgba(74,46,34,.35)!important}
-.at-sttag{position:relative;display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 9px 4px 12px;font-weight:700;line-height:1.3;white-space:nowrap}
-.at-sttag svg{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
-.at-stpick{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;border:0;padding:0;margin:0;-webkit-appearance:none;appearance:none}
-.at-stpick:disabled{cursor:progress}
-.at-sttag:focus-within{outline:3px solid #CE2020;outline-offset:2px}
 
 /* the file viewer: PDFs drawn page by page, and text files */
 .sv-doc{position:absolute;inset:0;overflow:auto;padding:8px 8px 24px;background:rgba(0,0,0,.25);border-radius:16px}
@@ -551,3 +545,17 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 .sv-zoomer{display:inline-flex;align-items:center;gap:2px}
 .sv-zoomer .sv-link{text-decoration:none;min-width:30px;text-align:center}
 .sv-link:disabled{opacity:.4;cursor:default}
+
+/* the status chip in each row opens a small menu of the ten stages */
+.at-sttag{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:0;cursor:pointer;font:inherit;font-size:.78rem;font-weight:700;line-height:1.3;padding:4px 9px 4px 12px;white-space:nowrap;text-align:left}
+.at-sttag svg{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.at-sttag:disabled{opacity:.6;cursor:progress}
+.at-sttag:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+.at-menu{position:fixed;z-index:400;margin:0;padding:6px;list-style:none;min-width:190px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);max-height:calc(100vh - 16px);overflow:auto}
+.at-menu[hidden]{display:none}
+.at-menu li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 10px;border-radius:10px;cursor:pointer}
+.at-menu li:focus{outline:none;background:var(--cream)}
+.at-menu li:focus-visible{box-shadow:inset 0 0 0 2px #CE2020}
+@media (hover:hover) and (pointer:fine){.at-menu li:hover{background:var(--cream)}}
+.at-menu li svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--brown);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:640px){.at-menu li{padding:10px 12px}.at-menu .chip{font-size:.95rem}}
