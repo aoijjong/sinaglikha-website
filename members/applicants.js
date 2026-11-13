@@ -122,12 +122,12 @@
       '<div class="sp-facts">' + fact('#C8321A', 'Received this month', String(ms.thisMonth)) + fact('#E8833A', 'Received in the last 7 days', String(last7)) +
       fact('#E0A21B', 'Longest wait in New', wait < 0 ? 'None waiting' : wait === 0 ? 'Today' : plural(wait, '1 day', wait + ' days')) +
       fact('#8A5A3C', 'Latest application', latest ? app.fmtDate(latest) : 'None yet') + '</div></div></section>';
-    var tile = function (key, n, label, color) {
-      return '<button type="button" class="sp-k" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '" aria-label="' + esc(label + ': ' + n + '. Show only these') + '"><b>' + n + '</b><span>' + esc(label) + '</span><small class="sp-pc">' + (total ? Math.round(n / total * 100) : 0) + '% of all</small>' +
-        '<span class="sp-ln"><i style="width:' + (total ? Math.round(n / total * 100) : 0) + '%"></i></span></button>';
+    var tile = function (key, n, label, color, icon) {
+      return '<button type="button" class="sp-k k-' + key + '" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '" aria-label="' + esc(label + ': ' + n + '. Show only these') + '">' +
+        '<span class="sp-kic" aria-hidden="true">' + I(icon) + '</span><b>' + n + '</b><span>' + esc(label) + '</span><small class="sp-pc">' + (total ? Math.round(n / total * 100) : 0) + '% of all</small></button>';
     };
     var p3 = '<section class="sp-p p-status"><h3>Application status <small>Select one to filter</small></h3><div class="sp-body sp-mid"><div class="sp-ks">' +
-      tile('new', grp.new, 'New', '#E0A21B') + tile('active', grp.active, 'In progress', '#378ADD') + tile('won', grp.won, 'Selected or placed', '#3E9A4D') + tile('closed', grp.closed, 'Closed', '#B9AEA4') + '</div></div></section>';
+      tile('new', grp.new, 'New', '#E0A21B', 'inbox') + tile('active', grp.active, 'In progress', '#378ADD', 'clock') + tile('won', grp.won, 'Selected or placed', '#3E9A4D', 'checkCircle') + tile('closed', grp.closed, 'Closed', '#8F7F73', 'archive') + '</div></div></section>';
     var byPos = {};
     A.rows.forEach(function (a) { var k = a.position_title || 'Not stated'; byPos[k] = (byPos[k] || 0) + 1; });
     var pos = Object.keys(byPos).sort(function (x, y) { return byPos[y] - byPos[x] || x.localeCompare(y); });
