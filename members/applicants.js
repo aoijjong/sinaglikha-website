@@ -84,17 +84,52 @@
     render();
   }
 
-  // the dashboard on this screen: one column for each stage (taller bar = more applicants); each column filters the list
-  function pipeline(counts, act) {
-    var max = 1;
-    SngStageChart.stages.forEach(function (s) { if ((counts[s[0]] || 0) > max) max = counts[s[0]]; });
-    var cols = SngStageChart.stages.map(function (s) {
-      var n = counts[s[0]] || 0, h = n ? Math.max(8, Math.round(n / max * 100)) : 0;
-      return '<button type="button" class="sp-col' + (n ? '' : ' is-zero') + '" data-status="' + s[0] + '" style="--c:' + s[2] + '" aria-pressed="' + (act.indexOf(s[0]) !== -1) + '" aria-label="' + esc(s[1] + ': ' + n + (n === 1 ? ' applicant' : ' applicants') + '. Show only these') + '">' +
-        '<b class="sp-n">' + n + '</b><span class="sp-bar" aria-hidden="true"><i style="height:' + h + '%"></i></span><span class="sp-l">' + esc(s[1]) + '</span></button>';
-    }).join('');
-    return '<div class="sp"><div class="sp-top"><button type="button" class="sp-all" data-status="all" aria-pressed="' + (A.status === 'all') + '"><b>' + counts.all + '</b> ' + (counts.all === 1 ? 'applicant' : 'applicants') + ' in total</button>' +
-      '<span class="sp-hint">Select a stage to filter the list</span></div><div class="sp-cols">' + cols + '</div></div>';
+  // the dashboard on this screen: five panels (total, status, applicants per month, per position, stage by stage); the status and stage panels filter the list
+  var DONUT = ['#C8321A', '#E8833A', '#F2B66B', '#8A5A3C', '#D8C3A8'];
+  function monthStats() {
+    var t = today(), y = +t.slice(0, 4), m = +t.slice(5, 7), out = [], by = {};
+    A.rows.forEach(function (a) { var k = String(a.received_on || '').slice(0, 7); by[k] = (by[k] || 0) + 1; });
+    for (var i = 5; i >= 0; i--) {
+      var d = new Date(Date.UTC(y, m - 1 - i, 1)), k = d.toISOString().slice(0, 7);
+      out.push({ label: d.toLocaleDateString('en-PH', { month: 'short', timeZone: 'UTC' }), n: by[k] || 0 });
+    }
+    return { rows: out, thisMonth: by[t.slice(0, 7)] || 0 };
+  }
+  function pipeline(counts, act, grp) {
+    var total = counts.all, plural = function (n, a, c) { return n === 1 ? a : c; };
+    var ms = monthStats(), mmax = 1;
+    ms.rows.forEach(function (r) { if (r.n > mmax) mmax = r.n; });
+    var p1 = '<section class="sp-p p-month"><h3>Applicants per month</h3><div class="sp-body sp-spread">' + ms.rows.map(function (r) {
+      return '<div class="sp-ml"><span>' + esc(r.label) + '</span><span class="sp-t"><i style="width:' + Math.round(r.n / mmax * 100) + '%"></i></span><b>' + r.n + '</b></div>';
+    }).join('') + '</div></section>';
+    var p2 = '<section class="sp-p p-total"><h3>Total</h3><div class="sp-body sp-mid"><button type="button" class="sp-big" data-status="all" aria-pressed="' + (A.status === 'all') + '" aria-label="' + total + ' applicants in total. Show all"><b>' + total + '</b><span>' + plural(total, 'applicant', 'applicants') + ' in all</span></button>' +
+      '<p class="sp-sm">' + ms.thisMonth + ' received this month</p><p class="sp-sm">' + (counts.new || 0) + ' still marked New</p></div></section>';
+    var tile = function (key, n, label, color) {
+      return '<button type="button" class="sp-k" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '" aria-label="' + esc(label + ': ' + n + '. Show only these') + '"><b>' + n + '</b><span>' + esc(label) + '</span>' +
+        '<span class="sp-ln"><i style="width:' + (total ? Math.round(n / total * 100) : 0) + '%"></i></span></button>';
+    };
+    var p3 = '<section class="sp-p p-status"><h3>Application status <small>Select one to filter</small></h3><div class="sp-body sp-mid"><div class="sp-ks">' +
+      tile('new', grp.new, 'New', '#E0A21B') + tile('active', grp.active, 'In progress', '#378ADD') + tile('won', grp.won, 'Selected or placed', '#3E9A4D') + tile('closed', grp.closed, 'Closed', '#B9AEA4') + '</div></div></section>';
+    var byPos = {};
+    A.rows.forEach(function (a) { var k = a.position_title || 'Not stated'; byPos[k] = (byPos[k] || 0) + 1; });
+    var pos = Object.keys(byPos).sort(function (x, y) { return byPos[y] - byPos[x] || x.localeCompare(y); });
+    var shown = pos.length <= 5 ? pos : pos.slice(0, 4), rest = pos.length <= 5 ? 0 : pos.slice(4).reduce(function (n, k) { return n + byPos[k]; }, 0);
+    var items = shown.map(function (k, i) { return { name: k, n: byPos[k], color: DONUT[i], pick: k }; });
+    if (rest) items.push({ name: 'Other positions', n: rest, color: DONUT[4], pick: '' });
+    var acc = 0, stops = items.map(function (it) { var from = acc / (total || 1) * 100; acc += it.n; return it.color + ' ' + from + '% ' + acc / (total || 1) * 100 + '%'; }).join(',');
+    var p4 = '<section class="sp-p p-pos"><h3>Applicants per position</h3><div class="sp-body sp-mid">' + (total ? '<div class="sp-dn"><div class="sp-ring" style="background:conic-gradient(' + stops + ')" role="img" aria-label="Applicants per position"><span>' + total + '</span></div><ul class="sp-lg">' +
+      items.map(function (it) {
+        var inner = '<i style="background:' + it.color + '"></i><span class="sp-ln2">' + esc(it.name) + '</span><b>' + it.n + '</b>';
+        return '<li>' + (it.pick ? '<button type="button" data-pos="' + esc(it.pick) + '" aria-pressed="' + (A.pos === it.pick) + '">' + inner + '</button>' : '<span class="sp-nb">' + inner + '</span>') + '</li>';
+      }).join('') + '</ul></div>' : '<p class="sp-sm">No applicants yet.</p>') + '</div></section>';
+    var smax = 1;
+    SngStageChart.stages.forEach(function (s) { if ((counts[s[0]] || 0) > smax) smax = counts[s[0]]; });
+    var p5 = '<section class="sp-p p-stage"><h3>Stage by stage</h3><div class="sp-body sp-spread">' + SngStageChart.stages.map(function (s) {
+      var n = counts[s[0]] || 0;
+      return '<button type="button" class="sp-st" data-status="' + s[0] + '" aria-pressed="' + (act.indexOf(s[0]) !== -1) + '" aria-label="' + esc(s[1] + ': ' + n + '. Show only these') + '"><span>' + esc(s[1]) + '</span><span class="sp-t"><i style="width:' + (n ? Math.max(4, Math.round(n / smax * 100)) : 0) + '%;background:' + s[2] + '"></i></span><b>' + n + '</b></button>';
+    }).join('') + '</div></section>';
+    return '<div class="sp' + (A.moreOpen ? ' sp-open' : '') + '">' + p2 + p3 + p1 + p4 + p5 +
+      '<button type="button" class="sp-moreb" data-a="morecharts" aria-expanded="' + !!A.moreOpen + '">' + (A.moreOpen ? 'Show fewer charts' : 'Show more charts') + '</button></div>';
   }
 
   function render() {
@@ -104,7 +139,7 @@
     var grp = {};
     Object.keys(GROUPS).forEach(function (g) { grp[g] = GROUPS[g].reduce(function (n, k) { return n + (counts[k] || 0); }, 0); });
     var act = A.status === 'all' ? [] : (GROUPS[A.status] || [A.status]);
-    $('#at-sum', A.box).innerHTML = pipeline(counts, act);
+    $('#at-sum', A.box).innerHTML = pipeline(counts, act, grp);
     // phones: one sliding row of stage pills and a Filters button; the summary above is hidden there
     var pill = function (key, label) { return '<button class="pill" type="button" data-status="' + key + '" aria-pressed="' + (A.status === key) + '">' + label + ' <small>' + (key === 'all' ? counts.all : grp[key]) + '</small></button>'; };
     var extra = A.status !== 'all' && ['new', 'active', 'won', 'closed'].indexOf(A.status) === -1;     // one single stage is chosen
@@ -506,6 +541,8 @@
     if (tag) { openMenu(tag); return; }
     var row = e.target.closest('#at-rows tr');
     if (row && !e.target.closest('select, button, a')) { openDetail(row.dataset.id); return; }
+    var pp = e.target.closest('[data-pos]');
+    if (pp) { A.pos = A.pos === pp.dataset.pos ? '' : pp.dataset.pos; A.shown = PAGE; render(); return; }
     var card = e.target.closest('[data-status]');
     if (card) { A.status = card.dataset.status === A.status ? 'all' : card.dataset.status; A.shown = PAGE; render(); return; }
     var b = e.target.closest('[data-a]');
@@ -514,6 +551,7 @@
     if (a === 'back') { A.ctx.back(); return; }
     if (a === 'add') { openNew(); return; }
     if (a === 'import') { $('#at-file', A.box).click(); return; }
+    if (a === 'morecharts') { A.moreOpen = !A.moreOpen; render(); return; }
     if (a === 'more') { A.shown += PAGE; render(); return; }
     if (a === 'clear') { A.status = 'all'; A.pos = ''; A.from = ''; A.to = ''; A.q = ''; A.fOpen = false; var qi = $('#at-q', A.box); if (qi) qi.value = ''; A.shown = PAGE; render(); return; }
     if (a === 'filters') { A.fOpen = !A.fOpen; render(); return; }
