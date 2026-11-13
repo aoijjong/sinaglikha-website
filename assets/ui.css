@@ -920,3 +920,30 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .fl-clear{background:linear-gradient(160deg,#FFEBDD 0%,#FFDCC2 100%);border:1.5px solid #F5C3A2;color:#A8341A}
 @media (hover:hover) and (pointer:fine){.fl-clear:hover{background:linear-gradient(160deg,#FFE0CC 0%,#FFCBA8 100%);border-color:#EE9F73}}
 .fl-clear:active{background:#FFCBA8}
+
+/* the icon on the selected status card is white (and the others keep their own colour) */
+.p-status .sp-k .sp-kic .icon{stroke:var(--c)}
+.p-status .sp-k[aria-pressed="true"] .sp-kic{color:#fff}
+.p-status .sp-k[aria-pressed="true"] .sp-kic .icon{stroke:#fff}
+
+/* status cards: stronger gradients; the selected card gets a red-to-orange gradient outline */
+.sp-k{border:2px solid transparent;padding:17px 17px 15px}
+.sp-k.k-new{--g:linear-gradient(150deg,#FFEBB0 0%,#FFC46B 100%)}
+.sp-k.k-active{--g:linear-gradient(150deg,#FFD2B0 0%,#FF9A78 100%)}
+.sp-k.k-won{--g:linear-gradient(150deg,#C6EDC9 0%,#8CD3A0 100%)}
+.sp-k.k-closed{--g:linear-gradient(150deg,#EADDD0 0%,#C7AD99 100%)}
+.sp-k.k-new,.sp-k.k-active,.sp-k.k-won,.sp-k.k-closed{background:var(--g)}
+.p-status .sp-k[aria-pressed="true"]{background:var(--g) padding-box,linear-gradient(135deg,#E0301E 0%,#F7A21B 100%) border-box;box-shadow:0 14px 26px -14px rgba(226,70,30,.5)}
+.p-status .sp-k[aria-pressed="true"] .sp-kic{background:linear-gradient(135deg,#E0301E,#F7A21B)}
+.sp-kic{background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.6))}
+
+/* a lighter, thinner highlight on the selected status card */
+.sp-k{border:1px solid transparent;padding:18px 18px 16px}
+.p-status .sp-k[aria-pressed="true"]{background:var(--g) padding-box,linear-gradient(135deg,#F3A17F 0%,#F8C57C 100%) border-box;box-shadow:0 12px 22px -14px rgba(74,46,34,.35)}
+.p-status .sp-k[aria-pressed="true"] .sp-kic{background:linear-gradient(135deg,#EE6B45,#F7A94B)}
+
+/* back to the soft colours (the stronger gradients are gone) */
+.sp-k.k-new{--g:linear-gradient(160deg,#FFF7DA 0%,#FFEAB9 100%)}
+.sp-k.k-active{--g:linear-gradient(160deg,#FFE9D8 0%,#FFD2B2 100%)}
+.sp-k.k-won{--g:linear-gradient(160deg,#EAF5E6 0%,#D9EDD6 100%)}
+.sp-k.k-closed{--g:linear-gradient(160deg,#F4ECE5 0%,#E8DCD1 100%)}
