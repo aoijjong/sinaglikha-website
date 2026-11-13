@@ -19,36 +19,36 @@
   body:has(#view-app:not([hidden])) .sb-banner{display:flex}
 
   .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
-    background:linear-gradient(165deg,rgba(112,16,28,.86) 0%,rgba(176,34,30,.82) 48%,rgba(214,92,26,.78) 100%);color:#FFF3E8;border-radius:34px;
-    -webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);border:1px solid rgba(255,255,255,.38);
-    box-shadow:0 26px 50px -22px rgba(110,20,20,.6),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(255,255,255,.1);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
+    background:linear-gradient(165deg,rgba(255,226,140,.66) 0%,rgba(255,186,112,.62) 48%,rgba(247,140,84,.58) 100%);color:#3A2018;border-radius:34px;
+    -webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);border:1px solid rgba(255,255,255,.85);
+    box-shadow:0 24px 48px -24px rgba(190,90,40,.5),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.3);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
   @keyframes sb-in{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 
   /* the person's card on top: it looks like a button, and it is one */
-  .sb-me{position:relative;display:grid;justify-items:center;gap:2px;margin:0 0 16px;padding:14px 10px 12px;cursor:pointer;font:inherit;color:#fff;
+  .sb-me{position:relative;display:grid;justify-items:center;gap:2px;margin:0 0 16px;padding:14px 10px 12px;cursor:pointer;font:inherit;color:#3A2018;
     border:0;border-radius:24px;background:none;box-shadow:none;
     transition:background .3s,transform .35s cubic-bezier(.22,1,.36,1),box-shadow .3s,border-color .3s}
   .sb-avw{position:relative;display:block;margin-bottom:8px}
   .sb-me .sb-av{width:62px;height:62px;border-radius:50%;border:2px solid #fff;background:var(--cream);color:var(--brown);overflow:hidden;
-    display:grid;place-items:center;font-weight:700;font-size:1.1rem;box-shadow:0 10px 20px -10px rgba(120,20,10,.7);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+    display:grid;place-items:center;font-weight:700;font-size:1.1rem;box-shadow:0 10px 20px -10px rgba(170,70,30,.6);transition:transform .4s cubic-bezier(.22,1,.36,1)}
   .sb-me .sb-av img{width:100%;height:100%;object-fit:cover;display:block}
   .sb-edit{position:absolute;right:-4px;bottom:-2px;width:24px;height:24px;border-radius:50%;background:#fff;color:#B3361A;display:grid;place-items:center;
     box-shadow:0 6px 12px -6px rgba(60,10,10,.7);transition:transform .3s cubic-bezier(.22,1,.36,1)}
   .sb-edit svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   .sb-me b{font-size:.92rem;line-height:1.2;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sb-me small{font-size:.72rem;color:#FFD9BF;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sb-me em{font-style:normal;margin-top:6px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#FFE27A}
-  .sb-go{margin-top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 6px 5px 12px;border-radius:999px;background:rgba(255,255,255,.2);font-size:.72rem;font-weight:700;letter-spacing:.02em;transition:background .3s,transform .3s}
+  .sb-me small{font-size:.72rem;color:#6B4533;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sb-me em{font-style:normal;margin-top:6px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#B3361A}
+  .sb-go{margin-top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 6px 5px 12px;border-radius:999px;background:rgba(255,255,255,.6);color:#4A2E22;font-size:.72rem;font-weight:700;letter-spacing:.02em;transition:background .3s,transform .3s}
   .sb-go span{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:#B3361A}
   .sb-go svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
   @media (hover:hover) and (pointer:fine){
-    .sb-me:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}
+    .sb-me:hover{background:rgba(255,255,255,.28);transform:translateY(-2px)}
     .sb-me:hover .sb-av{transform:scale(1.05)}
     .sb-me:hover .sb-edit{transform:scale(1.15) rotate(-8deg)}
-    .sb-me:hover .sb-go{background:rgba(255,255,255,.32);transform:translateX(2px)}
+    .sb-me:hover .sb-go{background:rgba(255,255,255,.85);transform:translateX(2px)}
   }
   .sb-me:active{transform:scale(.98)}
-  .sb-me:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .sb-me:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
 
   /* ---------- the banner at the top of every section ---------- */
   .sb-banner{position:relative;align-items:center;gap:26px;min-height:128px;padding:22px 34px;margin:0 0 18px;border-radius:28px;overflow:hidden;
@@ -73,27 +73,27 @@
   .sb .tabs{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;position:relative;flex:none}
   /* the open section: a translucent frosted pill that glides between the sections */
   .sb .tab-thumb{display:block;left:0;right:0;top:0;bottom:auto;width:auto;height:45px;border-radius:14px;
-    background:linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,255,255,.14));border:1px solid rgba(255,255,255,.5);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 20px -12px rgba(60,10,10,.5);
+    background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(255,255,255,.5));border:1px solid rgba(255,255,255,.95);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 20px -12px rgba(170,70,30,.45);
     -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
     transform:translateY(calc(var(--pos) * 50px));transition:transform .55s cubic-bezier(.3,1.15,.4,1)}
-  .sb .tab{display:flex;align-items:center;gap:12px;height:45px;padding:0 14px;border-radius:14px;text-align:left;font-size:.86rem;font-weight:600;color:#FFEBDD;
+  .sb .tab{display:flex;align-items:center;gap:12px;height:45px;padding:0 14px;border-radius:14px;text-align:left;font-size:.86rem;font-weight:600;color:#4A2E22;
     transition:color .35s,background .25s,transform .45s cubic-bezier(.22,1,.36,1)}
   .sb .tab[hidden]{display:none}
-  .sb .tab[aria-selected="true"]{color:#fff}
+  .sb .tab[aria-selected="true"]{color:#3A2018}
   @media (hover:hover) and (pointer:fine){
-    .sb .tab[aria-selected="false"]:hover{background:rgba(255,255,255,.18);color:#fff;transform:translateX(4px)}
+    .sb .tab[aria-selected="false"]:hover{background:rgba(255,255,255,.45);color:#2A140E;transform:translateX(4px)}
   }
-  .sb .tab:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+  .sb .tab:focus-visible{outline:3px solid #CE2020;outline-offset:-3px}
   .sb .tab .tic,.sb-item .tic{width:20px;height:20px;flex:none;display:grid;place-items:center}
   .sb .tic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
   /* profile settings and sign out at the bottom */
-  .sb-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.26);display:grid;gap:4px}
-  .sb-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:0 14px;border:0;border-radius:12px;background:none;cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:#FFEBDD;text-align:left;transition:background .25s,color .25s,transform .3s cubic-bezier(.22,1,.36,1)}
-  @media (hover:hover) and (pointer:fine){.sb-item:hover{background:rgba(255,255,255,.18);color:#fff;transform:translateX(3px)}}
-  .sb-out:hover{background:rgba(255,255,255,.24)!important;color:#fff!important}
-  .sb-item:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+  .sb-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(74,46,34,.18);display:grid;gap:4px}
+  .sb-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:0 14px;border:0;border-radius:12px;background:none;cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:#4A2E22;text-align:left;transition:background .25s,color .25s,transform .3s cubic-bezier(.22,1,.36,1)}
+  @media (hover:hover) and (pointer:fine){.sb-item:hover{background:rgba(255,255,255,.45);color:#2A140E;transform:translateX(3px)}}
+  .sb-out:hover{background:rgba(206,32,32,.12)!important;color:#A8341A!important}
+  .sb-item:focus-visible{outline:3px solid #CE2020;outline-offset:-3px}
 }
 
 @media (prefers-reduced-motion:reduce){
