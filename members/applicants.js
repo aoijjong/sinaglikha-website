@@ -54,16 +54,20 @@
     A.box.style.position = 'relative';
     A.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
       '<div class="ph-main"><h2>Applicant Tracking System</h2><p class="sub">Track each applicant from application to placement: their stage, notes and history</p></div>' +
-      '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div>' +
+      '<div class="ph-actions">' +
       IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
       '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
       '<div class="at-sum" id="at-sum"></div>' +
       '<div class="at-mobile" id="at-mobile"></div>' +
-      '<div class="fl-row" id="at-fl"><select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
-      '<select id="at-pos" class="fl-pill" aria-label="Filter by position applied for"></select>' +
-      '<span class="fl-dates"><label class="fl-date"><span>From</span><input id="at-from" type="date" aria-label="Received from"></label>' +
+      '<div class="fl-row" id="at-fl"><div class="sbox fl-search">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div>' +
+      '<button class="at-fbtn" type="button" id="at-fbtn" data-a="filters" aria-label="Filters" aria-expanded="false" aria-controls="at-sheet">' + I('sliders') + '</button>' +
+      '<select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
+      '<div class="fl-sheet" id="at-sheet" role="group" aria-label="Filters"><div class="fl-head"><span class="fl-grab" aria-hidden="true"></span><b>Filters</b></div>' +
+      '<span class="fl-lab">Position</span><select id="at-pos" class="fl-pill" aria-label="Filter by position applied for"></select>' +
+      '<span class="fl-lab">Date received</span><span class="fl-dates"><label class="fl-date"><span>From</span><input id="at-from" type="date" aria-label="Received from"></label>' +
       '<label class="fl-date"><span>To</span><input id="at-to" type="date" aria-label="Received to"></label></span>' +
-      '<button class="fl-clear" type="button" id="at-clear" data-a="clear" hidden>Clear filters</button></div>' +
+      '<div class="fl-actions"><button class="fl-clear" type="button" id="at-clear" data-a="clear" hidden>Clear filters</button><button class="btn btn-primary fl-apply" type="button" id="at-apply" data-a="filters">Show results</button></div></div>' +
+      '<div class="fl-back" data-a="filters"></div></div>' +
       '<div class="list-card" id="at-wrap"><div class="at-scroll"><table class="at-tbl"><thead><tr><th>Reference</th><th>Applicant</th><th>Position applied for</th><th>Date received</th><th>Status</th><th>Last updated</th><th class="at-ah">Actions</th></tr></thead><tbody id="at-rows"></tbody></table></div>' +
       '<div class="es" id="at-empty" hidden></div></div>' +
       '<button class="btn btn-ghost btn-sm" type="button" id="at-more" data-a="more" hidden style="margin-top:12px">Show more</button>' +
@@ -151,8 +155,10 @@
     var pill = function (key, label) { return '<button class="pill" type="button" data-status="' + key + '" aria-pressed="' + (A.status === key) + '">' + label + ' <small>' + (key === 'all' ? counts.all : grp[key]) + '</small></button>'; };
     var extra = A.status !== 'all' && ['new', 'active', 'won', 'closed'].indexOf(A.status) === -1;     // one single stage is chosen
     var activeFilters = !!(A.pos || A.from || A.to || extra);
-    $('#at-mobile', A.box).innerHTML = '<button class="pill at-ftoggle' + (activeFilters ? ' has' : '') + '" type="button" data-a="filters" aria-expanded="' + A.fOpen + '" aria-controls="at-fl">Filters</button>' +
-      pill('all', 'All') + pill('new', 'New') + pill('active', 'In progress') + pill('won', 'Selected or placed') + pill('closed', 'Closed');
+    var fb = $('#at-fbtn', A.box);
+    fb.classList.toggle('has', activeFilters);
+    fb.setAttribute('aria-expanded', String(A.fOpen));
+    $('#at-mobile', A.box).innerHTML = pill('all', 'All') + pill('new', 'New') + pill('active', 'In progress') + pill('won', 'Selected or placed') + pill('closed', 'Closed');
     closeMenu(false);
     $('#at-fl', A.box).classList.toggle('open', A.fOpen);
     var positions = {};
@@ -175,6 +181,7 @@
       return !q || (a.full_name + ' ' + a.reference + ' ' + a.position_title).toLowerCase().indexOf(q) !== -1;
     });
     var show = list.slice(0, A.shown);
+    $('#at-apply', A.box).textContent = list.length === 1 ? 'Show 1 result' : 'Show ' + list.length + ' results';
     $('#at-rows', A.box).innerHTML = show.map(function (a) {
       return '<tr data-id="' + esc(a.id) + '"><td data-l="Reference">' + esc(a.reference || '') + '</td>' +
         '<td data-l="Applicant"><button class="at-name" type="button" data-a="open" title="Open the record">' + esc(a.full_name) + '</button></td>' +
