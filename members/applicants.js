@@ -127,7 +127,7 @@
         '<span class="sp-kic" aria-hidden="true">' + I(icon) + '</span><b>' + n + '</b><span>' + esc(label) + '</span><small class="sp-pc">' + (total ? Math.round(n / total * 100) : 0) + '% of all</small></button>';
     };
     var p3 = '<section class="sp-p p-status"><h3>Application status <small>Select one to filter</small></h3><div class="sp-body sp-mid"><div class="sp-ks">' +
-      tile('new', grp.new, 'New', '#E0A21B', 'inbox') + tile('active', grp.active, 'In progress', '#378ADD', 'clock') + tile('won', grp.won, 'Selected or placed', '#3E9A4D', 'checkCircle') + tile('closed', grp.closed, 'Closed', '#8F7F73', 'archive') + '</div></div></section>';
+      tile('new', grp.new, 'New', '#C98A0A', 'inbox') + tile('active', grp.active, 'In progress', '#D9622B', 'clock') + tile('won', grp.won, 'Selected or placed', '#3E9A4D', 'checkCircle') + tile('closed', grp.closed, 'Closed', '#8A6F5E', 'archive') + '</div></div></section>';
     var byPos = {};
     A.rows.forEach(function (a) { var k = a.position_title || 'Not stated'; byPos[k] = (byPos[k] || 0) + 1; });
     var pos = Object.keys(byPos).sort(function (x, y) { return byPos[y] - byPos[x] || x.localeCompare(y); });
