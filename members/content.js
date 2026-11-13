@@ -436,10 +436,10 @@
   function rowHtml(it) {
     var n = esc(it.title), searching = !!cs.q.trim();
     if (it.kind === 'folder') {
-      return '<li class="lrow" data-id="' + esc(it.id) + '">' +
-        '<button class="lmain" type="button" data-act="open"><span class="lico folder">' + I('folder') + '</span>' +
-        '<span class="ltext"><span class="lname">' + n + '</span><span class="lmeta">Folder' + (searching && it.folder_path ? ' in ' + esc(it.folder_path) : '') + '</span></span></button>' +
-        '<div class="lside"><div class="lacts">' + IB('trash', 'Delete this folder', { 'data-act': 'delete' }, 'danger') + '</div></div></li>';
+      return '<li class="lrow fcard" data-id="' + esc(it.id) + '">' +
+        '<button class="fc-main" type="button" data-act="open" aria-label="Open the folder ' + n + '"><span class="fc-tag">Folder</span><span class="fc-name">' + n + '</span>' +
+        '<span class="fc-meta">' + (searching && it.folder_path ? 'in ' + esc(it.folder_path) : '&nbsp;') + '</span></button>' +
+        '<div class="fc-del">' + IB('trash', 'Delete this folder', { 'data-act': 'delete' }, 'danger') + '</div></li>';
     }
     var meta = [AUDIENCE[it.audience] || it.audience];
     if (it.kind === 'file' && it.extra && it.extra.size) meta.push(app.fmtSize(it.extra.size));

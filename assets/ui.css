@@ -1040,3 +1040,37 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .dp-tabs .pill:active{transform:scale(.97)}
   .dp-tabs .pill[aria-pressed="true"]{background:linear-gradient(135deg,#D6381E 0%,#E8701A 58%,#F2971A 100%);color:#fff;border:0;box-shadow:0 12px 20px -12px rgba(214,56,30,.65)}
 }
+
+/* folders are folder cards: a tab on top, a small "Folder" label, the name, and a brand-gradient fill on hover */
+.rows:has(.fcard){grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:26px 18px;align-items:stretch}
+.rows:has(.fcard)>.lrow:not(.fcard){grid-column:1/-1}
+.rows:has(.fcard) .fcard:last-of-type{margin-bottom:0}
+.fcard,.fcard:first-child{--fc:#FFF6E2;position:relative;display:block;margin-top:12px;padding:0;min-height:132px;overflow:visible;
+  background:linear-gradient(165deg,#FFFFFF 0%,var(--fc) 100%);border:1px solid rgba(74,46,34,.13);border-radius:6px 24px 24px 24px;
+  box-shadow:0 16px 28px -20px rgba(160,80,30,.5);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s,background .35s,border-color .35s}
+.fcard::after{display:none}
+.fcard::before{content:"";position:absolute;left:-1px;top:-13px;width:44%;max-width:112px;height:15px;background:#FFFFFF;border:1px solid rgba(74,46,34,.13);border-bottom:0;border-radius:12px 12px 0 0;transition:background .35s,border-color .35s}
+.fc-main{position:relative;display:grid;align-content:space-between;gap:18px;width:100%;min-height:132px;padding:18px 20px 16px;background:none;border:0;border-radius:inherit;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.fc-main::after{content:"";position:absolute;right:20px;top:18px;width:44px;height:30px;border-radius:7px;background:linear-gradient(135deg,rgba(247,176,44,.35),rgba(232,112,26,.22));transform:rotate(6deg);box-shadow:-9px 6px 0 -2px rgba(214,56,30,.1)}
+.fc-tag{font-size:.66rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#9A7A66}
+.fc-name{font-family:var(--serif);font-size:1.2rem;line-height:1.2;color:var(--brown);overflow-wrap:anywhere;padding-right:34px}
+.fc-meta{font-size:.78rem;color:var(--muted)}
+.fc-main:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+.fc-del{position:absolute;right:8px;bottom:8px;z-index:2}
+.fc-del .ib{width:36px;height:36px;opacity:.7;transition:opacity .25s,color .25s}
+@media (hover:hover) and (pointer:fine){
+  .fcard:hover{--fc:#D6381E;background:linear-gradient(160deg,#D6381E 0%,#EB7C1B 58%,#F2971A 100%);border-color:transparent;transform:translateY(-5px);box-shadow:0 22px 32px -18px rgba(214,56,30,.6)}
+  .fcard:hover::before{background:#D6381E;border-color:transparent}
+  .fcard:hover .fc-tag,.fcard:hover .fc-meta{color:rgba(255,255,255,.82)}
+  .fcard:hover .fc-name{color:#fff}
+  .fcard:hover .fc-main::after{background:linear-gradient(135deg,rgba(255,255,255,.5),rgba(255,255,255,.22));box-shadow:-9px 6px 0 -2px rgba(255,255,255,.18)}
+  .fcard:hover .fc-del .ib{color:#fff;opacity:.95}
+}
+.fcard:active{transform:scale(.985)}
+@media (max-width:640px){
+  .rows:has(.fcard){grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:22px 12px}
+  .fcard,.fcard:first-child,.fc-main{min-height:112px}
+  .fc-main{padding:14px 14px 12px}
+  .fc-main::after{width:34px;height:24px;right:14px;top:14px}
+  .fc-name{font-size:1.05rem}
+}
