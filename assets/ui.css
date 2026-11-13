@@ -868,3 +868,20 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .at-lb{font-size:.76rem}
   .at-tx small{display:none}
 }
+
+/* status cards: soft gradient cards with an icon chip, a big number, the label and the share */
+.sp-k{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.7);box-shadow:0 12px 24px -14px rgba(74,46,34,.35)}
+.sp-k.k-new{background:linear-gradient(160deg,#FFF3CF 0%,#FFD9B2 100%)}
+.sp-k.k-active{background:linear-gradient(160deg,#DDEBFF 0%,#E4DDFB 100%)}
+.sp-k.k-won{background:linear-gradient(160deg,#D8F3DE 0%,#E9F7D4 100%)}
+.sp-k.k-closed{background:linear-gradient(160deg,#ECE7E2 0%,#F7EEE7 100%)}
+.sp-kic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.7);color:var(--c);margin-bottom:14px;box-shadow:0 4px 10px -6px rgba(74,46,34,.4)}
+.sp-kic .icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.p-status .sp-k b{font-size:3rem;margin-bottom:4px}
+.p-status .sp-k>span:nth-of-type(2){font-size:.9rem;font-weight:700;color:var(--brown);min-height:2.5em;line-height:1.25}
+.p-status .sp-k .sp-pc{color:rgba(74,46,34,.65);font-size:.78rem;margin-top:auto}
+.sp-k[aria-pressed="true"]{box-shadow:0 0 0 2px var(--c),0 14px 26px -14px rgba(74,46,34,.45)}
+@media (hover:hover) and (pointer:fine){.sp-k:hover{transform:translateY(-3px);box-shadow:0 18px 30px -14px rgba(74,46,34,.45)}}
+@media (max-width:640px){.sp-kic{display:none}.p-status .sp-k>span:nth-of-type(2){min-height:0}}
+.p-status .sp-k>span.sp-kic{min-height:34px;font-size:inherit;flex:none}
+@media (max-width:640px){.sp-k>span:nth-of-type(2){font-size:.74rem;flex:1 1 100%;order:3}}
