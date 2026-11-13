@@ -961,3 +961,13 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-st .at-tx b,.at-st.is-ok .at-tx b,.at-st.is-work .at-tx b,.at-st.is-none .at-tx b{color:var(--brown)}
 @media (hover:hover) and (pointer:fine){.attc:hover .at-st{transform:translateY(-2px);box-shadow:0 16px 28px -16px rgba(74,46,34,.42)}}
 @media (max-width:640px){.at-ic{width:32px;height:32px;border-radius:10px}.at-ic .icon{width:17px;height:17px}}
+
+/* phone: smaller status cards (this comes last so no earlier rule makes them big again) */
+@media (max-width:640px){
+  .p-status .sp-ks{gap:6px}
+  .p-status .sp-k{padding:8px 12px;gap:0;min-height:0;flex-direction:row;flex-wrap:wrap;align-items:baseline;justify-content:space-between;border-radius:12px}
+  .p-status .sp-k b{font-size:1.5rem;margin:0;line-height:1.1}
+  .p-status .sp-k>span:nth-of-type(2){font-size:.72rem;min-height:0;flex:1 1 100%;order:3;line-height:1.2}
+  .p-status .sp-k .sp-pc{display:none}
+  .p-status .sp-kic{display:none}
+}
