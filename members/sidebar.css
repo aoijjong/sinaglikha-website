@@ -20,8 +20,8 @@
   body:has(#view-app:not([hidden])) .sb-banner{display:flex}
 
   .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
-    background:linear-gradient(150deg,rgba(214,56,30,.95) 0%,rgba(226,92,28,.94) 42%,rgba(236,124,26,.93) 74%,rgba(242,151,26,.92) 100%);color:#FFF6EC;border-radius:34px;text-shadow:0 1px 2px rgba(110,25,5,.38);
-    -webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.5);border:1px solid rgba(255,225,190,.6);
+    background:linear-gradient(158deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,.06) 34%,rgba(255,255,255,0) 52%),linear-gradient(150deg,rgba(158,32,10,.82) 0%,rgba(180,58,10,.80) 42%,rgba(198,88,10,.78) 74%,rgba(208,112,12,.76) 100%);color:#FFF6EC;border-radius:34px;text-shadow:0 1px 2px rgba(110,25,5,.38);
+    -webkit-backdrop-filter:blur(30px) saturate(1.8);backdrop-filter:blur(30px) saturate(1.8);border:1px solid rgba(255,225,190,.6);
     box-shadow:0 30px 52px -22px rgba(200,60,15,.65),0 0 30px rgba(255,150,40,.25),inset 0 1px 0 rgba(255,240,200,.9),inset 0 0 0 1px rgba(255,255,255,.16);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
   @keyframes sb-in{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 
