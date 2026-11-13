@@ -763,3 +763,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-f i{width:8px;height:8px;border-radius:50%;flex:none}
 .sp-f b{font-weight:700;color:var(--brown);text-align:right;white-space:nowrap}
 .p-total .sp-big{margin-bottom:2px}
+
+/* the "Other positions" line is not a button, so it gets the same padding and margins as the rows above it */
+.sp-lg .sp-nb{padding:5px 10px;margin:0 -10px;width:calc(100% + 20px);border-radius:10px}
+.sp-lg li{display:block}
+.sp-lg b{min-width:1.4em;text-align:right}
