@@ -53,7 +53,7 @@
   function shell() {
     A.box.style.position = 'relative';
     A.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
-      '<div class="ph-main"><h2>Applicant Tracking System</h2><p class="sub">Applicants apply through the QR code on each poster</p></div>' +
+      '<div class="ph-main"><h2>Applicant Tracking System</h2><p class="sub">Track each applicant from application to placement: their stage, notes and history</p></div>' +
       '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div>' +
       IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
       '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
