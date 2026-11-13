@@ -506,7 +506,7 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
   .at-tbl tbody{gap:10px}
   .at-tbl,.at-tbl tbody{display:block}
   .at-tbl tbody{display:grid;gap:8px}
-  .at-tbl tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name status" "pos pos" "ref rec" "act act";gap:3px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow)}
+  .at-tbl tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"name status act" "pos pos pos" "ref rec rec";gap:3px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow)}
   .at-tbl tbody tr:first-child{border-top:1px solid var(--line)}
   .at-tbl td{display:block;padding:0;border:0;min-width:0}
   .at-tbl td::before{display:none}
@@ -602,7 +602,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-tbl .at-acts{white-space:nowrap;text-align:right}
 .at-tbl .at-acts .lacts{display:inline-flex;gap:4px}
 .at-tbl th.at-ah{text-align:right}
-@media (max-width:640px){.at-tbl td.at-acts{grid-area:act;display:block;text-align:left;margin-top:4px;padding-top:2px;border-top:1px dashed var(--line)}.at-tbl td.at-acts .lacts{display:flex;justify-content:flex-start;gap:4px;margin-left:-8px}}
+@media (max-width:640px){.at-tbl td.at-acts{grid-area:act;display:block;margin:0 -6px 0 0;padding:0;border:0}}
 
 /* the applicants list sits in its own box so it reads apart from the summary and the filters above it */
 #at-wrap{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden}
@@ -691,3 +691,11 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp button:active{transform:scale(.97)}
 .sp-k[aria-pressed="true"]{background:#fff;border-color:var(--c);box-shadow:0 0 0 2px var(--c),0 8px 18px -12px rgba(74,46,34,.4)}
 @media (hover:hover) and (pointer:fine){.sp-k:hover{background:#fff;transform:translateY(-2px);box-shadow:0 12px 22px -12px rgba(74,46,34,.45)}}
+
+/* the dotted menu on each applicant row */
+.at-tbl td.at-acts .ib{margin:-4px 0}
+.at-menu.am{min-width:200px}
+.at-menu.am li{justify-content:flex-start;gap:10px;padding:10px 12px;font-size:.92rem;color:var(--brown)}
+.at-menu.am li svg{stroke-width:2}
+.at-menu.am li.danger{color:#B3261E}
+.at-menu.am li.danger svg{stroke:#B3261E}
