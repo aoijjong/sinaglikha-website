@@ -17,11 +17,8 @@
   body:has(#view-app:not([hidden])) .top-right{display:none}
   body:has(#view-app:not([hidden])) .app-head{margin-bottom:18px}
 
-  /* soft colour behind the panel, so its transparency is visible */
-  body:has(#view-app:not([hidden]))::before{content:"";position:fixed;left:0;top:0;bottom:0;width:320px;pointer-events:none;z-index:1;-webkit-mask-image:linear-gradient(to right,#000 0%,#000 55%,transparent 100%);mask-image:linear-gradient(to right,#000 0%,#000 55%,transparent 100%);
-    background:radial-gradient(circle at 25% 14%,rgba(255,203,27,.75),transparent 52%),radial-gradient(circle at 78% 48%,rgba(240,110,40,.5),transparent 55%),radial-gradient(circle at 22% 90%,rgba(206,32,32,.5),transparent 55%)}
   .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
-    background:linear-gradient(165deg,rgba(112,16,28,.82) 0%,rgba(176,34,30,.74) 48%,rgba(214,92,26,.66) 100%);color:#FFF3E8;border-radius:34px;
+    background:linear-gradient(165deg,rgba(112,16,28,.86) 0%,rgba(176,34,30,.82) 48%,rgba(214,92,26,.78) 100%);color:#FFF3E8;border-radius:34px;
     -webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);border:1px solid rgba(255,255,255,.38);
     box-shadow:0 26px 50px -22px rgba(110,20,20,.6),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(255,255,255,.1);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
   @keyframes sb-in{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
@@ -39,16 +36,16 @@
 
   /* the five sections, one under another */
   .sb .tabs{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;position:relative;flex:none}
-  /* the open section: the colour of the page, flush with the sidebar's edge, with soft curves above and below, so it flows into the page */
-  .sb .tab-thumb{display:block;left:0;right:-15px;top:0;bottom:auto;width:auto;height:45px;border-radius:999px 0 0 999px;
-    background:var(--paper);box-shadow:none;transform:translateY(calc(var(--pos) * 50px));transition:transform .55s cubic-bezier(.3,1.15,.4,1)}
-  .sb .tab-thumb::before,.sb .tab-thumb::after{content:"";position:absolute;right:1px;width:18px;height:18px;pointer-events:none}
-  .sb .tab-thumb::before{top:-18px;background:radial-gradient(circle at 0 0,transparent 18px,var(--paper) 18.5px)}
-  .sb .tab-thumb::after{bottom:-18px;background:radial-gradient(circle at 0 100%,transparent 18px,var(--paper) 18.5px)}
-  .sb .tab{display:flex;align-items:center;gap:12px;height:45px;padding:0 29px 0 14px;margin-right:-15px;border-radius:999px 0 0 999px;text-align:left;font-size:.86rem;font-weight:600;color:#FFEBDD;
+  /* the open section: a translucent frosted pill that glides between the sections */
+  .sb .tab-thumb{display:block;left:0;right:0;top:0;bottom:auto;width:auto;height:45px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,255,255,.14));border:1px solid rgba(255,255,255,.5);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 20px -12px rgba(60,10,10,.5);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    transform:translateY(calc(var(--pos) * 50px));transition:transform .55s cubic-bezier(.3,1.15,.4,1)}
+  .sb .tab{display:flex;align-items:center;gap:12px;height:45px;padding:0 14px;border-radius:14px;text-align:left;font-size:.86rem;font-weight:600;color:#FFEBDD;
     transition:color .35s,background .25s,transform .45s cubic-bezier(.22,1,.36,1)}
   .sb .tab[hidden]{display:none}
-  .sb .tab[aria-selected="true"]{color:var(--brown)}
+  .sb .tab[aria-selected="true"]{color:#fff}
   @media (hover:hover) and (pointer:fine){
     .sb .tab[aria-selected="false"]:hover{background:rgba(255,255,255,.18);color:#fff;transform:translateX(4px)}
   }
