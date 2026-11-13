@@ -446,25 +446,11 @@ button.lmain{cursor:pointer}
 .imp-sample .at-tbl{font-size:.85rem}
 
 /* Staffing: the Recruitment card */
-.rc-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px}
-.rc-kpis>span{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:1px}
-.rc-kpis b{font-family:var(--serif);font-weight:400;font-size:1.5rem;line-height:1.1;color:var(--brown)}
-.rc-kpis small{font-size:.8rem;color:var(--muted)}
-@media (max-width:640px){.rc-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 .at-tbl td[data-l="Reference"],.at-tbl td[data-l="Received"],.at-tbl td[data-l="Updated"]{white-space:nowrap}
 
 /* Applicant Tracking: calmer summary and one slim filter row (also used by the records library) */
 .at-sum{margin:0 0 14px}
-.at-k4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-@media (max-width:640px){.at-k4{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.at-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#EFEAE4;margin:12px 0 8px}
-.at-bar i{display:block;height:100%}
-.at-lg{display:flex;gap:6px 14px;flex-wrap:wrap}
-.at-dot{font:inherit;font-size:.85rem;color:var(--muted);background:none;border:0;padding:2px 0;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.at-dot::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
-.at-dot b{color:var(--brown);font-weight:700}
-.at-dot[aria-pressed="true"]{color:var(--brown);font-weight:700;text-decoration:underline;text-underline-offset:4px}
 .fl-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
 .fl-pill{appearance:none;-webkit-appearance:none;height:40px;border-radius:999px;border:1px solid var(--line);padding:0 34px 0 14px;font:inherit;font-size:.9rem;font-weight:600;color:var(--brown);cursor:pointer;max-width:100%;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A2E22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/16px}
 .fl-date{display:inline-flex;align-items:center;gap:6px;height:40px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:0 14px;font-size:.88rem;color:var(--muted)}
@@ -503,7 +489,6 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 }
 
 .at-name{text-decoration-color:rgba(74,46,34,.35)!important}
-.chip
 /* Applicant Tracking on a phone: compact cards, stage pills, filters behind one button */
 .at-mobile{display:none}
 .at-tbl tbody tr{cursor:pointer}
@@ -536,11 +521,6 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 /* the status in each applicant row: a small chip like every other, with the real dropdown laid invisibly over it
    (the dropdown keeps a 16px font so iPhones don't zoom the page when it opens) */
 .at-name{text-decoration-color:rgba(74,46,34,.35)!important}
-.at-sttag{position:relative;display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 9px 4px 12px;font-weight:700;line-height:1.3;white-space:nowrap}
-.at-sttag svg{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
-.at-stpick{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;border:0;padding:0;margin:0;-webkit-appearance:none;appearance:none}
-.at-stpick:disabled{cursor:progress}
-.at-sttag:focus-within{outline:3px solid #CE2020;outline-offset:2px}
 
 /* the file viewer: PDFs drawn page by page, and text files */
 .sv-doc{position:absolute;inset:0;overflow:auto;padding:8px 8px 24px;background:rgba(0,0,0,.25);border-radius:16px}
@@ -551,3 +531,49 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 .sv-zoomer{display:inline-flex;align-items:center;gap:2px}
 .sv-zoomer .sv-link{text-decoration:none;min-width:30px;text-align:center}
 .sv-link:disabled{opacity:.4;cursor:default}
+
+/* the status chip in each row opens a small menu of the ten stages */
+.at-sttag{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:0;cursor:pointer;font:inherit;font-size:.78rem;font-weight:700;line-height:1.3;padding:4px 9px 4px 12px;white-space:nowrap;text-align:left}
+.at-sttag svg{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.at-sttag:disabled{opacity:.6;cursor:progress}
+.at-sttag:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+.at-menu{position:fixed;z-index:400;margin:0;padding:6px;list-style:none;min-width:190px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);max-height:calc(100vh - 16px);overflow:auto}
+.at-menu[hidden]{display:none}
+.at-menu li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 10px;border-radius:10px;cursor:pointer}
+.at-menu li:focus{outline:none;background:var(--cream)}
+.at-menu li:focus-visible{box-shadow:inset 0 0 0 2px #CE2020}
+@media (hover:hover) and (pointer:fine){.at-menu li:hover{background:var(--cream)}}
+.at-menu li svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--brown);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:640px){.at-menu li{padding:10px 12px}.at-menu .chip{font-size:.95rem}}
+
+/* the Recruitment card is a view-only dashboard: not a button, no hover lift, every stage as a small number */
+.attc.is-static{cursor:default}
+@media (hover:hover) and (pointer:fine){.attc.is-static:hover{transform:none;box-shadow:var(--shadow)}}
+.attc.is-static 
+/* applicant stage chart (assets/stage-chart.js): one bar for each of the ten stages */
+.sc-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+.sc-total{font:inherit;display:inline-flex;align-items:baseline;gap:6px;background:none;border:0;padding:0;color:var(--brown)}
+.sc-total b{font-family:var(--serif);font-weight:400;font-size:1.7rem;line-height:1}
+.sc-total span{font-size:.9rem;color:var(--muted)}
+button.sc-total{cursor:pointer;border-radius:8px;padding:2px 6px;margin-left:-6px}
+button.sc-total[aria-pressed="true"]{background:#F4ECE4}
+.sc-note{font-size:.85rem;color:var(--muted)}
+.sc-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(5,auto);grid-auto-flow:column;column-gap:28px;row-gap:2px}
+@media (max-width:900px){.sc-rows{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-auto-flow:row}}
+.sc-row{font:inherit;display:grid;grid-template-columns:104px minmax(0,1fr) 28px;align-items:center;gap:10px;padding:5px 6px;margin:0;background:none;border:0;border-radius:8px;text-align:left;color:var(--brown)}
+button.sc-row{cursor:pointer;width:100%}
+button.sc-row:hover{background:#F8F2EC}
+button.sc-row[aria-pressed="true"]{background:#F4ECE4;box-shadow:inset 0 0 0 1px var(--line)}
+.sc-l{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-track{height:10px;background:#EFEAE4;border-radius:5px;overflow:hidden}
+.sc-track i{display:block;height:100%;border-radius:5px}
+.sc-n{font-size:.9rem;font-weight:700;text-align:right}
+
+/* lines that separate the chart from the rest of the screen, and the rows from each other */
+.sc-head{padding-bottom:10px;border-bottom:1px solid var(--line)}
+.sc-row{border-bottom:1px dashed var(--line);border-radius:0}
+.sc-rows{margin-top:2px}
+button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
+.at-sum{padding-bottom:14px;border-bottom:1px solid var(--line)}
+.attc.is-static .attc-h{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.attc.is-static .sc-head{border-bottom:0;padding-bottom:4px}

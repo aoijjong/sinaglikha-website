@@ -17,6 +17,8 @@
 .cr-hero p{max-width:60ch;color:var(--muted);font-size:1.05rem}
 .cr-list{padding-block:0 clamp(60px,9vw,110px)}
 .cr-h{font-size:clamp(1.5rem,3vw,2rem);margin:0 0 16px}
+.cr-panel{background:linear-gradient(180deg,rgba(251,243,203,.7),rgba(252,233,196,.55));border:1px solid rgba(74,46,34,.12);border-radius:30px;padding:clamp(18px,3vw,32px);box-shadow:var(--shadow)}
+.cr-list .cr-panel{width:min(1200px,100% - 2 * var(--gutter))}
 .cr-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 22px}
 .cr-tabs{display:flex;gap:8px;flex-wrap:wrap}
 .cr-tab{font:inherit;font-weight:600;font-size:.9rem;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:background .3s,color .3s,border-color .3s}
@@ -66,7 +68,9 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
 .lb-btn[hidden]{display:none}
 .lb-foot{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;color:#fff;font-size:.88rem}
 .lb-foot span{flex:1 1 200px;opacity:.85}
-.lb-link{color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.lb-full{color:#fff;font-weight:700;font-size:.9rem;text-decoration:none;padding:12px 20px;border-radius:999px;border:1.5px solid rgba(255,255,255,.6);background:rgba(255,255,255,.12);transition:background .3s}
+@media (hover:hover) and (pointer:fine){.lb-full:hover{background:rgba(255,255,255,.24)}}
+.lb-full:focus-visible{outline:3px solid #FFCB1B;outline-offset:3px}
 .lb-apply{background:var(--grad-btn);color:#fff;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:999px;box-shadow:0 10px 22px -10px rgba(206,32,32,.65)}
 .lb-apply[hidden]{display:none}
 .lb-btn.next .icon{transform:scaleX(-1)}
@@ -169,7 +173,7 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
   </section>
 
   <section class="cr-list" aria-label="Open positions">
-    <div class="container">
+    <div class="container cr-panel">
       <h2 class="cr-h">We Are Hiring!</h2>
       <div class="cr-bar">
         <div class="cr-tabs" id="cr-tabs" role="group" aria-label="Departments"></div>
@@ -220,8 +224,8 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
     </div>
     <div class="lb-stage"><img id="lb-img" alt=""></div>
     <div class="lb-foot">
-      <span>Scan the QR code on the poster to apply.</span>
-      <a class="lb-link" id="lb-full" href="#" target="_blank" rel="noopener">Open full size</a>
+      <span id="lb-hint">Scan the QR code on the poster to apply.</span>
+      <a class="lb-full" id="lb-full" href="#" target="_blank" rel="noopener">Open full size</a>
       <a class="lb-apply" id="lb-apply" href="#" target="_blank" rel="noopener" hidden>Apply Now</a>
     </div>
   </div>
@@ -347,6 +351,7 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
     var link = /^https:\/\/[^\s]+$/i.test(r.apply_url || '') ? r.apply_url : '';
     ap.hidden = !link;
     if (link) ap.href = link;
+    $('#lb-hint').textContent = link ? 'Scan the QR code on the poster to apply, or click the Apply Now button.' : 'Scan the QR code on the poster to apply.';
     if (n > 1) { new Image().src = img(state.shown[(state.open + 1) % n].poster_path); }
   }
   $('#cr-out').addEventListener('click', function (e) {
