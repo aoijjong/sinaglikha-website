@@ -893,3 +893,13 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 @media (max-width:640px){.sp-kic{display:none}.p-status .sp-k>span:nth-of-type(2){min-height:0}}
 .p-status .sp-k>span.sp-kic{min-height:34px;font-size:inherit;flex:none}
 @media (max-width:640px){.sp-k>span:nth-of-type(2){font-size:.74rem;flex:1 1 100%;order:3}}
+
+/* status cards in the SINAGLIKHA palette: warm amber, orange and brown tints; green only for Selected or placed (the same green as its tag in the table) */
+.sp-k.k-new{background:linear-gradient(160deg,#FFF7DA 0%,#FFEAB9 100%)}
+.sp-k.k-active{background:linear-gradient(160deg,#FFE9D8 0%,#FFD2B2 100%)}
+.sp-k.k-won{background:linear-gradient(160deg,#EAF5E6 0%,#D9EDD6 100%)}
+.sp-k.k-closed{background:linear-gradient(160deg,#F4ECE5 0%,#E8DCD1 100%)}
+.sp-k{border-color:rgba(255,255,255,.8)}
+.sp-k[aria-pressed="true"]{box-shadow:0 0 0 2px #E2461E,0 14px 26px -14px rgba(226,70,30,.45)}
+.sp-kic{background:rgba(255,255,255,.78)}
+.sp-k[aria-pressed="true"] .sp-kic{background:linear-gradient(135deg,#E0301E,#F7A21B);color:#fff}
