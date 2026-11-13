@@ -84,6 +84,19 @@
     render();
   }
 
+  // the dashboard on this screen: one column for each stage (taller bar = more applicants); each column filters the list
+  function pipeline(counts, act) {
+    var max = 1;
+    SngStageChart.stages.forEach(function (s) { if ((counts[s[0]] || 0) > max) max = counts[s[0]]; });
+    var cols = SngStageChart.stages.map(function (s) {
+      var n = counts[s[0]] || 0, h = n ? Math.max(8, Math.round(n / max * 100)) : 0;
+      return '<button type="button" class="sp-col' + (n ? '' : ' is-zero') + '" data-status="' + s[0] + '" style="--c:' + s[2] + '" aria-pressed="' + (act.indexOf(s[0]) !== -1) + '" aria-label="' + esc(s[1] + ': ' + n + (n === 1 ? ' applicant' : ' applicants') + '. Show only these') + '">' +
+        '<b class="sp-n">' + n + '</b><span class="sp-bar" aria-hidden="true"><i style="height:' + h + '%"></i></span><span class="sp-l">' + esc(s[1]) + '</span></button>';
+    }).join('');
+    return '<div class="sp"><div class="sp-top"><button type="button" class="sp-all" data-status="all" aria-pressed="' + (A.status === 'all') + '"><b>' + counts.all + '</b> ' + (counts.all === 1 ? 'applicant' : 'applicants') + ' in total</button>' +
+      '<span class="sp-hint">Select a stage to filter the list</span></div><div class="sp-cols">' + cols + '</div></div>';
+  }
+
   function render() {
     var counts = { all: A.rows.length };
     KEYS.forEach(function (k) { counts[k] = 0; });
@@ -91,7 +104,7 @@
     var grp = {};
     Object.keys(GROUPS).forEach(function (g) { grp[g] = GROUPS[g].reduce(function (n, k) { return n + (counts[k] || 0); }, 0); });
     var act = A.status === 'all' ? [] : (GROUPS[A.status] || [A.status]);
-    $('#at-sum', A.box).innerHTML = SngStageChart.html(counts, { total: counts.all, interactive: true, active: act, allActive: A.status === 'all' });
+    $('#at-sum', A.box).innerHTML = pipeline(counts, act);
     // phones: one sliding row of stage pills and a Filters button; the summary above is hidden there
     var pill = function (key, label) { return '<button class="pill" type="button" data-status="' + key + '" aria-pressed="' + (A.status === key) + '">' + label + ' <small>' + (key === 'all' ? counts.all : grp[key]) + '</small></button>'; };
     var extra = A.status !== 'all' && ['new', 'active', 'won', 'closed'].indexOf(A.status) === -1;     // one single stage is chosen
@@ -289,11 +302,11 @@
     A.menuBtn = btn;
     m.style.maxHeight = '';
     var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
-    var below = window.innerHeight - r.bottom - 14, above = r.top - 14, top;
-    if (mh <= below) top = r.bottom + 6;                       // fits underneath
-    else if (mh <= above) top = r.top - 6 - mh;                // fits above
-    else if (below >= above) { top = r.bottom + 6; m.style.maxHeight = Math.max(120, below) + 'px'; }     // neither fits: the roomier side, scrolling inside
-    else { m.style.maxHeight = Math.max(120, above) + 'px'; top = r.top - 6 - m.offsetHeight; }
+    // always opens downward: if there is not enough room underneath, the page scrolls a little first
+    var need = Math.min(mh, 320) + 20;
+    if (window.innerHeight - r.bottom < need) { window.scrollBy({ top: need - (window.innerHeight - r.bottom), behavior: 'instant' }); r = btn.getBoundingClientRect(); }
+    var below = window.innerHeight - r.bottom - 14, top = r.bottom + 6;
+    if (mh > below) m.style.maxHeight = Math.max(140, below) + 'px';
     m.style.top = Math.max(8, top) + 'px';
     m.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
     (m.querySelector('[aria-selected="true"]') || m.firstChild).focus();
