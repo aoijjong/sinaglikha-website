@@ -80,7 +80,7 @@
     };
     $('#vc-dash', V.box).innerHTML = '<div class="vc-dh">Vacancy dashboard</div>' +
       '<div class="vc-kpis">' + tile('all', counts.all, 'Total vacancies') + tile('published', counts.published, 'Published') + tile('draft', counts.draft, 'Drafts') + tile('closed', counts.closed, 'Closed') + '</div>' +
-      '<p class="vc-note">' + (counts.published ? 'The published vacancies list ' + (openings ? openings + (openings === 1 ? ' opening' : ' openings') : 'no opening count yet') + '. ' : '') + 'Applicants apply through the QR code on each poster. Follow them in Applicant Tracking.</p>' +
+      '<p class="vc-note">' + (counts.published ? 'The published vacancies list ' + (openings ? openings + (openings === 1 ? ' opening' : ' openings') : 'no opening count yet') + '. ' : '') + 'Applicants apply through the QR code on each poster. Follow them in the Applicant Tracking System.</p>' +
       '<label class="vc-fl" for="vc-dept-filter">Filter by department</label>' +
       '<select id="vc-dept-filter" class="vc-sel">' + [['all', 'All Departments']].concat(DEPT_KEYS.map(function (k) { return [k, app.depts[k] || k]; })).map(function (d) {
         return '<option value="' + d[0] + '"' + (V.dept === d[0] ? ' selected' : '') + '>' + esc(d[1]) + (d[0] === 'all' ? ' (' + V.rows.length + ')' : ' (' + (perDept[d[0]] || 0) + ')') + '</option>';

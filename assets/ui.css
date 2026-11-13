@@ -559,3 +559,9 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
 @media (hover:hover) and (pointer:fine){.at-menu li:hover{background:var(--cream)}}
 .at-menu li svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--brown);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 @media (max-width:640px){.at-menu li{padding:10px 12px}.at-menu .chip{font-size:.95rem}}
+
+/* the Recruitment card is a view-only dashboard: not a button, no hover lift, every stage as a small number */
+.attc.is-static{cursor:default}
+@media (hover:hover) and (pointer:fine){.attc.is-static:hover{transform:none;box-shadow:var(--shadow)}}
+.attc.is-static .rc-kpis{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))}
+@media (max-width:640px){.attc.is-static .rc-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}

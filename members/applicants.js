@@ -1,5 +1,5 @@
 /*
-  SINAGLIKHA Applicant Tracking: where the recruitment team follows each applicant from the first
+  SINAGLIKHA Applicant Tracking System: where the recruitment team follows each applicant from the first
   application to placement. Applications are NOT made on this website: applicants use the QR code on the
   vacancy poster, which goes to the application form kept outside the site. Applicants reach this screen
   by CSV import (for example the responses exported from that form) or by being typed in. Nothing here is
@@ -8,7 +8,7 @@
   function applicant_set_status(), which also writes the history entry; notes go through
   applicant_add_note(). The rules in supabase/recruitment.sql allow only the Administrator and the Staffing
   and Recruitment Senior Manager to read or change any of it; this screen only shows what those rules allow.
-  Opened from the Applicant Tracking row (or the Recruitment card) of the Staffing panel in the Content tab.
+  Opened from the Applicant Tracking System row of the Staffing panel in the Content tab (the Recruitment card above it only shows the numbers).
 */
 (function () {
   'use strict';
@@ -53,7 +53,7 @@
   function shell() {
     A.box.style.position = 'relative';
     A.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
-      '<div class="ph-main"><h2>Applicant Tracking</h2><p class="sub">Applicants apply through the QR code on each poster</p></div>' +
+      '<div class="ph-main"><h2>Applicant Tracking System</h2><p class="sub">Applicants apply through the QR code on each poster</p></div>' +
       '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div>' +
       IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
       '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
@@ -503,7 +503,7 @@
       // the Recruitment card on the Staffing page can open this screen on one status
       A.status = ctx && ctx.tab && (ctx.tab === 'all' || LABEL[ctx.tab] || GROUPS[ctx.tab]) ? ctx.tab : 'all';
       if (!canManage()) {
-        box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Applicant Tracking</h2></div></div>' +
+        box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Applicant Tracking System</h2></div></div>' +
           '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Staffing and Recruitment only</b><p>Applicant records can be opened by Staffing and Recruitment.</p></div></div>';
         box.onclick = onClick;
         return;

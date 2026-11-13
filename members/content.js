@@ -131,7 +131,7 @@
     /* Staffing manages the vacancies shown on the public Careers page */
     if (cs.dept === 'staffing' && canReview() && window.MembersVacancies) {
       var rec = [{ key: 'vacancies', name: 'Vacancies', department: 'staffing', kind: 'vacancies' }];
-      if (window.MembersApplicants) rec.push({ key: 'applicants', name: 'Applicant Tracking', department: 'staffing', kind: 'applicants' });
+      if (window.MembersApplicants) rec.push({ key: 'applicants', name: 'Applicant Tracking System', department: 'staffing', kind: 'applicants' });
       if (window.MembersRecruitmentDocs) rec.push({ key: 'recdocs', name: 'Recruitment and Selection Records', department: 'staffing', kind: 'recdocs' });
       list = rec.concat(list);
     }
@@ -257,10 +257,13 @@
     var n = { all: res[0].data.length };
     res[0].data.forEach(function (r) { n[r.status] = (n[r.status] || 0) + 1; });
     var open = res[1].error || !Array.isArray(res[1].data) ? 0 : res[1].data.length;
-    var tiles = [['all', 'Total applicants'], ['new', 'New'], ['interview', 'For interview'], ['work_sample', 'For work sample'], ['selected', 'Selected'], ['placed', 'Placed']];
-    box.innerHTML = '<button class="attc" type="button" data-special="applicants" aria-label="Open Applicant Tracking">' +
-      '<span class="attc-h"><span class="attc-i">' + I('userCheck') + '</span><b>Recruitment</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span><span class="attc-go">' + I('chevron') + '</span></span>' +
-      '<span class="rc-kpis">' + tiles.map(function (t) { return '<span data-gtab="' + t[0] + '"><b>' + (n[t[0]] || 0) + '</b><small>' + t[1] + '</small></span>'; }).join('') + '</span></button>';
+    // the same ten stages, with the same names and order, as the status menu in Applicant Tracking System
+    var tiles = [['all', 'Total applicants'], ['new', 'New'], ['screening', 'Screening'], ['shortlisted', 'Shortlisted'], ['interview', 'Interview'], ['work_sample', 'Work sample'],
+      ['final_review', 'Final review'], ['selected', 'Selected'], ['not_selected', 'Not selected'], ['placed', 'Placed'], ['withdrawn', 'Withdrawn']];
+    // a view-only dashboard: the way into the full view is the Applicant Tracking System row below
+    box.innerHTML = '<div class="attc is-static" role="group" aria-label="Recruitment numbers">' +
+      '<span class="attc-h"><span class="attc-i">' + I('userCheck') + '</span><b>Recruitment</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span></span>' +
+      '<span class="rc-kpis">' + tiles.map(function (t) { return '<span><b>' + (n[t[0]] || 0) + '</b><small>' + t[1] + '</small></span>'; }).join('') + '</span></div>';
   }
 
   async function loadGlance() {
