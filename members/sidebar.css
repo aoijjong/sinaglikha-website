@@ -20,9 +20,9 @@
   body:has(#view-app:not([hidden])) .sb-banner{display:flex}
 
   .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
-    background:radial-gradient(120% 55% at 45% 42%,rgba(255,190,100,.32),transparent 62%),radial-gradient(95% 60% at 100% 100%,rgba(120,28,14,.8),transparent 66%),radial-gradient(75% 50% at 0% 100%,rgba(66,26,14,.6),transparent 70%),linear-gradient(165deg,rgba(198,112,42,.94) 0%,rgba(184,92,34,.94) 52%,rgba(146,56,26,.96) 100%);color:#FFF6EC;border-radius:34px;text-shadow:0 1px 2px rgba(70,20,5,.32);
-    -webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.5);border:1px solid rgba(255,214,170,.5);
-    box-shadow:0 30px 52px -22px rgba(130,40,10,.7),0 0 34px rgba(255,170,70,.28),inset 0 1px 0 rgba(255,236,190,.85),inset 0 0 0 1px rgba(255,255,255,.14);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
+    background:linear-gradient(150deg,rgba(214,56,30,.95) 0%,rgba(226,92,28,.94) 42%,rgba(236,124,26,.93) 74%,rgba(242,151,26,.92) 100%);color:#FFF6EC;border-radius:34px;text-shadow:0 1px 2px rgba(110,25,5,.38);
+    -webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.5);border:1px solid rgba(255,225,190,.6);
+    box-shadow:0 30px 52px -22px rgba(200,60,15,.65),0 0 30px rgba(255,150,40,.25),inset 0 1px 0 rgba(255,240,200,.9),inset 0 0 0 1px rgba(255,255,255,.16);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
   @keyframes sb-in{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 
   .sb::before{content:"";position:absolute;left:12%;right:12%;top:-1px;height:2px;border-radius:2px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,232,170,.95),transparent);filter:blur(.6px)}
@@ -74,7 +74,7 @@
   .bn-text{position:relative;min-width:0}
   .bn-text h2{font-size:clamp(1.9rem,2.8vw,2.5rem);color:#4A2E22}
   .bn-text p{margin:8px 0 0;max-width:60ch;color:#6B4533;font-size:1.02rem;line-height:1.55}
-  .bn-text p b{font-weight:700;color:#A8481A;background:linear-gradient(transparent 62%,rgba(247,176,44,.5) 62%);padding:0 2px}
+  .bn-text p b{font-weight:700;color:#A8481A}
 
   /* the five sections, one under another */
   .sb .tabs{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;position:relative;flex:none}
