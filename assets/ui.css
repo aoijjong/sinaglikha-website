@@ -947,3 +947,17 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-k.k-active{--g:linear-gradient(160deg,#FFE9D8 0%,#FFD2B2 100%)}
 .sp-k.k-won{--g:linear-gradient(160deg,#EAF5E6 0%,#D9EDD6 100%)}
 .sp-k.k-closed{--g:linear-gradient(160deg,#F4ECE5 0%,#E8DCD1 100%)}
+
+/* attendance today: the same soft style as the applicant status cards */
+.at-st{border:1px solid rgba(255,255,255,.85);box-shadow:0 12px 24px -16px rgba(74,46,34,.35);transition:transform .2s ease,box-shadow .25s ease}
+.at-st.is-ok{background:linear-gradient(160deg,#EAF5E6 0%,#D9EDD6 100%)}
+.at-st.is-work{background:linear-gradient(160deg,#FFF7DA 0%,#FFEAB9 100%)}
+.at-st.is-none{background:linear-gradient(160deg,#FFE9D8 0%,#FFD2B2 100%)}
+.at-ic{width:40px;height:40px;border-radius:12px;border:0;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.6));box-shadow:0 4px 10px -6px rgba(74,46,34,.4)}
+.at-ic .icon{width:20px;height:20px;stroke-width:2}
+.is-ok .at-ic{background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.6));color:#3E9A4D}
+.is-work .at-ic{background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.6));color:#C98A0A}
+.is-none .at-ic{background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.6));color:#D9622B}
+.at-st .at-tx b,.at-st.is-ok .at-tx b,.at-st.is-work .at-tx b,.at-st.is-none .at-tx b{color:var(--brown)}
+@media (hover:hover) and (pointer:fine){.attc:hover .at-st{transform:translateY(-2px);box-shadow:0 16px 28px -16px rgba(74,46,34,.42)}}
+@media (max-width:640px){.at-ic{width:32px;height:32px;border-radius:10px}.at-ic .icon{width:17px;height:17px}}
