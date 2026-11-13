@@ -1011,3 +1011,4 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .vc-k:active{transform:scale(.975)}
 @media (max-width:640px){.vc-kpis{gap:6px}.vc-k{padding:8px 12px;border-radius:12px;gap:0}.vc-k b{font-size:1.5rem}.vc-k span{font-size:.74rem}}
 .vc-k[aria-pressed="true"],.vc-k[aria-pressed="true"]:hover{border-color:transparent}
+.vc-kpis+.vc-fl{margin-top:16px}
