@@ -799,3 +799,29 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .p-pos .sp-lg{width:100%;flex:none}
 .p-pos .sp-ring{width:120px;height:120px}
 .p-pos .sp-ring span{width:74px;height:74px}
+
+/* attendance today: soft coloured cards, each with a rounded icon */
+.at-stats{gap:10px}
+.at-st{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;border:1px solid transparent}
+.at-st.is-ok{background:#EAF6EC;border-color:#D3EBD7}
+.at-st.is-work{background:#E9F1FB;border-color:#D2E2F5}
+.at-st.is-none{background:#FDEDEA;border-color:#F6D3CC}
+.at-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex:none;color:#fff;box-shadow:0 8px 16px -8px rgba(0,0,0,.35)}
+.at-ic .icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.is-ok .at-ic{background:linear-gradient(135deg,#58B96A,#3E9A4D)}
+.is-work .at-ic{background:linear-gradient(135deg,#5AA3EA,#2F7BC8)}
+.is-none .at-ic{background:linear-gradient(135deg,#EE7A7A,#D45050)}
+.at-tx{display:grid;gap:0;min-width:0;text-align:left}
+.at-st .at-tx b{font-family:var(--serif);font-weight:400;font-size:1.9rem;line-height:1.05;color:var(--brown)}
+.at-st.is-ok .at-tx b{color:#2D7A3B}.at-st.is-work .at-tx b{color:#2465A9}.at-st.is-none .at-tx b{color:#C03A3A}
+.at-lb{font-size:.84rem;font-weight:700;color:var(--brown)}
+.at-tx small{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:640px){
+  .at-stats{gap:6px}
+  .at-st{flex-direction:column;align-items:flex-start;gap:6px;padding:10px}
+  .at-ic{width:34px;height:34px;border-radius:11px}
+  .at-ic .icon{width:18px;height:18px}
+  .at-st .at-tx b{font-size:1.5rem}
+  .at-lb{font-size:.76rem}
+  .at-tx small{display:none}
+}
