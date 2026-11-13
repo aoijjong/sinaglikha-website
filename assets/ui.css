@@ -497,13 +497,6 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
   .at-mobile::-webkit-scrollbar{display:none}
   .at-mobile .pill{flex:none;padding:8px 14px;font-size:.88rem}
   .at-mobile .pill small{font-weight:700;opacity:.75;margin-left:2px}
-  .at-ftoggle{position:relative}
-  .at-ftoggle[aria-expanded="true"]{background:var(--cream);border-color:var(--brown);color:var(--brown)}
-  .at-ftoggle.has::after{content:"";width:8px;height:8px;border-radius:50%;background:#CE2020;margin-left:2px}
-  #at-fl .fl-pill,#at-fl .fl-dates,#at-fl .fl-clear{display:none}
-  #at-fl.open .fl-pill:not(#at-status),#at-fl.open .fl-dates{display:flex}
-  #at-fl.open .fl-clear:not([hidden]){display:block}
-  #at-fl .fl-search{flex:1 1 100%;width:100%}
   #at-wrap{padding:10px}
   .at-tbl tbody{gap:10px}
   .at-tbl,.at-tbl tbody{display:block}
@@ -705,3 +698,28 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 /* the search box sits in the filter row, first */
 #at-fl .fl-search{flex:1 1 220px;width:auto;min-width:180px;max-width:320px}
 #at-fl .fl-search input{height:40px}
+
+/* filters: on desktop the sheet's pieces sit in the row; on a phone they are a bottom sheet opened by the round button beside the search */
+.fl-sheet,.fl-actions{display:contents}
+.fl-head,.fl-lab,.fl-apply,.fl-back,.at-fbtn{display:none}
+@media (max-width:640px){
+  #at-fl{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin-bottom:10px}
+  #at-fl .fl-search{flex:1 1 auto;width:auto;min-width:0;max-width:none}
+  .at-fbtn{display:grid;place-items:center;position:relative;width:40px;height:40px;flex:none;border-radius:50%;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--brown);cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
+  .at-fbtn .icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .at-fbtn:active{transform:scale(.95)}
+  .at-fbtn[aria-expanded="true"]{background:var(--cream);border-color:var(--brown)}
+  .at-fbtn.has::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#CE2020;border:2px solid #fff;box-sizing:content-box}
+  .fl-sheet{display:none}
+  #at-fl.open .fl-sheet{display:flex;flex-direction:column;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:310;background:#fff;border-radius:22px 22px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -24px 50px -24px rgba(40,25,18,.55);max-height:82vh;overflow:auto}
+  #at-fl.open .fl-back{display:block;position:fixed;inset:0;z-index:300;background:rgba(40,25,18,.45)}
+  .fl-head{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:4px}
+  .fl-head b{font-family:var(--serif);font-weight:400;font-size:1.2rem;color:var(--brown)}
+  .fl-grab{width:38px;height:4px;border-radius:2px;background:rgba(74,46,34,.25)}
+  .fl-lab{display:block;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  .fl-actions{display:flex;gap:10px;margin-top:10px}
+  .fl-actions .fl-clear{display:block;margin:0;padding:0 8px;align-self:center;flex:none}
+  .fl-actions .fl-clear[hidden]{display:none}
+  .fl-apply{display:block;flex:1;min-height:46px}
+  #at-sheet .fl-pill{flex:none;width:100%}
+}
