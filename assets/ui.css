@@ -1024,3 +1024,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 @media (max-width:640px){.vc-row .fl-search{flex:1 1 100%;max-width:none}.vc-row #vc-dept-filter{flex:1 1 140px;max-width:none;min-width:0}.vc-arch{flex:none}}
 .vc-arch{background-image:none;padding:0 16px}
 .vc-arch[aria-pressed="true"]{background-image:none}
+
+/* forum categories: the Open / Closed tags are the same width, and the move arrows keep their places, so every row lines up */
+.cat-st{width:80px;box-sizing:border-box;justify-content:center;text-align:center}
+.ib-gap{display:inline-block;width:42px;height:42px;flex:none}
+.lrow .lacts{align-items:center}
