@@ -96,13 +96,8 @@
       var st = STATUS[v.status] || ['s-draft', v.status];
       var meta = [app.depts[v.department] || v.department, v.openings ? v.openings + (v.openings === 1 ? ' opening' : ' openings') : '', v.opens_on ? 'Opens ' + app.fmtDate(v.opens_on) : '', v.closes_on ? 'Closes ' + app.fmtDate(v.closes_on) : ''].filter(Boolean).join(' · ');
       var note = v.status === 'published' && !isLive(v) ? '<span class="lmeta" style="color:#8A5A12">Published, but outside its dates, so Careers is not showing it</span>' : '';
-      var acts = IB('pencil', 'Edit this vacancy', { 'data-a': 'edit' });
-      if (v.poster_path) acts += IB('external', 'Preview the poster', { 'data-a': 'preview' });
-      if (v.status === 'draft') acts += IB('eye', 'Publish: show it on Careers', { 'data-a': 'publish' }, 'good');
-      if (v.status === 'published') acts += IB('eyeOff', 'Unpublish: back to a draft', { 'data-a': 'unpublish' }) + IB('lock', 'Close: stop showing it, keep the record', { 'data-a': 'close' });
-      if (v.status === 'closed') acts += IB('eye', 'Reopen: show it on Careers again', { 'data-a': 'publish' }, 'good') + IB('archive', 'Archive', { 'data-a': 'archive' });
-      if (v.status === 'archived') acts += IB('restore', 'Restore as a draft', { 'data-a': 'unpublish' });
-      if (v.status === 'draft' || v.status === 'archived') acts += IB('trash', 'Delete', { 'data-a': 'del' }, 'danger');
+      // every action the row offers; they open from one dotted menu
+      var acts = IB('more', 'Actions for ' + v.title, { 'data-a': 'amenu', 'aria-haspopup': 'menu', 'aria-expanded': 'false' });
       var thumb = v.thumb_path || v.poster_path;
       return '<li class="lrow" data-id="' + esc(v.id) + '"><div class="lmain" style="cursor:default"><span class="lico' + (thumb ? ' has-photo' : '') + '">' +
         (thumb ? '<img src="' + esc(imgUrl(thumb)) + '" alt="" loading="lazy">' : I('users')) + '</span><span class="ltext"><span class="lname">' + esc(v.title) +
@@ -263,7 +258,87 @@
     await load();
   }
 
+  /* ---------- the dotted menu on each row ---------- */
+  function actionsFor(v) {
+    var l = [['edit', 'pencil', 'Edit']];
+    if (v.poster_path) l.push(['preview', 'external', 'Preview the poster']);
+    if (v.status === 'draft') l.push(['publish', 'eye', 'Publish']);
+    if (v.status === 'published') l.push(['unpublish', 'eyeOff', 'Unpublish'], ['close', 'lock', 'Close']);
+    if (v.status === 'closed') l.push(['publish', 'eye', 'Reopen'], ['archive', 'archive', 'Archive']);
+    if (v.status === 'archived') l.push(['unpublish', 'restore', 'Restore as a draft']);
+    if (v.status === 'draft' || v.status === 'archived') l.push(['del', 'trash', 'Delete']);
+    return l;
+  }
+  function closeAMenu(focusBack) {
+    var m = V.box && $('#vc-amenu', V.box);
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    var bt = V.amBtn;
+    V.amBtn = null;
+    if (bt) { bt.setAttribute('aria-expanded', 'false'); if (focusBack && document.body.contains(bt)) bt.focus(); }
+  }
+  function openAMenu(btn) {
+    var li = btn.closest('li.lrow'), v = li && V.rows.filter(function (x) { return x.id === li.dataset.id; })[0];
+    if (!v) return;
+    var m = $('#vc-amenu', V.box);
+    if (!m) {
+      m = document.createElement('ul');
+      m.id = 'vc-amenu';
+      m.className = 'at-menu am';
+      m.setAttribute('role', 'menu');
+      m.hidden = true;
+      V.box.appendChild(m);
+    }
+    if (!m.hidden && V.amBtn === btn) { closeAMenu(true); return; }
+    closeAMenu(false);
+    m.setAttribute('aria-label', 'Actions for ' + v.title);
+    m.innerHTML = actionsFor(v).map(function (x) {
+      return '<li role="menuitem" tabindex="-1" data-am="' + x[0] + '"' + (x[0] === 'del' ? ' class="danger"' : '') + '>' + I(x[1]) + '<span>' + x[2] + '</span></li>';
+    }).join('');
+    m.dataset.for = v.id;
+    m.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    V.amBtn = btn;
+    m.style.maxHeight = '';
+    var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+    var need = mh + 20;
+    if (window.innerHeight - r.bottom < need) { window.scrollBy({ top: need - (window.innerHeight - r.bottom), behavior: 'instant' }); r = btn.getBoundingClientRect(); }
+    var below = window.innerHeight - r.bottom - 14;
+    if (mh > below) m.style.maxHeight = Math.max(140, below) + 'px';
+    m.style.top = Math.max(8, r.bottom + 6) + 'px';
+    m.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
+    m.firstChild.focus();
+  }
+  function runAction(a, row) {
+    if (a === 'edit') openDialog(row);
+    else if (a === 'preview') window.open(imgUrl(row.poster_path), '_blank', 'noopener');
+    else if (a === 'publish') setStatus(row, 'published', 'Published. It shows on Careers while it is inside its dates.', 'vacancy.publish');
+    else if (a === 'unpublish') setStatus(row, 'draft', 'Back to a draft. Careers no longer shows it.', 'vacancy.unpublish');
+    else if (a === 'close') setStatus(row, 'closed', 'Closed. Careers no longer shows it.', 'vacancy.close');
+    else if (a === 'archive') setStatus(row, 'archived', 'Archived.', 'vacancy.archive');
+    else if (a === 'del') remove(row);
+  }
+  function menuKey(e) {
+    var m = $('#vc-amenu', V.box);
+    if (!m || m.hidden || !e.target.closest('#vc-amenu')) return;
+    var its = [].slice.call(m.querySelectorAll('li')), k = its.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); its[(k + 1) % its.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); its[(k - 1 + its.length) % its.length].focus(); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (its[k]) pick(its[k].dataset.am); }
+    else if (e.key === 'Escape') { e.preventDefault(); closeAMenu(true); }
+    else if (e.key === 'Tab') closeAMenu(false);
+  }
+  function pick(a) {
+    var m = $('#vc-amenu', V.box), id = m && m.dataset.for, row = V.rows.filter(function (x) { return x.id === id; })[0];
+    closeAMenu(false);
+    if (row) runAction(a, row);
+  }
+
   function onClick(e) {
+    var mi = e.target.closest('#vc-amenu li');
+    if (mi) { pick(mi.dataset.am); return; }
+    var mb = e.target.closest('[data-a="amenu"]');
+    if (mb) { openAMenu(mb); return; }
     var pill = e.target.closest('[data-show]');
     if (pill) { V.show = V.show === pill.dataset.show ? 'all' : pill.dataset.show; render(); return; }
     var b = e.target.closest('[data-a]');
@@ -274,14 +349,12 @@
     if (a === 'site') { window.open('../careers/', '_blank', 'noopener'); return; }
     var li = e.target.closest('li.lrow'), row = li && V.rows.filter(function (x) { return x.id === li.dataset.id; })[0];
     if (!row) return;
-    if (a === 'edit') openDialog(row);
-    else if (a === 'preview') window.open(imgUrl(row.poster_path), '_blank', 'noopener');
-    else if (a === 'publish') setStatus(row, 'published', 'Published. It shows on Careers while it is inside its dates.', 'vacancy.publish');
-    else if (a === 'unpublish') setStatus(row, 'draft', 'Back to a draft. Careers no longer shows it.', 'vacancy.unpublish');
-    else if (a === 'close') setStatus(row, 'closed', 'Closed. Careers no longer shows it.', 'vacancy.close');
-    else if (a === 'archive') setStatus(row, 'archived', 'Archived.', 'vacancy.archive');
-    else if (a === 'del') remove(row);
+    runAction(a, row);
   }
+
+  document.addEventListener('click', function (e) { if (!e.target.closest('#vc-amenu, [data-a="amenu"]')) closeAMenu(false); });
+  window.addEventListener('scroll', function () { closeAMenu(false); }, true);
+  window.addEventListener('resize', function () { closeAMenu(false); });
 
   window.MembersVacancies = {
     open: function (box, ctx) {
@@ -298,6 +371,7 @@
       }
       shell();
       box.onclick = onClick;
+      box.onkeydown = menuKey;
       box.oninput = function (e) { if (e.target.id === 'vc-q') { V.q = e.target.value; render(); } };
       box.onchange = function (e) { if (e.target.id === 'vc-dept-filter') { V.dept = e.target.value; render(); } };
       return load();
