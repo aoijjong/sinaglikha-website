@@ -243,8 +243,15 @@
   }
 
   /* The pieces the Content Manager (content.js) shares with this page. */
+  /* Where the person is (tab, department, open screen) is kept for this browser tab only, so a refresh brings them back to the same place. */
+  var NAV_KEY = 'sng-mem-nav';
+  var nav = {
+    get: function () { try { return JSON.parse(sessionStorage.getItem(NAV_KEY)) || {}; } catch (e) { return {}; } },
+    set: function (patch) { try { var c = nav.get(); Object.keys(patch).forEach(function (k) { c[k] = patch[k]; }); sessionStorage.setItem(NAV_KEY, JSON.stringify(c)); } catch (e) { /* no storage: the page just starts at the top next time */ } },
+    clear: function () { try { sessionStorage.removeItem(NAV_KEY); } catch (e) { /* nothing to clear */ } }
+  };
   window.MembersApp = {
-    sb: sb, state: state, esc: esc, toast: toast, ask: ask, logAction: logAction,
+    nav: nav, sb: sb, state: state, esc: esc, toast: toast, ask: ask, logAction: logAction,
     fmtDate: fmtDate, fmtSize: fmtSize, extOf: extOf, cleanName: cleanName, maxMb: MAX_MB, depts: DEPTS
   };
 
@@ -291,7 +298,8 @@
     state.canUse = true;                   // every Senior Manager and the owner: the Accounts tab
     state.can201 = state.isAdmin || !state.deptKnown || FILE_DEPTS.indexOf(p.department) !== -1;
     applyAccess();
-    setTab(state.can201 ? 'library' : 'content');
+    var savedTab = nav.get().tab;
+    setTab(TAB_NAMES.indexOf(savedTab) !== -1 ? savedTab : (state.can201 ? 'library' : 'content'));
     if (onProfileUrl()) { fillProfile(); show('profile'); } else show('app');
     state.path = [];
     state.filter = '';
@@ -303,6 +311,7 @@
     if ($('#viewer').open) $('#viewer').close();
     index = null;
     indexPromise = null;
+    nav.clear();
     if (window.MembersContent) window.MembersContent.reset();
     if (window.MembersEmployees) window.MembersEmployees.reset();
     if (window.MembersRecords) window.MembersRecords.reset();
@@ -417,6 +426,7 @@
       $('#panel-' + n).hidden = !on;
     });
     $('#tabs').style.setProperty('--pos', String(open.indexOf(name)));
+    nav.set({ tab: name });
     $('#app-title').textContent = TAB_TITLES[name];
     if (name === 'people') loadPeople();
     if (name === 'content' && window.MembersContent) window.MembersContent.open();

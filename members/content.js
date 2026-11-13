@@ -86,12 +86,15 @@
     cs.deliverables = res.data;
     var mine = myDept();
     cs.dept = DEPT_ORDER.indexOf(mine) !== -1 ? mine : 'staffing';
+    var kept = app.nav.get().dept;
+    if (kept && DEPT_ORDER.indexOf(kept) !== -1) cs.dept = kept;   // after a refresh: the department that was open
     return true;
   }
 
   /* ---------- home: department, then deliverable ---------- */
   async function showHome() {
     cs.view = 'home';
+    app.nav.set({ view: 'home', special: '', key: '', dept: cs.dept });
     $('#cm-browser').hidden = true;
     $('#cm-special').hidden = true;
     $('#cm-home').hidden = false;
@@ -348,6 +351,7 @@
     if (!sp || !window[sp[0]]) return;
     cs.view = 'special';
     cs.special = key;
+    app.nav.set({ view: 'special', special: key, dept: cs.dept });
     $('#cm-home').hidden = true;
     $('#cm-browser').hidden = true;
     var box = $('#cm-special');
@@ -364,6 +368,7 @@
     cs.q = '';
     cs.show = 'all';
     cs.view = 'browser';
+    app.nav.set({ view: 'browser', key: key, dept: cs.dept });
     $('#cm-search').value = '';
     $('#cm-home').hidden = true;
     $('#cm-browser').hidden = false;
@@ -807,13 +812,20 @@
         }
         await cs.loading;
       }
+      if (!cs.restored) {
+        // first time after a page load: go back to the screen that was open before the refresh
+        cs.restored = true;
+        var sv = app.nav.get();
+        if (sv.view === 'special' && SPECIAL[sv.special] && window[SPECIAL[sv.special][0]]) { openSpecial(sv.special); return; }
+        if (sv.view === 'browser' && deliverable(sv.key)) { await openDeliverable(sv.key); return; }
+      }
       if (cs.view === 'special' && cs.special) openSpecial(cs.special);
       else if (cs.view === 'browser' && cs.key) await load();
       else await showHome();
     },
     /* called when someone signs out, so the next person starts clean */
     reset: function () {
-      cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = ''; cs.view = 'home'; cs.show = 'all'; cs.special = '';
+      cs.restored = false; cs.ready = false; cs.loading = null; cs.key = ''; cs.path = []; cs.items = []; cs.q = ''; cs.view = 'home'; cs.show = 'all'; cs.special = '';
       $('#cm-special').innerHTML = '';
       $('#cm-search').value = '';
       $('#cm-rows').innerHTML = '';
