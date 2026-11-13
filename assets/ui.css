@@ -632,8 +632,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-big{font:inherit;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:var(--brown);display:grid;gap:2px}
 .sp-big b{font-family:var(--serif);font-weight:400;font-size:3rem;line-height:1.05;margin-bottom:6px}
 .sp-big span{font-size:.88rem;color:var(--muted)}
-.sp-big{padding:6px 10px;margin:-6px -10px;border-radius:12px}
-.sp-big[aria-pressed="true"]{background:#FFFBF2;box-shadow:inset 0 0 0 1.5px #E0A21B}
+
+
 .sp-sm{margin:10px 0 0;font-size:.85rem;color:var(--muted)}
 .sp-ks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .sp-k{font:inherit;display:grid;gap:4px;text-align:left;background:#fff;border:1px solid var(--line);box-shadow:0 8px 18px -12px rgba(74,46,34,.4),0 1px 3px rgba(74,46,34,.08);border-radius:12px;padding:12px;cursor:pointer;color:var(--brown);min-width:0}
@@ -646,7 +646,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-t{display:block;height:6px;background:#F3EEE8;border-radius:3px;overflow:hidden}
 .sp-t i{display:block;height:100%;background:#C8321A;border-radius:3px}
 .sp-st{font:inherit;display:grid;grid-template-columns:84px minmax(0,1fr) 22px;gap:8px;align-items:center;font-size:.82rem;color:var(--brown);background:none;border:0;border-radius:8px;padding:2px 4px;margin:0 -4px;cursor:pointer;text-align:left}
-.sp-st[aria-pressed="true"],.sp-k[aria-pressed="true"]{background:#F4ECE4;box-shadow:inset 0 0 0 1px var(--c,#C8321A)}
+.sp-k[aria-pressed="true"]{background:#fff;box-shadow:0 0 0 2px var(--c,#C8321A)}
+.sp-st[aria-pressed="true"],.sp-ml[aria-pressed="true"],.sp-lg button[aria-pressed="true"]{background:#F7F1EA;box-shadow:inset 4px 0 0 var(--c,#C8321A)}
 @media (hover:hover) and (pointer:fine){.sp-st:hover,.sp-k:hover{background:#FBF6EF}}
 .sp-dn{display:flex;align-items:center;gap:16px}
 .sp-ring{width:104px;height:104px;border-radius:50%;flex:none;display:grid;place-items:center}
@@ -723,3 +724,15 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .fl-apply{display:block;flex:1;min-height:46px}
   #at-sheet .fl-pill{flex:none;width:100%}
 }
+
+/* more room between the text and the lines around it; every card and row answers a click or a tap */
+.sp-st{padding:5px 12px;margin:0 -12px;border-radius:10px;grid-template-columns:84px minmax(0,1fr) 22px;gap:10px}
+.sp-ml{font:inherit;width:calc(100% + 24px);margin:0 -12px;padding:5px 12px;border:0;border-radius:10px;background:none;cursor:pointer;text-align:left;color:var(--brown);grid-template-columns:34px minmax(0,1fr) 26px;gap:10px}
+.sp-lg button{padding:5px 10px;margin:0 -10px;width:calc(100% + 20px);border-radius:10px}
+.sp-big{padding:4px 0}
+.sp-p{transition:transform .2s ease,box-shadow .25s ease}
+@media (hover:hover) and (pointer:fine){.sp-p:hover{transform:translateY(-2px);box-shadow:0 16px 30px -16px rgba(74,46,34,.42),0 2px 6px -2px rgba(74,46,34,.12)}.sp-ml:hover,.sp-lg button:hover{background:#FBF6EF}}
+.sp-p:active{transform:scale(.992)}
+.sp-ml:active,.sp-st:active,.sp-lg button:active,.sp-big:active{transform:scale(.975)}
+.sp-ml,.sp-lg button,.sp-big{-webkit-tap-highlight-color:transparent;transition:transform .15s ease,background .2s,box-shadow .2s}
+@media (max-width:640px){.sp-st,.sp-ml{margin:0 -10px;padding:6px 10px;width:calc(100% + 20px)}}
