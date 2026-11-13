@@ -54,12 +54,12 @@
     A.box.style.position = 'relative';
     A.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
       '<div class="ph-main"><h2>Applicant Tracking System</h2><p class="sub">Track each applicant from application to placement: their stage, notes and history</p></div>' +
-      '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div>' +
+      '<div class="ph-actions">' +
       IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
       '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
       '<div class="at-sum" id="at-sum"></div>' +
       '<div class="at-mobile" id="at-mobile"></div>' +
-      '<div class="fl-row" id="at-fl"><select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
+      '<div class="fl-row" id="at-fl"><div class="sbox fl-search">' + I('search') + '<input id="at-q" type="search" placeholder="Search" aria-label="Search by name or reference" autocomplete="off"></div><select id="at-status" class="fl-pill" aria-label="Filter by stage"></select>' +
       '<select id="at-pos" class="fl-pill" aria-label="Filter by position applied for"></select>' +
       '<span class="fl-dates"><label class="fl-date"><span>From</span><input id="at-from" type="date" aria-label="Received from"></label>' +
       '<label class="fl-date"><span>To</span><input id="at-to" type="date" aria-label="Received to"></label></span>' +

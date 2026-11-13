@@ -500,8 +500,10 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
   .at-ftoggle{position:relative}
   .at-ftoggle[aria-expanded="true"]{background:var(--cream);border-color:var(--brown);color:var(--brown)}
   .at-ftoggle.has::after{content:"";width:8px;height:8px;border-radius:50%;background:#CE2020;margin-left:2px}
-  #at-fl{display:none}
-  #at-fl.open{display:flex}
+  #at-fl .fl-pill,#at-fl .fl-dates,#at-fl .fl-clear{display:none}
+  #at-fl.open .fl-pill:not(#at-status),#at-fl.open .fl-dates{display:flex}
+  #at-fl.open .fl-clear:not([hidden]){display:block}
+  #at-fl .fl-search{flex:1 1 100%;width:100%}
   #at-wrap{padding:10px}
   .at-tbl tbody{gap:10px}
   .at-tbl,.at-tbl tbody{display:block}
@@ -699,3 +701,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-menu.am li svg{stroke-width:2}
 .at-menu.am li.danger{color:#B3261E}
 .at-menu.am li.danger svg{stroke:#B3261E}
+
+/* the search box sits in the filter row, first */
+#at-fl .fl-search{flex:1 1 220px;width:auto;min-width:180px;max-width:320px}
+#at-fl .fl-search input{height:40px}
