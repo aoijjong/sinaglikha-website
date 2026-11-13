@@ -74,7 +74,7 @@
   .bn-text{position:relative;min-width:0}
   .bn-text h2{font-size:clamp(1.9rem,2.8vw,2.5rem);color:#4A2E22}
   .bn-text p{margin:8px 0 0;max-width:60ch;color:#6B4533;font-size:1.02rem;line-height:1.55}
-  .bn-text p b{font-weight:700;color:#A8481A;background:linear-gradient(transparent 62%,rgba(247,176,44,.5) 62%);padding:0 2px}
+  .bn-text p b{font-weight:700;color:#A8481A}
 
   /* the five sections, one under another */
   .sb .tabs{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;position:relative;flex:none}
