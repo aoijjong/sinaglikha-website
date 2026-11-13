@@ -52,8 +52,22 @@
   var banner = document.createElement('section');
   banner.className = 'sb-banner';
   banner.setAttribute('aria-label', 'Section');
-  banner.innerHTML = '<div class="bn-art" aria-hidden="true"><span class="bn-card bn-c1"></span><span class="bn-card bn-c2"></span><span class="bn-ic" id="bn-ic"></span></div>' +
-    '<div class="bn-text"><small id="bn-hi">Senior Managers Only</small><h2 id="bn-title"></h2><p id="bn-desc"></p></div>';
+  // a friendly flat illustration: a person at a laptop, with a few floating cards (one carries the section's icon)
+  var ART = '<svg class="bn-svg" viewBox="0 0 220 132" aria-hidden="true">' +
+    '<ellipse cx="112" cy="124" rx="76" ry="6" fill="rgba(90,30,0,.16)"/>' +
+    '<path d="M82 118c0-26 12-38 30-38s30 12 30 38z" fill="#7B2A1A"/>' +
+    '<path d="M104 78h16v12a8 8 0 0 1-16 0z" fill="#E9B48C"/>' +
+    '<circle cx="112" cy="58" r="19" fill="#F4C9A4"/>' +
+    '<path d="M92 56c-2-16 8-26 20-26 13 0 22 9 20 24-4-9-10-12-20-12-9 0-15 4-20 14z" fill="#3A2018"/>' +
+    '<circle cx="105" cy="60" r="1.8" fill="#3A2018"/><circle cx="119" cy="60" r="1.8" fill="#3A2018"/>' +
+    '<path d="M107 67c3 3 7 3 10 0" stroke="#B5573A" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    '<rect x="76" y="84" width="72" height="38" rx="5" fill="#FFFDF6"/>' +
+    '<circle cx="112" cy="103" r="5" fill="#F7A21B"/>' +
+    '<rect x="68" y="122" width="88" height="5" rx="2.5" fill="#F1DEC4"/>' +
+    '<ellipse cx="82" cy="104" rx="7" ry="5" fill="#F4C9A4"/><ellipse cx="142" cy="104" rx="7" ry="5" fill="#F4C9A4"/>' +
+    '</svg>';
+  banner.innerHTML = '<div class="bn-art" aria-hidden="true">' + ART + '<span class="bn-card bn-c1"><span class="bn-ic" id="bn-ic"></span></span><span class="bn-card bn-c2"></span><span class="bn-card bn-c3"></span></div>' +
+    '<div class="bn-text"><h2 id="bn-hi">Hi</h2><p id="bn-msg"></p></div>';
   if (app && appHead) app.insertBefore(banner, appHead);
   function currentKey() {
     var sel = tabs.querySelector('.tab[aria-selected="true"]');
@@ -64,9 +78,13 @@
     var st = window.MembersApp && window.MembersApp.state, prof = st && st.profile;
     var nm = (prof && (prof.full_name || '')) || (document.getElementById('who') && document.getElementById('who').textContent.trim()) || '';
     var first = nm.trim().split(/\s+/)[0] || (prof && prof.email ? prof.email.split('@')[0] : '');
-    document.getElementById('bn-hi').textContent = first ? 'Hi, ' + first : 'Senior Managers Only';
-    document.getElementById('bn-title').textContent = d[1];
-    document.getElementById('bn-desc').textContent = d[2];
+    document.getElementById('bn-hi').textContent = first ? 'Hi, ' + first : 'Hello';
+    var msg = document.getElementById('bn-msg');
+    msg.textContent = '';
+    var strong = document.createElement('b');
+    strong.textContent = d[1];
+    msg.appendChild(strong);
+    msg.appendChild(document.createTextNode('. ' + d[2]));
     var ic = document.getElementById('bn-ic');
     if (ic.getAttribute('data-k') !== currentKey() && window.SngIcon) { ic.innerHTML = window.SngIcon(d[0]); ic.setAttribute('data-k', currentKey()); }
   }
