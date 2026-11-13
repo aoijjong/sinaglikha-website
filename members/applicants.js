@@ -90,12 +90,8 @@
     A.rows.forEach(function (a) { counts[a.status] = (counts[a.status] || 0) + 1; });
     var grp = {};
     Object.keys(GROUPS).forEach(function (g) { grp[g] = GROUPS[g].reduce(function (n, k) { return n + (counts[k] || 0); }, 0); });
-    var tile = function (key, n, label) { return '<button class="vc-k" type="button" data-status="' + key + '" aria-pressed="' + (A.status === key) + '"><b>' + n + '</b><span>' + label + '</span></button>'; };
-    var seg = function (key, color) { return grp[key] ? '<i style="width:' + (grp[key] / counts.all * 100) + '%;background:' + color + '"></i>' : ''; };
-    var dot = function (key, label, color) { return '<button type="button" class="at-dot" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '">' + label + ' <b>' + grp[key] + '</b></button>'; };
-    $('#at-sum', A.box).innerHTML = '<div class="at-k4">' + tile('all', counts.all, 'Total applicants') + tile('new', grp.new, 'New') + tile('active', grp.active, 'In progress') + tile('won', grp.won, 'Selected or placed') + '</div>' +
-      (counts.all ? '<div class="at-bar" aria-hidden="true">' + seg('new', '#E0A21B') + seg('active', '#378ADD') + seg('won', '#3E9A4D') + seg('closed', '#B9AEA4') + '</div>' +
-      '<div class="at-lg">' + dot('new', 'New', '#E0A21B') + dot('active', 'In progress', '#378ADD') + dot('won', 'Selected or placed', '#3E9A4D') + dot('closed', 'Not selected or withdrawn', '#B9AEA4') + '</div>' : '');
+    var act = A.status === 'all' ? [] : (GROUPS[A.status] || [A.status]);
+    $('#at-sum', A.box).innerHTML = SngStageChart.html(counts, { total: counts.all, interactive: true, active: act, allActive: A.status === 'all' });
     // phones: one sliding row of stage pills and a Filters button; the summary above is hidden there
     var pill = function (key, label) { return '<button class="pill" type="button" data-status="' + key + '" aria-pressed="' + (A.status === key) + '">' + label + ' <small>' + (key === 'all' ? counts.all : grp[key]) + '</small></button>'; };
     var extra = A.status !== 'all' && ['new', 'active', 'won', 'closed'].indexOf(A.status) === -1;     // one single stage is chosen
@@ -482,7 +478,7 @@
     var row = e.target.closest('#at-rows tr');
     if (row && !e.target.closest('select, button, a')) { openDetail(row.dataset.id); return; }
     var card = e.target.closest('[data-status]');
-    if (card) { A.status = card.dataset.status; A.shown = PAGE; render(); return; }
+    if (card) { A.status = card.dataset.status === A.status ? 'all' : card.dataset.status; A.shown = PAGE; render(); return; }
     var b = e.target.closest('[data-a]');
     if (!b) return;
     var a = b.dataset.a;
