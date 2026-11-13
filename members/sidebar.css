@@ -1,70 +1,32 @@
 /*
-  Senior Manager portal, desktop only (1025px and wider): the five sections move into a sidebar that stays out of the way.
-  Closed: a thin, fading gradient bar on the left edge with a small bump and an arrow. Hover the bar, or click the arrow,
-  and the sidebar slides in over a soft veil. Phones and tablets keep the original top switch (nothing here applies).
-  Look: a deep brown sidebar with the person's card on top, the sections as a list, and the open section shown as a light
-  tab that joins the page. Profile settings and sign out sit at the bottom.
+  Senior Manager portal, desktop only (1025px and wider): the five sections live in a sidebar that is always anchored on the left.
+  A floating deep-brown panel with the person's card on top, the sections as a list, and profile settings and sign out at the bottom.
+  The open section is shown in the colour of the page, so it flows into the page; the page makes room for the sidebar and uses the
+  rest of the width. Phones and tablets keep the original top switch (nothing here applies).
 */
-.sb,.sb-rail,.sb-scrim{display:none}
+.sb{display:none}
 .tab .tic{display:none}   /* the section icons belong to the sidebar only */
 
 @media (min-width:1025px){
-  /* the sidebar parts only exist while a Senior Manager is inside the app (not on the sign-in or password screens) */
-  body:has(#view-app:not([hidden])) .sb-rail,
-  body:has(#view-app:not([hidden])) .sb,
-  body:has(#view-app:not([hidden])) .sb-scrim{display:block}
+  /* the sidebar only exists while a Senior Manager is inside the app (not on the sign-in or password screens) */
+  body:has(#view-app:not([hidden])) .sb{display:flex}
 
-  /* the content uses the whole width, with a small margin on each side */
-  body:has(#view-app:not([hidden])) .wrap{width:calc(100% - 2 * clamp(32px,3.2vw,56px))}
+  /* the page makes room on the left and keeps a small margin on the right */
+  body:has(#view-app:not([hidden])){padding-left:252px;background:var(--paper)}
+  body:has(#view-app:not([hidden])) .wrap{width:calc(100% - clamp(28px,2.6vw,48px) - clamp(28px,2.6vw,48px))}
   body:has(#view-app:not([hidden])) .top-right{display:none}
   body:has(#view-app:not([hidden])) .app-head{margin-bottom:18px}
 
-  /* ---------- the closed state: a full-height gradient bar with a glowing handle in the middle ---------- */
-  .sb-rail{position:fixed;left:0;top:0;bottom:0;width:0;z-index:58;transition:transform .65s cubic-bezier(.22,1,.36,1)}
-  .sb-bar{position:absolute;left:0;top:0;bottom:0;width:16px;cursor:pointer;
-    background:linear-gradient(90deg,rgba(224,64,30,.6) 0%,rgba(247,162,27,.3) 42%,rgba(255,203,27,0) 100%);
-    -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 7%,#000 93%,transparent 100%);
-    mask-image:linear-gradient(to bottom,transparent 0%,#000 7%,#000 93%,transparent 100%);
-    transition:width .4s cubic-bezier(.22,1,.36,1),opacity .35s}
-  .sb-rail:hover .sb-bar{width:30px}
-  /* the handle: the middle of the bar thickens into a soft glowing pill */
-  .sb-bump{position:absolute;left:0;top:50%;transform:translateY(-50%);width:15px;height:92px;padding:0;border:0;
-    border-radius:0 12px 12px 0;background:linear-gradient(180deg,#E8421F 0%,#F2951E 100%);color:#fff;display:grid;place-items:center;cursor:pointer;
-    box-shadow:0 0 22px rgba(240,100,30,.55),0 8px 18px -8px rgba(206,32,32,.6);
-    transition:width .4s cubic-bezier(.22,1,.36,1),box-shadow .35s,height .4s cubic-bezier(.22,1,.36,1)}
-  .sb-bump svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .6s cubic-bezier(.22,1,.36,1)}
-  .sb-bump:hover,.sb-rail:hover .sb-bump{width:24px;height:104px;box-shadow:0 0 30px rgba(240,100,30,.75),0 12px 24px -8px rgba(206,32,32,.7)}
-  .sb-bump:focus-visible{outline:3px solid #FFCB1B;outline-offset:2px}
-  /* a slow, soft glow so the handle can be found without any jumping */
-  @keyframes sb-glow{0%,100%{box-shadow:0 0 14px rgba(240,100,30,.38),0 8px 18px -8px rgba(206,32,32,.6)}50%{box-shadow:0 0 26px rgba(240,100,30,.72),0 8px 18px -8px rgba(206,32,32,.6)}}
-  .sb-bump{animation:sb-glow 4.5s ease-in-out infinite}
-  body.sb-open .sb-bump,.sb-bump:hover{animation:none}
-
-  /* ---------- the open state: the bar opens up into the sidebar, edge first, then the content arrives ---------- */
-  .sb{position:fixed;left:0;top:0;bottom:0;width:220px;z-index:57;display:flex!important;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
-    background:linear-gradient(185deg,#5B382B 0%,#412619 100%);color:#F6EBDD;border-radius:0 26px 26px 0;
-    clip-path:inset(0 100% 0 0 round 0 26px 26px 0);transform:translateX(-18px);opacity:0;visibility:hidden;
-    transition:clip-path .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),opacity .3s ease,visibility 0s linear .65s}
-  body.sb-open .sb{clip-path:inset(0 0 0 0 round 0 26px 26px 0);transform:none;opacity:1;visibility:visible;
-    transition:clip-path .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),opacity .25s ease,left .6s cubic-bezier(.22,1,.36,1),top .6s cubic-bezier(.22,1,.36,1),bottom .6s cubic-bezier(.22,1,.36,1),border-radius .6s cubic-bezier(.22,1,.36,1),visibility 0s}
-  body.sb-open .sb-rail{transform:translateX(220px)}
-  body.sb-open .sb-bar{opacity:0;pointer-events:none}
-  body.sb-open .sb-bump svg{transform:rotate(180deg)}
-  /* the card, the list and the bottom items arrive one after another */
-  .sb-me,.sb-foot{opacity:0;transform:translateY(-10px);transition:opacity .45s ease,transform .55s cubic-bezier(.22,1,.36,1)}
-  .sb-foot{transform:translateY(10px)}
-  body.sb-open .sb-me{opacity:1;transform:none;transition-delay:.12s}
-  body.sb-open .sb-foot{opacity:1;transform:none;transition-delay:.3s}
-
-  .sb-scrim{position:fixed;inset:0;z-index:56;background:rgba(74,46,34,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
-    opacity:0;pointer-events:none;transition:opacity .6s ease}
-  body.sb-open .sb-scrim{opacity:1;pointer-events:auto}
+  .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
+    background:linear-gradient(185deg,#5B382B 0%,#412619 100%);color:#F6EBDD;border-radius:34px;
+    box-shadow:0 26px 50px -26px rgba(40,22,14,.6);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
+  @keyframes sb-in{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 
   /* the person's card on top */
   .sb-me{display:grid;justify-items:center;gap:2px;margin:0 0 16px;padding:8px 8px 16px;border:0;background:none;cursor:pointer;font:inherit;color:#fff;
     border-radius:16px;transition:background .3s}
   .sb-me .sb-av{width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:var(--cream);color:var(--brown);
-    display:grid;place-items:center;font-weight:700;font-size:1.05rem;margin-bottom:8px;box-shadow:0 10px 20px -10px rgba(0,0,0,.6);transition:transform .4s var(--ease)}
+    display:grid;place-items:center;font-weight:700;font-size:1.05rem;margin-bottom:8px;box-shadow:0 10px 20px -10px rgba(0,0,0,.6);transition:transform .4s cubic-bezier(.22,1,.36,1)}
   .sb-me b{font-size:.9rem;line-height:1.2;max-width:176px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sb-me small{font-size:.72rem;color:#D9C5B0;max-width:176px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sb-me em{font-style:normal;margin-top:6px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#FFCB1B}
@@ -73,20 +35,16 @@
 
   /* the five sections, one under another */
   .sb .tabs{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;position:relative;flex:none}
-  /* the open section: a rounded gradient pill that slides between the sections */
-  .sb .tab-thumb{display:block;left:0;right:0;top:0;bottom:auto;width:auto;height:45px;border-radius:14px;
-    background:linear-gradient(135deg,#D8371E 0%,#F08A22 100%);box-shadow:0 14px 24px -14px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.25);
-    transform:translateY(calc(var(--pos) * 50px));transition:transform .55s cubic-bezier(.3,1.15,.4,1)}
-  .sb .tab{display:flex;align-items:center;gap:12px;height:45px;padding:0 14px;border-radius:14px;text-align:left;font-size:.86rem;font-weight:600;color:#F0E0CE;
-    opacity:0;transform:translateX(-18px);transition:color .35s,background .25s,transform .6s cubic-bezier(.22,1,.36,1),opacity .5s ease}
+  /* the open section: the colour of the page, flush with the sidebar's edge, with soft curves above and below, so it flows into the page */
+  .sb .tab-thumb{display:block;left:0;right:-15px;top:0;bottom:auto;width:auto;height:45px;border-radius:999px 0 0 999px;
+    background:var(--paper);box-shadow:none;transform:translateY(calc(var(--pos) * 50px));transition:transform .55s cubic-bezier(.3,1.15,.4,1)}
+  .sb .tab-thumb::before,.sb .tab-thumb::after{content:"";position:absolute;right:1px;width:18px;height:18px;pointer-events:none}
+  .sb .tab-thumb::before{top:-18px;background:radial-gradient(circle at 0 0,transparent 18px,var(--paper) 18.5px)}
+  .sb .tab-thumb::after{bottom:-18px;background:radial-gradient(circle at 0 100%,transparent 18px,var(--paper) 18.5px)}
+  .sb .tab{display:flex;align-items:center;gap:12px;height:45px;padding:0 29px 0 14px;margin-right:-15px;border-radius:999px 0 0 999px;text-align:left;font-size:.86rem;font-weight:600;color:#F0E0CE;
+    transition:color .35s,background .25s,transform .45s cubic-bezier(.22,1,.36,1)}
   .sb .tab[hidden]{display:none}
-  body.sb-open .sb .tab{opacity:1;transform:none;transition-delay:.05s}
-  body.sb-open .sb .tab:nth-of-type(2){transition-delay:.1s}
-  body.sb-open .sb .tab:nth-of-type(3){transition-delay:.15s}
-  body.sb-open .sb .tab:nth-of-type(4){transition-delay:.2s}
-  body.sb-open .sb .tab:nth-of-type(5){transition-delay:.25s}
-  body.sb-open .sb .tab:nth-of-type(6){transition-delay:.3s}
-  .sb .tab[aria-selected="true"]{color:#fff}
+  .sb .tab[aria-selected="true"]{color:var(--brown)}
   @media (hover:hover) and (pointer:fine){
     .sb .tab[aria-selected="false"]:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateX(4px)}
   }
@@ -96,30 +54,12 @@
 
   /* profile settings and sign out at the bottom */
   .sb-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.14);display:grid;gap:4px}
-  .sb-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:0 14px;border:0;border-radius:12px;background:none;cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:#F0E0CE;text-align:left;transition:background .25s,color .25s,transform .3s var(--ease)}
+  .sb-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:0 14px;border:0;border-radius:12px;background:none;cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:#F0E0CE;text-align:left;transition:background .25s,color .25s,transform .3s cubic-bezier(.22,1,.36,1)}
   @media (hover:hover) and (pointer:fine){.sb-item:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateX(3px)}}
   .sb-out:hover{background:rgba(255,120,90,.18)!important;color:#FFD9CC!important}
   .sb-item:focus-visible{outline:3px solid #FFCB1B;outline-offset:-3px}
-
-  /* ---------- anchored: once it is kept open, the sidebar belongs to the left of the page ---------- */
-  body{transition:padding-left .65s cubic-bezier(.22,1,.36,1)}
-  body.sb-docked:has(#view-app:not([hidden])){padding-left:252px;background:var(--paper)}
-  body.sb-docked .sb-scrim{opacity:0!important;pointer-events:none!important}
-  /* anchored: a floating panel with generous rounded corners, inset from the edges of the window */
-  body.sb-docked .sb{left:14px;top:14px;bottom:14px;border-radius:34px;clip-path:none;box-shadow:0 26px 50px -26px rgba(40,22,14,.6)}
-  body.sb-docked .sb-rail{transform:translateX(234px)}
-  /* a peek (just hovering) gets a light veil; an anchored sidebar does not need one */
-  body.sb-open:not(.sb-docked) .sb-scrim{opacity:.55}
-  /* the open section blends into the page: the same colour as the page, flush with the edge, with soft curves above and below */
-  .sb .tab-thumb{transition:transform .55s cubic-bezier(.3,1.15,.4,1),background .45s,right .45s cubic-bezier(.22,1,.36,1),border-radius .45s}
-  body.sb-docked .sb .tab-thumb{right:-15px;border-radius:999px 0 0 999px;background:var(--paper);box-shadow:none}
-  body.sb-docked .sb .tab-thumb::before,body.sb-docked .sb .tab-thumb::after{content:"";position:absolute;right:1px;width:18px;height:18px;pointer-events:none}
-  body.sb-docked .sb .tab-thumb::before{top:-18px;background:radial-gradient(circle at 0 0,transparent 18px,var(--paper) 18.5px)}
-  body.sb-docked .sb .tab-thumb::after{bottom:-18px;background:radial-gradient(circle at 0 100%,transparent 18px,var(--paper) 18.5px)}
-  body.sb-docked .sb .tab{border-radius:999px 0 0 999px;margin-right:-15px;padding-right:29px}
-  body.sb-docked .sb .tab[aria-selected="true"]{color:var(--brown)}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .sb,.sb-rail,.sb-scrim,.sb .tab,.sb .tab-thumb,.sb-bump{transition:none!important;animation:none!important}
+  .sb,.sb .tab,.sb .tab-thumb{transition:none!important;animation:none!important}
 }
