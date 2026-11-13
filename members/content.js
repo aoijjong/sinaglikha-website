@@ -301,7 +301,6 @@
     box.innerHTML = '<button class="attc attd" type="button" data-special="attendance" aria-label="Open the full Attendance Tracker">' +
       '<span class="attc-h"><span class="attc-i">' + I('clock') + '</span><b>Attendance today</b><span class="attc-d">' + esc(date) + '</span><span class="attc-go">' + I('chevron') + '</span></span>' +
       '<span class="at-stats">' + stat('is-ok', 'check', done, 'Complete', 'timed in and out') + stat('is-work', 'clock', working, 'Timed in', 'still working') + stat('is-none', 'userX', missing.length, 'Not yet in', Math.round(missing.length / n * 100) + '% of ' + active.length) + '</span>' +
-      '<span class="attc-bar" aria-hidden="true"><i class="g" style="width:' + (done / n * 100) + '%"></i><i class="b" style="width:' + (working / n * 100) + '%"></i></span>' +
       (missing.length ? '<span class="at-list">' + rows + (missing.length > SHOW ? '<span class="at-more">See all ' + missing.length + ' who have not timed in</span>' : '') + '</span>' : '<span class="attc-miss">Everyone has timed in today.</span>') +
       '</button>';
   }
