@@ -971,3 +971,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .p-status .sp-k .sp-pc{display:none}
   .p-status .sp-kic{display:none}
 }
+
+/* long screen descriptions have a shorter wording on phones */
+.sub-short{display:none}
+@media (max-width:640px){.sub-full{display:none}.sub-short{display:inline}}
