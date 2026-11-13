@@ -199,8 +199,8 @@
       var n = F.threads.filter(function (t) { return t.category_id === c.id; }).length;
       return '<li class="lrow" data-id="' + esc(c.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(c.name) +
         '</span><span class="lmeta">' + esc((c.description ? c.description + ' · ' : '') + n + (n === 1 ? ' thread' : ' threads')) + '</span></span></div>' +
-        '<div class="lside"><span class="chip ' + (c.active ? 's-published' : 's-archived') + '">' + (c.active ? 'Open' : 'Closed') + '</span><div class="lacts">' +
-        (i > 0 ? IB('arrowUp', 'Move up', { 'data-a': 'cup' }) : '') + (i < list.length - 1 ? IB('arrowDown', 'Move down', { 'data-a': 'cdown' }) : '') +
+        '<div class="lside"><span class="chip cat-st ' + (c.active ? 's-published' : 's-archived') + '">' + (c.active ? 'Open' : 'Closed') + '</span><div class="lacts">' +
+        (i > 0 ? IB('arrowUp', 'Move up', { 'data-a': 'cup' }) : '<span class="ib-gap" aria-hidden="true"></span>') + (i < list.length - 1 ? IB('arrowDown', 'Move down', { 'data-a': 'cdown' }) : '<span class="ib-gap" aria-hidden="true"></span>') +
         IB('more', 'Actions for ' + c.name, { 'data-a': 'camenu', 'aria-haspopup': 'menu', 'aria-expanded': 'false' }) + '</div></div></li>';
     }).join('') + '</ul>' : empty('chat', 'No categories', 'Tap ' + I('plus', 'inline') + ' to add one. Employees can only post in open categories.')) + '</div>';
   }
