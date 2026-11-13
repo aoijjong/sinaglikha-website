@@ -201,8 +201,7 @@
         '</span><span class="lmeta">' + esc((c.description ? c.description + ' · ' : '') + n + (n === 1 ? ' thread' : ' threads')) + '</span></span></div>' +
         '<div class="lside"><span class="chip ' + (c.active ? 's-published' : 's-archived') + '">' + (c.active ? 'Open' : 'Closed') + '</span><div class="lacts">' +
         (i > 0 ? IB('arrowUp', 'Move up', { 'data-a': 'cup' }) : '') + (i < list.length - 1 ? IB('arrowDown', 'Move down', { 'data-a': 'cdown' }) : '') +
-        (c.active ? IB('eyeOff', 'Close: hide from employees', { 'data-a': 'ctoggle' }) : IB('eye', 'Open to employees', { 'data-a': 'ctoggle' }, 'good')) +
-        IB('pencil', 'Edit', { 'data-a': 'cedit' }) + IB('trash', 'Delete', { 'data-a': 'cdel' }, 'danger') + '</div></div></li>';
+        IB('more', 'Actions for ' + c.name, { 'data-a': 'camenu', 'aria-haspopup': 'menu', 'aria-expanded': 'false' }) + '</div></div></li>';
     }).join('') + '</ul>' : empty('chat', 'No categories', 'Tap ' + I('plus', 'inline') + ' to add one. Employees can only post in open categories.')) + '</div>';
   }
   function catDialog(c) {
@@ -252,7 +251,80 @@
   }
 
   /* ---------- wiring ---------- */
+  function catToggle(c) {
+    sb.from('forum_categories').update({ active: !c.active }).eq('id', c.id).select('id').maybeSingle().then(function (res) {
+      if (res.error || !res.data) { toast("Couldn't save that.", 'bad'); return; }
+      logAction(c.active ? 'forum.category.close' : 'forum.category.open', c.name, { id: c.id });
+      toast(c.active ? 'Closed to employees.' : 'Open to employees.', 'ok');
+      loadAll();
+    });
+  }
+
+  /* ---------- the dotted menu on each category ---------- */
+  function closeCMenu(focusBack) {
+    var m = F.box && $('#fm-amenu', F.box);
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    var bt = F.cmBtn;
+    F.cmBtn = null;
+    if (bt) { bt.setAttribute('aria-expanded', 'false'); if (focusBack && document.body.contains(bt)) bt.focus(); }
+  }
+  function openCMenu(btn) {
+    var li = btn.closest('li.lrow'), c = li && cat(li.dataset.id);
+    if (!c) return;
+    var m = $('#fm-amenu', F.box);
+    if (!m) {
+      m = document.createElement('ul');
+      m.id = 'fm-amenu';
+      m.className = 'at-menu am';
+      m.setAttribute('role', 'menu');
+      m.hidden = true;
+      F.box.appendChild(m);
+    }
+    if (!m.hidden && F.cmBtn === btn) { closeCMenu(true); return; }
+    closeCMenu(false);
+    m.setAttribute('aria-label', 'Actions for ' + c.name);
+    m.innerHTML = [[ 'ctoggle', c.active ? 'eyeOff' : 'eye', c.active ? 'Close to employees' : 'Open to employees' ], ['cedit', 'pencil', 'Edit'], ['cdel', 'trash', 'Delete']].map(function (x) {
+      return '<li role="menuitem" tabindex="-1" data-am="' + x[0] + '"' + (x[0] === 'cdel' ? ' class="danger"' : '') + '>' + I(x[1]) + '<span>' + x[2] + '</span></li>';
+    }).join('');
+    m.dataset.for = c.id;
+    m.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    F.cmBtn = btn;
+    m.style.maxHeight = '';
+    var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
+    var need = mh + 20;
+    if (window.innerHeight - r.bottom < need) { window.scrollBy({ top: need - (window.innerHeight - r.bottom), behavior: 'instant' }); r = btn.getBoundingClientRect(); }
+    var below = window.innerHeight - r.bottom - 14;
+    if (mh > below) m.style.maxHeight = Math.max(140, below) + 'px';
+    m.style.top = Math.max(8, r.bottom + 6) + 'px';
+    m.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
+    m.firstChild.focus();
+  }
+  function pickCat(a) {
+    var m = $('#fm-amenu', F.box), c = m && cat(m.dataset.for);
+    closeCMenu(false);
+    if (!c) return;
+    if (a === 'ctoggle') catToggle(c);
+    else if (a === 'cedit') catDialog(c);
+    else if (a === 'cdel') catDelete(c);
+  }
+  function cmenuKey(e) {
+    var m = $('#fm-amenu', F.box);
+    if (!m || m.hidden || !e.target.closest('#fm-amenu')) return;
+    var its = [].slice.call(m.querySelectorAll('li')), k = its.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); its[(k + 1) % its.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); its[(k - 1 + its.length) % its.length].focus(); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (its[k]) pickCat(its[k].dataset.am); }
+    else if (e.key === 'Escape') { e.preventDefault(); closeCMenu(true); }
+    else if (e.key === 'Tab') closeCMenu(false);
+  }
+
   function onClick(e) {
+    var mi = e.target.closest('#fm-amenu li');
+    if (mi) { pickCat(mi.dataset.am); return; }
+    var mb = e.target.closest('[data-a="camenu"]');
+    if (mb) { openCMenu(mb); return; }
     var tab = e.target.closest('[data-tab]');
     if (tab) { F.tab = tab.dataset.tab; render(); return; }
     var b = e.target.closest('[data-a]');
@@ -280,15 +352,12 @@
     else if (a === 'cdel' && c) catDelete(c);
     else if (a === 'cup' && c) catMove(c, -1);
     else if (a === 'cdown' && c) catMove(c, 1);
-    else if (a === 'ctoggle' && c) {
-      sb.from('forum_categories').update({ active: !c.active }).eq('id', c.id).select('id').maybeSingle().then(function (res) {
-        if (res.error || !res.data) { toast("Couldn't save that.", 'bad'); return; }
-        logAction(c.active ? 'forum.category.close' : 'forum.category.open', c.name, { id: c.id });
-        toast(c.active ? 'Closed to employees.' : 'Open to employees.', 'ok');
-        loadAll();
-      });
-    }
+    else if (a === 'ctoggle' && c) catToggle(c);
   }
+
+  document.addEventListener('click', function (e) { if (!e.target.closest('#fm-amenu, [data-a="camenu"]')) closeCMenu(false); });
+  window.addEventListener('scroll', function () { closeCMenu(false); }, true);
+  window.addEventListener('resize', function () { closeCMenu(false); });
 
   window.MembersForum = {
     open: function (box, ctx) {
@@ -297,6 +366,7 @@
       F.thread = null;
       F.tab = ctx && ctx.tab ? ctx.tab : 'threads';
       box.onclick = onClick;
+      box.onkeydown = cmenuKey;
       if (!canModerate()) {
         box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') + '<div class="ph-main"><h2>Employee Forum</h2></div></div>' +
           '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Employee Engagement only</b><p>The forum is moderated by Employee Engagement.</p></div></div>';
