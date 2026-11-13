@@ -768,3 +768,10 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-lg .sp-nb{padding:5px 10px;margin:0 -10px;width:calc(100% + 20px);border-radius:10px}
 .sp-lg li{display:block}
 .sp-lg b{min-width:1.4em;text-align:right}
+
+/* the position chart always looks the same: the ring sits at the top, centered, and the list grows underneath it */
+.p-pos .sp-body{justify-content:flex-start}
+.p-pos .sp-dn{flex-direction:column;align-items:center;justify-content:flex-start;gap:18px}
+.p-pos .sp-lg{width:100%;flex:none}
+.p-pos .sp-ring{width:120px;height:120px}
+.p-pos .sp-ring span{width:74px;height:74px}
