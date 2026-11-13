@@ -915,3 +915,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 /* inside the applicants box the "no matches" message needs no box of its own */
 #at-wrap .es{border:0;box-shadow:none;background:transparent;border-radius:0;padding:36px 16px 40px}
 @media (max-width:640px){#at-wrap .es{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}}
+
+/* Clear filters: a soft brand-orange button */
+.fl-clear{background:linear-gradient(160deg,#FFEBDD 0%,#FFDCC2 100%);border:1.5px solid #F5C3A2;color:#A8341A}
+@media (hover:hover) and (pointer:fine){.fl-clear:hover{background:linear-gradient(160deg,#FFE0CC 0%,#FFCBA8 100%);border-color:#EE9F73}}
+.fl-clear:active{background:#FFCBA8}
