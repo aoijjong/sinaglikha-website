@@ -45,32 +45,37 @@
     t.insertBefore(s, t.firstChild);
   });
 
-  /* ---- open and close ---- */
-  var pinned = false, timer = null;
-  function setOpen(on) {
-    document.body.classList.toggle('sb-open', on);
-    bump.setAttribute('aria-expanded', String(on));
-    bump.setAttribute('aria-label', on ? 'Close the menu' : 'Open the menu');
-    if (on) refreshProfile();
-    if (!on) pinned = false;
+  /* ---- open and close ----
+     Hovering the bar only peeks: the sidebar slides over the page and goes away when the mouse leaves.
+     Clicking the handle anchors it to the left: the page makes room for it and it stays until the handle is clicked again. */
+  var KEY = 'sng-sb-docked', docked = false, peek = false, timer = null;
+  try { docked = sessionStorage.getItem(KEY) === '1'; } catch (e) { docked = false; }
+  function render() {
+    var open = (docked || peek) && DESK.matches;
+    document.body.classList.toggle('sb-open', open);
+    document.body.classList.toggle('sb-docked', docked && DESK.matches);
+    bump.setAttribute('aria-expanded', String(open));
+    bump.setAttribute('aria-label', docked ? 'Close the menu' : (open ? 'Keep the menu open' : 'Open the menu'));
+    if (open) refreshProfile();
   }
-  function isOpen() { return document.body.classList.contains('sb-open'); }
-  function hoverOpen() { clearTimeout(timer); if (DESK.matches && SIGNED()) setOpen(true); }
-  function hoverClose() { clearTimeout(timer); if (pinned) return; timer = setTimeout(function () { if (!pinned) setOpen(false); }, 320); }
+  function setDocked(on) {
+    docked = on;
+    peek = false;
+    try { sessionStorage.setItem(KEY, on ? '1' : '0'); } catch (e) { /* the choice just is not remembered */ }
+    render();
+  }
+  function closePeek() { if (!docked) { peek = false; render(); } }
+  function hoverOpen() { clearTimeout(timer); if (DESK.matches && SIGNED() && !docked) { peek = true; render(); } }
+  function hoverClose() { clearTimeout(timer); if (docked) return; timer = setTimeout(closePeek, 320); }
 
   rail.addEventListener('mouseenter', hoverOpen);
   rail.addEventListener('mouseleave', hoverClose);
   sb.addEventListener('mouseenter', function () { clearTimeout(timer); });
   sb.addEventListener('mouseleave', hoverClose);
-  bump.addEventListener('click', function () {
-    clearTimeout(timer);
-    if (isOpen() && pinned) { setOpen(false); return; }
-    pinned = true;
-    setOpen(true);
-  });
-  scrim.addEventListener('click', function () { setOpen(false); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen()) { setOpen(false); bump.focus(); } });
-  tabs.addEventListener('click', function (e) { if (e.target.closest('.tab') && DESK.matches) setTimeout(function () { setOpen(false); }, 160); });
+  bump.addEventListener('click', function () { clearTimeout(timer); setDocked(!docked); });
+  scrim.addEventListener('click', closePeek);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && (docked || peek) && DESK.matches) { setDocked(false); bump.focus(); } });
+  tabs.addEventListener('click', function (e) { if (e.target.closest('.tab') && DESK.matches) setTimeout(closePeek, 160); });
 
   /* up and down arrows move between the sections (members.js already handles left and right) */
   tabs.addEventListener('keydown', function (e) {
@@ -85,22 +90,22 @@
     var nm = (who && who.textContent.trim()) || '', st0 = window.MembersApp && window.MembersApp.state, em = st0 && st0.profile && st0.profile.email || '';
     var ini = (av && av.textContent.trim()) || (nm || em).split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return Array.from(w)[0]; }).join('').toUpperCase();
     document.getElementById('sb-av').textContent = ini;
-    document.getElementById('sb-name').textContent = (who && who.textContent.trim()) || 'Profile';
+    document.getElementById('sb-name').textContent = (who && who.textContent.trim()) || (st0 && st0.profile && st0.profile.full_name) || em.split('@')[0] || 'Profile';
     var st = window.MembersApp && window.MembersApp.state, mail = st && st.profile && st.profile.email;
     document.getElementById('sb-mail').textContent = mail || '';
   }
-  function openProfile() { setOpen(false); document.getElementById('btn-profile').click(); }
+  function openProfile() { closePeek(); document.getElementById('btn-profile').click(); }
   document.getElementById('sb-prof').addEventListener('click', openProfile);
   document.getElementById('sb-set').addEventListener('click', openProfile);
-  document.getElementById('sb-out').addEventListener('click', function () { setOpen(false); document.getElementById('btn-signout').click(); });
+  document.getElementById('sb-out').addEventListener('click', function () { closePeek(); document.getElementById('btn-signout').click(); });
 
   /* ---- desktop: the buttons live in the sidebar; narrower: back at the top ---- */
   function place() {
     if (DESK.matches) { if (tabs.parentNode !== sb) sb.insertBefore(tabs, foot); }
     else {
       if (tabs.parentNode !== home) home.insertBefore(tabs, homeNext && homeNext.parentNode === home ? homeNext : null);
-      setOpen(false);
     }
+    render();
   }
   place();
   if (DESK.addEventListener) DESK.addEventListener('change', place); else if (DESK.addListener) DESK.addListener(place);

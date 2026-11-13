@@ -46,7 +46,7 @@
     clip-path:inset(0 100% 0 0 round 0 26px 26px 0);transform:translateX(-18px);opacity:0;visibility:hidden;
     transition:clip-path .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),opacity .3s ease,visibility 0s linear .65s}
   body.sb-open .sb{clip-path:inset(0 0 0 0 round 0 26px 26px 0);transform:none;opacity:1;visibility:visible;
-    transition:clip-path .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),opacity .25s ease,visibility 0s}
+    transition:clip-path .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),opacity .25s ease,left .6s cubic-bezier(.22,1,.36,1),top .6s cubic-bezier(.22,1,.36,1),bottom .6s cubic-bezier(.22,1,.36,1),border-radius .6s cubic-bezier(.22,1,.36,1),visibility 0s}
   body.sb-open .sb-rail{transform:translateX(261px)}
   body.sb-open .sb-bar{opacity:0;pointer-events:none}
   body.sb-open .sb-bump svg{transform:rotate(180deg)}
@@ -100,6 +100,24 @@
   @media (hover:hover) and (pointer:fine){.sb-item:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateX(3px)}}
   .sb-out:hover{background:rgba(255,120,90,.18)!important;color:#FFD9CC!important}
   .sb-item:focus-visible{outline:3px solid #FFCB1B;outline-offset:-3px}
+
+  /* ---------- anchored: once it is kept open, the sidebar belongs to the left of the page ---------- */
+  body{transition:padding-left .65s cubic-bezier(.22,1,.36,1)}
+  body.sb-docked:has(#view-app:not([hidden])){padding-left:293px;background:var(--paper)}
+  body.sb-docked .sb-scrim{opacity:0!important;pointer-events:none!important}
+  /* anchored: a floating panel with generous rounded corners, inset from the edges of the window */
+  body.sb-docked .sb{left:14px;top:14px;bottom:14px;border-radius:34px;clip-path:none;box-shadow:0 26px 50px -26px rgba(40,22,14,.6)}
+  body.sb-docked .sb-rail{transform:translateX(275px)}
+  /* a peek (just hovering) gets a light veil; an anchored sidebar does not need one */
+  body.sb-open:not(.sb-docked) .sb-scrim{opacity:.55}
+  /* the open section blends into the page: the same colour as the page, flush with the edge, with soft curves above and below */
+  .sb .tab-thumb{transition:transform .55s cubic-bezier(.3,1.15,.4,1),background .45s,right .45s cubic-bezier(.22,1,.36,1),border-radius .45s}
+  body.sb-docked .sb .tab-thumb{right:-15px;border-radius:999px 0 0 999px;background:var(--paper);box-shadow:none}
+  body.sb-docked .sb .tab-thumb::before,body.sb-docked .sb .tab-thumb::after{content:"";position:absolute;right:1px;width:18px;height:18px;pointer-events:none}
+  body.sb-docked .sb .tab-thumb::before{top:-18px;background:radial-gradient(circle at 0 0,transparent 18px,var(--paper) 18.5px)}
+  body.sb-docked .sb .tab-thumb::after{bottom:-18px;background:radial-gradient(circle at 0 100%,transparent 18px,var(--paper) 18.5px)}
+  body.sb-docked .sb .tab{border-radius:999px 0 0 999px;margin-right:-15px;padding-right:29px}
+  body.sb-docked .sb .tab[aria-selected="true"]{color:var(--brown)}
 }
 
 @media (prefers-reduced-motion:reduce){
