@@ -60,6 +60,9 @@
   .sb-banner::after{right:150px;bottom:-110px;width:230px;height:230px;background:rgba(255,255,255,.26)}
   .bn-art{position:relative;flex:none;width:236px;height:126px}
   .bn-svg{position:absolute;left:8px;top:0;width:220px;height:132px;overflow:visible}
+  .bn-art[data-hands="true"]{width:340px}
+  .bn-hands{filter:drop-shadow(0 10px 12px rgba(150,80,30,.26))}
+  .bn-art[data-hands="true"] .bn-svg{left:0;top:-14px;width:340px;height:176px}
   .bn-card{position:absolute;animation:bn-float 6s ease-in-out infinite}
   /* the section icon: a glassy gradient tile with a soft glow */
   .bn-c1{left:0;top:14px;width:64px;height:64px;border-radius:22px;display:grid;place-items:center;

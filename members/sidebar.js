@@ -78,7 +78,33 @@
     /* a few sparkles */
     '<path d="M44 40l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#fff" opacity=".9"/><circle cx="60" cy="96" r="2.6" fill="#fff" opacity=".8"/><circle cx="196" cy="48" r="2.4" fill="#fff" opacity=".85"/>' +
     '</svg>';
-  banner.innerHTML = '<div class="bn-art" aria-hidden="true">' + ART + '<span class="bn-card bn-c1"><span class="bn-ic" id="bn-ic"></span></span><span class="bn-card bn-c2"></span><span class="bn-card bn-c3"></span></div>' +
+  var DEFAULT_ART = ART + '<span class="bn-card bn-c1"><span class="bn-ic" id="bn-ic"></span></span><span class="bn-card bn-c2"></span><span class="bn-card bn-c3"></span>';
+  // the Content banner: three hands, one holding a dot, one a photo, one a card, with a few small shapes around them
+  var HANDS = '<svg class="bn-svg bn-hands" viewBox="0 0 340 150" aria-hidden="true">' +
+    /* small shapes */
+    '<path d="M150 14l17 9-17 9z" fill="none" stroke="#E8701A" stroke-width="2.6" stroke-linejoin="round"/>' +
+    '<path d="M92 34h11M97.5 28.5v11" stroke="#4A2E22" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<path d="M268 22l8 8m0-8l-8 8" stroke="#4A2E22" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<path d="M44 124a13 13 0 0 1 26 0" fill="none" stroke="#E8701A" stroke-width="2.8" stroke-linecap="round"/>' +
+    '<circle cx="124" cy="22" r="3" fill="#F7B02C"/><circle cx="302" cy="64" r="3.2" fill="#E8701A"/>' +
+    /* a white hand reaching in from the top, holding a dot */
+    '<g transform="translate(212 -8) rotate(22)"><rect x="8" y="-48" width="38" height="56" rx="8" fill="#fff"/>' +
+    '<rect x="0" y="0" width="56" height="46" rx="19" fill="#fff"/>' +
+    '<rect x="4" y="40" width="12" height="36" rx="6" fill="#fff"/><rect x="20" y="42" width="12" height="43" rx="6" fill="#fff"/><rect x="36" y="40" width="12" height="34" rx="6" fill="#fff"/>' +
+    '<rect x="-12" y="12" width="26" height="13" rx="6.5" fill="#fff" transform="rotate(-20 1 18)"/><circle cx="26" cy="92" r="7" fill="#4A2E22"/></g>' +
+    /* an orange hand coming up from the bottom, holding a photo */
+    '<rect x="116" y="62" width="64" height="64" rx="7" fill="#3A2018"/><rect x="122" y="68" width="52" height="52" rx="4" fill="#F9D79A"/>' +
+    '<circle cx="158" cy="84" r="7" fill="#fff"/><path d="M122 120V102l16-14 14 12 10-8 12 10v18z" fill="#E8701A"/>' +
+    '<g transform="rotate(-24 96 128)"><rect x="40" y="104" width="86" height="46" rx="18" fill="#EC7A2A"/></g>' +
+    '<rect x="108" y="76" width="26" height="11" rx="5.5" fill="#EC7A2A"/><rect x="106" y="90" width="28" height="11" rx="5.5" fill="#EC7A2A"/><rect x="108" y="104" width="26" height="11" rx="5.5" fill="#EC7A2A"/>' +
+    '<rect x="136" y="56" width="13" height="30" rx="6.5" fill="#EC7A2A" transform="rotate(14 142 70)"/>' +
+    /* a deep-brown hand from the right, holding a white card with lines */
+    '<g transform="rotate(-12 270 104)"><rect x="226" y="82" width="78" height="46" rx="7" fill="#fff"/>' +
+    '<rect x="234" y="92" width="34" height="5" rx="2.5" fill="#F7B02C"/><rect x="234" y="102" width="52" height="5" rx="2.5" fill="#E8701A"/><rect x="234" y="112" width="26" height="5" rx="2.5" fill="#D9C2A8"/>' +
+    '<rect x="296" y="86" width="64" height="40" rx="16" fill="#4A2E22"/>' +
+    '<rect x="290" y="84" width="26" height="11" rx="5.5" fill="#4A2E22"/><rect x="292" y="98" width="26" height="11" rx="5.5" fill="#4A2E22"/><rect x="290" y="112" width="26" height="11" rx="5.5" fill="#4A2E22"/></g>' +
+    '</svg>';
+  banner.innerHTML = '<div class="bn-art" aria-hidden="true">' + DEFAULT_ART + '</div>' +
     '<div class="bn-text"><h2 id="bn-hi">Hi</h2><p id="bn-msg"></p></div>';
   if (app && appHead) app.insertBefore(banner, appHead);
   function currentKey() {
@@ -97,8 +123,10 @@
     strong.textContent = d[1];
     msg.appendChild(strong);
     msg.appendChild(document.createTextNode('. ' + d[2]));
+    var key = currentKey(), art = banner.querySelector('.bn-art'), hands = key === 'content';
+    if (art.getAttribute('data-hands') !== String(hands)) { art.setAttribute('data-hands', String(hands)); art.innerHTML = hands ? HANDS : DEFAULT_ART; }
     var ic = document.getElementById('bn-ic');
-    if (ic.getAttribute('data-k') !== currentKey() && window.SngIcon) { ic.innerHTML = window.SngIcon(d[0]); ic.setAttribute('data-k', currentKey()); }
+    if (ic && ic.getAttribute('data-k') !== key && window.SngIcon) { ic.innerHTML = window.SngIcon(d[0]); ic.setAttribute('data-k', key); }
   }
   if (window.MutationObserver) new MutationObserver(updateBanner).observe(tabs, { attributes: true, attributeFilter: ['aria-selected'], subtree: true });
 
