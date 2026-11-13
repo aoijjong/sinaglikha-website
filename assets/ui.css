@@ -996,3 +996,18 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .attd .at-n{font-size:.8rem}
   .attd .at-more{padding-top:4px;font-size:.78rem}
 }
+
+/* vacancy cards: the same soft style as the applicant status cards */
+.vc-k{border:1px solid transparent;border-radius:16px;padding:14px 16px;gap:3px;box-shadow:0 12px 24px -16px rgba(74,46,34,.35);transition:transform .2s ease,box-shadow .25s ease}
+.vc-k.k-all{--g:linear-gradient(160deg,#F4ECE5 0%,#E8DCD1 100%)}
+.vc-k.k-published{--g:linear-gradient(160deg,#EAF5E6 0%,#D9EDD6 100%)}
+.vc-k.k-draft{--g:linear-gradient(160deg,#FFF7DA 0%,#FFEAB9 100%)}
+.vc-k.k-closed{--g:linear-gradient(160deg,#FFE9D8 0%,#FFD2B2 100%)}
+.vc-k{background:var(--g)}
+.vc-k b{font-size:2.2rem}
+.vc-k span{font-size:.9rem;font-weight:700;color:var(--brown)}
+.vc-k[aria-pressed="true"]{background:var(--g) padding-box,linear-gradient(135deg,#F3A17F 0%,#F8C57C 100%) border-box;box-shadow:0 12px 22px -14px rgba(74,46,34,.35)}
+@media (hover:hover) and (pointer:fine){.vc-k:hover{background:var(--g);transform:translateY(-2px);box-shadow:0 16px 28px -16px rgba(74,46,34,.42)}.vc-k[aria-pressed="true"]:hover{background:var(--g) padding-box,linear-gradient(135deg,#F3A17F 0%,#F8C57C 100%) border-box}}
+.vc-k:active{transform:scale(.975)}
+@media (max-width:640px){.vc-kpis{gap:6px}.vc-k{padding:8px 12px;border-radius:12px;gap:0}.vc-k b{font-size:1.5rem}.vc-k span{font-size:.74rem}}
+.vc-k[aria-pressed="true"],.vc-k[aria-pressed="true"]:hover{border-color:transparent}

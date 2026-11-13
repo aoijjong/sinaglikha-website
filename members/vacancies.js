@@ -76,11 +76,11 @@
     V.rows.forEach(function (v) { perDept[v.department] = (perDept[v.department] || 0) + 1; });
     var openings = scope.filter(function (v) { return v.status === 'published'; }).reduce(function (n, v) { return n + (v.openings || 0); }, 0);
     var tile = function (key, n, label) {
-      return '<button class="vc-k" type="button" data-show="' + key + '" aria-pressed="' + (V.show === key) + '"><b>' + n + '</b><span>' + label + '</span></button>';
+      return '<button class="vc-k k-' + key + '" type="button" data-show="' + key + '" aria-pressed="' + (V.show === key) + '"><b>' + n + '</b><span>' + label + '</span></button>';
     };
     $('#vc-dash', V.box).innerHTML = '<div class="vc-dh">Vacancy dashboard</div>' +
       '<div class="vc-kpis">' + tile('all', counts.all, 'Total vacancies') + tile('published', counts.published, 'Published') + tile('draft', counts.draft, 'Drafts') + tile('closed', counts.closed, 'Closed') + '</div>' +
-      '<p class="vc-note">' + (counts.published ? 'The published vacancies list ' + (openings ? openings + (openings === 1 ? ' opening' : ' openings') : 'no opening count yet') + '. ' : '') + 'Applicants apply through the QR code on each poster. Follow them in the Applicant Tracking System.</p>' +
+      '<p class="vc-note">' + (counts.published && openings ? openings + (openings === 1 ? ' opening' : ' openings') + ' published. ' : '') + "Applicants apply via each poster's QR code. Track them in the Applicant Tracking System.</p>" +
       '<label class="vc-fl" for="vc-dept-filter">Filter by department</label>' +
       '<select id="vc-dept-filter" class="vc-sel">' + [['all', 'All Departments']].concat(DEPT_KEYS.map(function (k) { return [k, app.depts[k] || k]; })).map(function (d) {
         return '<option value="' + d[0] + '"' + (V.dept === d[0] ? ' selected' : '') + '>' + esc(d[1]) + (d[0] === 'all' ? ' (' + V.rows.length + ')' : ' (' + (perDept[d[0]] || 0) + ')') + '</option>';
