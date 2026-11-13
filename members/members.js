@@ -272,6 +272,9 @@
   }
 
   /* ---------- session flow ---------- */
+  /* The screens (Content, Employees...) are separate script files loaded after this one; wait until they all exist
+     before opening a tab, or a refresh lands on a tab whose screen never opened. */
+  var pageLoaded = document.readyState === 'complete' ? Promise.resolve() : new Promise(function (r) { window.addEventListener('load', r, { once: true }); });
   async function enterApp(session) {
     state.session = session;
     var res = await sb.from('profiles')
@@ -298,6 +301,7 @@
     state.canUse = true;                   // every Senior Manager and the owner: the Accounts tab
     state.can201 = state.isAdmin || !state.deptKnown || FILE_DEPTS.indexOf(p.department) !== -1;
     applyAccess();
+    await pageLoaded;
     var savedTab = nav.get().tab;
     setTab(TAB_NAMES.indexOf(savedTab) !== -1 ? savedTab : (state.can201 ? 'library' : 'content'));
     if (onProfileUrl()) { fillProfile(); show('profile'); } else show('app');
