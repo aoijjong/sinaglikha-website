@@ -129,10 +129,12 @@
     if (cs.dept === 'engagement') list = [{ key: 'announcements', name: 'Announcements', department: 'engagement', kind: 'post' }].concat(list);
     // Engagement moderators get two small cards (latest announcement, forum activity); they replace the two rows
     /* Staffing manages the vacancies shown on the public Careers page */
+    var nRec = 0;
     if (cs.dept === 'staffing' && canReview() && window.MembersVacancies) {
       var rec = [{ key: 'vacancies', name: 'Vacancies', department: 'staffing', kind: 'vacancies' }];
       if (window.MembersApplicants) rec.push({ key: 'applicants', name: 'Applicant Tracking System', department: 'staffing', kind: 'applicants' });
       if (window.MembersRecruitmentDocs) rec.push({ key: 'recdocs', name: 'Recruitment and Selection Records', department: 'staffing', kind: 'recdocs' });
+      nRec = rec.length;
       list = rec.concat(list);
     }
     var eng = cs.dept === 'engagement' && canModerate() && !!window.MembersAnnouncements && !!window.MembersForum;
@@ -145,11 +147,8 @@
     var summary = [list.length + (list.length === 1 ? ' deliverable' : ' deliverables')];
     if (pub) summary.push(pub + ' published');
     if (drafts) summary.push(drafts + (drafts === 1 ? ' draft waiting' : ' drafts waiting'));
-    cards.innerHTML = '<div class="dp-head"><span class="di">' + I(DEPT_ICON[cs.dept]) + '</span><div class="dp-title"><h2>' + esc(app.depts[cs.dept] || cs.dept) + '</h2>' +
-      '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div>' +
-      (glance ? '<div id="cm-glance">' + glanceSkeleton() + '</div>' + (window.MembersApplicants ? '<div id="cm-rec"></div>' : '') : '') +
-      (eng ? '<div class="eng-grid" id="cm-eng">' + glanceSkeleton() + glanceSkeleton() + '</div>' : '') + '<ul class="rows">' +
-      list.map(function (d) {
+    if (!glance) nRec = 0;   // without the card the three rows stay in the normal list
+      var rowsHtml = list.map(function (d) {
         var n = counts[d.key] || { published: 0, draft: 0, unpublished: 0, archived: 0 };
         var sp = SPECIAL[d.key], special = !!(sp && window[sp[0]]);
         var line = DELIV_LINE[d.key] || '';
@@ -166,7 +165,13 @@
         }
         return '<li class="lrow"><button class="lmain" type="button" ' + open + '><span class="lico">' + I(KIND_ICON[d.kind] || 'file') + '</span><span class="ltext"><span class="lname">' + esc(d.name) +
           '</span><span class="lmeta">' + esc(line) + '</span></span>' + I('chevron', 'go go-main') + '</button><div class="lside">' + chips + I('chevron', 'go go-side') + '</div></li>';
-      }).join('') + '</ul>';
+    });
+    cs.recRows = rowsHtml.slice(0, nRec).join('');
+    cards.innerHTML = '<div class="dp-head"><span class="di">' + I(DEPT_ICON[cs.dept]) + '</span><div class="dp-title"><h2>' + esc(app.depts[cs.dept] || cs.dept) + '</h2>' +
+      '<p>' + esc(DEPT_LINE[cs.dept] || '') + '</p></div><span class="dp-sum">' + esc(summary.join(' · ')) + '</span></div>' +
+      (glance ? '<div id="cm-glance">' + glanceSkeleton() + '</div>' + (nRec ? '<div id="cm-rec"></div>' : '') : '') +
+      (eng ? '<div class="eng-grid" id="cm-eng">' + glanceSkeleton() + glanceSkeleton() + '</div>' : '') + '<ul class="rows">' +
+      rowsHtml.slice(nRec).join('') + '</ul>';
     if (glance || eng) {
       var again = glance ? function () { loadGlance(); loadRecruit(); } : loadEng, where = cs.dept;
       again();
@@ -253,14 +258,14 @@
     box = $('#cm-rec');
     if (!box || cs.view !== 'home' || cs.dept !== 'staffing') return;
     // before supabase/recruitment.sql has been run the table is missing, so the card simply stays away
-    if (res[0].error || !Array.isArray(res[0].data)) { box.innerHTML = ''; return; }
+    if (res[0].error || !Array.isArray(res[0].data)) { box.innerHTML = '<ul class="rows">' + (cs.recRows || '') + '</ul>'; return; }
     var n = { all: res[0].data.length };
     res[0].data.forEach(function (r) { n[r.status] = (n[r.status] || 0) + 1; });
     var open = res[1].error || !Array.isArray(res[1].data) ? 0 : res[1].data.length;
     // a view-only dashboard: one bar for each of the ten stages; the way into the full view is the Applicant Tracking System row below
     box.innerHTML = '<div class="attc is-static" role="group" aria-label="Recruitment by stage">' +
       '<span class="attc-h"><span class="attc-i">' + I('userCheck') + '</span><b>Recruitment</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span></span>' +
-      SngStageChart.html(n, { total: n.all }) + '</div>';
+      SngStageChart.html(n, { total: n.all }) + '<ul class="rows rc-rows">' + (cs.recRows || '') + '</ul></div>';
   }
 
   async function loadGlance() {

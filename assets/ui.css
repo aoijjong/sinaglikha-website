@@ -577,3 +577,11 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-sum{padding-bottom:14px;border-bottom:1px solid var(--line)}
 .attc.is-static .attc-h{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
 .attc.is-static .sc-head{border-bottom:0;padding-bottom:4px}
+
+/* the three recruitment rows sit inside the Recruitment card as one group */
+.attc .rc-rows{gap:0;margin:4px -18px -14px;border-top:1px solid var(--line)}
+.attc .rc-rows .lrow,.attc .rc-rows .lrow:first-child{border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;background:transparent;padding:12px 18px}
+.attc .rc-rows .lrow:first-child{border-top:0}
+@media (hover:hover) and (pointer:fine){.attc .rc-rows .lrow:hover{transform:none;box-shadow:none;background:#FBF6EF;border-color:var(--line)}}
+.attc .rc-rows .lrow:last-child{border-radius:0 0 22px 22px}
+@media (max-width:640px){.attc .rc-rows{margin:4px -14px -12px}.attc .rc-rows .lrow{padding:10px 14px}}
