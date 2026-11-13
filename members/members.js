@@ -509,10 +509,9 @@
     var n = esc(e.name);
     var del = state.canUse ? SIB('trash', 'Delete ' + (e.folder ? 'folder ' : '') + e.name, { 'data-act': 'delete' }, 'danger') : '';
     if (e.folder) {
-      return '<li class="lrow" data-name="' + n + '" data-kind="folder">' +
-        '<button class="lmain" type="button" data-act="open"><span class="lico folder">' + SI('folder') + '</span>' +
-        '<span class="ltext"><span class="lname">' + n + '</span><span class="lmeta">Folder</span></span></button>' +
-        '<div class="lside"><div class="lacts">' + del + '</div></div></li>';
+      return '<li class="lrow fcard" data-name="' + n + '" data-kind="folder">' +
+        '<button class="fc-main" type="button" data-act="open" aria-label="Open the folder ' + n + '"><span class="fc-tag">Folder</span><span class="fc-name">' + n + '</span><span class="fc-meta">&nbsp;</span></button>' +
+        (del ? '<div class="fc-del">' + del + '</div>' : '') + '</li>';
     }
     var meta = [fmtSize(e.size), fmtDate(e.updated)].filter(Boolean).join(' · ');
     return '<li class="lrow" data-name="' + n + '" data-kind="file">' +
