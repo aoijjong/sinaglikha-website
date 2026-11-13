@@ -45,8 +45,7 @@
       '<div class="ph-main"><h2>Recruitment and Selection Records</h2><p class="sub">Private: only Staffing and Recruitment can open these</p></div>' +
       '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="rd-q" type="search" placeholder="Search" aria-label="Search documents" autocomplete="off"></div>' +
       IB('upload', 'Upload a document', { 'data-a': 'add' }, 'solid') + '</div></div>' +
-      '<div class="pills" id="rd-pills" role="group" aria-label="Category"></div>' +
-      '<div class="fl-row"><select id="rd-pos" class="fl-pill" aria-label="Filter by position"></select>' +
+      '<div class="fl-row"><select id="rd-catf" class="fl-pill" aria-label="Filter by document type"></select><select id="rd-pos" class="fl-pill" aria-label="Filter by position"></select>' +
       '<span class="fl-dates"><label class="fl-date"><span>From</span><input id="rd-from" type="date" aria-label="Uploaded from"></label>' +
       '<label class="fl-date"><span>To</span><input id="rd-to" type="date" aria-label="Uploaded to"></label></span>' +
       '<button class="fl-clear" type="button" id="rd-clear" data-a="clear" hidden>Clear filters</button></div>' +
@@ -73,8 +72,8 @@
   function render() {
     var counts = { all: D.rows.length };
     D.rows.forEach(function (d) { counts[d.category] = (counts[d.category] || 0) + 1; });
-    $('#rd-pills', D.box).innerHTML = [['all', 'All Documents']].concat(CATS).map(function (c) {
-      return '<button class="pill" type="button" data-cat="' + c[0] + '" aria-pressed="' + (D.cat === c[0]) + '">' + esc(c[1]) + ' <small>' + (counts[c[0]] || 0) + '</small></button>';
+    $('#rd-catf', D.box).innerHTML = [['all', 'All documents']].concat(CATS).map(function (c) {
+      return '<option value="' + c[0] + '"' + (D.cat === c[0] ? ' selected' : '') + '>' + esc(c[1]) + ' (' + (counts[c[0]] || 0) + ')</option>';
     }).join('');
     // the position filter lists the positions that have at least one document
     var used = {};
@@ -251,7 +250,7 @@
         else if (e.target.id === 'rd-from') { D.from = e.target.value; render(); }
         else if (e.target.id === 'rd-to') { D.to = e.target.value; render(); }
       };
-      box.onchange = function (e) { if (e.target.id === 'rd-pos') { D.pos = e.target.value; render(); } };
+      box.onchange = function (e) { if (e.target.id === 'rd-pos') { D.pos = e.target.value; render(); } else if (e.target.id === 'rd-catf') { D.cat = e.target.value; render(); } };
       return load();
     }
   };
