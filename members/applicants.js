@@ -64,7 +64,7 @@
       '<span class="fl-dates"><label class="fl-date"><span>From</span><input id="at-from" type="date" aria-label="Received from"></label>' +
       '<label class="fl-date"><span>To</span><input id="at-to" type="date" aria-label="Received to"></label></span>' +
       '<button class="fl-clear" type="button" id="at-clear" data-a="clear" hidden>Clear filters</button></div>' +
-      '<div class="list-card" id="at-wrap"><div class="at-scroll"><table class="at-tbl"><thead><tr><th>Reference</th><th>Applicant</th><th>Position applied for</th><th>Date received</th><th>Status</th><th>Last updated</th></tr></thead><tbody id="at-rows"></tbody></table></div>' +
+      '<div class="list-card" id="at-wrap"><div class="at-scroll"><table class="at-tbl"><thead><tr><th>Reference</th><th>Applicant</th><th>Position applied for</th><th>Date received</th><th>Status</th><th>Last updated</th><th class="at-ah">Actions</th></tr></thead><tbody id="at-rows"></tbody></table></div>' +
       '<div class="es" id="at-empty" hidden></div></div>' +
       '<button class="btn btn-ghost btn-sm" type="button" id="at-more" data-a="more" hidden style="margin-top:12px">Show more</button>' +
       '<div class="busy" id="at-busy" hidden role="status">Loading…</div>' +
@@ -127,7 +127,9 @@
         '<td data-l="Received">' + esc(app.fmtDate(a.received_on)) + '</td>' +
         '<td data-l="Status"><button type="button" class="at-sttag chip ' + (CHIP[a.status] || '') + '" data-stfor="' + esc(a.id) + '" aria-haspopup="listbox" aria-expanded="false" aria-label="' + esc(a.full_name) + ': ' + esc(LABEL[a.status] || a.status) + '. Change status">' +
         '<span class="at-sttx">' + esc(LABEL[a.status] || a.status) + '</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></td>' +
-        '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td></tr>';
+        '<td data-l="Updated">' + esc(app.fmtDate(a.updated_at)) + '</td>' +
+        '<td data-l="Actions" class="at-acts"><div class="lacts">' + IB('eye', 'View the record of ' + a.full_name, { 'data-a': 'open' }) + IB('chat', 'Add a note for ' + a.full_name, { 'data-a': 'rnote' }) +
+        IB('trash', 'Delete ' + a.full_name, { 'data-a': 'rdel' }, 'danger') + '</div></td></tr>';
     }).join('');
     $('#at-more', A.box).hidden = list.length <= A.shown;
     $('#at-more', A.box).textContent = 'Show more (' + (list.length - A.shown) + ' left)';
@@ -192,6 +194,18 @@
       '<p class="msg bad" id="ap-err" role="alert" hidden></p>' +
       '<div class="actions" style="justify-content:space-between"><button class="btn btn-ghost btn-sm btn-warn" type="button" data-ap="del">Delete applicant</button>' +
       '<button class="btn btn-primary btn-sm" type="button" data-ap="close">Close</button></div>';
+  }
+
+  async function rowDelete(id) {
+    var a = A.rows.filter(function (x) { return x.id === id; })[0];
+    if (!a) return;
+    var ok = await ask({ title: 'Delete This Applicant?', text: a.full_name + ' (' + a.reference + ') and their history and notes will be permanently deleted.', ok: 'Delete', danger: true });
+    if (!ok) return;
+    var d = await sb.from('applicants').delete().eq('id', a.id).select('id');
+    if (d.error || !(d.data || []).length) { toast("Couldn't delete that. You may not have permission.", 'bad'); return; }
+    logAction('applicant.delete', a.reference, { id: a.id });
+    toast('Deleted.', 'ok');
+    await load();
   }
 
   function fail(text) { var e = $('#ap-err'); if (e) { e.textContent = text; e.hidden = false; } }
@@ -488,6 +502,8 @@
     if (a === 'more') { A.shown += PAGE; render(); return; }
     if (a === 'clear') { A.status = 'all'; A.pos = ''; A.from = ''; A.to = ''; A.q = ''; A.fOpen = false; var qi = $('#at-q', A.box); if (qi) qi.value = ''; A.shown = PAGE; render(); return; }
     if (a === 'filters') { A.fOpen = !A.fOpen; render(); return; }
+    if (a === 'rnote') { var tn = e.target.closest('tr'); if (tn) { openDetail(tn.dataset.id).then(function () { var n = $('#ap-note'); if (n) n.focus(); }); } return; }
+    if (a === 'rdel') { var td = e.target.closest('tr'); if (td) rowDelete(td.dataset.id); return; }
     if (a === 'open') { var tr = e.target.closest('tr'); if (tr) openDetail(tr.dataset.id); }
   }
 

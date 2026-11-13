@@ -597,3 +597,9 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-r small{color:var(--muted);font-size:.8rem}
 .at-more{padding:8px 2px 0;font-size:.85rem;color:var(--muted)}
 @media (max-width:640px){.at-st{padding:6px 10px}.at-st b{font-size:1.3rem}.at-r small{display:none}}
+
+/* applicant row actions: view, add a note, delete */
+.at-tbl .at-acts{white-space:nowrap;text-align:right}
+.at-tbl .at-acts .lacts{display:inline-flex;gap:4px}
+.at-tbl th.at-ah{text-align:right}
+@media (max-width:640px){.at-tbl td.at-acts{justify-content:flex-end;padding-top:8px}.at-tbl td.at-acts::before{display:none}}
