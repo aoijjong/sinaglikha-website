@@ -961,3 +961,24 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-st .at-tx b,.at-st.is-ok .at-tx b,.at-st.is-work .at-tx b,.at-st.is-none .at-tx b{color:var(--brown)}
 @media (hover:hover) and (pointer:fine){.attc:hover .at-st{transform:translateY(-2px);box-shadow:0 16px 28px -16px rgba(74,46,34,.42)}}
 @media (max-width:640px){.at-ic{width:32px;height:32px;border-radius:10px}.at-ic .icon{width:17px;height:17px}}
+
+/* phone: the Attendance today card is more compact */
+@media (max-width:640px){
+  .attd{gap:8px;padding:10px 12px}
+  .attd .attc-i{width:30px;height:30px;border-radius:10px;box-shadow:none}
+  .attd .attc .icon,.attd .attc-i .icon{width:16px;height:16px}
+  .attd .attc-h{gap:8px}
+  .attd .attc-h b{font-size:1rem}
+  .attd .attc-go{width:26px;height:26px}
+  .attd .at-stats{gap:6px}
+  .attd .at-st{flex-direction:row;align-items:center;gap:6px;padding:6px 8px;border-radius:12px}
+  .attd .at-ic{width:26px;height:26px;border-radius:8px;flex:none}
+  .attd .at-ic .icon{width:14px;height:14px}
+  .attd .at-st .at-tx b{font-size:1.2rem}
+  .attd .at-lb{font-size:.66rem;line-height:1.1}
+  .attd .attc-bar{height:5px}
+  .attd .at-r{padding:5px 2px}
+  .attd .at-r:nth-child(n+4){display:none}
+  .attd .at-n{font-size:.8rem}
+  .attd .at-more{padding-top:4px;font-size:.78rem}
+}

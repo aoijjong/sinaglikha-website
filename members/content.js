@@ -267,7 +267,7 @@
     var open = res[1].error || !Array.isArray(res[1].data) ? 0 : res[1].data.length;
     // a view-only dashboard: one bar for each of the ten stages; the way into the full view is the Applicant Tracking System row below
     box.innerHTML = '<div class="attc is-static" role="group" aria-label="Talent Acquisition by stage">' +
-      '<span class="attc-h"><span class="attc-i">' + I('userPlus') + '</span><b>Talent Acquisition</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span></span>' +
+      '<span class="attc-h"><b>Talent Acquisition</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span></span>' +
       SngStageChart.html(n, { total: n.all }) + '<ul class="rows rc-rows">' + (cs.recRows || '') + '</ul></div>';
   }
 
