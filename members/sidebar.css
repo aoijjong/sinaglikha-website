@@ -19,37 +19,45 @@
   body:has(#view-app:not([hidden])) .top-right{display:none}
   body:has(#view-app:not([hidden])) .app-head{margin-bottom:18px}
 
-  /* ---------- the closed state: a gradient bar and a bump ---------- */
-  .sb-rail{position:fixed;left:0;top:0;bottom:0;width:0;z-index:58;transition:transform .5s var(--ease)}
-  .sb-bar{position:absolute;left:0;top:0;bottom:0;width:12px;cursor:pointer;
-    background:linear-gradient(90deg,rgba(224,64,30,.34) 0%,rgba(247,162,27,.16) 55%,rgba(255,203,27,0) 100%);
-    -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 22%,#000 78%,transparent 100%);
-    mask-image:linear-gradient(to bottom,transparent 0%,#000 22%,#000 78%,transparent 100%);
-    transition:width .35s var(--ease),opacity .35s}
-  .sb-rail:hover .sb-bar{width:20px}
-  .sb-bump{position:absolute;left:0;top:50%;transform:translateY(-50%);width:26px;height:64px;padding:0;border:0;
-    border-radius:0 18px 18px 0;background:var(--grad);color:#fff;display:grid;place-items:center;cursor:pointer;
-    box-shadow:0 10px 24px -8px rgba(206,32,32,.55);transition:width .3s var(--ease),box-shadow .3s,background .3s}
-  .sb-bump svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .5s var(--ease)}
-  .sb-bump:hover,.sb-rail:hover .sb-bump{width:34px;box-shadow:0 14px 28px -8px rgba(206,32,32,.65)}
+  /* ---------- the closed state: a full-height gradient bar with a glowing handle in the middle ---------- */
+  .sb-rail{position:fixed;left:0;top:0;bottom:0;width:0;z-index:58;transition:transform .65s cubic-bezier(.22,1,.36,1)}
+  .sb-bar{position:absolute;left:0;top:0;bottom:0;width:16px;cursor:pointer;
+    background:linear-gradient(90deg,rgba(224,64,30,.6) 0%,rgba(247,162,27,.3) 42%,rgba(255,203,27,0) 100%);
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 7%,#000 93%,transparent 100%);
+    mask-image:linear-gradient(to bottom,transparent 0%,#000 7%,#000 93%,transparent 100%);
+    transition:width .4s cubic-bezier(.22,1,.36,1),opacity .35s}
+  .sb-rail:hover .sb-bar{width:30px}
+  /* the handle: the middle of the bar thickens into a soft glowing pill */
+  .sb-bump{position:absolute;left:0;top:50%;transform:translateY(-50%);width:15px;height:92px;padding:0;border:0;
+    border-radius:0 12px 12px 0;background:linear-gradient(180deg,#E8421F 0%,#F2951E 100%);color:#fff;display:grid;place-items:center;cursor:pointer;
+    box-shadow:0 0 22px rgba(240,100,30,.55),0 8px 18px -8px rgba(206,32,32,.6);
+    transition:width .4s cubic-bezier(.22,1,.36,1),box-shadow .35s,height .4s cubic-bezier(.22,1,.36,1)}
+  .sb-bump svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .6s cubic-bezier(.22,1,.36,1)}
+  .sb-bump:hover,.sb-rail:hover .sb-bump{width:24px;height:104px;box-shadow:0 0 30px rgba(240,100,30,.75),0 12px 24px -8px rgba(206,32,32,.7)}
   .sb-bump:focus-visible{outline:3px solid #FFCB1B;outline-offset:2px}
-  /* a gentle nudge now and then, so the bump is easy to find */
-  @keyframes sb-nudge{0%,86%,100%{transform:translateY(-50%) translateX(0)}92%{transform:translateY(-50%) translateX(5px)}}
-  .sb-bump{animation:sb-nudge 6s ease-in-out 2s infinite}
+  /* a slow, soft glow so the handle can be found without any jumping */
+  @keyframes sb-glow{0%,100%{box-shadow:0 0 14px rgba(240,100,30,.38),0 8px 18px -8px rgba(206,32,32,.6)}50%{box-shadow:0 0 26px rgba(240,100,30,.72),0 8px 18px -8px rgba(206,32,32,.6)}}
+  .sb-bump{animation:sb-glow 4.5s ease-in-out infinite}
   body.sb-open .sb-bump,.sb-bump:hover{animation:none}
 
-  /* ---------- the open state ---------- */
+  /* ---------- the open state: the bar opens up into the sidebar, edge first, then the content arrives ---------- */
   .sb{position:fixed;left:0;top:0;bottom:0;width:261px;z-index:57;display:flex!important;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
-    background:linear-gradient(185deg,#5B382B 0%,#412619 100%);color:#F6EBDD;
-    box-shadow:30px 0 60px -30px rgba(40,22,14,.55);transform:translateX(-102%);visibility:hidden;
-    transition:transform .5s var(--ease),visibility 0s linear .5s}
-  body.sb-open .sb{transform:none;visibility:visible;transition:transform .5s var(--ease),visibility 0s}
+    background:linear-gradient(185deg,#5B382B 0%,#412619 100%);color:#F6EBDD;border-radius:0 26px 26px 0;
+    clip-path:inset(0 100% 0 0 round 0 26px 26px 0);transform:translateX(-18px);opacity:0;visibility:hidden;
+    transition:clip-path .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),opacity .3s ease,visibility 0s linear .65s}
+  body.sb-open .sb{clip-path:inset(0 0 0 0 round 0 26px 26px 0);transform:none;opacity:1;visibility:visible;
+    transition:clip-path .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),opacity .25s ease,visibility 0s}
   body.sb-open .sb-rail{transform:translateX(261px)}
   body.sb-open .sb-bar{opacity:0;pointer-events:none}
   body.sb-open .sb-bump svg{transform:rotate(180deg)}
+  /* the card, the list and the bottom items arrive one after another */
+  .sb-me,.sb-foot{opacity:0;transform:translateY(-10px);transition:opacity .45s ease,transform .55s cubic-bezier(.22,1,.36,1)}
+  .sb-foot{transform:translateY(10px)}
+  body.sb-open .sb-me{opacity:1;transform:none;transition-delay:.12s}
+  body.sb-open .sb-foot{opacity:1;transform:none;transition-delay:.3s}
 
   .sb-scrim{position:fixed;inset:0;z-index:56;background:rgba(74,46,34,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
-    opacity:0;pointer-events:none;transition:opacity .45s var(--ease)}
+    opacity:0;pointer-events:none;transition:opacity .6s ease}
   body.sb-open .sb-scrim{opacity:1;pointer-events:auto}
 
   /* the person's card on top */
@@ -70,14 +78,14 @@
     background:linear-gradient(135deg,#D8371E 0%,#F08A22 100%);box-shadow:0 14px 24px -14px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.25);
     transform:translateY(calc(var(--pos) * 50px));transition:transform .55s cubic-bezier(.3,1.15,.4,1)}
   .sb .tab{display:flex;align-items:center;gap:12px;height:45px;padding:0 14px;border-radius:14px;text-align:left;font-size:.86rem;font-weight:600;color:#F0E0CE;
-    opacity:0;transform:translateX(-14px);transition:color .35s,background .25s,transform .45s var(--ease),opacity .45s var(--ease)}
+    opacity:0;transform:translateX(-18px);transition:color .35s,background .25s,transform .6s cubic-bezier(.22,1,.36,1),opacity .5s ease}
   .sb .tab[hidden]{display:none}
-  body.sb-open .sb .tab{opacity:1;transform:none}
-  body.sb-open .sb .tab:nth-of-type(2){transition-delay:.04s}
-  body.sb-open .sb .tab:nth-of-type(3){transition-delay:.08s}
-  body.sb-open .sb .tab:nth-of-type(4){transition-delay:.12s}
-  body.sb-open .sb .tab:nth-of-type(5){transition-delay:.16s}
-  body.sb-open .sb .tab:nth-of-type(6){transition-delay:.2s}
+  body.sb-open .sb .tab{opacity:1;transform:none;transition-delay:.05s}
+  body.sb-open .sb .tab:nth-of-type(2){transition-delay:.1s}
+  body.sb-open .sb .tab:nth-of-type(3){transition-delay:.15s}
+  body.sb-open .sb .tab:nth-of-type(4){transition-delay:.2s}
+  body.sb-open .sb .tab:nth-of-type(5){transition-delay:.25s}
+  body.sb-open .sb .tab:nth-of-type(6){transition-delay:.3s}
   .sb .tab[aria-selected="true"]{color:#fff}
   @media (hover:hover) and (pointer:fine){
     .sb .tab[aria-selected="false"]:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateX(4px)}
