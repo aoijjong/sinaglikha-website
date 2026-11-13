@@ -78,14 +78,12 @@
     var tile = function (key, n, label) {
       return '<button class="vc-k k-' + key + '" type="button" data-show="' + key + '" aria-pressed="' + (V.show === key) + '"><b>' + n + '</b><span>' + label + '</span></button>';
     };
-    $('#vc-dash', V.box).innerHTML = '<div class="vc-dh">Vacancy dashboard</div>' +
+    $('#vc-dash', V.box).innerHTML = '' +
       '<div class="vc-kpis">' + tile('all', counts.all, 'Total vacancies') + tile('published', counts.published, 'Published') + tile('draft', counts.draft, 'Drafts') + tile('closed', counts.closed, 'Closed') + '</div>' +
-      '<p class="vc-note">' + (counts.published && openings ? openings + (openings === 1 ? ' opening' : ' openings') + ' published. ' : '') + "Applicants apply via each poster's QR code. Track them in the Applicant Tracking System.</p>" +
       '<label class="vc-fl" for="vc-dept-filter">Filter by department</label>' +
       '<select id="vc-dept-filter" class="vc-sel">' + [['all', 'All Departments']].concat(DEPT_KEYS.map(function (k) { return [k, app.depts[k] || k]; })).map(function (d) {
         return '<option value="' + d[0] + '"' + (V.dept === d[0] ? ' selected' : '') + '>' + esc(d[1]) + (d[0] === 'all' ? ' (' + V.rows.length + ')' : ' (' + (perDept[d[0]] || 0) + ')') + '</option>';
-      }).join('') + '</select>' +
-      '<p class="vc-show">Showing vacancy records for: ' + esc(V.dept === 'all' ? 'All Departments' : app.depts[V.dept] || V.dept) + '</p>';
+      }).join('') + '</select>';
     $('#vc-pills', V.box).innerHTML = [['all', 'All'], ['published', 'Published'], ['draft', 'Drafts'], ['closed', 'Closed'], ['archived', 'Archived']].map(function (s) {
       return '<button class="pill" type="button" data-show="' + s[0] + '" aria-pressed="' + (V.show === s[0]) + '">' + s[1] + ' <small>' + (counts[s[0]] || 0) + '</small></button>';
     }).join('');
