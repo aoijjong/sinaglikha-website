@@ -123,7 +123,7 @@
       fact('#E0A21B', 'Longest wait in New', wait < 0 ? 'None waiting' : wait === 0 ? 'Today' : plural(wait, '1 day', wait + ' days')) +
       fact('#8A5A3C', 'Latest application', latest ? app.fmtDate(latest) : 'None yet') + '</div></div></section>';
     var tile = function (key, n, label, color) {
-      return '<button type="button" class="sp-k" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '" aria-label="' + esc(label + ': ' + n + '. Show only these') + '"><b>' + n + '</b><span>' + esc(label) + '</span>' +
+      return '<button type="button" class="sp-k" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '" aria-label="' + esc(label + ': ' + n + '. Show only these') + '"><b>' + n + '</b><span>' + esc(label) + '</span><small class="sp-pc">' + (total ? Math.round(n / total * 100) : 0) + '% of all applicants</small>' +
         '<span class="sp-ln"><i style="width:' + (total ? Math.round(n / total * 100) : 0) + '%"></i></span></button>';
     };
     var p3 = '<section class="sp-p p-status"><h3>Application status <small>Select one to filter</small></h3><div class="sp-body sp-mid"><div class="sp-ks">' +
