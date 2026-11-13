@@ -911,3 +911,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-k[aria-pressed="true"]{box-shadow:0 0 0 2px #E2461E,0 14px 26px -14px rgba(226,70,30,.45)}
 .sp-kic{background:rgba(255,255,255,.78)}
 .sp-k[aria-pressed="true"] .sp-kic{background:linear-gradient(135deg,#E0301E,#F7A21B);color:#fff}
+
+/* inside the applicants box the "no matches" message needs no box of its own */
+#at-wrap .es{border:0;box-shadow:none;background:transparent;border-radius:0;padding:36px 16px 40px}
+@media (max-width:640px){#at-wrap .es{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}}
