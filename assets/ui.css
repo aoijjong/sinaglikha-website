@@ -503,7 +503,8 @@ dialog.sv::backdrop{background:rgba(43,33,28,.84);backdrop-filter:blur(3px)}
   .at-ftoggle.has::after{content:"";width:8px;height:8px;border-radius:50%;background:#CE2020;margin-left:2px}
   #at-fl{display:none}
   #at-fl.open{display:flex}
-  #at-wrap{background:transparent;border:0;box-shadow:none}
+  #at-wrap{padding:10px}
+  .at-tbl tbody{gap:10px}
   .at-tbl,.at-tbl tbody{display:block}
   .at-tbl tbody{display:grid;gap:8px}
   .at-tbl tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name status" "pos pos" "ref rec" "act act";gap:3px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow)}
@@ -603,3 +604,22 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-tbl .at-acts .lacts{display:inline-flex;gap:4px}
 .at-tbl th.at-ah{text-align:right}
 @media (max-width:640px){.at-tbl td.at-acts{grid-area:act;display:block;text-align:left;margin-top:4px;padding-top:2px;border-top:1px dashed var(--line)}.at-tbl td.at-acts .lacts{display:flex;justify-content:flex-start;gap:4px;margin-left:-8px}}
+
+/* the applicants list sits in its own box so it reads apart from the summary and the filters above it */
+#at-wrap{background:#FFFCF7;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+#at-wrap .at-tbl th{background:#FBF6EF}
+@media (max-width:640px){#at-wrap{background:#F9F3EA;border-radius:18px}}
+
+/* phone filters: the stage pills above already pick the stage, so only the position and the dates are left here, at a lighter size */
+@media (max-width:640px){
+  #at-fl #at-status{display:none}
+  #at-fl{gap:6px;margin-bottom:10px}
+  #at-fl .fl-pill{flex:1 1 100%;height:38px;padding:0 32px 0 14px;font-weight:500;color:var(--ink)}
+  #at-fl .fl-date{height:38px;padding:0 10px;gap:4px}
+  #at-fl .fl-date>span{font-size:.78rem;font-weight:500}
+  #at-fl .fl-dates{flex-direction:column;gap:6px}
+  #at-fl .fl-date{flex:0 0 auto;width:100%;gap:6px;padding:0 14px}
+  #at-fl .fl-date>span{min-width:34px}
+  #at-fl .fl-date input{font-weight:400;text-align:left}
+  #at-fl .fl-date input::-webkit-calendar-picker-indicator{margin:0;padding:0;width:15px;height:15px}
+}
