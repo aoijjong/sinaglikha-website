@@ -893,3 +893,11 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 @media (max-width:640px){.sp-kic{display:none}.p-status .sp-k>span:nth-of-type(2){min-height:0}}
 .p-status .sp-k>span.sp-kic{min-height:34px;font-size:inherit;flex:none}
 @media (max-width:640px){.sp-k>span:nth-of-type(2){font-size:.74rem;flex:1 1 100%;order:3}}
+
+/* "Clear filters" is a real button, like the filters beside it */
+.fl-clear{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 18px;border:1.5px solid rgba(74,46,34,.28);border-radius:999px;background:#fff;color:var(--brown);font-weight:600;text-decoration:none;white-space:nowrap;transition:background .2s,border-color .2s,transform .15s}
+.fl-clear[hidden]{display:none}
+@media (hover:hover) and (pointer:fine){.fl-clear:hover{background:var(--cream);border-color:var(--brown)}}
+.fl-clear:active{transform:scale(.97)}
+.fl-clear:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+@media (max-width:640px){.fl-actions .fl-clear{padding:0 18px;min-height:46px;height:auto;align-self:stretch;flex:none}}
