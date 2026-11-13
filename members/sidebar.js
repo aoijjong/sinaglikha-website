@@ -19,7 +19,7 @@
   rail.className = 'sb-rail';
   rail.id = 'sb-rail';
   rail.innerHTML = '<span class="sb-bar" aria-hidden="true"></span>' +
-    '<button class="sb-bump" id="sb-bump" type="button" aria-label="Open the menu" aria-expanded="false" aria-controls="sb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>';
+    '<button class="sb-bump" id="sb-bump" type="button" aria-label="Open the menu" aria-expanded="false" aria-controls="sb"></button>';
   var scrim = document.createElement('div');
   scrim.className = 'sb-scrim';
   var sb = document.createElement('aside');
