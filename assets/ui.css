@@ -868,3 +868,11 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .at-lb{font-size:.76rem}
   .at-tx small{display:none}
 }
+
+/* attendance icons: flat and outlined, on a tinted circle (no gradient, no shadow) */
+.at-ic{width:44px;height:44px;border-radius:50%;box-shadow:none;background:#fff;border:2px solid currentColor}
+.at-ic .icon{width:22px;height:22px;stroke-width:2}
+.is-ok .at-ic{background:#fff;color:#3E9A4D}
+.is-work .at-ic{background:#fff;color:#2F7BC8}
+.is-none .at-ic{background:#fff;color:#D45050}
+@media (max-width:640px){.at-ic{width:34px;height:34px;border-width:1.5px}.at-ic .icon{width:17px;height:17px}}
