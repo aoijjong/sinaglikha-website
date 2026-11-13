@@ -568,3 +568,12 @@ button.sc-row[aria-pressed="true"]{background:#F4ECE4;box-shadow:inset 0 0 0 1px
 .sc-track{height:10px;background:#EFEAE4;border-radius:5px;overflow:hidden}
 .sc-track i{display:block;height:100%;border-radius:5px}
 .sc-n{font-size:.9rem;font-weight:700;text-align:right}
+
+/* lines that separate the chart from the rest of the screen, and the rows from each other */
+.sc-head{padding-bottom:10px;border-bottom:1px solid var(--line)}
+.sc-row{border-bottom:1px dashed var(--line);border-radius:0}
+.sc-rows{margin-top:2px}
+button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
+.at-sum{padding-bottom:14px;border-bottom:1px solid var(--line)}
+.attc.is-static .attc-h{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.attc.is-static .sc-head{border-bottom:0;padding-bottom:4px}
