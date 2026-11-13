@@ -263,8 +263,8 @@
     res[0].data.forEach(function (r) { n[r.status] = (n[r.status] || 0) + 1; });
     var open = res[1].error || !Array.isArray(res[1].data) ? 0 : res[1].data.length;
     // a view-only dashboard: one bar for each of the ten stages; the way into the full view is the Applicant Tracking System row below
-    box.innerHTML = '<div class="attc is-static" role="group" aria-label="Recruitment by stage">' +
-      '<span class="attc-h"><span class="attc-i">' + I('userCheck') + '</span><b>Recruitment</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span></span>' +
+    box.innerHTML = '<div class="attc is-static" role="group" aria-label="Hiring by stage">' +
+      '<span class="attc-h"><span class="attc-i">' + I('userPlus') + '</span><b>Hiring</b><span class="attc-d">' + esc(plural(open, 'open position', 'open positions')) + '</span></span>' +
       SngStageChart.html(n, { total: n.all }) + '<ul class="rows rc-rows">' + (cs.recRows || '') + '</ul></div>';
   }
 
