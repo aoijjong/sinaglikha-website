@@ -106,8 +106,22 @@
     var p1 = '<section class="sp-p p-month"><h3>Applicants per month</h3><div class="sp-body sp-spread">' + ms.rows.map(function (r) {
       return '<button type="button" class="sp-ml" data-from="' + r.from + '" data-to="' + r.to + '" aria-pressed="' + (A.from === r.from && A.to === r.to) + '" aria-label="' + esc(r.label + ': ' + r.n + (r.n === 1 ? ' applicant' : ' applicants') + '. Show only these') + '"><span>' + esc(r.label) + '</span><span class="sp-t"><i style="width:' + Math.round(r.n / mmax * 100) + '%"></i></span><b>' + r.n + '</b></button>';
     }).join('') + '</div></section>';
-    var p2 = '<section class="sp-p p-total"><h3>Total</h3><div class="sp-body sp-mid"><button type="button" class="sp-big" data-status="all" aria-pressed="' + (A.status === 'all') + '" aria-label="' + total + ' applicants in total. Show all"><b>' + total + '</b><span>' + plural(total, 'applicant', 'applicants') + ' in all</span></button>' +
-      '<p class="sp-sm">' + ms.thisMonth + ' received this month</p><p class="sp-sm">' + (counts.new || 0) + ' still marked New</p></div></section>';
+    // a few facts that the other panels do not show
+    var t0 = Date.parse(today() + 'T00:00:00Z'), dayN = function (s) { return Math.round((t0 - Date.parse(s + 'T00:00:00Z')) / 86400000); };
+    var last7 = 0, latest = '', oldestNew = '';
+    A.rows.forEach(function (a) {
+      var d = String(a.received_on || '').slice(0, 10);
+      if (!d) return;
+      if (dayN(d) <= 6) last7++;
+      if (!latest || d > latest) latest = d;
+      if (a.status === 'new' && (!oldestNew || d < oldestNew)) oldestNew = d;
+    });
+    var wait = oldestNew ? dayN(oldestNew) : -1;
+    var fact = function (dot, label, value) { return '<div class="sp-f"><span><i style="background:' + dot + '"></i>' + esc(label) + '</span><b>' + esc(value) + '</b></div>'; };
+    var p2 = '<section class="sp-p p-total"><h3>Total</h3><div class="sp-body"><button type="button" class="sp-big" data-status="all" aria-pressed="' + (A.status === 'all') + '" aria-label="' + total + ' applicants in total. Show all"><b>' + total + '</b><span>' + plural(total, 'applicant', 'applicants') + ' in all</span></button>' +
+      '<div class="sp-facts">' + fact('#C8321A', 'Received this month', String(ms.thisMonth)) + fact('#E8833A', 'Received in the last 7 days', String(last7)) +
+      fact('#E0A21B', 'Longest wait in New', wait < 0 ? 'None waiting' : wait === 0 ? 'Today' : plural(wait, '1 day', wait + ' days')) +
+      fact('#8A5A3C', 'Latest application', latest ? app.fmtDate(latest) : 'None yet') + '</div></div></section>';
     var tile = function (key, n, label, color) {
       return '<button type="button" class="sp-k" data-status="' + key + '" style="--c:' + color + '" aria-pressed="' + (A.status === key) + '" aria-label="' + esc(label + ': ' + n + '. Show only these') + '"><b>' + n + '</b><span>' + esc(label) + '</span>' +
         '<span class="sp-ln"><i style="width:' + (total ? Math.round(n / total * 100) : 0) + '%"></i></span></button>';
