@@ -76,6 +76,19 @@ dialog.lb::backdrop{background:rgba(43,33,28,.78);backdrop-filter:blur(3px)}
 .lb-btn.next .icon{transform:scaleX(-1)}
 .lb-stage{min-height:0;display:grid;place-items:center;overflow:auto;border-radius:18px}
 .lb-stage img{max-height:100%;width:auto;max-width:100%;height:auto;border-radius:14px;background:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
+/* phone: a compact viewer; the two buttons side by side, the description underneath them */
+@media (max-width:640px){
+  .lb-in{padding:10px;gap:8px}
+  .lb-top{gap:8px}
+  .lb-top b{font-size:1.05rem}
+  .lb-top span{font-size:.74rem}
+  .lb-btn{width:36px;height:36px}
+  .lb-btn .icon{width:18px;height:18px}
+  .lb-foot{gap:8px;font-size:.78rem;justify-content:center}
+  .lb-apply,.lb-full{order:1;flex:1 1 0;min-width:0;text-align:center;padding:11px 12px;font-size:.88rem;line-height:1.2;box-sizing:border-box}
+  .lb-full{order:2}
+  .lb-foot span{order:3;flex:1 1 100%;text-align:center;opacity:.8;font-size:.76rem;line-height:1.35}
+}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:640px){.cr-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cv{border-radius:16px}.cv-act{padding:0 12px 12px}.cv-apply,.cv-view{padding:10px 12px;font-size:.85rem}.cv .cap{padding:10px 12px 12px}.cv .cap b{font-size:1rem}.cv .tagd,.cv .tagx{font-size:.72rem;padding:2px 8px}}
 @media (max-width:520px){.cr-grid{grid-template-columns:minmax(0,1fr);gap:16px}.cv .cap{padding:12px 14px 14px}.cv .cap b{font-size:1.2rem}.cv .tagd,.cv .tagx{font-size:.78rem;padding:3px 10px}.cv-act{padding:0 14px 14px}.cv-apply,.cv-view{padding:12px 16px;font-size:.95rem}}
