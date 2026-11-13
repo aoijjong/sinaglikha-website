@@ -1029,3 +1029,14 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .cat-st{width:80px;box-sizing:border-box;justify-content:center;text-align:center}
 .ib-gap{display:inline-block;width:42px;height:42px;flex:none}
 .lrow .lacts{align-items:center}
+
+/* department switch: one full-width segmented bar, the open department in the brand gradient */
+@media (min-width:761px){
+  .dp-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:5px;margin:0 0 16px;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+  .dp-tabs .pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 10px;border:0;border-radius:15px;background:none;color:var(--muted);font-weight:700;font-size:.92rem;
+    transition:background .3s,color .3s,box-shadow .3s,transform .25s}
+  .dp-tabs .pill .icon{width:18px;height:18px;flex:none}
+  @media (hover:hover) and (pointer:fine){.dp-tabs .pill[aria-pressed="false"]:hover{background:#FFF4DC;color:var(--brown)}}
+  .dp-tabs .pill:active{transform:scale(.97)}
+  .dp-tabs .pill[aria-pressed="true"]{background:linear-gradient(135deg,#D6381E 0%,#E8701A 58%,#F2971A 100%);color:#fff;border:0;box-shadow:0 12px 20px -12px rgba(214,56,30,.65)}
+}
