@@ -792,3 +792,10 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 /* more air between the sections of the applicants screen: dashboard, filters, table */
 .at-sum{margin:6px 0 26px;padding-bottom:28px}
 @media (min-width:641px){#at-fl{margin-bottom:24px}}
+
+/* the position chart always looks the same: the ring sits at the top, centered, and the list grows underneath it */
+.p-pos .sp-body{justify-content:flex-start}
+.p-pos .sp-dn{flex-direction:column;align-items:center;justify-content:flex-start;gap:18px}
+.p-pos .sp-lg{width:100%;flex:none}
+.p-pos .sp-ring{width:120px;height:120px}
+.p-pos .sp-ring span{width:74px;height:74px}
