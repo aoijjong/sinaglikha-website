@@ -17,7 +17,7 @@
   sb.className = 'sb';
   sb.id = 'sb';
   sb.setAttribute('aria-label', 'Menu');
-  sb.innerHTML = '<button class="sb-me" id="sb-prof" type="button" aria-label="Profile settings" title="Profile settings"><span class="sb-av" id="sb-av"></span><b id="sb-name">Profile</b><small id="sb-mail"></small><em>Senior Manager</em></button>' +
+  sb.innerHTML = '<button class="sb-me" id="sb-prof" type="button" aria-label="Open my profile settings" title="Profile settings"><span class="sb-avw"><span class="sb-av" id="sb-av"></span><span class="sb-edit" aria-hidden="true">' + (window.SngIcon ? window.SngIcon('pencil') : '') + '</span></span><b id="sb-name">Profile</b><small id="sb-mail"></small><em>Senior Manager</em><span class="sb-go" aria-hidden="true">My profile<span>' + (window.SngIcon ? window.SngIcon('chevron') : '') + '</span></span></button>' +
     '<div class="sb-foot"><button class="sb-item sb-out" id="sb-out" type="button"><span class="tic">' + (window.SngIcon ? window.SngIcon('logout') : '') + '</span>Sign out</button></div>';
   document.body.appendChild(sb);
   var foot = sb.querySelector('.sb-foot');
@@ -40,13 +40,55 @@
     tabs.dispatchEvent(new KeyboardEvent('keydown', { key: e.key === 'ArrowDown' ? 'ArrowRight' : 'ArrowLeft', bubbles: true }));
   });
 
+  /* ---- a banner at the top of every section ---- */
+  var SECTION = {
+    library: ['folder', '201 Files', 'Employee 201 files, open only to Staffing and Legal.'],
+    content: ['clipboard', 'Content Manager', 'Everything employees see on the portal, by department.'],
+    employees: ['users', 'Employees', 'People who sign in to the Employee Portal with their ID and a PIN.'],
+    records: ['book', 'Restricted Records', 'Every open, upload and delete is written to the activity log.'],
+    people: ['key', 'Accounts', 'Senior Manager accounts: who can sign in and what they can do.']
+  };
+  var app = document.getElementById('view-app'), appHead = app && app.querySelector('.app-head');
+  var banner = document.createElement('section');
+  banner.className = 'sb-banner';
+  banner.setAttribute('aria-label', 'Section');
+  banner.innerHTML = '<div class="bn-art" aria-hidden="true"><span class="bn-card bn-c1"></span><span class="bn-card bn-c2"></span><span class="bn-ic" id="bn-ic"></span></div>' +
+    '<div class="bn-text"><small id="bn-hi">Senior Managers Only</small><h2 id="bn-title"></h2><p id="bn-desc"></p></div>';
+  if (app && appHead) app.insertBefore(banner, appHead);
+  function currentKey() {
+    var sel = tabs.querySelector('.tab[aria-selected="true"]');
+    return sel ? (sel.id || '').replace('tab-', '') : 'library';
+  }
+  function updateBanner() {
+    var d = SECTION[currentKey()] || SECTION.library;
+    var st = window.MembersApp && window.MembersApp.state, prof = st && st.profile;
+    var nm = (prof && (prof.full_name || '')) || (document.getElementById('who') && document.getElementById('who').textContent.trim()) || '';
+    var first = nm.trim().split(/\s+/)[0] || (prof && prof.email ? prof.email.split('@')[0] : '');
+    document.getElementById('bn-hi').textContent = first ? 'Hi, ' + first : 'Senior Managers Only';
+    document.getElementById('bn-title').textContent = d[1];
+    document.getElementById('bn-desc').textContent = d[2];
+    var ic = document.getElementById('bn-ic');
+    if (ic.getAttribute('data-k') !== currentKey() && window.SngIcon) { ic.innerHTML = window.SngIcon(d[0]); ic.setAttribute('data-k', currentKey()); }
+  }
+  if (window.MutationObserver) new MutationObserver(updateBanner).observe(tabs, { attributes: true, attributeFilter: ['aria-selected'], subtree: true });
+
   /* ---- the person's card, profile settings and sign out ---- */
   function refreshProfile() {
     var av = document.getElementById('btn-profile'), who = document.getElementById('who');
     var nm = (who && who.textContent.trim()) || '', st = window.MembersApp && window.MembersApp.state;
     var prof = st && st.profile, em = (prof && prof.email) || '';
     var ini = (av && av.textContent.trim()) || (nm || em).split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return Array.from(w)[0]; }).join('').toUpperCase();
-    document.getElementById('sb-av').textContent = ini;
+    var avEl = document.getElementById('sb-av'), pic = av && av.querySelector('img');
+    if (pic && pic.getAttribute('src')) {
+      if (!avEl.firstChild || avEl.firstChild.tagName !== 'IMG') { avEl.textContent = ''; avEl.appendChild(document.createElement('img')); }
+      if (avEl.firstChild.getAttribute('src') !== pic.getAttribute('src')) avEl.firstChild.setAttribute('src', pic.getAttribute('src'));
+      avEl.firstChild.alt = '';
+      avEl.classList.add('has-photo');
+    } else {
+      avEl.classList.remove('has-photo');
+      avEl.textContent = ini;
+    }
+    updateBanner();
     document.getElementById('sb-name').textContent = nm || (prof && prof.full_name) || em.split('@')[0] || 'Profile';
     document.getElementById('sb-mail').textContent = em;
   }
