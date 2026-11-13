@@ -841,6 +841,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .p-pos .sp-ring span{width:58px;height:58px;font-size:1.2rem}
   .p-pos .sp-dn{gap:12px}
   .sp-moreb{padding:8px 14px}
+}
 
 /* attendance today: soft coloured cards, each with a rounded icon */
 .at-stats{gap:10px}
