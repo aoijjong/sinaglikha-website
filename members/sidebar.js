@@ -26,10 +26,9 @@
   sb.className = 'sb';
   sb.id = 'sb';
   sb.setAttribute('aria-label', 'Menu');
-  sb.innerHTML = '<div class="sb-head"><img src="../assets/sinaglikha-logo-notag.png" alt="SINAGLIKHA" width="1487" height="212"><span>Senior Managers</span></div>' +
-    '<div class="sb-foot"><button class="sb-prof" id="sb-prof" type="button" aria-label="Profile settings"><span class="sb-av" id="sb-av"></span>' +
-    '<span><b id="sb-name">Profile</b><small>Profile settings</small></span></button>' +
-    '<button class="sb-out" id="sb-out" type="button">Sign out</button></div>';
+  sb.innerHTML = '<button class="sb-me" id="sb-prof" type="button" aria-label="Profile settings"><span class="sb-av" id="sb-av"></span><b id="sb-name">Profile</b><small id="sb-mail"></small><em>Senior Manager</em></button>' +
+    '<div class="sb-foot"><button class="sb-item" id="sb-set" type="button"><span class="tic">' + (window.SngIcon ? window.SngIcon('pencil') : '') + '</span>Profile settings</button>' +
+    '<button class="sb-item sb-out" id="sb-out" type="button"><span class="tic">' + (window.SngIcon ? window.SngIcon('logout') : '') + '</span>Sign out</button></div>';
   document.body.appendChild(scrim);
   document.body.appendChild(sb);
   document.body.appendChild(rail);
@@ -85,8 +84,12 @@
     var av = document.getElementById('btn-profile'), who = document.getElementById('who');
     document.getElementById('sb-av').textContent = (av && av.textContent.trim()) || '';
     document.getElementById('sb-name').textContent = (who && who.textContent.trim()) || 'Profile';
+    var st = window.MembersApp && window.MembersApp.state, mail = st && st.profile && st.profile.email;
+    document.getElementById('sb-mail').textContent = mail || '';
   }
-  document.getElementById('sb-prof').addEventListener('click', function () { setOpen(false); document.getElementById('btn-profile').click(); });
+  function openProfile() { setOpen(false); document.getElementById('btn-profile').click(); }
+  document.getElementById('sb-prof').addEventListener('click', openProfile);
+  document.getElementById('sb-set').addEventListener('click', openProfile);
   document.getElementById('sb-out').addEventListener('click', function () { setOpen(false); document.getElementById('btn-signout').click(); });
 
   /* ---- desktop: the buttons live in the sidebar; narrower: back at the top ---- */
