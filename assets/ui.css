@@ -768,3 +768,12 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-lg .sp-nb{padding:5px 10px;margin:0 -10px;width:calc(100% + 20px);border-radius:10px}
 .sp-lg li{display:block}
 .sp-lg b{min-width:1.4em;text-align:right}
+
+/* the applicants table: smaller text, and room between the table and the edge of its box */
+@media (min-width:641px){
+  #at-wrap{padding:10px 22px 12px}
+  .at-tbl{font-size:.84rem}
+  .at-tbl th{font-size:.7rem;padding:12px 12px}
+  .at-tbl td{padding:12px}
+  .at-tbl .at-sttag{font-size:.74rem}
+}
