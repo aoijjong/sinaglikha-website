@@ -42,7 +42,7 @@
   function shell() {
     D.box.style.position = 'relative';
     D.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
-      '<div class="ph-main"><h2>Recruitment and Selection Records</h2><p class="sub">Private: only Staffing and Recruitment can open these</p></div>' +
+      '<div class="ph-main"><h2>Recruitment and Selection Records</h2><p class="sub"><span class="sub-full">Private: only Staffing and Recruitment can open these</span><span class="sub-short">Private to Staffing and Recruitment</span></p></div>' +
       '<div class="ph-actions"><div class="sbox">' + I('search') + '<input id="rd-q" type="search" placeholder="Search" aria-label="Search documents" autocomplete="off"></div>' +
       IB('upload', 'Upload a document', { 'data-a': 'add' }, 'solid') + '</div></div>' +
       '<div class="fl-row"><select id="rd-catf" class="fl-pill" aria-label="Filter by document type"></select><select id="rd-pos" class="fl-pill" aria-label="Filter by position"></select>' +

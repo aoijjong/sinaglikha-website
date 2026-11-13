@@ -961,3 +961,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .at-st .at-tx b,.at-st.is-ok .at-tx b,.at-st.is-work .at-tx b,.at-st.is-none .at-tx b{color:var(--brown)}
 @media (hover:hover) and (pointer:fine){.attc:hover .at-st{transform:translateY(-2px);box-shadow:0 16px 28px -16px rgba(74,46,34,.42)}}
 @media (max-width:640px){.at-ic{width:32px;height:32px;border-radius:10px}.at-ic .icon{width:17px;height:17px}}
+
+/* long screen descriptions have a shorter wording on phones */
+.sub-short{display:none}
+@media (max-width:640px){.sub-full{display:none}.sub-short{display:inline}}

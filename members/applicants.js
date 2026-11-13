@@ -53,7 +53,7 @@
   function shell() {
     A.box.style.position = 'relative';
     A.box.innerHTML = '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
-      '<div class="ph-main"><h2>Applicant Tracking System</h2><p class="sub">Track each applicant from application to placement: their stage, notes and history</p></div>' +
+      '<div class="ph-main"><h2>Applicant Tracking System</h2><p class="sub"><span class="sub-full">Track each applicant from application to placement: their stage, notes and history</span><span class="sub-short">Stage, notes and history of each applicant</span></p></div>' +
       '<div class="ph-actions">' +
       IB('fileUp', 'Import applicants from a CSV file', { 'data-a': 'import' }) + IB('userPlus', 'Add an applicant', { 'data-a': 'add' }, 'solid') +
       '<input type="file" id="at-file" accept=".csv,text/csv" hidden></div></div>' +
