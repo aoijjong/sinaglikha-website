@@ -777,3 +777,18 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .at-tbl td{padding:12px}
   .at-tbl .at-sttag{font-size:.74rem}
 }
+
+/* the status cards fill their panel, so there is no empty band above and below them */
+.p-status .sp-body{justify-content:stretch}
+.sp-ks{flex:1;align-items:stretch}
+.sp-k{display:flex;flex-direction:column;gap:3px;padding:16px 16px 14px}
+.sp-k b{font-size:2.6rem}
+.sp-pc{font-size:.76rem;color:var(--muted)}
+.sp-k{justify-content:center}
+.sp-k .sp-ln{margin-top:12px}
+.sp-f{padding:4px 0}
+@media (max-width:640px){.sp-k{padding:12px}.sp-k b{font-size:1.9rem}}
+
+/* more air between the sections of the applicants screen: dashboard, filters, table */
+.at-sum{margin:6px 0 26px;padding-bottom:28px}
+@media (min-width:641px){#at-fl{margin-bottom:24px}}
