@@ -94,8 +94,8 @@
     var t = today(), y = +t.slice(0, 4), m = +t.slice(5, 7), out = [], by = {};
     A.rows.forEach(function (a) { var k = String(a.received_on || '').slice(0, 7); by[k] = (by[k] || 0) + 1; });
     for (var i = 5; i >= 0; i--) {
-      var d = new Date(Date.UTC(y, m - 1 - i, 1)), k = d.toISOString().slice(0, 7);
-      out.push({ label: d.toLocaleDateString('en-PH', { month: 'short', timeZone: 'UTC' }), n: by[k] || 0 });
+      var d = new Date(Date.UTC(y, m - 1 - i, 1)), k = d.toISOString().slice(0, 7), last = new Date(Date.UTC(y, m - i, 0)).toISOString().slice(0, 10);
+      out.push({ label: d.toLocaleDateString('en-PH', { month: 'short', timeZone: 'UTC' }), n: by[k] || 0, from: k + '-01', to: last });
     }
     return { rows: out, thisMonth: by[t.slice(0, 7)] || 0 };
   }
@@ -104,7 +104,7 @@
     var ms = monthStats(), mmax = 1;
     ms.rows.forEach(function (r) { if (r.n > mmax) mmax = r.n; });
     var p1 = '<section class="sp-p p-month"><h3>Applicants per month</h3><div class="sp-body sp-spread">' + ms.rows.map(function (r) {
-      return '<div class="sp-ml"><span>' + esc(r.label) + '</span><span class="sp-t"><i style="width:' + Math.round(r.n / mmax * 100) + '%"></i></span><b>' + r.n + '</b></div>';
+      return '<button type="button" class="sp-ml" data-from="' + r.from + '" data-to="' + r.to + '" aria-pressed="' + (A.from === r.from && A.to === r.to) + '" aria-label="' + esc(r.label + ': ' + r.n + (r.n === 1 ? ' applicant' : ' applicants') + '. Show only these') + '"><span>' + esc(r.label) + '</span><span class="sp-t"><i style="width:' + Math.round(r.n / mmax * 100) + '%"></i></span><b>' + r.n + '</b></button>';
     }).join('') + '</div></section>';
     var p2 = '<section class="sp-p p-total"><h3>Total</h3><div class="sp-body sp-mid"><button type="button" class="sp-big" data-status="all" aria-pressed="' + (A.status === 'all') + '" aria-label="' + total + ' applicants in total. Show all"><b>' + total + '</b><span>' + plural(total, 'applicant', 'applicants') + ' in all</span></button>' +
       '<p class="sp-sm">' + ms.thisMonth + ' received this month</p><p class="sp-sm">' + (counts.new || 0) + ' still marked New</p></div></section>';
@@ -130,7 +130,7 @@
     SngStageChart.stages.forEach(function (s) { if ((counts[s[0]] || 0) > smax) smax = counts[s[0]]; });
     var p5 = '<section class="sp-p p-stage"><h3>Stage by stage</h3><div class="sp-body sp-spread">' + SngStageChart.stages.map(function (s) {
       var n = counts[s[0]] || 0;
-      return '<button type="button" class="sp-st" data-status="' + s[0] + '" aria-pressed="' + (act.indexOf(s[0]) !== -1) + '" aria-label="' + esc(s[1] + ': ' + n + '. Show only these') + '"><span>' + esc(s[1]) + '</span><span class="sp-t"><i style="width:' + (n ? Math.max(4, Math.round(n / smax * 100)) : 0) + '%;background:' + s[2] + '"></i></span><b>' + n + '</b></button>';
+      return '<button type="button" class="sp-st" data-status="' + s[0] + '" style="--c:' + s[2] + '" aria-pressed="' + (act.indexOf(s[0]) !== -1) + '" aria-label="' + esc(s[1] + ': ' + n + '. Show only these') + '"><span>' + esc(s[1]) + '</span><span class="sp-t"><i style="width:' + (n ? Math.max(4, Math.round(n / smax * 100)) : 0) + '%;background:' + s[2] + '"></i></span><b>' + n + '</b></button>';
     }).join('') + '</div></section>';
     return '<div class="sp' + (A.moreOpen ? ' sp-open' : '') + '">' + p2 + p3 + p1 + p4 + p5 +
       '<button type="button" class="sp-moreb" data-a="morecharts" aria-expanded="' + !!A.moreOpen + '">' + (A.moreOpen ? 'Show fewer charts' : 'Show more charts') + '</button></div>';
@@ -619,6 +619,8 @@
     if (tag) { openMenu(tag); return; }
     var row = e.target.closest('#at-rows tr');
     if (row && !e.target.closest('select, button, a')) { openDetail(row.dataset.id); return; }
+    var pm = e.target.closest('[data-from]');
+    if (pm) { var same = A.from === pm.dataset.from && A.to === pm.dataset.to; A.from = same ? '' : pm.dataset.from; A.to = same ? '' : pm.dataset.to; A.shown = PAGE; render(); toList(); return; }
     var pp = e.target.closest('[data-pos]');
     if (pp) { A.pos = A.pos === pp.dataset.pos ? '' : pp.dataset.pos; A.shown = PAGE; render(); toList(); return; }
     var card = e.target.closest('[data-status]');
