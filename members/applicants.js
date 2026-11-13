@@ -193,7 +193,7 @@
       '<button class="btn btn-primary btn-sm" type="button" data-ap="status">Update status</button></div>' +
       '<input id="ap-snote" type="text" maxlength="300" placeholder="Remark with this change (optional)" autocomplete="off"></div>' +
       '<div class="ap-sec"><h3>Details</h3><div class="ap-grid"><label>Name<input id="ap-name" type="text" maxlength="120" value="' + esc(a.full_name) + '" autocomplete="off"></label>' +
-      '<label>Position applied for<input id="ap-pos" type="text" maxlength="120" list="at-positions" value="' + esc(a.position_title) + '" autocomplete="off"></label>' +
+      '<label>Position applied for<input id="ap-pos" type="text" maxlength="120" list="at-positions" required value="' + esc(a.position_title) + '" autocomplete="off"></label>' +
       '<label>Date received<input id="ap-date" type="date" value="' + esc(a.received_on) + '"></label></div>' + positionList() +
       '<button class="btn btn-ghost btn-sm" type="button" data-ap="save">Save details</button></div>' +
       '<div class="ap-sec"><h3>Internal notes</h3><textarea id="ap-note" maxlength="2000" rows="3" placeholder="Visible only to Staffing and Recruitment"></textarea>' +
@@ -246,6 +246,7 @@
     } else if (kind === 'save') {
       var name = $('#ap-name').value.trim(), pos = $('#ap-pos').value.trim(), date = $('#ap-date').value;
       if (!name) { fail('Enter the applicant\'s name.'); return; }
+      if (!pos) { fail('Enter the position applied for.'); return; }
       if (!date) { fail('Enter the date received.'); return; }
       var u = await sb.from('applicants').update({ full_name: name, position_title: pos, vacancy_id: vacancyFor(pos), received_on: date }).eq('id', a.id).select('id').maybeSingle();
       if (u.error || !u.data) { fail("Couldn't save that. You may not have permission."); return; }
@@ -362,6 +363,7 @@
       e.preventDefault();
       var name = $('#an2-name').value.trim(), pos = $('#an2-pos').value.trim(), date = $('#an2-date').value;
       if (!name) { err.textContent = "Enter the applicant's name."; err.hidden = false; return; }
+      if (!pos) { err.textContent = 'Enter the position applied for.'; err.hidden = false; return; }
       if (!date) { err.textContent = 'Enter the date received.'; err.hidden = false; return; }
       err.hidden = true;
       $('#an2-ok').disabled = true;
