@@ -82,7 +82,9 @@
   /* ---- profile settings and sign out ---- */
   function refreshProfile() {
     var av = document.getElementById('btn-profile'), who = document.getElementById('who');
-    document.getElementById('sb-av').textContent = (av && av.textContent.trim()) || '';
+    var nm = (who && who.textContent.trim()) || '', st0 = window.MembersApp && window.MembersApp.state, em = st0 && st0.profile && st0.profile.email || '';
+    var ini = (av && av.textContent.trim()) || (nm || em).split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return Array.from(w)[0]; }).join('').toUpperCase();
+    document.getElementById('sb-av').textContent = ini;
     document.getElementById('sb-name').textContent = (who && who.textContent.trim()) || 'Profile';
     var st = window.MembersApp && window.MembersApp.state, mail = st && st.profile && st.profile.email;
     document.getElementById('sb-mail').textContent = mail || '';
