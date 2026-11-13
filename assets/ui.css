@@ -784,8 +784,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .sp-k{display:flex;flex-direction:column;gap:3px;padding:16px 16px 14px}
 .sp-k b{font-size:2.6rem}
 .sp-pc{font-size:.76rem;color:var(--muted)}
-.sp-k{justify-content:center}
-.sp-k .sp-ln{margin-top:12px}
+.sp-k{justify-content:flex-start}
+.sp-k .sp-ln{margin-top:auto;padding-top:0}
 .sp-f{padding:4px 0}
 @media (max-width:640px){.sp-k{padding:12px}.sp-k b{font-size:1.9rem}}
 
@@ -799,3 +799,15 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 .p-pos .sp-lg{width:100%;flex:none}
 .p-pos .sp-ring{width:120px;height:120px}
 .p-pos .sp-ring span{width:74px;height:74px}
+
+/* the status cards line up: the number, the label and the share always start at the same height; the bar sits at the bottom */
+.sp-k{align-items:flex-start;text-align:left;padding:18px 18px 16px}
+.sp-k b{line-height:1;margin-bottom:6px}
+.sp-pc{white-space:nowrap}
+.sp-k .sp-ln{align-self:stretch}
+.p-status .sp-k b{font-size:3.2rem}
+.p-status .sp-k>span:nth-of-type(1){font-size:.92rem;color:var(--brown)}
+.p-status .sp-k .sp-ln{height:6px;border-radius:3px}
+.p-status .sp-k .sp-ln i{border-radius:3px}
+@media (max-width:640px){.p-status .sp-k b{font-size:1.9rem}.p-status .sp-k>span:nth-of-type(1){font-size:.76rem}.p-status .sp-k .sp-ln{height:3px}}
+@media (min-width:641px){.p-status .sp-k>span:nth-of-type(1){min-height:2.5em;line-height:1.25}}
