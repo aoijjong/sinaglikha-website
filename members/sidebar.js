@@ -17,9 +17,8 @@
   sb.className = 'sb';
   sb.id = 'sb';
   sb.setAttribute('aria-label', 'Menu');
-  sb.innerHTML = '<button class="sb-me" id="sb-prof" type="button" aria-label="Profile settings"><span class="sb-av" id="sb-av"></span><b id="sb-name">Profile</b><small id="sb-mail"></small><em>Senior Manager</em></button>' +
-    '<div class="sb-foot"><button class="sb-item" id="sb-set" type="button"><span class="tic">' + (window.SngIcon ? window.SngIcon('pencil') : '') + '</span>Profile settings</button>' +
-    '<button class="sb-item sb-out" id="sb-out" type="button"><span class="tic">' + (window.SngIcon ? window.SngIcon('logout') : '') + '</span>Sign out</button></div>';
+  sb.innerHTML = '<button class="sb-me" id="sb-prof" type="button" aria-label="Profile settings" title="Profile settings"><span class="sb-av" id="sb-av"></span><b id="sb-name">Profile</b><small id="sb-mail"></small><em>Senior Manager</em></button>' +
+    '<div class="sb-foot"><button class="sb-item sb-out" id="sb-out" type="button"><span class="tic">' + (window.SngIcon ? window.SngIcon('logout') : '') + '</span>Sign out</button></div>';
   document.body.appendChild(sb);
   var foot = sb.querySelector('.sb-foot');
 
@@ -53,7 +52,6 @@
   }
   function openProfile() { document.getElementById('btn-profile').click(); }
   document.getElementById('sb-prof').addEventListener('click', openProfile);
-  document.getElementById('sb-set').addEventListener('click', openProfile);
   document.getElementById('sb-out').addEventListener('click', function () { document.getElementById('btn-signout').click(); });
   // the header's name and initial are filled in after sign-in; keep the card in step with them
   if (window.MutationObserver) {
