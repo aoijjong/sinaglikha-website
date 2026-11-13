@@ -16,6 +16,7 @@
   body:has(#view-app:not([hidden])) .wrap{width:calc(100% - clamp(28px,2.6vw,48px) - clamp(28px,2.6vw,48px))}
   body:has(#view-app:not([hidden])) .top-right{display:none}
   body:has(#view-app:not([hidden])) #view-app > .app-head{display:none}
+  body:has(#view-app:not([hidden])) main{padding-top:18px}
   body:has(#view-app:not([hidden])) .sb-banner{display:flex}
 
   .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
@@ -51,25 +52,29 @@
   .sb-me:active{transform:scale(.98)}
   .sb-me:focus-visible{outline:3px solid #fff;outline-offset:2px}
 
-  /* ---------- the banner at the top of every section: the brand's orange to gold, a friendly illustration, a greeting ---------- */
+  /* ---------- the banner at the top of every section: soft peach to gold, a friendly illustration, a greeting ---------- */
   .sb-banner{position:relative;align-items:center;gap:30px;min-height:150px;padding:20px 40px 20px 28px;margin:0 0 20px;border-radius:30px;overflow:hidden;
-    background:linear-gradient(108deg,#D4491A 0%,#E8701A 52%,#F8B232 100%);color:#fff;box-shadow:0 22px 36px -22px rgba(206,84,20,.7)}
-  .sb-banner::before,.sb-banner::after{content:"";position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.14)}
+    background:linear-gradient(108deg,#FCD9BC 0%,#FDE2BE 50%,#FEEFC4 100%);color:#4A2E22;border:1px solid rgba(255,255,255,.85);box-shadow:0 20px 34px -24px rgba(214,128,60,.55)}
+  .sb-banner::before,.sb-banner::after{content:"";position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.38)}
   .sb-banner::before{right:-70px;top:-90px;width:300px;height:300px}
-  .sb-banner::after{right:150px;bottom:-110px;width:230px;height:230px;background:rgba(255,255,255,.1)}
+  .sb-banner::after{right:150px;bottom:-110px;width:230px;height:230px;background:rgba(255,255,255,.26)}
   .bn-art{position:relative;flex:none;width:236px;height:126px}
   .bn-svg{position:absolute;left:8px;top:0;width:220px;height:132px;overflow:visible}
-  .bn-card{position:absolute;background:#fff;box-shadow:0 12px 20px -10px rgba(110,30,0,.55);animation:bn-float 6s ease-in-out infinite}
-  .bn-c1{left:0;top:18px;width:58px;height:58px;border-radius:16px;display:grid;place-items:center}
-  .bn-ic{display:grid;place-items:center;color:#E2621A}
-  .bn-ic svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  .bn-c2{right:6px;top:10px;width:40px;height:26px;border-radius:9px;border-top:6px solid #3E9A4D;animation-delay:-2s}
-  .bn-c3{right:0;bottom:16px;width:28px;height:28px;border-radius:50%;border:7px solid #FFCB1B;background:#fff;animation-delay:-4s}
+  .bn-card{position:absolute;animation:bn-float 6s ease-in-out infinite}
+  /* the section icon: a glassy gradient tile with a soft glow */
+  .bn-c1{left:0;top:14px;width:64px;height:64px;border-radius:22px;display:grid;place-items:center;
+    background:linear-gradient(145deg,#F58A4A 0%,#F7AE46 100%);border:1px solid rgba(255,255,255,.85);
+    box-shadow:0 16px 24px -12px rgba(226,98,22,.65),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -8px 14px -8px rgba(190,70,10,.35)}
+  .bn-c1::after{content:"";position:absolute;left:8px;top:6px;width:26px;height:10px;border-radius:50%;background:rgba(255,255,255,.4);filter:blur(2px)}
+  .bn-ic{display:grid;place-items:center;color:#fff;position:relative;z-index:1}
+  .bn-ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 3px rgba(150,50,0,.35))}
+  .bn-c2{right:6px;top:10px;width:42px;height:28px;border-radius:10px;background:#fff;border-top:6px solid #4FA566;box-shadow:0 12px 18px -10px rgba(110,60,20,.45);animation-delay:-2s}
+  .bn-c3{right:0;bottom:16px;width:28px;height:28px;border-radius:50%;border:7px solid #F7B02C;background:#fff;box-shadow:0 12px 18px -10px rgba(110,60,20,.4);animation-delay:-4s}
   @keyframes bn-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
   .bn-text{position:relative;min-width:0}
-  .bn-text h2{font-size:clamp(1.9rem,2.8vw,2.5rem);color:#fff;text-shadow:0 2px 10px rgba(120,30,0,.25)}
-  .bn-text p{margin:8px 0 0;max-width:60ch;color:#FFF3E4;font-size:1.02rem;line-height:1.55}
-  .bn-text p b{font-weight:700;color:#FFF0A0}
+  .bn-text h2{font-size:clamp(1.9rem,2.8vw,2.5rem);color:#4A2E22}
+  .bn-text p{margin:8px 0 0;max-width:60ch;color:#6B4533;font-size:1.02rem;line-height:1.55}
+  .bn-text p b{font-weight:700;color:#A8481A;background:linear-gradient(transparent 62%,rgba(247,176,44,.5) 62%);padding:0 2px}
 
   /* the five sections, one under another */
   .sb .tabs{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;position:relative;flex:none}

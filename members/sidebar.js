@@ -54,17 +54,29 @@
   banner.setAttribute('aria-label', 'Section');
   // a friendly flat illustration: a person at a laptop, with a few floating cards (one carries the section's icon)
   var ART = '<svg class="bn-svg" viewBox="0 0 220 132" aria-hidden="true">' +
-    '<ellipse cx="112" cy="124" rx="76" ry="6" fill="rgba(90,30,0,.16)"/>' +
-    '<path d="M82 118c0-26 12-38 30-38s30 12 30 38z" fill="#7B2A1A"/>' +
-    '<path d="M104 78h16v12a8 8 0 0 1-16 0z" fill="#E9B48C"/>' +
-    '<circle cx="112" cy="58" r="19" fill="#F4C9A4"/>' +
-    '<path d="M92 56c-2-16 8-26 20-26 13 0 22 9 20 24-4-9-10-12-20-12-9 0-15 4-20 14z" fill="#3A2018"/>' +
-    '<circle cx="105" cy="60" r="1.8" fill="#3A2018"/><circle cx="119" cy="60" r="1.8" fill="#3A2018"/>' +
-    '<path d="M107 67c3 3 7 3 10 0" stroke="#B5573A" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-    '<rect x="76" y="84" width="72" height="38" rx="5" fill="#FFFDF6"/>' +
-    '<circle cx="112" cy="103" r="5" fill="#F7A21B"/>' +
+    '<defs><linearGradient id="bnJ" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9743A"/><stop offset="1" stop-color="#B94F22"/></linearGradient>' +
+    '<linearGradient id="bnL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F6E7D3"/></linearGradient></defs>' +
+    '<ellipse cx="116" cy="124" rx="84" ry="6" fill="rgba(150,80,30,.16)"/>' +
+    /* a small plant on the right */
+    '<path d="M176 124l-3-20h22l-3 20z" fill="#E7A26B"/><path d="M174 104h26" stroke="#CB7C45" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M186 102c-12-4-16-16-12-28 10 4 15 14 12 28z" fill="#6FB07A"/><path d="M188 102c8-6 16-6 22-16-12-2-22 6-22 16z" fill="#4F9A63"/><path d="M187 102c-2-10 2-22 9-30 4 12 2 24-9 30z" fill="#8CC595"/>' +
+    /* the person */
+    '<path d="M80 120c0-27 13-40 32-40s32 13 32 40z" fill="url(#bnJ)"/>' +
+    '<path d="M101 80l11 14 11-14z" fill="#FFF6EA"/>' +
+    '<path d="M104 76h16v12a8 8 0 0 1-16 0z" fill="#E7B08A"/>' +
+    '<circle cx="112" cy="56" r="20" fill="#F6CBA6"/>' +
+    '<path d="M91 56c-3-18 9-29 22-28 14 1 21 12 19 27-4-9-11-14-21-14-9 0-15 4-20 15z" fill="#3B2118"/>' +
+    '<path d="M130 40c9 3 13 12 10 22-2-9-5-15-10-22z" fill="#3B2118"/>' +
+    '<circle cx="105" cy="59" r="2" fill="#3B2118"/><circle cx="119" cy="59" r="2" fill="#3B2118"/>' +
+    '<circle cx="100" cy="65" r="3.4" fill="#F29A86" opacity=".55"/><circle cx="124" cy="65" r="3.4" fill="#F29A86" opacity=".55"/>' +
+    '<path d="M107 66c3 3.4 7 3.4 10 0" stroke="#B5573A" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+    /* the laptop, seen from behind, with a soft glow */
+    '<rect x="76" y="86" width="72" height="36" rx="6" fill="url(#bnL)"/>' +
+    '<circle cx="112" cy="104" r="9" fill="#FFE2A8" opacity=".6"/><circle cx="112" cy="104" r="5" fill="#F7A21B"/>' +
     '<rect x="68" y="122" width="88" height="5" rx="2.5" fill="#F1DEC4"/>' +
-    '<ellipse cx="82" cy="104" rx="7" ry="5" fill="#F4C9A4"/><ellipse cx="142" cy="104" rx="7" ry="5" fill="#F4C9A4"/>' +
+    '<ellipse cx="83" cy="106" rx="7.5" ry="5.5" fill="#F6CBA6"/><ellipse cx="141" cy="106" rx="7.5" ry="5.5" fill="#F6CBA6"/>' +
+    /* a few sparkles */
+    '<path d="M44 40l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#fff" opacity=".9"/><circle cx="60" cy="96" r="2.6" fill="#fff" opacity=".8"/><circle cx="196" cy="48" r="2.4" fill="#fff" opacity=".85"/>' +
     '</svg>';
   banner.innerHTML = '<div class="bn-art" aria-hidden="true">' + ART + '<span class="bn-card bn-c1"><span class="bn-ic" id="bn-ic"></span></span><span class="bn-card bn-c2"></span><span class="bn-card bn-c3"></span></div>' +
     '<div class="bn-text"><h2 id="bn-hi">Hi</h2><p id="bn-msg"></p></div>';
