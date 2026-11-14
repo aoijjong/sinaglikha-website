@@ -1,0 +1,127 @@
+/*
+  Employee Portal, matching the Senior Manager portal.
+  Desktop (1025px and wider): a floating glass sidebar anchored on the left (the person's card, a jump menu to each dashboard panel,
+  and Sign out), the page wide beside it, and the departments drawn as folder cards.
+  Everywhere: a hero banner on the dashboard. Phones also keep the departments as slim pills.
+*/
+.sb{display:none}
+
+/* ---------- the hero banner (all screen sizes) ---------- */
+.sb-banner{display:flex;align-items:center;gap:22px;position:relative;margin:0 0 18px;border-radius:26px;overflow:visible;min-height:132px;padding:0 22px 0 18px;
+  background:radial-gradient(circle 110px at calc(100% - 60px) 40px,rgba(255,255,255,.38) 99%,rgba(255,255,255,0) 100%),linear-gradient(108deg,#FCD9BC 0%,#FDE2BE 50%,#FEEFC4 100%);
+  color:#4A2E22;border:1px solid rgba(255,255,255,.85);box-shadow:0 18px 30px -22px rgba(214,128,60,.55);
+  transition:transform .5s cubic-bezier(.22,1,.36,1),box-shadow .5s}
+.sb-banner .bn-text{position:relative;min-width:0;order:2;transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.sb-banner .bn-art{position:relative;flex:none;align-self:flex-end;order:1;height:132px;display:flex;align-items:flex-end}
+.sb-banner .bn-img{height:100%;width:auto;display:block;filter:drop-shadow(0 8px 8px rgba(150,80,30,.18));transform-origin:50% 100%;transition:transform .6s cubic-bezier(.22,1,.36,1),filter .6s}
+.sb-banner h1{font-size:clamp(1.5rem,5vw,2.3rem);color:#4A2E22}
+.sb-banner p{margin:6px 0 0;color:#6B4533;font-size:.95rem;line-height:1.5}
+.sb-banner .bn-lead{font-size:.92rem}
+@media (hover:hover) and (pointer:fine){
+  .sb-banner:hover{transform:translateY(-4px);box-shadow:0 28px 40px -24px rgba(226,120,40,.6)}
+  .sb-banner:hover .bn-img{transform:scale(1.05) translateX(6px);filter:drop-shadow(0 12px 12px rgba(150,80,30,.26))}
+  .sb-banner:hover .bn-text{transform:translateX(6px)}
+}
+@media (max-width:640px){
+  .sb-banner{gap:12px;min-height:112px;padding:0 14px 0 8px;border-radius:22px}
+  .sb-banner .bn-art{height:112px}
+  .sb-banner .bn-lead{display:none}
+}
+@media (prefers-reduced-motion:reduce){.sb-banner,.bn-img,.bn-text{transition:none!important}.sb-banner:hover,.sb-banner:hover .bn-img,.sb-banner:hover .bn-text{transform:none!important}}
+
+/* the dashboard is not boxed in one big card any more: the banner and the panels sit on the page */
+#v-home{background:none;border:0;box-shadow:none;padding:0}
+
+/* ---------- departments are folder cards on tablets and desktop; on phones they stay slim pills ---------- */
+@media (min-width:641px){
+  #tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:24px 14px;padding:22px 18px 20px}
+  #tiles .lrow,#tiles .lrow:first-child{position:relative;display:block;margin-top:10px;min-height:112px;padding:0;overflow:visible;
+    background:linear-gradient(165deg,#FFFFFF 0%,#FFF6E2 100%);border:1px solid rgba(74,46,34,.13);border-radius:5px 14px 14px 14px;
+    box-shadow:0 14px 24px -20px rgba(160,80,30,.5);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
+  #tiles .lrow::after{display:none}
+  #tiles .lrow::before{content:"";position:absolute;left:0;top:-14px;width:72px;height:18px;background:#fff;border:1px solid rgba(74,46,34,.13);border-bottom:0;border-radius:9px 9px 0 0}
+  #tiles .lmain{display:grid;align-content:space-between;gap:14px;width:100%;min-height:112px;padding:16px 16px 14px;background:none;border:0;border-radius:inherit;text-align:left;cursor:pointer}
+  #tiles .lmain::before{content:"Department";font-size:.64rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#9A7A66}
+  #tiles .lico,#tiles .lgo{display:none}
+  #tiles .ltext{display:grid;gap:2px}
+  #tiles .lname{font-family:var(--serif);font-size:1.1rem;line-height:1.2;color:var(--brown)}
+  #tiles .lmeta{font-size:.78rem;color:var(--muted)}
+  @media (hover:hover) and (pointer:fine){
+    #tiles .lrow:hover{background:linear-gradient(175deg,#F4965A 0%,#F6A55C 55%,#F8BB66 100%);border-color:transparent;transform:translateY(-4px);box-shadow:0 20px 30px -18px rgba(236,130,50,.55)}
+    #tiles .lrow:hover::before{background:#F4965A;border-color:#F4965A}
+    #tiles .lrow:hover .lmain::before,#tiles .lrow:hover .lmeta{color:rgba(255,255,255,.85)}
+    #tiles .lrow:hover .lname{color:#fff}
+  }
+  #tiles .lrow:active{transform:scale(.985)}
+}
+
+@media (min-width:1025px){
+  /* the sidebar exists while the dashboard is on screen */
+  body:has(#v-home:not([hidden])) .sb{display:flex}
+  /* the page makes room on the left and keeps a small margin on the right */
+  body:has(#v-home:not([hidden])){padding-left:252px}
+  body:has(#v-home:not([hidden])) .wrap{width:calc(100% - clamp(28px,2.6vw,48px) - clamp(28px,2.6vw,48px));max-width:none}
+  body:has(#v-home:not([hidden])) .top-right{display:none}
+  body:has(#v-home:not([hidden])) main{padding-top:18px}
+  body:has(#v-home:not([hidden])) .sb-banner{min-height:188px;gap:34px;padding:0 40px 0 30px;border-radius:30px;margin-bottom:20px;
+    background:radial-gradient(circle 150px at calc(100% - 80px) 60px,rgba(255,255,255,.38) 99%,rgba(255,255,255,0) 100%),radial-gradient(circle 115px at calc(100% - 265px) calc(100% - 5px),rgba(255,255,255,.26) 99%,rgba(255,255,255,0) 100%),linear-gradient(108deg,#FCD9BC 0%,#FDE2BE 50%,#FEEFC4 100%)}
+  body:has(#v-home:not([hidden])) .sb-banner .bn-art{height:188px;min-width:150px}
+  body:has(#v-home:not([hidden])) .sb-banner h1{font-size:clamp(1.9rem,2.8vw,2.5rem)}
+  body:has(#v-home:not([hidden])) .sb-banner p{font-size:1.02rem;max-width:60ch}
+  .home-grid{grid-template-columns:minmax(0,1.5fr) minmax(340px,1fr)}
+  .panel{scroll-margin-top:24px}
+
+  .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
+    background:linear-gradient(158deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,.06) 34%,rgba(255,255,255,0) 52%),linear-gradient(150deg,rgba(158,32,10,.82) 0%,rgba(180,58,10,.80) 42%,rgba(198,88,10,.78) 74%,rgba(208,112,12,.76) 100%);color:#FFF6EC;border-radius:34px;text-shadow:0 1px 2px rgba(110,25,5,.38);
+    -webkit-backdrop-filter:blur(30px) saturate(1.8);backdrop-filter:blur(30px) saturate(1.8);border:1px solid rgba(255,225,190,.6);
+    box-shadow:0 30px 52px -22px rgba(200,60,15,.65),0 0 30px rgba(255,150,40,.25),inset 0 1px 0 rgba(255,240,200,.9),inset 0 0 0 1px rgba(255,255,255,.16);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
+  @keyframes sb-in{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+
+  .sb::before{content:"";position:absolute;left:12%;right:12%;top:-1px;height:2px;border-radius:2px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,232,170,.95),transparent);filter:blur(.6px)}
+  /* the person's card on top: it looks like a button, and it is one */
+  .sb-me{position:relative;display:grid;justify-items:center;gap:2px;margin:0 0 16px;padding:14px 10px 12px;cursor:pointer;font:inherit;color:#fff;
+    border:0;border-radius:24px;background:none;box-shadow:none;
+    transition:background .3s,transform .35s cubic-bezier(.22,1,.36,1),box-shadow .3s,border-color .3s}
+  .sb-avw{position:relative;display:block;margin-bottom:8px}
+  .sb-me .sb-av{width:62px;height:62px;border-radius:50%;border:2px solid #fff;background:var(--cream);color:var(--brown);overflow:hidden;
+    display:grid;place-items:center;font-weight:700;font-size:1.1rem;box-shadow:0 10px 20px -10px rgba(110,30,0,.7);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+  .sb-me .sb-av img{width:100%;height:100%;object-fit:cover;display:block}
+  .sb-edit{position:absolute;right:-4px;bottom:-2px;width:24px;height:24px;border-radius:50%;background:#fff;color:#C8321A;display:grid;place-items:center;
+    box-shadow:0 6px 12px -6px rgba(60,10,10,.7);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  .sb-edit svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .sb-me b{font-size:.92rem;line-height:1.2;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sb-me small{font-size:.72rem;color:#FFE3C8;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sb-me em{font-style:normal;margin-top:6px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#FFE27A}
+  .sb-go{margin-top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 6px 5px 12px;border-radius:999px;background:rgba(255,255,255,.2);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.02em;transition:background .3s,transform .3s}
+  .sb-go span{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:#C8321A}
+  .sb-go svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+  @media (hover:hover) and (pointer:fine){
+    .sb-me:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+    .sb-me:hover .sb-av{transform:scale(1.05)}
+    .sb-me:hover .sb-edit{transform:scale(1.15) rotate(-8deg)}
+    .sb-me:hover .sb-go{background:rgba(255,255,255,.32);transform:translateX(2px)}
+  }
+  .sb-me:active{transform:scale(.98)}
+  .sb-me:focus-visible{outline:3px solid #fff;outline-offset:2px}
+
+
+  /* the jump menu */
+  .sb-nav{display:flex;flex-direction:column;gap:4px;min-width:0;width:100%;overflow-y:auto;scrollbar-width:none}
+  .sb-nav::-webkit-scrollbar{display:none}
+  .sb-link{display:flex;align-items:center;gap:12px;flex:none;height:42px;padding:0 14px;border:1px solid transparent;border-radius:14px;background:none;cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:#FFEEDD;text-align:left;
+    transition:color .3s,background .3s,border-color .3s,transform .4s cubic-bezier(.22,1,.36,1)}
+  .sb-link[hidden]{display:none}
+  .sb-link.on{color:#fff;background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.14));border-color:rgba(255,255,255,.5);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 20px -12px rgba(40,20,8,.55)}
+  @media (hover:hover) and (pointer:fine){.sb-link:not(.on):hover{background:rgba(255,255,255,.18);color:#fff;transform:translateX(4px)}}
+  .sb-link:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+  .sb .tic{width:20px;height:20px;flex:none;display:grid;place-items:center}
+  .sb .tic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  /* sign out at the bottom */
+  .sb-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.26);display:grid;gap:4px}
+  .sb-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:0 14px;border:0;border-radius:12px;background:none;cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:#FFEEDD;text-align:left;transition:background .25s,color .25s,transform .3s cubic-bezier(.22,1,.36,1)}
+  @media (hover:hover) and (pointer:fine){.sb-item:hover{background:rgba(255,255,255,.24);color:#fff;transform:translateX(3px)}}
+  .sb-item:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+}
+@media (prefers-reduced-motion:reduce){.sb,.sb-link{transition:none!important;animation:none!important}}
