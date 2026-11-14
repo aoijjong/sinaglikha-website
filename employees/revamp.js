@@ -74,7 +74,7 @@
       // announcements posted in the last three days are marked New
       if (kind === 'announcement' && !card.querySelector('.ann-new')) {
         var when = (card.querySelector('.who span') || {}).textContent || '';
-        if (/just now|min ago|h ago|·\s*[1-3] d ago/.test(when)) {
+        if (/just now|min ago|[0-9] h ago|·\s*[1-3] d ago/.test(when)) {
           var n = document.createElement('span'); n.className = 'ann-new'; n.textContent = 'New'; card.appendChild(n);
         }
       }
