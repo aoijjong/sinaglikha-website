@@ -29,6 +29,17 @@
     hello.appendChild(art);
   }
 
+  /* ---- a tap on the banner plays the hover effect (touch screens have no hover) ---- */
+  if (hello) {
+    var tapTimer;
+    hello.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      hello.classList.add('tapped');
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(function () { hello.classList.remove('tapped'); }, 1200);
+    });
+  }
+
   /* ---- "What's up, Maria?" on the post box ---- */
   var open = $('#fc-open');
   function paintOpen() {
