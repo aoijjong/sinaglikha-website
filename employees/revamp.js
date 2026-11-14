@@ -1,7 +1,7 @@
 /*
   Employee Portal touches (portal.js is not changed except for two data attributes):
     - on desktop (1025px and wider) the greeting becomes a hero banner with an illustration
-    - announcements and community posts are drawn as cards; each gets a heart you can tap (kept on this browser only)
+    - announcements and community posts are drawn as cards; each gets a heart with a like count (kept on the server)
     - the "Start a discussion" button reads like a post box: "What's up, Maria?"
 */
 (function () {
@@ -41,51 +41,68 @@
     paintOpen();
   }
 
-  /* ---- the heart on every announcement and community post ---- */
-  var KEY = 'sng-likes';
+  /* ---- the heart on every announcement and community post: kept on the server, so everyone sees the counts ---- */
   var HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
-  function loadLikes() { try { var v = JSON.parse(localStorage.getItem(KEY) || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } }
-  function saveLikes(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { /* storage may be blocked */ } }
-  function keyOf(card) {
-    if (card.dataset.aid) return 'a:' + card.dataset.aid;
-    if (card.dataset.thread) return 't:' + card.dataset.thread;
-    return '';
+  var FEEDS = { '#ann-feed': ['announcement', 'aid'], '#forum-feed': ['thread', 'thread'] };
+  function label(n) { return n > 0 ? n + (n === 1 ? ' like' : ' likes') : 'Like'; }
+  function paint(b, on, n) {
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.dataset.n = String(n);
+    b.lastChild.textContent = label(n);
   }
-  function decorate(feed) {
-    var likes = loadLikes();
-    [].forEach.call(feed.querySelectorAll('article.post'), function (card) {
-      var k = keyOf(card);
-      if (!k || card.querySelector('.p-like')) return;
+  async function api(method, path, body) {
+    var opts = { method: method, headers: {}, credentials: 'same-origin' };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    try { var r = await fetch(path, opts); return { ok: r.ok, data: await r.json().catch(function () { return {}; }) }; }
+    catch (e) { return { ok: false, data: {} }; }
+  }
+  var known = {};   // ids already asked about, per kind
+  async function decorate(feed, kind, attr) {
+    var cards = [].filter.call(feed.querySelectorAll('article.post'), function (c) { return c.dataset[attr] && !c.querySelector('.p-like'); });
+    if (!cards.length) return;
+    cards.forEach(function (card) {
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'p-like';
-      b.setAttribute('aria-pressed', likes[k] ? 'true' : 'false');
-      b.innerHTML = HEART + '<span>' + (likes[k] ? 'Liked' : 'Like') + '</span>';
-      b.dataset.key = k;
-      if (card.dataset.aid) card.appendChild(b);
+      b.dataset.kind = kind;
+      b.dataset.id = card.dataset[attr];
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML = HEART + '<span>Like</span>';
+      b.dataset.n = '0';
+      if (kind === 'announcement') card.appendChild(b);
       else { var foot = card.querySelector('.post-foot'); if (foot) foot.insertBefore(b, foot.firstChild); }
       // announcements posted in the last three days are marked New
-      if (card.dataset.aid && !card.querySelector('.ann-new')) {
+      if (kind === 'announcement' && !card.querySelector('.ann-new')) {
         var when = (card.querySelector('.who span') || {}).textContent || '';
-        if (/just now|min ago|\bh ago|^[1-3] d ago|·\s*[1-3] d ago/.test(when)) {
+        if (/just now|min ago|h ago|·\s*[1-3] d ago/.test(when)) {
           var n = document.createElement('span'); n.className = 'ann-new'; n.textContent = 'New'; card.appendChild(n);
         }
       }
     });
+    // one request for the whole feed: how many hearts each post has, and which ones are mine
+    var ids = cards.map(function (c) { return c.dataset[attr]; }).slice(0, 60);
+    var r = await api('GET', '/api/employee-likes?kind=' + kind + '&ids=' + encodeURIComponent(ids.join(',')));
+    if (!r.ok || !r.data.counts) return;
+    ids.forEach(function (id) {
+      var b = feed.querySelector('.p-like[data-id="' + id + '"]');
+      if (b) paint(b, (r.data.mine || []).indexOf(id) !== -1, r.data.counts[id] || 0);
+    });
   }
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', async function (e) {
     var b = e.target.closest && e.target.closest('.p-like');
-    if (!b) return;
-    var likes = loadLikes(), k = b.dataset.key, on = b.getAttribute('aria-pressed') !== 'true';
-    if (on) likes[k] = 1; else delete likes[k];
-    saveLikes(likes);
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    b.lastChild.textContent = on ? 'Liked' : 'Like';
+    if (!b || b.disabled) return;
+    var was = b.getAttribute('aria-pressed') === 'true', n = Number(b.dataset.n) || 0, on = !was;
+    paint(b, on, Math.max(0, n + (on ? 1 : -1)));          // the heart answers at once
+    b.disabled = true;
+    var r = await api('POST', '/api/employee-likes', { kind: b.dataset.kind, item_id: b.dataset.id, liked: on });
+    b.disabled = false;
+    if (r.ok && typeof r.data.count === 'number') paint(b, on, r.data.count);
+    else paint(b, was, n);                                  // it did not save: put the heart back
   });
-  ['#ann-feed', '#forum-feed'].forEach(function (s) {
+  Object.keys(FEEDS).forEach(function (s) {
     var feed = $(s);
     if (!feed) return;
-    new MutationObserver(function () { decorate(feed); }).observe(feed, { childList: true });
-    decorate(feed);
+    new MutationObserver(function () { decorate(feed, FEEDS[s][0], FEEDS[s][1]); }).observe(feed, { childList: true });
+    decorate(feed, FEEDS[s][0], FEEDS[s][1]);
   });
 })();
