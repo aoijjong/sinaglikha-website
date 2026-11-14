@@ -94,22 +94,44 @@
     }
     var author = p.author || 'A Senior Manager';
     var when = p.when || 'just now';
-    var files = (p.files || []).map(function (f) {
+    var IMGX = /\.(png|jpe?g|gif|webp)$/i;
+    var files = p.files || [];
+    var pics = files.filter(function (f) { return IMGX.test(f.name || ''); });
+    var docs = files.filter(function (f) { return !IMGX.test(f.name || ''); });
+    var HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+    var chips = docs.map(function (f) {
       return '<span class="apv-chip">' + I('file') + '<span>' + esc(f.name) + '</span>' + (f.size ? '<small>' + esc(app.fmtSize(f.size)) + '</small>' : '') + '</span>';
     }).join('');
+    var imgs = pics.map(function (f, n) { return '<div class="apv-img loading" data-n="' + n + '"><img alt="' + esc(f.name) + '"></div>'; }).join('');
     dlg.innerHTML = '<div class="apv-top"><div><b>Preview</b><span>This is how employees see it on their dashboard' + (p.published === false ? '. It is hidden right now, so they cannot see it until you show it.' : '.') + '</span></div>' +
       IB('x', 'Close the preview', { 'data-apv-close': '1' }, 'line') + '</div>' +
       '<div class="apv-stage"><section class="apv-panel"><div class="apv-ph"><span class="apv-pi">' + I('chat') + '</span><h2>Announcements</h2></div>' +
-      '<article class="apv-post"><div class="apv-who"><span class="apv-av" style="background:' + tintOf(author) + '" aria-hidden="true">' + esc(initialsOf(author)) + '</span>' +
-      '<div><b>' + esc(author) + '</b><span>' + esc((p.dept ? p.dept + ' · ' : '') + when) + '</span></div></div>' +
+      '<div class="apv-feed"><article class="apv-card">' +
       (p.title ? '<h3 class="apv-title">' + esc(p.title) + '</h3>' : '') +
       '<p class="apv-body">' + esc(p.body || '').replace(/\n/g, '<br>') + '</p>' +
-      (files ? '<div class="apv-files">' + files + '</div>' : '') + '</article></section></div>';
+      (imgs ? '<div class="apv-imgs">' + imgs + '</div>' : '') +
+      (chips ? '<div class="apv-files">' + chips + '</div>' : '') +
+      '<div class="apv-who"><span class="apv-av" style="background:' + tintOf(author) + '" aria-hidden="true">' + esc(initialsOf(author)) + '</span>' +
+      '<div><b>' + esc(author) + '</b><span>' + esc((p.dept ? p.dept + ' \u00b7 ' : '') + when) + '</span></div></div>' +
+      (p.fresh === false ? '' : '<span class="apv-new">New</span>') +
+      '<span class="apv-like">' + HEART + '<span>Like</span></span></article></div></section></div>';
+    // the pictures: a file chosen now shows from the computer, one already on the post from a short-lived link
+    pics.forEach(function (f, n) {
+      var box = dlg.querySelector('.apv-img[data-n="' + n + '"]'), img = box && box.querySelector('img');
+      if (!img) return;
+      img.addEventListener('load', function () { box.classList.remove('loading'); });
+      img.addEventListener('error', function () { box.classList.remove('loading'); box.classList.add('failed'); });
+      if (f.blob) img.src = URL.createObjectURL(f.blob);
+      else if (f.path) sb.storage.from(BUCKET).createSignedUrl(f.path, 300).then(function (r) {
+        if (r && r.data && r.data.signedUrl) img.src = r.data.signedUrl; else { box.classList.remove('loading'); box.classList.add('failed'); }
+      });
+      else { box.classList.remove('loading'); box.classList.add('failed'); }
+    });
     if (!dlg.open) dlg.showModal();
   }
   function previewOf(a) {
     return { author: a.author_name, dept: app.depts[a.author_dept] || '', title: a.title, body: a.body, files: Array.isArray(a.files) ? a.files : [],
-      when: a.created_at ? app.fmtDate(a.created_at) : 'just now', published: a.published };
+      when: a.created_at ? app.fmtDate(a.created_at) : 'just now', published: a.published, fresh: a.created_at ? (Date.now() - new Date(a.created_at).getTime() < 3 * 86400000) : true };
   }
 
   /* ---------- the dotted menu on each row ---------- */
@@ -209,7 +231,7 @@
       openPreview({
         author: a ? a.author_name : mine, dept: a ? app.depts[a.author_dept] || '' : (st && app.depts[st.department]) || '',
         title: $('#an-name').value.trim(), body: $('#an-body').value.trim() || 'Your message will show here.',
-        files: kept.concat(added.map(function (f) { return { name: app.cleanName(f.name), size: f.size }; })), when: a ? app.fmtDate(a.created_at) : 'just now'
+        files: kept.concat(added.map(function (f) { return { name: app.cleanName(f.name), size: f.size, blob: f }; })), when: a ? app.fmtDate(a.created_at) : 'just now', fresh: a ? (Date.now() - new Date(a.created_at).getTime() < 3 * 86400000) : true
       });
     };
     $('#an-add').onclick = function () { $('#an-file').click(); };
