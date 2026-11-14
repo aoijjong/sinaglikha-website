@@ -108,7 +108,7 @@
 
 /* ---------- desktop: the profile settings page uses the whole width, with the two forms side by side ---------- */
 @media (min-width:1025px){
-  .profile:not([hidden]){max-width:none;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 24px;align-items:start}
+  .profile:not([hidden]){max-width:none;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 24px;align-items:stretch}
   .profile > .back,.profile > .app-head{grid-column:1/-1}
   .profile .card{margin-bottom:0}
   .profile .pf-facts{grid-template-columns:repeat(3,minmax(0,1fr))}
