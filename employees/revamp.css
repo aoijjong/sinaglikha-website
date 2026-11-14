@@ -119,3 +119,20 @@
   .composer .cmp-foot .fine{font-size:.76rem;line-height:1.35}
   .composer .btn-sm{padding:8px 14px;font-size:.8rem}
 }
+
+/* ---------- a small hero banner on tablets and phones ---------- */
+@media (max-width:1024px){
+  .hello.sb-banner{display:flex;align-items:center;gap:14px;position:relative;min-height:116px;padding:0 18px 0 10px;margin:0 0 14px;border-radius:24px;overflow:visible;
+    background:radial-gradient(circle 90px at calc(100% - 44px) 30px,rgba(255,255,255,.38) 99%,rgba(255,255,255,0) 100%),linear-gradient(108deg,#FCD9BC 0%,#FDE2BE 50%,#FEEFC4 100%);
+    color:#4A2E22;border:1px solid rgba(255,255,255,.85);box-shadow:0 14px 26px -20px rgba(214,128,60,.55)}
+  .hello.sb-banner .bn-art{display:flex;position:relative;flex:none;align-self:flex-end;order:1;height:116px;align-items:flex-end}
+  .hello.sb-banner .bn-img{height:100%;width:auto;display:block;filter:drop-shadow(0 6px 6px rgba(150,80,30,.18))}
+  .hello.sb-banner .bn-text{position:relative;min-width:0;order:2}
+  .hello.sb-banner h1{font-size:clamp(1.3rem,5.4vw,1.8rem);color:#4A2E22}
+  .hello.sb-banner p{margin:4px 0 0;color:#6B4533;font-size:.86rem;line-height:1.4}
+  .hello.sb-banner .bn-lead{display:none}
+}
+@media (max-width:380px){
+  .hello.sb-banner{gap:8px;min-height:104px;padding-right:12px}
+  .hello.sb-banner .bn-art{height:104px}
+}
