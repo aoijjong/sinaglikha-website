@@ -109,7 +109,7 @@
   }
   new MutationObserver(function (muts) {
     if (queued) return;
-    for (var i = 0; i < muts.length; i++) if (muts[i].addedNodes.length) { queued = true; requestAnimationFrame(run); return; }
+    for (var i = 0; i < muts.length; i++) if (muts[i].addedNodes.length) { queued = true; setTimeout(run, 16); return; }
   }).observe(document.body, { childList: true, subtree: true });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
