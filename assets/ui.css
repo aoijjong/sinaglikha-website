@@ -1178,3 +1178,13 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .apv-files{gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
 .apv-chip{padding:10px 16px;font-size:.92rem}
 @media (max-width:640px){.apv-top{padding:18px 18px 4px}.apv-stage{padding:10px 14px 22px}.apv-ph,.apv-post{padding-left:20px;padding-right:20px}.apv-title{font-size:1.25rem}}
+
+/* the viewer's "Actual size", "Open in a new tab" and "Download" are buttons, not links */
+.sv-link[data-sv="tab"],.sv-link[data-sv="save"],.sv-link[data-sv="zoom"]{display:inline-flex;align-items:center;justify-content:center;padding:9px 18px;border-radius:999px;text-decoration:none;font-size:.88rem;line-height:1;white-space:nowrap;
+  background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.6);color:#fff;transition:background .25s,color .25s,transform .25s}
+.sv-link[data-sv="save"]{background:#fff;color:#4A2E22;border-color:#fff}
+@media (hover:hover) and (pointer:fine){
+  .sv-link[data-sv="tab"]:hover,.sv-link[data-sv="zoom"]:hover{background:rgba(255,255,255,.28)}
+  .sv-link[data-sv="save"]:hover{background:#FFE9C7;transform:translateY(-1px)}
+}
+.sv-link[data-sv="tab"]:active,.sv-link[data-sv="save"]:active,.sv-link[data-sv="zoom"]:active{transform:scale(.96)}
