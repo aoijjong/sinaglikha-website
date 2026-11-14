@@ -66,3 +66,20 @@
 
 /* when the dashboard is one column (phones and tablets), Departments comes last, below Evaluations */
 @media (max-width:960px){#dept-panel{order:8!important}}
+
+/* attachments: a deeper warm shade */
+.fchip{background:#FBE2C0;border-color:rgba(214,128,60,.38);color:var(--brown)}
+.fchip small{color:#7A5236}
+@media (hover:hover) and (pointer:fine){.fchip:hover{background:#F8D3A5;border-color:rgba(214,100,40,.6)}}
+
+/* a picture attached to an announcement is shown in the post */
+#ann-feed .ann-imgs{order:3;display:grid;gap:10px;margin-top:2px}
+.ann-img{position:relative;display:block;width:100%;padding:0;border:1px solid rgba(74,46,34,.12);border-radius:16px;overflow:hidden;background:#F7EDE0;cursor:zoom-in;min-height:120px;transition:box-shadow .3s,transform .3s}
+.ann-img img{display:block;width:100%;height:auto;max-height:520px;object-fit:contain;background:#F7EDE0}
+.ann-img.loading{min-height:200px;background:linear-gradient(100deg,#F7EDE0 30%,#FDF6EC 50%,#F7EDE0 70%);background-size:200% 100%;animation:ann-shim 1.3s linear infinite}
+.ann-img.loading img{opacity:0}
+.ann-img.failed{min-height:0;height:0;border:0}
+@keyframes ann-shim{to{background-position:-200% 0}}
+@media (hover:hover) and (pointer:fine){.ann-img:hover{box-shadow:0 16px 28px -18px rgba(74,46,34,.5);transform:translateY(-2px)}}
+.ann-img:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.ann-img.loading{animation:none}}
