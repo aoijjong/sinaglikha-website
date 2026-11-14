@@ -1109,3 +1109,9 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .fc-del{position:static;flex:none;margin-right:8px}
   .fc-del .ib,.fcard:hover .fc-del .ib{width:34px;height:34px;color:var(--muted);opacity:.85}
 }
+
+/* tablets and desktop: the folders share the whole row, so no empty space is left on the right (the height stays fixed) */
+@media (min-width:641px){
+  .rows:has(.fcard){grid-template-columns:repeat(auto-fit,minmax(236px,1fr));justify-content:stretch;align-items:start}
+  .fcard,.fcard:first-child{width:auto;height:132px}
+}
