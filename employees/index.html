@@ -272,6 +272,7 @@ button.dpill{cursor:pointer}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style>
 <link rel="stylesheet" href="../assets/ui.css">
+<link rel="stylesheet" href="revamp.css">
 </head>
 <body>
 <header class="top">
@@ -352,7 +353,7 @@ button.dpill{cursor:pointer}
           <div class="panel-h"><span class="pi"><i data-icon="users"></i></span><h2>Community</h2></div>
           <div class="feed" id="forum-feed"></div>
           <form class="composer" id="f-compose" novalidate>
-            <button class="cmp-open" type="button" id="fc-open"><i data-icon="plus"></i>Start a discussion</button>
+            <button class="cmp-open" type="button" id="fc-open"><i data-icon="chat"></i><span id="fc-open-t">What’s up?</span></button>
             <div id="fc-fields" hidden>
             <div class="cmp-row">
               <label class="sr-only" for="fc-cat">Category</label><select id="fc-cat"></select>
@@ -456,5 +457,6 @@ button.dpill{cursor:pointer}
 <script src="../assets/eval-form.js"></script>
 <script src="../assets/who-switch.js"></script>
 <script src="portal.js"></script>
+<script src="revamp.js"></script>
 </body>
 </html>
