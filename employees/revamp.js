@@ -56,6 +56,39 @@
     try { var r = await fetch(path, opts); return { ok: r.ok, data: await r.json().catch(function () { return {}; }) }; }
     catch (e) { return { ok: false, data: {} }; }
   }
+  var IMG = /\.(png|jpe?g|gif|webp)$/i;
+  function showImages(card) {
+    var chips = [].slice.call(card.querySelectorAll('.fchip[data-annfile]')).filter(function (c) {
+      return IMG.test((c.querySelector('span') || {}).textContent || '');
+    });
+    if (!chips.length) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'ann-imgs';
+    chips.forEach(function (c) {
+      var name = (c.querySelector('span') || {}).textContent || '';
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ann-img loading';
+      b.dataset.annfile = c.dataset.annfile;
+      b.dataset.i = c.dataset.i;
+      b.setAttribute('aria-label', 'Open ' + name);
+      var img = document.createElement('img');
+      img.alt = name;
+      img.loading = 'lazy';
+      img.addEventListener('load', function () { b.classList.remove('loading'); });
+      img.addEventListener('error', function () { b.classList.remove('loading'); b.classList.add('failed'); });
+      b.appendChild(img);
+      wrap.appendChild(b);
+      var box = c.parentNode;
+      c.remove();
+      if (box && !box.querySelector('.fchip')) box.remove();
+      api('GET', '/api/employee-content?ann=' + encodeURIComponent(c.dataset.annfile) + '&i=' + encodeURIComponent(c.dataset.i)).then(function (r) {
+        if (r.ok && r.data.url) img.src = r.data.url; else { b.classList.remove('loading'); b.classList.add('failed'); }
+      });
+    });
+    var title = card.querySelector('.post-body');
+    (title || card.firstChild).after(wrap);
+  }
   var known = {};   // ids already asked about, per kind
   async function decorate(feed, kind, attr) {
     var cards = [].filter.call(feed.querySelectorAll('article.post'), function (c) { return c.dataset[attr] && !c.querySelector('.p-like'); });
@@ -79,6 +112,8 @@
         }
       }
     });
+    // picture attachments are shown right in the post (tap one to open it larger); other files stay as chips
+    if (kind === 'announcement') cards.forEach(showImages);
     // one request for the whole feed: how many hearts each post has, and which ones are mine
     var ids = cards.map(function (c) { return c.dataset[attr]; }).slice(0, 60);
     var r = await api('GET', '/api/employee-likes?kind=' + kind + '&ids=' + encodeURIComponent(ids.join(',')));

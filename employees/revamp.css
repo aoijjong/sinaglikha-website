@@ -66,3 +66,55 @@
 
 /* when the dashboard is one column (phones and tablets), Departments comes last, below Evaluations */
 @media (max-width:960px){#dept-panel{order:8!important}}
+
+/* attachments: a deeper warm shade */
+.fchip{background:#FBE2C0;border-color:rgba(214,128,60,.38);color:var(--brown)}
+.fchip small{color:#7A5236}
+@media (hover:hover) and (pointer:fine){.fchip:hover{background:#F8D3A5;border-color:rgba(214,100,40,.6)}}
+
+/* a picture attached to an announcement is shown in the post */
+#ann-feed .ann-imgs{order:3;display:grid;gap:10px;margin-top:2px}
+.ann-img{position:relative;display:block;width:100%;padding:0;border:1px solid rgba(74,46,34,.12);border-radius:16px;overflow:hidden;background:#F7EDE0;cursor:zoom-in;min-height:120px;transition:box-shadow .3s,transform .3s}
+.ann-img img{display:block;width:100%;height:auto;max-height:520px;object-fit:contain;background:#F7EDE0}
+.ann-img.loading{min-height:200px;background:linear-gradient(100deg,#F7EDE0 30%,#FDF6EC 50%,#F7EDE0 70%);background-size:200% 100%;animation:ann-shim 1.3s linear infinite}
+.ann-img.loading img{opacity:0}
+.ann-img.failed{min-height:0;height:0;border:0}
+@keyframes ann-shim{to{background-position:-200% 0}}
+@media (hover:hover) and (pointer:fine){.ann-img:hover{box-shadow:0 16px 28px -18px rgba(74,46,34,.5);transform:translateY(-2px)}}
+.ann-img:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.ann-img.loading{animation:none}}
+
+/* ---------- phones: smaller type and tighter cards so nothing stacks or feels oversized ---------- */
+@media (max-width:640px){
+  #ann-feed,#forum-panel #forum-feed{padding:6px 12px 12px;gap:10px}
+  #ann-feed .post,#forum-feed .post{padding:14px 14px 12px;border-radius:18px}
+  #ann-feed .post-title{font-size:.95rem;padding-right:54px}
+  #ann-feed .post-body,#forum-feed .post-body{font-size:.88rem;line-height:1.5}
+  #forum-feed .post-title{font-size:.95rem}
+  #forum-feed .post-body{padding:11px 13px;border-radius:14px}
+  #ann-feed .post-top{margin-top:6px;padding-right:78px;gap:9px}
+  #ann-feed .av-sm,#forum-feed .av-sm{width:30px;height:30px;font-size:.68rem}
+  #ann-feed .who b,#forum-feed .who b{font-size:.84rem}
+  #ann-feed .who b,#ann-feed .who span,#forum-feed .who b,#forum-feed .who span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #ann-feed .who span,#forum-feed .who span{font-size:.74rem}
+  #ann-feed .p-like{right:8px;bottom:8px;padding:5px 8px;font-size:.78rem}
+  .p-like svg{width:17px;height:17px}
+  .ann-new{right:12px;top:12px;font-size:.68rem;padding:2px 10px}
+  .fchip{padding:7px 10px;font-size:.8rem;gap:7px}
+  .fchip span{max-width:none;flex:1;min-width:0}
+  .fchip small{white-space:nowrap;font-size:.72rem}
+  .fchip .icon{width:16px;height:16px}
+  #forum-feed .post-foot{margin-top:10px;padding-top:8px;gap:2px}
+  .pbtn{font-size:.8rem;padding:5px 8px}
+  /* the post box */
+  #forum-panel .composer{margin:4px 12px 2px;padding:14px 14px 12px;border-radius:18px}
+  #forum-panel .composer::before{margin-bottom:9px;font-size:.92rem}
+  #forum-panel .cmp-open{padding:12px 13px;font-size:.88rem;border-radius:14px;gap:10px}
+  #forum-panel .cmp-open .icon{width:18px;height:18px}
+  .composer .cmp-row{flex-direction:column;gap:8px}
+  .composer .cmp-row select,.composer .cmp-row input,.composer textarea{width:100%;font-size:.9rem;padding:10px 12px;border-radius:12px}
+  .composer textarea{min-height:76px}
+  .composer .cmp-foot{margin-top:8px;gap:8px}
+  .composer .cmp-foot .fine{font-size:.76rem;line-height:1.35}
+  .composer .btn-sm{padding:8px 14px;font-size:.8rem}
+}
