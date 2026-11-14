@@ -1094,3 +1094,7 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .fcard:hover{background:linear-gradient(180deg,#F4965A 0%,#F6A55C 55%,#F8BB66 100%)}
   .fcard:hover::before{background:#F4965A;border-color:#F4965A}
 }
+
+/* folder cards: no decoration in the corner */
+.fc-main::after{display:none}
+.fc-name{padding-right:0}
