@@ -42,7 +42,7 @@
 
   /* ---- a banner at the top of every section ---- */
   var SECTION = {
-    library: ['folder', '201 Files', 'Keep each employee's 201 file in one safe place. Only Staffing and Legal can open them.'],
+    library: ['folder', '201 Files', 'Keep every employee 201 file in one safe place. Only Staffing and Legal can open them.'],
     content: ['clipboard', 'Content Manager', 'Add and update the announcements, forms and files your employees see on the portal.'],
     employees: ['users', 'Employees', 'Add employees and manage who can sign in to the Employee Portal.'],
     records: ['book', 'Restricted Records', 'Confidential files, with a record of who opened, uploaded or deleted each one.'],
