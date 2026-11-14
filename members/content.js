@@ -474,6 +474,7 @@
       if ((a.kind === 'folder') !== (b.kind === 'folder')) return a.kind === 'folder' ? -1 : 1;
       return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
     });
+    items = window.SngReorder ? window.SngReorder.sort(items, reorderScope(), function (x) { return x.id; }, function (x) { return x.kind === 'folder'; }) : items;
     $('#cm-rows').innerHTML = items.map(rowHtml).join('');
     var empty = $('#cm-empty');
     if (!cs.items.length) {
@@ -837,6 +838,9 @@
   window.addEventListener('scroll', function () { closeAMenu(false); }, true);
   window.addEventListener('resize', function () { closeAMenu(false); });
 
+  // drag to reorder: remembered on this browser, per department and folder; off while searching
+  function reorderScope() { return cs.key && !cs.q.trim() ? 'content:' + cs.key + ':' + folderPath() : ''; }
+  if (window.SngReorder) window.SngReorder.attach($('#cm-rows'), reorderScope, function (li) { return li.dataset.id || ''; });
   $('#cm-rows').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-act]');
     var li = e.target.closest('li.lrow');

@@ -525,6 +525,7 @@
     $('#btn-back').hidden = !state.path.length;
     var q = state.filter.trim().toLowerCase();
     var items = state.entries.filter(function (e) { return !q || e.name.toLowerCase().indexOf(q) !== -1; });
+    items = window.SngReorder ? window.SngReorder.sort(items, libScope(), function (x) { return (x.folder ? 'd:' : 'f:') + x.name; }, function (x) { return !!x.folder; }) : items;
     $('#rows').innerHTML = items.map(rowHtml).join('');
     var empty = $('#empty');
     var emptyBox = function (icon, title, text) { return '<span class="eic">' + SI(icon) + '</span><b>' + title + '</b><p>' + text + '</p>'; };
@@ -1042,6 +1043,9 @@
     await loadFolder();
   }
 
+  // drag to reorder: remembered on this browser, per folder; off while searching
+  function libScope() { return state.filter.trim() ? '' : 'lib:' + state.path.join('/'); }
+  if (window.SngReorder) window.SngReorder.attach($('#rows'), libScope, function (li) { return li.dataset.name ? (li.dataset.kind === 'folder' ? 'd:' : 'f:') + li.dataset.name : ''; });
   $('#rows').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-act]');
     var li = e.target.closest('li.lrow');

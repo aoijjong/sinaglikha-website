@@ -1123,3 +1123,10 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 @media (min-width:641px){.rows:has(.fcard){grid-template-columns:repeat(3,minmax(0,1fr));justify-content:stretch}}
 @media (min-width:900px){.rows:has(.fcard){grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (min-width:1180px){.rows:has(.fcard){grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+/* drag to reorder */
+#cm-rows .lrow,#rows .lrow{cursor:grab;touch-action:pan-y}
+#cm-rows .lrow button,#cm-rows .lrow .ib,#rows .lrow button,#rows .lrow .ib{cursor:pointer}
+#cm-rows .lrow.rd-drag,#rows .lrow.rd-drag{position:relative;z-index:60;cursor:grabbing;transition:none;opacity:.96;box-shadow:0 26px 44px -16px rgba(74,46,34,.45);outline:2px dashed rgba(232,112,26,.55);outline-offset:3px}
+#cm-rows .lrow.rd-drag,#rows .lrow.rd-drag *{cursor:grabbing}
+body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
