@@ -136,3 +136,14 @@
   .hello.sb-banner{gap:8px;min-height:104px;padding-right:12px}
   .hello.sb-banner .bn-art{height:104px}
 }
+
+/* tapping the banner on a touch screen plays the same lift and lean-in as hovering it on desktop */
+@media (max-width:1024px){
+  .hello.sb-banner{transition:transform .5s cubic-bezier(.22,1,.36,1),box-shadow .5s;-webkit-tap-highlight-color:transparent}
+  .hello.sb-banner .bn-img{transform-origin:50% 100%;transition:transform .6s cubic-bezier(.22,1,.36,1),filter .6s}
+  .hello.sb-banner .bn-text{transition:transform .6s cubic-bezier(.22,1,.36,1)}
+  .hello.sb-banner.tapped{transform:translateY(-4px);box-shadow:0 24px 36px -22px rgba(226,120,40,.6)}
+  .hello.sb-banner.tapped .bn-img{transform:scale(1.06) translateX(5px);filter:drop-shadow(0 10px 10px rgba(150,80,30,.26))}
+  .hello.sb-banner.tapped .bn-text{transform:translateX(5px)}
+}
+@media (prefers-reduced-motion:reduce){.hello.sb-banner.tapped,.hello.sb-banner.tapped .bn-img,.hello.sb-banner.tapped .bn-text{transform:none!important}}
