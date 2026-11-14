@@ -36,13 +36,13 @@
 
 /* ---------- announcements: soft cards, the title first, the author underneath, a heart in the corner ---------- */
 #ann-feed{display:flex;flex-direction:column;gap:12px;padding:8px 16px 14px}
-#ann-feed .post{position:relative;display:flex;flex-direction:column;gap:8px;padding:18px 18px 16px;border:1px solid rgba(74,46,34,.1);border-radius:22px;
+#ann-feed .post{position:relative;display:flex;flex-direction:column;gap:8px;padding:18px 18px 48px;border:1px solid rgba(74,46,34,.1);border-radius:22px;
   background:linear-gradient(165deg,#FFFFFF 0%,#FFF8EC 100%);box-shadow:0 12px 24px -20px rgba(160,80,30,.5)}
 #ann-feed .feed>.post:first-child,.feed>.post:first-child{border-top:1px solid rgba(74,46,34,.1)}
-#ann-feed .post-title{order:1;font-family:var(--sans);font-weight:700;font-size:1.04rem;line-height:1.3;margin:0;padding-right:64px;letter-spacing:0}
+#ann-feed .post-title{order:1;font-family:var(--sans);font-weight:700;font-size:1.04rem;line-height:1.3;margin:0;padding-right:0;letter-spacing:0}
 #ann-feed .post-body{order:2;color:var(--muted);font-size:.94rem;line-height:1.6}
 #ann-feed .fchips{order:3;margin-top:2px}
-#ann-feed .post-top{order:4;margin:8px 0 0;padding-right:110px}
+#ann-feed .post-top{order:0;margin:0 0 6px;padding-right:72px}
 #ann-feed .av-sm{width:34px;height:34px;font-size:.74rem}
 #ann-feed .who b{font-size:.9rem}
 #ann-feed .p-like{position:absolute;right:12px;bottom:12px}
@@ -88,11 +88,12 @@
 @media (max-width:640px){
   #ann-feed,#forum-panel #forum-feed{padding:6px 12px 12px;gap:10px}
   #ann-feed .post,#forum-feed .post{padding:14px 14px 12px;border-radius:18px}
-  #ann-feed .post-title{font-size:.95rem;padding-right:54px}
+  #ann-feed .post{padding-bottom:42px}
+  #ann-feed .post-title{font-size:.95rem;padding-right:0}
   #ann-feed .post-body,#forum-feed .post-body{font-size:.88rem;line-height:1.5}
   #forum-feed .post-title{font-size:.95rem}
   #forum-feed .post-body{padding:11px 13px;border-radius:14px}
-  #ann-feed .post-top{margin-top:6px;padding-right:78px;gap:9px}
+  #ann-feed .post-top{margin:0 0 4px;padding-right:56px;gap:9px}
   #ann-feed .av-sm,#forum-feed .av-sm{width:30px;height:30px;font-size:.68rem}
   #ann-feed .who b,#forum-feed .who b{font-size:.84rem}
   #ann-feed .who b,#ann-feed .who span,#forum-feed .who b,#forum-feed .who span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
