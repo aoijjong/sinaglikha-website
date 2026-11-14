@@ -265,7 +265,7 @@
       return;
     }
     feed.innerHTML = anns.slice(0, annShown).map(function (a) {
-      return '<article class="post"><div class="post-top">' + avSm(a.author, '', annPhotos[a.pic]) + '<div class="who"><b>' + esc(a.author) + '</b><span>' +
+      return '<article class="post" data-aid="' + esc(a.id) + '"><div class="post-top">' + avSm(a.author, '', annPhotos[a.pic]) + '<div class="who"><b>' + esc(a.author) + '</b><span>' +
         esc((DEPT_NAME[a.dept] ? DEPT_NAME[a.dept] + ' · ' : '') + ago(a.created_at)) + '</span></div></div>' +
         (a.title ? '<h3 class="post-title">' + esc(a.title) + '</h3>' : '') + '<p class="post-body">' + text(a.body) + '</p>' +
         (a.files.length ? '<div class="fchips">' + a.files.map(function (f, i) {
@@ -299,7 +299,7 @@
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain">' + esc(catName(t.category_id)) + '</span></div>' +
         '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
-        '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' reply' : ' replies') + '</span></button>' +
+        '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">No discussions yet. Start the first one below.</div>';
   }
