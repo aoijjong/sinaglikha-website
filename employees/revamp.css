@@ -63,3 +63,6 @@
 #forum-feed .post-title{font-family:var(--sans);font-weight:700;font-size:1.02rem;margin:0 0 8px;letter-spacing:0}
 #forum-feed .post-body{padding:14px 16px;border-radius:16px;background:#FFF6EA;font-size:.95rem;line-height:1.6}
 #forum-feed .post-foot{margin-top:12px;padding-top:10px;border-top:1px solid rgba(74,46,34,.08)}
+
+/* when the dashboard is one column (phones and tablets), Departments comes last, below Evaluations */
+@media (max-width:960px){#dept-panel{order:8!important}}
