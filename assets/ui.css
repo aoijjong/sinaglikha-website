@@ -1115,3 +1115,6 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .rows:has(.fcard){grid-template-columns:repeat(auto-fit,minmax(236px,1fr));justify-content:stretch;align-items:start}
   .fcard,.fcard:first-child{width:auto;height:132px}
 }
+/* folder cards: no decoration in the corner */
+.fc-main::after{display:none}
+.fc-name{padding-right:0}
