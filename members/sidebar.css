@@ -53,19 +53,19 @@
   .sb-me:focus-visible{outline:3px solid #fff;outline-offset:2px}
 
   /* ---------- the banner at the top of every section: soft peach to gold, a friendly illustration, a greeting ---------- */
-  .sb-banner{position:relative;align-items:center;gap:34px;min-height:188px;padding:0 40px 0 30px;margin:0 0 20px;border-radius:30px;overflow:hidden;
-    background:linear-gradient(108deg,#FCD9BC 0%,#FDE2BE 50%,#FEEFC4 100%);color:#4A2E22;border:1px solid rgba(255,255,255,.85);box-shadow:0 20px 34px -24px rgba(214,128,60,.55)}
-  .sb-banner::before,.sb-banner::after{content:"";position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.38)}
+  .sb-banner{position:relative;align-items:center;gap:34px;min-height:188px;padding:0 40px 0 30px;margin:0 0 20px;border-radius:30px;overflow:visible;
+    background:radial-gradient(circle 150px at calc(100% - 80px) 60px,rgba(255,255,255,.38) 99%,rgba(255,255,255,0) 100%),radial-gradient(circle 115px at calc(100% - 265px) calc(100% - 5px),rgba(255,255,255,.26) 99%,rgba(255,255,255,0) 100%),linear-gradient(108deg,#FCD9BC 0%,#FDE2BE 50%,#FEEFC4 100%);color:#4A2E22;border:1px solid rgba(255,255,255,.85);box-shadow:0 20px 34px -24px rgba(214,128,60,.55)}
+  .sb-banner::before,.sb-banner::after{display:none}
   .sb-banner::before{right:-70px;top:-90px;width:300px;height:300px}
   .sb-banner::after{right:150px;bottom:-110px;width:230px;height:230px;background:rgba(255,255,255,.26)}
   .bn-art{position:relative;flex:none;align-self:flex-end;height:188px;display:flex;align-items:flex-end;min-width:150px}
   .bn-art::before{content:"";position:absolute;left:8%;right:8%;bottom:6px;height:16px;border-radius:50%;background:radial-gradient(closest-side,rgba(150,80,30,.28),rgba(150,80,30,0))}
   .bn-img{position:relative;height:100%;width:auto;display:block;filter:drop-shadow(0 10px 10px rgba(150,80,30,.18));transform-origin:50% 100%;transition:transform .6s cubic-bezier(.22,1,.36,1),filter .6s}
   /* the whole banner answers the pointer: it lifts, its glow warms, the picture leans in, the text slides a little */
-  .sb-banner{transition:transform .5s cubic-bezier(.22,1,.36,1),box-shadow .5s,background-position .8s;background-size:130% 100%;background-position:0 0}
+  .sb-banner{transition:transform .5s cubic-bezier(.22,1,.36,1),box-shadow .5s,background-position .8s}
   .bn-text{transition:transform .6s cubic-bezier(.22,1,.36,1)}
   @media (hover:hover) and (pointer:fine){
-    .sb-banner:hover{transform:translateY(-4px);box-shadow:0 30px 44px -24px rgba(226,120,40,.6);background-position:100% 0}
+    .sb-banner:hover{transform:translateY(-4px);box-shadow:0 30px 44px -24px rgba(226,120,40,.6)}
     .sb-banner:hover .bn-img{transform:scale(1.05) translateX(6px);filter:drop-shadow(0 14px 14px rgba(150,80,30,.26))}
     .sb-banner:hover .bn-text{transform:translateX(6px)}
   }
