@@ -1118,3 +1118,8 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 /* folder cards: no decoration in the corner */
 .fc-main::after{display:none}
 .fc-name{padding-right:0}
+
+/* tablets and desktop: a fixed number of equal folders per row (3, then 4, then 5 on wide screens), so they are never too wide */
+@media (min-width:641px){.rows:has(.fcard){grid-template-columns:repeat(3,minmax(0,1fr));justify-content:stretch}}
+@media (min-width:900px){.rows:has(.fcard){grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:1180px){.rows:has(.fcard){grid-template-columns:repeat(5,minmax(0,1fr))}}
