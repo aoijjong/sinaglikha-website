@@ -60,9 +60,7 @@
         esc(a.title || excerpt(a.body, 70)) + '</span><span class="lmeta">' + esc(meta) + '</span>' +
         (a.title ? '<span class="lmeta" style="white-space:normal">' + esc(excerpt(a.body, 140)) + '</span>' : '') + '</span></div>' +
         '<div class="lside"><span class="chip ' + (a.published ? 's-published' : 's-archived') + '">' + (a.published ? 'Posted' : 'Hidden') + '</span><div class="lacts">' +
-        IB('pencil', 'Edit', { 'data-a': 'edit' }) +
-        (a.published ? IB('eyeOff', 'Hide from employees', { 'data-a': 'toggle' }) : IB('eye', 'Show to employees', { 'data-a': 'toggle' }, 'good')) +
-        IB('trash', 'Delete', { 'data-a': 'del' }, 'danger') + '</div></div></li>';
+        IB('more', 'Actions for ' + (a.title || 'this announcement'), { 'data-a': 'amenu', 'aria-haspopup': 'menu', 'aria-expanded': 'false' }) + '</div></div></li>';
     }).join('');
     if (A.failed) {
       empty.innerHTML = '<span class="eic">' + I('chat') + '</span><b>Not set up yet</b><p>Run supabase/phase4.sql in the Supabase SQL editor, then reload this page.</p>';
@@ -72,6 +70,116 @@
       empty.hidden = false;
     } else empty.hidden = true;
   }
+
+  /* ---------- the preview: the post as employees see it on their dashboard ---------- */
+  var TINTS = ['#FFE7A8', '#FBD2B0', '#F6C9C0', '#D8E6C4', '#CFE3F1', '#E4D6F0'];
+  function initialsOf(name) {
+    var w = String(name || '').trim().split(/\s+/).filter(Boolean);
+    return ((w[0] ? Array.from(w[0])[0] : '?') + (w.length > 1 ? Array.from(w[w.length - 1])[0] : '')).toUpperCase();
+  }
+  function tintOf(name) {
+    var h = 0;
+    String(name).split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) >>> 0; });
+    return TINTS[h % TINTS.length];
+  }
+  function openPreview(p) {
+    var dlg = $('#an-prev');
+    if (!dlg) {
+      dlg = document.createElement('dialog');
+      dlg.id = 'an-prev';
+      dlg.className = 'apv-dlg';
+      dlg.setAttribute('aria-label', 'Preview of the announcement');
+      document.body.appendChild(dlg);
+      dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('[data-apv-close]')) dlg.close(); });
+    }
+    var author = p.author || 'A Senior Manager';
+    var when = p.when || 'just now';
+    var files = (p.files || []).map(function (f) {
+      return '<span class="apv-chip">' + I('file') + '<span>' + esc(f.name) + '</span>' + (f.size ? '<small>' + esc(app.fmtSize(f.size)) + '</small>' : '') + '</span>';
+    }).join('');
+    dlg.innerHTML = '<div class="apv-top"><div><b>Preview</b><span>This is how employees see it on their dashboard' + (p.published === false ? '. It is hidden right now, so they cannot see it until you show it.' : '.') + '</span></div>' +
+      IB('x', 'Close the preview', { 'data-apv-close': '1' }, 'line') + '</div>' +
+      '<div class="apv-stage"><section class="apv-panel"><div class="apv-ph"><span class="apv-pi">' + I('chat') + '</span><h2>Announcements</h2></div>' +
+      '<article class="apv-post"><div class="apv-who"><span class="apv-av" style="background:' + tintOf(author) + '" aria-hidden="true">' + esc(initialsOf(author)) + '</span>' +
+      '<div><b>' + esc(author) + '</b><span>' + esc((p.dept ? p.dept + ' · ' : '') + when) + '</span></div></div>' +
+      (p.title ? '<h3 class="apv-title">' + esc(p.title) + '</h3>' : '') +
+      '<p class="apv-body">' + esc(p.body || '').replace(/\n/g, '<br>') + '</p>' +
+      (files ? '<div class="apv-files">' + files + '</div>' : '') + '</article></section></div>';
+    if (!dlg.open) dlg.showModal();
+  }
+  function previewOf(a) {
+    return { author: a.author_name, dept: app.depts[a.author_dept] || '', title: a.title, body: a.body, files: Array.isArray(a.files) ? a.files : [],
+      when: a.created_at ? app.fmtDate(a.created_at) : 'just now', published: a.published };
+  }
+
+  /* ---------- the dotted menu on each row ---------- */
+  var amBtn = null;
+  function actionsFor(a) {
+    return [['preview', 'eye', 'Preview as employees see it'], ['edit', 'pencil', 'Edit'],
+      a.published ? ['toggle', 'eyeOff', 'Hide from employees'] : ['toggle', 'eye', 'Show to employees'], ['del', 'trash', 'Delete']];
+  }
+  function closeAMenu(focusBack) {
+    var m = document.getElementById('an-amenu');
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    var bt = amBtn; amBtn = null;
+    if (bt) { bt.setAttribute('aria-expanded', 'false'); if (focusBack && document.body.contains(bt)) bt.focus(); }
+  }
+  function openAMenu(btn, a) {
+    var m = document.getElementById('an-amenu');
+    if (!m) {
+      m = document.createElement('ul');
+      m.id = 'an-amenu'; m.className = 'at-menu am'; m.setAttribute('role', 'menu'); m.hidden = true;
+      document.body.appendChild(m);
+    }
+    if (!m.hidden && amBtn === btn) { closeAMenu(true); return; }
+    closeAMenu(false);
+    m.setAttribute('aria-label', 'Actions for ' + (a.title || 'this announcement'));
+    m.innerHTML = actionsFor(a).map(function (x) {
+      return '<li role="menuitem" tabindex="-1" data-am="' + x[0] + '"' + (x[0] === 'del' ? ' class="danger"' : '') + '>' + I(x[1]) + '<span>' + x[2] + '</span></li>';
+    }).join('');
+    m.dataset.for = a.id;
+    m.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    amBtn = btn;
+    m.style.maxHeight = '';
+    var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth, need = mh + 20;
+    if (window.innerHeight - r.bottom < need) { window.scrollBy({ top: need - (window.innerHeight - r.bottom), behavior: 'instant' }); r = btn.getBoundingClientRect(); }
+    var below = window.innerHeight - r.bottom - 14;
+    if (mh > below) m.style.maxHeight = Math.max(140, below) + 'px';
+    m.style.top = Math.max(8, r.bottom + 6) + 'px';
+    m.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
+    m.firstChild.focus();
+  }
+  function runAct(act, a) {
+    if (act === 'preview') openPreview(previewOf(a));
+    else if (act === 'edit') openDialog(a);
+    else if (act === 'toggle') toggle(a);
+    else if (act === 'del') remove(a);
+  }
+  function pickAct(act) {
+    var m = document.getElementById('an-amenu'), id = m && m.dataset.for;
+    var a = A.rows.filter(function (x) { return x.id === id; })[0];
+    closeAMenu(false);
+    if (a) runAct(act, a);
+  }
+  document.addEventListener('click', function (e) {
+    var mi = e.target.closest('#an-amenu li');
+    if (mi) { pickAct(mi.dataset.am); return; }
+    if (!e.target.closest('#an-amenu, [data-a="amenu"]')) closeAMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    var m = document.getElementById('an-amenu');
+    if (!m || m.hidden || !e.target.closest('#an-amenu')) return;
+    var its = [].slice.call(m.querySelectorAll('li')), k = its.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); its[(k + 1) % its.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); its[(k - 1 + its.length) % its.length].focus(); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (its[k]) pickAct(its[k].dataset.am); }
+    else if (e.key === 'Escape') { e.preventDefault(); closeAMenu(true); }
+    else if (e.key === 'Tab') closeAMenu(false);
+  });
+  window.addEventListener('scroll', function () { closeAMenu(false); }, true);
+  window.addEventListener('resize', function () { closeAMenu(false); });
 
   /* ---------- the write / edit dialog ---------- */
   function openDialog(a) {
@@ -96,6 +204,14 @@
     }
     drawFiles();
 
+    $('#an-prev-btn').onclick = function () {
+      var st = app.state && app.state.profile, mine = st && (st.full_name || st.email);
+      openPreview({
+        author: a ? a.author_name : mine, dept: a ? app.depts[a.author_dept] || '' : (st && app.depts[st.department]) || '',
+        title: $('#an-name').value.trim(), body: $('#an-body').value.trim() || 'Your message will show here.',
+        files: kept.concat(added.map(function (f) { return { name: app.cleanName(f.name), size: f.size }; })), when: a ? app.fmtDate(a.created_at) : 'just now'
+      });
+    };
     $('#an-add').onclick = function () { $('#an-file').click(); };
     $('#an-file').onchange = function (e) {
       Array.prototype.slice.call(e.target.files).forEach(function (f) {
@@ -193,9 +309,8 @@
     if (a === 'add') { openDialog(null); return; }
     var li = e.target.closest('li.lrow'), row = li && A.rows.filter(function (x) { return x.id === li.dataset.id; })[0];
     if (!row) return;
-    if (a === 'edit') openDialog(row);
-    else if (a === 'toggle') toggle(row);
-    else if (a === 'del') remove(row);
+    if (a === 'amenu') openAMenu(b, row);
+    else runAct(a, row);
   }
 
   window.MembersAnnouncements = {

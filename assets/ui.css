@@ -1130,3 +1130,29 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
 #cm-rows .lrow.rd-drag,#rows .lrow.rd-drag{position:relative;z-index:60;cursor:grabbing;transition:none;opacity:.96;box-shadow:0 26px 44px -16px rgba(74,46,34,.45);outline:2px dashed rgba(232,112,26,.55);outline-offset:3px}
 #cm-rows .lrow.rd-drag,#rows .lrow.rd-drag *{cursor:grabbing}
 body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
+
+/* announcement preview: the post drawn the way the Employee Portal draws it */
+.apv-dlg{width:min(640px,calc(100vw - 24px));padding:0;border:0;border-radius:26px;background:var(--cream,#FFF6E2);box-shadow:var(--shadow-lg)}
+.apv-dlg::backdrop{background:rgba(40,22,14,.45)}
+.apv-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px 12px}
+.apv-top b{display:block;font-family:var(--serif);font-size:1.3rem;color:var(--brown)}
+.apv-top span{display:block;margin-top:2px;font-size:.88rem;color:var(--muted)}
+.apv-stage{padding:6px 18px 22px}
+.apv-panel{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+.apv-ph{display:flex;align-items:center;gap:10px;padding:16px 20px 6px}
+.apv-pi{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--soft-warm);color:var(--brown)}
+.apv-pi svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.apv-ph h2{font-size:1.2rem;margin:0}
+.apv-post{padding:16px 20px 20px}
+.apv-who{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.apv-who>div{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.apv-who b{color:var(--brown);overflow-wrap:anywhere}
+.apv-who span:not(.apv-av){font-size:.82rem;color:var(--muted)}
+.apv-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;font-weight:700;font-size:.85rem;color:var(--brown)}
+.apv-title{font-size:1.15rem;margin:0 0 4px;color:var(--brown)}
+.apv-body{margin:0;overflow-wrap:anywhere;color:var(--ink,#3a2a22);font-size:.98rem}
+.apv-files{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.apv-chip{display:inline-flex;align-items:center;gap:8px;max-width:100%;border:1px solid var(--line);background:var(--paper,#FFFDF6);border-radius:12px;padding:8px 12px;color:var(--brown);font-size:.88rem;font-weight:600}
+.apv-chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+.apv-chip small{color:var(--muted);font-weight:500}
+.apv-chip svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
