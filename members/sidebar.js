@@ -42,11 +42,11 @@
 
   /* ---- a banner at the top of every section ---- */
   var SECTION = {
-    library: ['folder', '201 Files', 'Employee 201 files, open only to Staffing and Legal.'],
-    content: ['clipboard', 'Content Manager', 'Everything employees see on the portal, by department.'],
-    employees: ['users', 'Employees', 'People who sign in to the Employee Portal with their ID and a PIN.'],
-    records: ['book', 'Restricted Records', 'Every open, upload and delete is written to the activity log.'],
-    people: ['key', 'Accounts', 'Senior Manager accounts: who can sign in and what they can do.']
+    library: ['folder', '201 Files', 'Keep each employee's 201 file in one safe place. Only Staffing and Legal can open them.'],
+    content: ['clipboard', 'Content Manager', 'Add and update the announcements, forms and files your employees see on the portal.'],
+    employees: ['users', 'Employees', 'Add employees and manage who can sign in to the Employee Portal.'],
+    records: ['book', 'Restricted Records', 'Confidential files, with a record of who opened, uploaded or deleted each one.'],
+    people: ['key', 'Accounts', 'Manage who can sign in as a Senior Manager and what each person can do.']
   };
   var app = document.getElementById('view-app'), appHead = app && app.querySelector('.app-head');
   var banner = document.createElement('section');
