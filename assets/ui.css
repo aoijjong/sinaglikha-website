@@ -1094,3 +1094,24 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .fcard:hover{background:linear-gradient(180deg,#F4965A 0%,#F6A55C 55%,#F8BB66 100%)}
   .fcard:hover::before{background:#F4965A;border-color:#F4965A}
 }
+
+/* phones: folders are slim pills, one per row: a folder icon, the name, and a small delete button */
+@media (max-width:640px){
+  .rows:has(.fcard){grid-template-columns:1fr;gap:10px;justify-content:stretch}
+  .fcard,.fcard:first-child,.fcard:hover{display:flex;align-items:center;margin-top:0;min-height:56px;border-radius:999px;background:#fff;border:1px solid rgba(74,46,34,.13);box-shadow:0 8px 16px -12px rgba(160,80,30,.4);transform:none}
+  .fcard:hover{background:#FFF3E4}
+  .fcard::before,.fcard:hover::before{display:none}
+  .fc-main,.fc-main:hover{display:flex;align-items:center;gap:12px;flex:1;min-width:0;min-height:56px;padding:8px 6px 8px 9px}
+  .fc-main::before{content:"";flex:none;width:40px;height:40px;border-radius:50%;background:#FFE7C7 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E8701A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3C/svg%3E") center/20px no-repeat}
+  .fc-main::after,.fcard:hover .fc-main::after{display:none}
+  .fc-tag,.fc-meta{display:none}
+  .fc-name,.fcard:hover .fc-name{flex:1;min-width:0;padding:0;font-size:1rem;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fc-del{position:static;flex:none;margin-right:8px}
+  .fc-del .ib,.fcard:hover .fc-del .ib{width:34px;height:34px;color:var(--muted);opacity:.85}
+}
+
+/* tablets and desktop: the folders share the whole row, so no empty space is left on the right (the height stays fixed) */
+@media (min-width:641px){
+  .rows:has(.fcard){grid-template-columns:repeat(auto-fit,minmax(236px,1fr));justify-content:stretch;align-items:start}
+  .fcard,.fcard:first-child{width:auto;height:132px}
+}

@@ -448,12 +448,7 @@
     meta.push(app.fmtDate(it.updated_at));
     if (searching && it.folder_path) meta.push('in ' + it.folder_path);
     var s = it.status;
-    var acts = IB('pencil', 'Edit details', { 'data-act': 'edit' });
-    if (s === 'draft' || s === 'unpublished') acts += IB('eye', 'Publish: show it to its audience', { 'data-act': 'publish' }, 'good');
-    if (s === 'published') acts += IB('eyeOff', 'Unpublish: hide it again', { 'data-act': 'unpublish' });
-    if (s === 'published' || s === 'unpublished') acts += IB('archive', 'Archive', { 'data-act': 'archive' });
-    if (s === 'archived') acts += IB('restore', 'Restore', { 'data-act': 'restore' });
-    if (s !== 'published' && s !== 'unpublished') acts += IB('trash', 'Delete', { 'data-act': 'delete' }, 'danger');
+    var acts = IB('more', 'Actions for ' + it.title, { 'data-act': 'amenu', 'aria-haspopup': 'menu', 'aria-expanded': 'false' });
     return '<li class="lrow" data-id="' + esc(it.id) + '">' +
       '<button class="lmain" type="button" data-act="preview" title="' + (it.kind === 'link' ? 'Open the link' : 'Open in a new tab') + '"><span class="lico">' +
       (it.kind === 'link' ? I('link') : esc(app.extOf(it.file_path ? it.file_path.split('/').pop() : it.title))) + '</span>' +
@@ -541,6 +536,11 @@
     });
     if (!ok) return;
     busy('Deleting…');
+    // folders are stored as published, and only archived/draft/unpublished rows may be deleted, so a folder is archived first
+    if (isFolder && it.status !== 'archived') {
+      var up = await sb.from('content_items').update({ status: 'archived' }).eq('id', it.id).select('id');
+      if (up.error || !(up.data || []).length) { busy(''); toast("Couldn't delete that folder.", 'bad'); return; }
+    }
     var res = await sb.from('content_items').delete().eq('id', it.id).select('id');
     if (res.error || !(res.data || []).length) {
       busy('');
@@ -759,6 +759,84 @@
     $('#cm-search').value = '';
     if (cs.path.length) { cs.path.pop(); load(); } else { cs.key = ''; showHome(); }
   });
+  /* ---------- the dotted menu on each row ---------- */
+  var amBtn = null;
+  function actionsFor(it) {
+    var s = it.status, l = [['edit', 'pencil', 'Edit details']];
+    if (s === 'draft' || s === 'unpublished') l.push(['publish', 'eye', 'Publish']);
+    if (s === 'published') l.push(['unpublish', 'eyeOff', 'Unpublish']);
+    if (s === 'published' || s === 'unpublished') l.push(['archive', 'archive', 'Archive']);
+    if (s === 'archived') l.push(['restore', 'restore', 'Restore']);
+    if (s !== 'published' && s !== 'unpublished') l.push(['delete', 'trash', 'Delete']);
+    return l;
+  }
+  function closeAMenu(focusBack) {
+    var m = document.getElementById('cm-amenu');
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    var bt = amBtn; amBtn = null;
+    if (bt) { bt.setAttribute('aria-expanded', 'false'); if (focusBack && document.body.contains(bt)) bt.focus(); }
+  }
+  function openAMenu(btn, it) {
+    var m = document.getElementById('cm-amenu');
+    if (!m) {
+      m = document.createElement('ul');
+      m.id = 'cm-amenu'; m.className = 'at-menu am'; m.setAttribute('role', 'menu'); m.hidden = true;
+      document.body.appendChild(m);
+    }
+    if (!m.hidden && amBtn === btn) { closeAMenu(true); return; }
+    closeAMenu(false);
+    m.setAttribute('aria-label', 'Actions for ' + it.title);
+    m.innerHTML = actionsFor(it).map(function (x) {
+      return '<li role="menuitem" tabindex="-1" data-am="' + x[0] + '"' + (x[0] === 'delete' ? ' class="danger"' : '') + '>' + I(x[1]) + '<span>' + x[2] + '</span></li>';
+    }).join('');
+    m.dataset.for = it.id;
+    m.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    amBtn = btn;
+    m.style.maxHeight = '';
+    var r = btn.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth, need = mh + 20;
+    if (window.innerHeight - r.bottom < need) { window.scrollBy({ top: need - (window.innerHeight - r.bottom), behavior: 'instant' }); r = btn.getBoundingClientRect(); }
+    var below = window.innerHeight - r.bottom - 14;
+    if (mh > below) m.style.maxHeight = Math.max(140, below) + 'px';
+    m.style.top = Math.max(8, r.bottom + 6) + 'px';
+    m.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
+    m.firstChild.focus();
+  }
+  function runAct(act, it) {
+    switch (act) {
+      case 'edit': editItem(it, false); break;
+      case 'publish': publish(it); break;
+      case 'unpublish': patch(it, { status: 'unpublished' }, 'unpublish', 'Unpublished. Employees no longer see it.'); break;
+      case 'archive': patch(it, { status: 'archived' }, 'archive', 'Moved to Archived.'); break;
+      case 'restore': patch(it, { status: 'unpublished' }, 'restore', 'Restored as Unpublished.'); break;
+      case 'delete': removeItem(it); break;
+    }
+  }
+  function pickAct(act) {
+    var m = document.getElementById('cm-amenu'), id = m && m.dataset.for;
+    var it = cs.items.filter(function (x) { return x.id === id; })[0];
+    closeAMenu(false);
+    if (it) runAct(act, it);
+  }
+  document.addEventListener('click', function (e) {
+    var mi = e.target.closest('#cm-amenu li');
+    if (mi) { pickAct(mi.dataset.am); return; }
+    if (!e.target.closest('#cm-amenu, [data-act="amenu"]')) closeAMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    var m = document.getElementById('cm-amenu');
+    if (!m || m.hidden || !e.target.closest('#cm-amenu')) return;
+    var its = [].slice.call(m.querySelectorAll('li')), k = its.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); its[(k + 1) % its.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); its[(k - 1 + its.length) % its.length].focus(); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (its[k]) pickAct(its[k].dataset.am); }
+    else if (e.key === 'Escape') { e.preventDefault(); closeAMenu(true); }
+    else if (e.key === 'Tab') closeAMenu(false);
+  });
+  window.addEventListener('scroll', function () { closeAMenu(false); }, true);
+  window.addEventListener('resize', function () { closeAMenu(false); });
+
   $('#cm-rows').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-act]');
     var li = e.target.closest('li.lrow');
@@ -773,12 +851,8 @@
         load();
         break;
       case 'preview': preview(it); break;
-      case 'edit': editItem(it, false); break;
-      case 'publish': publish(it); break;
-      case 'unpublish': patch(it, { status: 'unpublished' }, 'unpublish', 'Unpublished. Employees no longer see it.'); break;
-      case 'archive': patch(it, { status: 'archived' }, 'archive', 'Moved to Archived.'); break;
-      case 'restore': patch(it, { status: 'unpublished' }, 'restore', 'Restored as Unpublished.'); break;
-      case 'delete': removeItem(it); break;
+      case 'amenu': openAMenu(btn, it); break;
+      default: runAct(btn.dataset.act, it);
     }
   });
   $('#cm-upload').addEventListener('click', function () { $('#cm-file').click(); });
