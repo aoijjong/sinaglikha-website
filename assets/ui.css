@@ -1074,3 +1074,15 @@ button.sc-row:hover,button.sc-row[aria-pressed="true"]{border-radius:8px}
   .fc-main::after{width:34px;height:24px;right:14px;top:14px}
   .fc-name{font-size:1.05rem}
 }
+
+/* folder cards polish: soft orange on hover, the tab is one piece with the body (no seam), and a fixed size on every screen */
+.rows:has(.fcard){grid-template-columns:repeat(auto-fill,236px);justify-content:start}
+.fcard::before{left:0;top:-14px;width:96px;max-width:none;height:17px;border-left:0;border-right:0;border-top:1px solid rgba(74,46,34,.13)}
+@media (hover:hover) and (pointer:fine){
+  .fcard:hover{--fc:#F4965A;background:linear-gradient(175deg,#F4965A 0%,#F6A55C 55%,#F8BB66 100%);border-color:transparent;box-shadow:0 22px 32px -18px rgba(236,130,50,.55)}
+  .fcard:hover::before{background:#F4965A;border-color:transparent}
+}
+@media (max-width:640px){
+  .rows:has(.fcard){grid-template-columns:repeat(auto-fill,150px);gap:22px 12px}
+  .fcard::before{width:80px}
+}
