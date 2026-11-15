@@ -1284,3 +1284,8 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
   select{padding-top:7px!important;padding-bottom:7px!important}
   .ev-dept{padding-left:14px;font-weight:600;background-position:right 12px center;background-size:12px}
 }
+
+/* evaluation rows on phones: the category, the status and the actions sit together on the right */
+@media (max-width:640px){
+  #ev-rows .lside{justify-content:flex-end;gap:8px}
+}
