@@ -145,8 +145,8 @@
     if (!$('#ev-tabs', ev.box)) shellList();
     Array.prototype.forEach.call(ev.box.querySelectorAll('[data-tab]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.tab === ev.tab)); });
     $('#ev-note', ev.box).textContent = ev.tab === 'forms'
-      ? 'Total Rewards builds the forms, one department at a time. Self and peer answers are in Records.'
-      : 'Each department\u2019s Senior Managers evaluate their own employees. You edit only your own evaluations, and employees never see them.';
+      ? 'Total Rewards builds the forms, one per department.'
+      : 'Managers evaluate their own department. Employees never see these.';
     $('#ev-team', ev.box).hidden = ev.tab !== 'evals';
     drawHeading();
     drawTeamPanel();
