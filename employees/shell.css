@@ -234,4 +234,9 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 }
 @media (max-width:359px){
   .qa-c{flex-basis:calc(50% - 10px)}
-}
+}
+
+/* a recent box with nothing in it stays short instead of stretching to match the other one */
+.rc-cols:has(.rc-none){align-items:start}
+.rc-col:has(.rc-none){padding-bottom:14px}
+.rc-none{padding:12px 14px}
