@@ -359,3 +359,8 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 .qa-6{--c1:#F5AC82;--c2:#F9C69B}
 .qa-c{background:radial-gradient(circle 80px at calc(100% - 34px) 34px,rgba(255,255,255,.36) 99%,rgba(255,255,255,0) 100%),linear-gradient(135deg,var(--c1),var(--c2))}
 .qa-t small{color:#6B4533}
+
+/* the swipe row snaps with a margin, so the first card never sits flush against the edge of its box */
+@media (max-width:1024px){
+  .qa-row{scroll-padding-left:12px;scroll-padding-right:12px}
+}
