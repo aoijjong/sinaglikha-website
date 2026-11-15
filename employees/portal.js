@@ -523,7 +523,6 @@
 
   function renderEvals() {
     var all = (evals.self || []).length + (evals.peer || []).length;
-    var dn = deptName();
     // the box always shows, so the dashboard keeps its shape; it says so when no form is open
     $('#evl-panel').hidden = false;
     if (!all) { $('#evl-list').innerHTML = '<li class="none">No evaluations are open right now. When one opens, it will appear here.</li>'; return; }
@@ -535,7 +534,7 @@
       var left = f.total ? f.total - f.done : 0;
       var chip = !f.total ? ['plain', 'No teammates yet'] : left === 0 ? ['s-published', 'All done'] : f.done ? ['s-draft', f.done + ' of ' + f.total] : ['plain', 'Not started'];
       return '<li class="lrow"><button class="lmain" type="button" data-evpeer="' + esc(f.id) + '"><span class="lico">' + I('users') + '</span><span class="ltext"><span class="lname">' + esc(f.title) +
-        '</span><span class="lmeta">' + esc(['Evaluate your teammates' + (dn ? ' in ' + dn : ''), f.period].filter(Boolean).join(' · ')) + '</span></span></button><span class="chip ' + chip[0] + '" style="margin-right:6px">' + chip[1] + '</span></li>';
+        '</span><span class="lmeta">' + esc(['Peer evaluation', f.period].filter(Boolean).join(' · ')) + '</span></span></button><span class="chip ' + chip[0] + '" style="margin-right:6px">' + chip[1] + '</span></li>';
     }));
     if ((evals.peer || []).length && !evals.department) {
       rows.push('<li class="none">Your department has not been set yet, so peer evaluations are not available. Please ask Staffing and Recruitment.</li>');
@@ -594,7 +593,7 @@
     var m = ef.mates || [], got = m.filter(function (x) { return x.done; }).length;
     if (!m.length) return efCard('<div class="gf-qt">No teammates yet</div><div class="gf-qd">There is nobody else in ' + esc(dn || 'your department') + ' to evaluate right now.</div>');
     var pct = Math.round((got / m.length) * 100);
-    return efCard('<div class="gf-qt">Who would you like to evaluate?</div><div class="gf-qd">Your teammates in ' + esc(dn || 'your department') + '. Your answers are private: they will not see them, or that you wrote them.</div>' +
+    return efCard('<div class="gf-qt">Who would you like to evaluate?</div><div class="gf-qd">Your teammates in ' + esc(dn || 'your department') + '. Your answers stay private.</div>' +
       '<div class="ef-prog"><div class="ef-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + m.length + '" aria-valuenow="' + got + '"><i style="width:' + pct + '%"></i></div><span>' + got + ' of ' + m.length + ' done</span></div>' +
       '<ul class="ef-mates">' + m.map(function (x) {
         var w = x.name.trim().split(/\s+/).map(function (s) { return Array.from(s)[0]; }).filter(Boolean);
