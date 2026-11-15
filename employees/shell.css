@@ -65,7 +65,7 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   /* the page makes room on the left and keeps a small margin on the right */
   body.sh:has(#emp-nav:not([hidden])){padding-left:252px;background:var(--paper)}
   body.sh:has(#emp-nav:not([hidden])) .top-right{display:none}
-  body.sh .top-in.wrap,body.sh main#main.wrap{width:calc(100% - clamp(28px,2.6vw,48px) - clamp(28px,2.6vw,48px));max-width:1120px}
+  body.sh .top-in.wrap,body.sh main#main.wrap{width:calc(100% - clamp(20px,1.8vw,32px) - clamp(20px,1.8vw,32px));max-width:none}
   body.sh main#main{padding-top:18px}
   .sb-me,.sb-foot{display:grid}
   .tab-thumb{display:block}
@@ -160,3 +160,8 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 @media (prefers-reduced-motion:reduce){.qa-c,.emp-nav button{transition:none}}
 /* Profile is opened from the avatar at the top (desktop: the card in the sidebar), so it is not a tab */
 .sb-tab[data-go="profile"]{display:none!important}
+
+/* phones and tablets: a slimmer margin on each side, so the cards use the screen */
+@media (max-width:1024px){
+  body.sh .top-in.wrap,body.sh main#main.wrap{width:calc(100% - 28px);max-width:none}
+}
