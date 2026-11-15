@@ -387,3 +387,10 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .emp-nav button{color:rgba(255,255,255,.82)}
   .emp-nav button[aria-current="page"]{background:rgba(255,255,255,.24);color:#fff}
 }
+
+/* the phone bottom bar: a light frosted bar, with the open page in the brand gradient */
+@media (max-width:1024px){
+  body.sh .emp-nav:not([hidden]){background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(74,46,34,.12);box-shadow:0 16px 30px -14px rgba(74,46,34,.38)}
+  .emp-nav button{color:#7A5236}
+  .emp-nav button[aria-current="page"]{background:var(--grad-btn);color:#fff;box-shadow:0 8px 16px -8px rgba(206,32,32,.6)}
+}
