@@ -452,3 +452,13 @@ body.sh footer.foot{width:calc(100% - clamp(20px,1.8vw,32px) - clamp(20px,1.8vw,
   .emp-nav button[aria-current="page"] .nv-ic::before{display:none}
 }
 @media (prefers-reduced-motion:reduce){.emp-nav .nv-pill,.emp-nav .nv-ic,.emp-nav button{transition:none!important}}
+
+/* a course page while it loads: the same calm shimmer as the dashboard */
+.lk{display:block;background:linear-gradient(100deg,#F7EDE0 30%,#FFFAF2 50%,#F7EDE0 70%);background-size:200% 100%;animation:sh-shim 1.3s linear infinite}
+.lk-box{padding:16px 20px;margin-bottom:14px}
+.lk-bar{height:10px;border-radius:999px}
+.lk-sub{height:12px;width:42%;border-radius:8px;margin-top:12px}
+.lk-row{display:flex;align-items:center;gap:14px;padding:14px 16px}
+.lk-dot{width:38px;height:38px;border-radius:50%;flex:none}
+.lk-line{height:14px;flex:1;max-width:60%;border-radius:8px}
+@media (prefers-reduced-motion:reduce){.lk{animation:none}}
