@@ -331,19 +331,35 @@ function questionsOf(f) {
     return q;
   });
 }
+const DEPTS = ['staffing', 'training', 'engagement', 'rewards', 'legal'];
+/* The department this employee belongs to, or null (not set yet, or supabase/phase10.sql has not been run). */
+async function deptOf(eid) {
+  const r = await rest('GET', `employees?id=eq.${eid}&select=department`);
+  const d = list(r)[0];
+  return d && DEPTS.indexOf(d.department) !== -1 ? d.department : null;
+}
+/* A form is for everyone (no department) or for one department. */
+const formFits = (f, dept) => !f.department || f.department === dept;
+
 async function evaluationForms(eid) {
   const today = manilaDate();
-  const r = await rest('GET', 'scorecards?active=eq.true&category=in.(self,peer)&select=id,title,description,category,period,scale_max,labels,criteria,opens_on,closes_on&order=created_at.desc&limit=50');
+  const cols = 'id,title,description,category,period,scale_max,labels,criteria,opens_on,closes_on';
+  let r = await rest('GET', `scorecards?active=eq.true&category=in.(self,peer)&select=${cols},department&order=created_at.desc&limit=50`);
+  if (!r.ok) r = await rest('GET', `scorecards?active=eq.true&category=in.(self,peer)&select=${cols}&order=created_at.desc&limit=50`);   // before phase10.sql
+  const dept = await deptOf(eid);
   // Before supabase/phase6.sql has been run there is simply nothing to show.
-  const forms = list(r).filter((f) => (!f.opens_on || f.opens_on <= today) && (!f.closes_on || f.closes_on >= today));
-  if (!forms.length) return { self: [], peer: [] };
-  const [mine, given] = await Promise.all([
+  const forms = list(r).filter((f) => (!f.opens_on || f.opens_on <= today) && (!f.closes_on || f.closes_on >= today) && formFits(f, dept));
+  if (!forms.length) return { self: [], peer: [], department: dept };
+  const hasPeer = forms.some((f) => f.category === 'peer');
+  const [mine, given, mates] = await Promise.all([
     rest('GET', `evaluations?employee_id=eq.${eid}&category=eq.self&select=scorecard_id,status,criteria,overall_comment`),
-    rest('GET', `evaluations?evaluator_employee_id=eq.${eid}&category=eq.peer&select=scorecard_id`)
+    rest('GET', `evaluations?evaluator_employee_id=eq.${eid}&category=eq.peer&select=scorecard_id`),
+    hasPeer && dept ? rest('GET', `employees?active=eq.true&department=eq.${dept}&id=neq.${eid}&select=id&limit=2000`) : { ok: true, data: [] }
   ]);
   const own = {}, done = {};
   list(mine).forEach((x) => { own[x.scorecard_id] = x; });
   list(given).forEach((x) => { done[x.scorecard_id] = (done[x.scorecard_id] || 0) + 1; });
+  const teammates = list(mates).length;
   const shape = (f) => ({
     id: f.id, title: f.title, description: f.description || '', period: f.period || '', scale_max: f.scale_max,
     labels: Array.isArray(f.labels) ? f.labels.map((l) => String(l || '')) : [], questions: questionsOf(f),
@@ -358,7 +374,8 @@ async function evaluationForms(eid) {
         overall: o ? o.overall_comment || '' : ''
       });
     }),
-    peer: forms.filter((f) => f.category === 'peer').map((f) => Object.assign(shape(f), { done: done[f.id] || 0 }))
+    peer: forms.filter((f) => f.category === 'peer').map((f) => Object.assign(shape(f), { done: Math.min(done[f.id] || 0, teammates), total: teammates })),
+    department: dept
   };
 }
 
@@ -387,7 +404,7 @@ async function forumFeed(eid) {
 }
 
 module.exports = {
-  list, namesOf, photoPack, evaluationForms, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
+  list, namesOf, photoPack, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,

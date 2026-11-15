@@ -147,3 +147,19 @@
   .hello.sb-banner.tapped .bn-text{transform:translateX(5px)}
 }
 @media (prefers-reduced-motion:reduce){.hello.sb-banner.tapped,.hello.sb-banner.tapped .bn-img,.hello.sb-banner.tapped .bn-text{transform:none!important}}
+
+/* ---------- peer evaluation: pick a teammate from your own department ---------- */
+.ef-prog{display:flex;align-items:center;gap:12px;margin:14px 0 10px;font-size:.88rem;font-weight:600;color:var(--brown)}
+.ef-bar{flex:1;height:10px;border-radius:999px;background:#F3E4CF;overflow:hidden}
+.ef-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#F58A4A,#F7AE46);transition:width .5s cubic-bezier(.22,1,.36,1)}
+.ef-mates{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ef-mate{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid rgba(74,46,34,.12);border-radius:16px;background:#fff;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:background .25s,border-color .25s,transform .25s}
+.ef-mate:disabled{cursor:default;background:#FBF6EC;opacity:.8}
+.ef-av{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#FCD9BC;color:#6B3A1F;font-weight:700;font-size:.8rem}
+.ef-mate.done .ef-av{background:#DDEFD9;color:#2F6B2F}
+.ef-who{flex:1;min-width:0;display:flex;flex-direction:column}
+.ef-who b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ef-who small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (hover:hover) and (pointer:fine){.ef-mate:not(:disabled):hover{background:#FFF6EA;border-color:rgba(214,128,60,.5);transform:translateY(-1px)}}
+.ef-mate:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.ef-bar i,.ef-mate{transition:none}}
