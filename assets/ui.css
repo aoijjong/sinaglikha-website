@@ -1289,3 +1289,10 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
 @media (max-width:640px){
   #ev-rows .lside{justify-content:flex-end;gap:8px}
 }
+
+/* Evaluation forms tab on phones: the department filter and Create new form share one row */
+@media (max-width:640px){
+  #ev-actions{gap:8px}
+  #ev-actions:has(> .btn) .ev-dept{flex:1 1 0}
+  #ev-actions > .btn{flex:none}
+}
