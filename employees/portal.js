@@ -470,8 +470,26 @@
       if (PREVIEW_EXT.test(ext)) acts += '<button class="dact" type="button" data-open="' + esc(it.id) + '" aria-label="Preview ' + esc(it.title) + '" data-tip="Preview">' + I('eye') + '</button>';
       acts += '<button class="dact" type="button" data-dl="' + esc(it.id) + '" aria-label="Download ' + esc(it.title) + '" data-tip="Download">' + I('download') + '</button>';
     }
-    return '<div class="dfile"><span class="dbadge">' + (it.kind === 'link' ? I('link') : esc(ext || 'FILE')) + '</span><span class="dtext"><b>' + esc(it.title) + '</b><small>' + esc(meta.join(' · ')) + '</small>' +
-      (it.description ? '<span>' + esc(it.description) + '</span>' : '') + '</span><span class="dacts">' + acts + '</span></div>';
+    // a picture is shown right in the list (tap it to open it larger); other files keep their type badge
+    var pic = it.kind !== 'link' && /^(png|jpe?g|gif|webp)$/i.test(ext);
+    return '<div class="dfile' + (pic ? ' dimg' : '') + '"><span class="dbadge">' + (it.kind === 'link' ? I('link') : esc(ext || 'FILE')) + '</span><span class="dtext"><b>' + esc(it.title) + '</b><small>' + esc(meta.join(' · ')) + '</small>' +
+      (it.description ? '<span>' + esc(it.description) + '</span>' : '') + '</span><span class="dacts">' + acts + '</span>' +
+      (pic ? '<button class="dpic loading" type="button" data-open="' + esc(it.id) + '" aria-label="Open ' + esc(it.title) + '"><img alt="' + esc(it.title) + '" data-pic="' + esc(it.id) + '"></button>' : '') + '</div>';
+  }
+
+  /* fetches the pictures of a tray, one short-lived link each, when the tray is on screen */
+  function loadPics(root) {
+    if (!root) return;
+    [].forEach.call(root.querySelectorAll('img[data-pic]'), function (img) {
+      if (img.dataset.busy) return;
+      img.dataset.busy = '1';
+      var box = img.parentNode;
+      img.addEventListener('load', function () { box.classList.remove('loading'); });
+      img.addEventListener('error', function () { box.classList.remove('loading'); box.classList.add('failed'); });
+      call('GET', '/api/employee-content?file=' + encodeURIComponent(img.dataset.pic)).then(function (r) {
+        if (r.ok && r.data.url) img.src = r.data.url; else { box.classList.remove('loading'); box.classList.add('failed'); }
+      });
+    });
   }
 
   function openDept(key) {
@@ -495,6 +513,7 @@
     if (!groups.length) html += '<p class="fine" style="margin-top:14px">Nothing published yet.</p>';
     $('#dept-body').innerHTML = html;
     show('dept');
+    loadPics($('#dept-body .dgroup.open'));
   }
 
   /* open or close a deliverable's tray */
@@ -503,6 +522,7 @@
     if (!b) return;
     var g = b.closest('.dgroup'), tray = g.querySelector('.dtray'), on = tray.hidden;
     tray.hidden = !on;
+    if (on) loadPics(tray);
     g.classList.toggle('open', on);
     b.setAttribute('aria-expanded', String(on));
   });

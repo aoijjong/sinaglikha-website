@@ -174,3 +174,14 @@
   .ef-prog{gap:8px;font-size:.82rem}
   #eval-body .gf-card,#eval-body .gf-bar{min-width:0}
 }
+
+/* pictures posted in a department's files are shown in the list */
+.dfile.dimg{flex-wrap:wrap}
+.dpic{flex:1 1 100%;display:block;margin:4px 0 2px;padding:0;border:1px solid rgba(74,46,34,.12);border-radius:16px;overflow:hidden;background:#F7EDE0;cursor:zoom-in;min-height:120px}
+.dpic img{display:block;width:100%;height:auto;max-height:480px;object-fit:contain;background:#F7EDE0}
+.dpic.loading{min-height:200px;background:linear-gradient(100deg,#F7EDE0 30%,#FDF6EC 50%,#F7EDE0 70%);background-size:200% 100%;animation:dpic-shim 1.3s linear infinite}
+.dpic.loading img{opacity:0}
+.dpic.failed{display:none}
+.dpic:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+@keyframes dpic-shim{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.dpic.loading{animation:none}}
