@@ -222,6 +222,61 @@
     if ((e.key === 'Enter' || e.key === ' ') && c) { e.preventDefault(); feed = c.dataset.recent === 'forum' ? 'forum' : 'ann'; go('feeds'); }
   });
 
+  /* ---- a file with two or more actions (preview, download) gets one dotted menu instead of round buttons ---- */
+  var fmenu = document.createElement('ul');
+  fmenu.className = 'at-menu am';
+  fmenu.setAttribute('role', 'menu');
+  fmenu.hidden = true;
+  document.body.appendChild(fmenu);
+  var fFor = null, fBtn = null, fTimer;
+  function decorateFiles() {
+    [].forEach.call(document.querySelectorAll('#dept-body .dacts'), function (box) {
+      var acts = [].filter.call(box.children, function (x) { return x.classList.contains('dact') && !x.classList.contains('dmore'); });
+      if (acts.length < 2 || box.querySelector('.dmore')) return;
+      acts.forEach(function (a) { a.classList.add('dorig'); });
+      var more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'dact dmore';
+      more.setAttribute('aria-haspopup', 'menu');
+      more.setAttribute('aria-expanded', 'false');
+      var name = (box.closest('.dfile') && box.closest('.dfile').querySelector('.dtext b') || {}).textContent || 'file';
+      more.setAttribute('aria-label', 'Actions for ' + name);
+      more.innerHTML = window.SngIcon ? window.SngIcon('more') : '...';
+      box.appendChild(more);
+    });
+  }
+  function closeFMenu() {
+    fmenu.hidden = true;
+    if (fBtn) fBtn.setAttribute('aria-expanded', 'false');
+    fBtn = fFor = null;
+  }
+  document.addEventListener('click', function (e) {
+    var li = e.target.closest('.at-menu.am li[data-fi]');
+    if (li && fFor) { var a = fFor[Number(li.dataset.fi)]; closeFMenu(); if (a) a.click(); return; }
+    var more = e.target.closest('.dmore');
+    if (!more) { if (!fmenu.hidden) closeFMenu(); return; }
+    if (fBtn === more) { closeFMenu(); return; }
+    closeFMenu();
+    fBtn = more;
+    fFor = [].filter.call(more.parentNode.children, function (x) { return x.classList.contains('dorig'); });
+    fmenu.innerHTML = fFor.map(function (a, i) {
+      var label = (a.getAttribute('data-tip') || a.getAttribute('aria-label') || '').replace(/ .*$/, '') || 'Open';
+      if (/^open/i.test(a.getAttribute('data-tip') || '')) label = a.getAttribute('data-tip');
+      return '<li role="menuitem" tabindex="-1" data-fi="' + i + '"><span>' + label + '</span>' + a.innerHTML + '</li>';
+    }).join('');
+    fmenu.hidden = false;
+    more.setAttribute('aria-expanded', 'true');
+    var r = more.getBoundingClientRect(), mw = fmenu.offsetWidth, mh = fmenu.offsetHeight;
+    fmenu.style.top = (r.bottom + mh + 12 > window.innerHeight ? Math.max(8, r.top - mh - 6) : r.bottom + 6) + 'px';
+    fmenu.style.left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8) + 'px';
+    if (fmenu.firstChild) fmenu.firstChild.focus();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !fmenu.hidden) { var b2 = fBtn; closeFMenu(); if (b2) b2.focus(); } });
+  window.addEventListener('scroll', function () { if (!fmenu.hidden) closeFMenu(); }, { passive: true });
+  window.addEventListener('resize', closeFMenu);
+  var depBody = $('#dept-body');
+  if (depBody) new MutationObserver(function () { clearTimeout(fTimer); fTimer = setTimeout(decorateFiles, 20); }).observe(depBody, { childList: true, subtree: true });
+
   /* ---- keep the navigation in step with whichever page is showing ---- */
   var watch = new MutationObserver(function () {
     // opening a folder, a course or an evaluation leaves you in the section it belongs to, so Back returns there
