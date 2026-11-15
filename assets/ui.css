@@ -1279,7 +1279,8 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
   #panel-employees .ph-actions .sbox{flex:1 1 0;min-width:0}
 }
 
-/* the department filter, smaller on phones */
+/* every dropdown is slimmer on phones (the text stays 16px so iPhones do not zoom in when one is tapped) */
 @media (max-width:640px){
-  .ev-dept{padding:7px 32px 7px 14px;font-size:.88rem;font-weight:600;background-position:right 12px center;background-size:12px}
+  select{padding-top:7px!important;padding-bottom:7px!important}
+  .ev-dept{padding-left:14px;font-weight:600;background-position:right 12px center;background-size:12px}
 }
