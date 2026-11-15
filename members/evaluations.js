@@ -363,7 +363,7 @@
     ev.box.innerHTML =
       '<div class="ph">' + IB('back', 'Back to the forms', { 'data-a': 'builder-back' }, 'line') +
       '<div class="ph-main"><h2>' + (bd.id ? 'Edit form' : 'Create new form') + '</h2><p class="sub">Questions are copied into each evaluation when it starts</p></div>' +
-      '<div class="ph-actions"><button class="btn btn-ghost btn-sm" type="button" data-a="builder-back">Cancel</button><button class="btn btn-primary btn-sm" type="button" data-a="builder-save" id="bd-save">Save</button></div></div>' +
+      '</div>' +
       '<div class="gf-wrap"><div class="gf">' +
       '<div class="gf-card head"><input class="gf-in gf-title" id="bd-title" type="text" maxlength="160" placeholder="Untitled form" value="' + esc(bd.title) + '" aria-label="Form title">' +
       '<textarea class="gf-in" id="bd-desc" rows="2" maxlength="1000" placeholder="Form description" aria-label="Form description" style="margin-top:6px">' + esc(bd.description) + '</textarea></div>' +
@@ -375,7 +375,8 @@
       '<div><label class="gf-lab" for="bd-closes">Closes on (optional)</label><input class="gf-in" id="bd-closes" type="date" value="' + esc(bd.closes_on) + '"></div>' +
       '</div>' +
       '</div>' +
-      qs + '<p class="gf-err" id="bd-err" role="alert" hidden></p></div>' +
+      qs + '<p class="gf-err" id="bd-err" role="alert" hidden></p>' +
+      '<div class="gf-bar" style="margin-top:6px"><span></span><div class="r"><button class="btn btn-ghost btn-sm" type="button" data-a="builder-back">Cancel</button><button class="btn btn-primary btn-sm" type="button" data-a="builder-save" id="bd-save">Save</button></div></div></div>' +
       '<div class="gf-tool">' + IB('plus', 'Add a question', { 'data-a': 'add-q' }) + '</div></div>';
   }
 
