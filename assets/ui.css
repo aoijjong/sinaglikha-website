@@ -1271,3 +1271,10 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
   .gf-bar .l,.gf-bar .r{flex:1 1 100%}
   .gf-bar .r .btn{flex:1}
 }
+
+/* Employee Directory: the department filter, and details that wrap on phones */
+#em-rows .lmeta{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+@media (max-width:640px){
+  #panel-employees .ph-actions .ev-dept{flex:1 1 100%;min-width:0;margin-bottom:6px}
+  #panel-employees .ph-actions .sbox{flex:1 1 0;min-width:0}
+}

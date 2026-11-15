@@ -16,7 +16,7 @@
   var ID_RE = /^[A-Z]{3}-\d{4}$/;
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
-  var em = { rows: [], show: 'current', failed: false, photos: {} };
+  var em = { rows: [], show: 'current', failed: false, photos: {}, dept: '' };
   // profile photos are small data: images that employees add in the portal; they reach this list through the
   // employee_photos() function (supabase/employee_photos.sql), the same one the Attendance Tracker uses
   var PHOTO_RE = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/;
@@ -103,6 +103,7 @@
       if (em.show === 'current' && !r.active) return false;
       if (em.show === 'inactive' && r.active) return false;
       if (em.show === 'nodept' && (!r.active || r.department)) return false;
+      if (em.dept === 'none' ? !!r.department : em.dept && r.department !== em.dept) return false;
       return !q || r.full_name.toLowerCase().indexOf(q) !== -1 || r.employee_no.toLowerCase().indexOf(q) !== -1;
     });
     $('#em-rows').innerHTML = list.map(rowHtml).join('');
@@ -336,6 +337,12 @@
   }
 
   /* ---------- wiring ---------- */
+  /* the department filter: one department, or the people who have none yet */
+  (function () {
+    var f = $('#em-dept-f'), dm = app.depts || {};
+    f.innerHTML = '<option value="">All departments</option>' + Object.keys(dm).map(function (k) { return '<option value="' + k + '">' + esc(dm[k]) + '</option>'; }).join('') + '<option value="none">No department</option>';
+    f.addEventListener('change', function () { em.dept = f.value; render(); });
+  })();
   $('#em-search').addEventListener('input', render);
   $('#em-show').addEventListener('click', function (e) {
     var b = e.target.closest('[data-show]');
