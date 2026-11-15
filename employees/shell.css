@@ -211,4 +211,27 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 .rc-c{background:linear-gradient(165deg,#FFFFFF 0%,#FFF9EF 100%)}
 @media (min-width:1025px){
   body.sh #v-home{background:linear-gradient(180deg,#FFFDF8 0%,#FFF3E0 100%)}
-}
+}
+
+/* ---------- loading: calm placeholder boxes, no parts popping in ---------- */
+@keyframes sh-shim{to{background-position:-200% 0}}
+.is-loading :is(.qa,.hs){position:relative;overflow:hidden}
+.is-loading :is(.qa,.hs)>*{visibility:hidden}
+.is-loading .qa{min-height:168px}
+.is-loading .hs{min-height:112px}
+.is-loading :is(.qa,.hs)::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(247,237,224,.9) 30%,rgba(255,250,242,.95) 50%,rgba(247,237,224,.9) 70%);background-size:200% 100%;animation:sh-shim 1.3s linear infinite}
+.rc-sk .sk-h{width:46%;height:16px;border-radius:8px;margin:2px 0 14px}
+.rc-sk .sk-c{height:150px;border-radius:18px}
+.rc-sk .sk-h,.rc-sk .sk-c{background:linear-gradient(100deg,#F7EDE0 30%,#FFFAF2 50%,#F7EDE0 70%);background-size:200% 100%;animation:sh-shim 1.3s linear infinite}
+@media (prefers-reduced-motion:reduce){.is-loading :is(.qa,.hs)::after,.rc-sk .sk-h,.rc-sk .sk-c{animation:none}}
+
+/* ---------- Quick Access fills the width at every screen size, with no empty space on the right ---------- */
+.qa-row{display:flex;flex-wrap:wrap;gap:12px;overflow:visible;scroll-snap-type:none;padding:0}
+.qa-c{flex:1 1 150px;min-width:0}
+@media (max-width:1024px){
+  .qa-row{gap:10px}
+  .qa-c{flex:1 1 calc(33.333% - 10px);min-width:92px;scroll-snap-align:none}
+}
+@media (max-width:359px){
+  .qa-c{flex-basis:calc(50% - 10px)}
+}

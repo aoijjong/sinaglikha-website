@@ -107,7 +107,7 @@
       if (card) setHidden(card, panel && panel.hidden);
     });
     var forum = $('#forum-panel');
-    setHidden(share, forum && forum.hidden);
+    setHidden(share, !isLoading() && forum && forum.hidden);   // while loading its placeholder shows, so nothing pops in later
     // the bar marks where you are, even on a sub-page (a folder, a course, an evaluation)
     var at = !$('#v-profile').hidden ? 'profile' : !$('#v-dept').hidden ? 'files' : (!$('#v-learn').hidden || !$('#v-eval').hidden) ? 'work' : sec;
     [].slice.call(nav.querySelectorAll('[data-go]')).forEach(function (b) {
@@ -175,16 +175,28 @@
     return '<div class="rc-col"><div class="sh-h"><h2>' + title + '</h2><button class="sh-all" type="button" data-recent="' + kind + '">View all</button></div>' +
       (list.length ? '<div class="rc-list">' + list.join('') + '</div>' : '<p class="rc-none">Nothing here yet.</p>') + '</div>';
   }
+  /* while the dashboard is still loading, Home shows calm placeholder boxes instead of parts that pop in one by one */
+  function isLoading() { return !!$('#ann-feed .skel'); }
+  function syncLoading() { home.classList.toggle('is-loading', isLoading()); }
+  var SK = '<div class="rc-cols"><div class="rc-col rc-sk"><div class="sk-h"></div><div class="sk-c"></div></div><div class="rc-col rc-sk"><div class="sk-h"></div><div class="sk-c"></div></div></div>';
+  function setRecent(html) {
+    // the same markup again is left alone, so the boxes do not flash when nothing changed
+    if (recent.dataset.sig === html) return;
+    recent.dataset.sig = html;
+    recent.innerHTML = html;
+  }
   function buildRecent() {
+    syncLoading();
+    if (isLoading()) { setRecent(SK); setHidden(recent, false); return; }
     var anns = cards('#ann-feed article.post', 'ann'), posts = cards('#forum-feed article.post', 'forum');
     var forumOn = !$('#forum-panel').hidden;
     if (!anns.length && !posts.length) { setHidden(recent, true); return; }
-    recent.innerHTML = '<div class="rc-cols' + (forumOn ? '' : ' one') + '">' + column('Recent announcements', 'ann', anns) + (forumOn ? column('Recent posts', 'forum', posts) : '') + '</div>';
+    setRecent('<div class="rc-cols' + (forumOn ? '' : ' one') + '">' + column('Recent announcements', 'ann', anns) + (forumOn ? column('Recent posts', 'forum', posts) : '') + '</div>');
     setHidden(recent, false);
   }
   ['#ann-feed', '#forum-feed'].forEach(function (s) {
     var el = $(s);
-    if (el) new MutationObserver(function () { clearTimeout(timer); timer = setTimeout(buildRecent, 120); }).observe(el, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['src'] });
+    if (el) new MutationObserver(function () { syncLoading(); clearTimeout(timer); timer = setTimeout(buildRecent, 120); }).observe(el, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['src'] });
   });
   buildRecent();
   recent.addEventListener('keydown', function (e) {
