@@ -164,7 +164,7 @@
     $('#pf-name').textContent = me.full_name || '';
     $('#pf-no').textContent = me.employee_no || '';
     $('#pf-pos').textContent = me.position || 'Not set';
-    var first = String(me.full_name || '').trim().split(/\s+/)[0] || '';
+    var first = window.SngGreetName ? window.SngGreetName(me.full_name) : String(me.full_name || '').trim().split(/\s+/)[0] || '';
     $('#h-hello').textContent = first ? 'Hello, ' + first : 'Hello';
     $('#h-sub').textContent = [me.position, me.employee_no].filter(Boolean).join(' · ');
   }
@@ -603,9 +603,7 @@
   /* peer evaluations: the teammates of the same department, each with a Done mark, so nobody is missed */
   /* names are written "Last, First M.": the first name is what follows the comma */
   function firstNameOf(n) {
-    var s = String(n || '').trim(), i = s.indexOf(',');
-    if (i !== -1) s = s.slice(i + 1).trim();
-    return s.split(/\s+/)[0] || String(n || '');
+    return (window.SngGreetName ? window.SngGreetName(n) : '') || String(n || '').trim().split(/\s+/)[0] || String(n || '');
   }
   function pickCard() {
     var dn = deptName();
