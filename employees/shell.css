@@ -419,3 +419,16 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .emp-nav button[aria-current="page"]{background:none;box-shadow:none;color:#fff}
   .emp-nav button[aria-current="page"]::before{content:"";position:absolute;z-index:-1;left:50%;top:50%;width:60px;height:60px;transform:translate(-50%,-50%);border-radius:50%;background:var(--grad-btn);box-shadow:0 10px 18px -8px rgba(206,32,32,.65)}
 }
+
+/* the phone bottom bar, after the "notched" navigation bar: a slim white bar, and the open page's icon is a raised gradient circle set into a ring of page colour */
+@media (max-width:1024px){
+  body.sh .emp-nav:not([hidden]){left:14px;right:14px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:8px 6px 7px;border-radius:24px;background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(74,46,34,.1);box-shadow:0 14px 28px -14px rgba(74,46,34,.42)}
+  .emp-nav button{min-height:0;gap:3px;padding:0 2px;border-radius:14px;font-size:.62rem;font-weight:600;color:#8A7568;background:none;box-shadow:none;overflow:visible}
+  .emp-nav .nv-ic{position:relative;display:grid;place-items:center;width:24px;height:24px}
+  .emp-nav svg{width:21px;height:21px}
+  .emp-nav button[aria-current="page"]{background:none;box-shadow:none;color:#4A2E22;font-weight:800}
+  .emp-nav button[aria-current="page"]::before{display:none}
+  .emp-nav button[aria-current="page"] .nv-ic{color:#fff;transform:translateY(-16px);z-index:1}
+  .emp-nav button[aria-current="page"] .nv-ic::before{content:"";position:absolute;z-index:-1;left:50%;top:50%;width:52px;height:52px;transform:translate(-50%,-50%);border-radius:50%;background:var(--grad-btn);border:5px solid var(--paper);box-sizing:border-box;box-shadow:0 8px 14px -8px rgba(206,32,32,.7)}
+  body.sh main#main{padding-bottom:88px}
+}
