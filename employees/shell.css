@@ -59,17 +59,70 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 .sec-head p{color:var(--muted);margin:4px 0 0}
 .seg{display:none}
 
-/* ---------- desktop: a sidebar on the left ---------- */
+/* ---------- desktop: the same sidebar as the Senior Manager portal ---------- */
+.sb-me,.sb-foot,.tab-thumb{display:none}
 @media (min-width:1025px){
-  body.sh .top-in.wrap{width:min(1240px,100% - 40px)}
-  body.sh main#main.wrap{width:auto;max-width:996px;margin-left:calc(max(20px,(100vw - 1240px) / 2) + 244px);margin-right:24px}
-  body.sh .emp-nav:not([hidden]){position:fixed;left:max(20px,calc((100vw - 1240px) / 2));top:104px;width:220px;flex-direction:column;gap:6px;padding:14px;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);z-index:10}
-  .emp-nav button{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:0;border-radius:16px;background:none;font:inherit;font-weight:600;color:var(--muted);text-align:left;cursor:pointer;transition:background .25s,color .25s}
-  .emp-nav .nv-ic{display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:var(--soft-warm);color:var(--brown);transition:background .25s,color .25s}
-  .emp-nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  .emp-nav button[aria-current="page"]{background:var(--brown);color:#fff}
-  .emp-nav button[aria-current="page"] .nv-ic{background:rgba(255,255,255,.16);color:#fff}
-  @media (hover:hover) and (pointer:fine){.emp-nav button:not([aria-current="page"]):hover{background:var(--cream);color:var(--brown)}}
+  /* the page makes room on the left and keeps a small margin on the right */
+  body.sh:has(#emp-nav:not([hidden])){padding-left:252px;background:var(--paper)}
+  body.sh:has(#emp-nav:not([hidden])) .top-right{display:none}
+  body.sh .top-in.wrap,body.sh main#main.wrap{width:calc(100% - clamp(28px,2.6vw,48px) - clamp(28px,2.6vw,48px));max-width:1120px}
+  body.sh main#main{padding-top:18px}
+  .sb-me,.sb-foot{display:grid}
+  .tab-thumb{display:block}
+
+  .sb{position:fixed;left:14px;top:14px;bottom:14px;width:220px;z-index:57;flex-direction:column;gap:5px;padding:24px 14px 16px 14px;
+    background:linear-gradient(158deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,.06) 34%,rgba(255,255,255,0) 52%),linear-gradient(150deg,rgba(158,32,10,.82) 0%,rgba(180,58,10,.80) 42%,rgba(198,88,10,.78) 74%,rgba(208,112,12,.76) 100%);color:#FFF6EC;border-radius:32px;
+    -webkit-backdrop-filter:blur(30px) saturate(1.8);backdrop-filter:blur(30px) saturate(1.8);border:1px solid rgba(255,225,190,.6);
+    box-shadow:0 30px 52px -22px rgba(200,60,15,.65),0 0 30px rgba(255,150,40,.25),inset 0 1px 0 rgba(255,240,200,.9),inset 0 0 0 1px rgba(255,255,255,.16);animation:sb-in .7s cubic-bezier(.22,1,.36,1) both}
+  @keyframes sb-in{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+  .sb::before{content:"";position:absolute;left:12%;right:12%;top:-1px;height:2px;border-radius:2px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,232,170,.95),transparent);filter:blur(.6px)}
+
+  /* the person's card on top: it looks like a button, and it is one */
+  .sb-me{position:relative;justify-items:center;gap:2px;margin:0 0 16px;padding:14px 10px 12px;cursor:pointer;font:inherit;color:#fff;border:0;border-radius:24px;background:none;box-shadow:none;
+    transition:background .3s,transform .35s cubic-bezier(.22,1,.36,1),box-shadow .3s,border-color .3s}
+  .sb-avw{position:relative;display:block;margin-bottom:8px}
+  .sb-me .sb-av{width:62px;height:62px;border-radius:50%;border:2px solid #fff;background:var(--cream);color:var(--brown);overflow:hidden;display:grid;place-items:center;font-weight:700;font-size:1.1rem;box-shadow:0 10px 20px -10px rgba(110,30,0,.7);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+  .sb-me .sb-av img{width:100%;height:100%;object-fit:cover;display:block}
+  .sb-edit{position:absolute;right:-4px;bottom:-2px;width:24px;height:24px;border-radius:50%;background:#fff;color:#C8321A;display:grid;place-items:center;box-shadow:0 6px 12px -6px rgba(60,10,10,.7);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  .sb-edit svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .sb-me b{font-size:.92rem;line-height:1.2;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sb-me small{font-size:.72rem;color:#FFE3C8;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sb-me em{font-style:normal;margin-top:6px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#FFE27A}
+  .sb-go{margin-top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 6px 5px 12px;border-radius:999px;background:rgba(255,255,255,.2);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.02em;transition:background .3s,transform .3s}
+  .sb-go span{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:#C8321A}
+  .sb-go svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+  @media (hover:hover) and (pointer:fine){
+    .sb-me:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+    .sb-me:hover .sb-av{transform:scale(1.05)}
+    .sb-me:hover .sb-edit{transform:scale(1.15) rotate(-8deg)}
+    .sb-me:hover .sb-go{background:rgba(255,255,255,.32);transform:translateX(2px)}
+  }
+  .sb-me:active{transform:scale(.98)}
+  .sb-me:focus-visible{outline:3px solid #fff;outline-offset:2px}
+
+  /* the sections, one under another; the open one is a frosted pill that glides between them */
+  .sb-tabs{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;position:relative;flex:none}
+  .tab-thumb{position:absolute;left:0;right:0;top:0;height:45px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.14));border:1px solid rgba(255,255,255,.5);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 20px -12px rgba(40,20,8,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    transform:translateY(calc(var(--pos,0) * 50px));transition:transform .55s cubic-bezier(.3,1.15,.4,1),opacity .3s}
+  .sb.no-thumb .tab-thumb{opacity:0}
+  .sb-tab{position:relative;z-index:1;display:flex;align-items:center;gap:12px;width:100%;height:45px;padding:0 14px;border:0;border-radius:14px;background:none;font:inherit;text-align:left;font-size:.86rem;font-weight:600;color:#FFEEDD;cursor:pointer;
+    transition:color .35s,background .25s,transform .45s cubic-bezier(.22,1,.36,1)}
+  .sb-tab[data-go="profile"]{display:none}
+  .sb-tab[aria-current="page"]{color:#fff}
+  @media (hover:hover) and (pointer:fine){.sb-tab:not([aria-current="page"]):hover{background:rgba(255,255,255,.18);color:#fff;transform:translateX(4px)}}
+  .sb-tab:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+  .sb .tic{width:20px;height:20px;flex:none;display:grid;place-items:center}
+  .sb .tic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  /* sign out at the bottom */
+  .sb-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.26);gap:4px}
+  .sb-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:0 14px;border:0;border-radius:12px;background:none;cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:#FFEEDD;text-align:left;transition:background .25s,color .25s,transform .3s cubic-bezier(.22,1,.36,1)}
+  @media (hover:hover) and (pointer:fine){.sb-item:hover{background:rgba(255,255,255,.18);color:#fff;transform:translateX(3px)}}
+  .sb-item:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+  @media (prefers-reduced-motion:reduce){.sb,.sb-tab,.tab-thumb{transition:none!important;animation:none!important}}
+
   /* announcements beside the community; the tools in two columns */
   body.sh[data-sec="feeds"] .home-grid,body.sh[data-sec="work"] .home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
   body.sh .col-main,body.sh .col-side{display:contents}
@@ -80,6 +133,8 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 /* ---------- phones and tablets: a floating bar at the bottom ---------- */
 @media (max-width:1024px){
   body.sh .emp-nav:not([hidden]){position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:30;justify-content:space-around;gap:2px;padding:8px;background:#2A1A12;border-radius:28px;box-shadow:0 18px 36px -12px rgba(42,26,18,.55)}
+  .sb-tabs{display:contents}
+  .emp-nav .sb-me,.emp-nav .sb-foot,.emp-nav .tab-thumb{display:none}
   .emp-nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;border:0;border-radius:20px;background:none;font:inherit;font-size:.68rem;font-weight:600;color:rgba(255,255,255,.62);cursor:pointer;transition:background .25s,color .25s}
   .emp-nav .nv-ic{display:grid;place-items:center}
   .emp-nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -103,3 +158,5 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   body.sh[data-sec="feeds"] .panel-h{display:none}
 }
 @media (prefers-reduced-motion:reduce){.qa-c,.emp-nav button{transition:none}}
+/* Profile is opened from the avatar at the top (desktop: the card in the sidebar), so it is not a tab */
+.sb-tab[data-go="profile"]{display:none!important}
