@@ -32,7 +32,7 @@
     manager: { name: 'Manager', long: 'Manager evaluation', who: 'The Senior Managers of a department, about each of its employees.' }
   };
   var COLS = 'id,employee_id,scorecard_id,scorecard_title,period,scale_max,criteria,overall_comment,status,category,evaluator_id,evaluator_employee_id,evaluator_name,finalized_at,created_at,updated_at';
-  var ev = { box: null, ctx: null, mode: 'pms', view: 'list', tab: 'evals', cat: 'manager', cards: [], rows: [], people: [], failed: false, q: '', cur: null, card: null };
+  var ev = { box: null, ctx: null, mode: 'pms', view: 'list', tab: 'evals', cat: 'manager', cards: [], rows: [], people: [], failed: false, q: '', cur: null, card: null, dept: '' };
   var bd = null;   // the form being built
   var tm = null;   // the team evaluation in progress: { card, people, rows, i, qs, over, final, dirty, summary }
   function depts() { return app.depts || {}; }
@@ -92,11 +92,11 @@
       '<div class="ph">' + IB('back', 'Back to the deliverables', { 'data-a': 'back' }, 'line') +
       '<div class="ph-main"><h2>Performance Management System</h2><p class="sub">Evaluation forms and manager evaluations</p></div></div>' +
       '<p class="sp-note" id="ev-note"></p>' +
-      '<div id="ev-team"></div>' +
       '<div class="ev-bar"><div class="pills" id="ev-tabs" role="group" aria-label="Show">' +
       '<button class="pill" type="button" data-tab="evals" aria-pressed="true">Manager evaluations</button>' +
       (build ? '<button class="pill" type="button" data-tab="forms" aria-pressed="false">Evaluation forms</button>' : '') + '</div>' +
       '<div class="ph-actions" id="ev-actions"></div></div>' +
+      '<div id="ev-team"></div><h3 class="ev-sub" id="ev-sub"></h3>' +
       '<div class="list-card" id="ev-wrap" style="position:relative"><ul class="rows" id="ev-rows"></ul><div class="es" id="ev-empty" hidden></div>' +
       '<div class="busy" id="ev-busy" hidden role="status">Loading…</div></div>';
   }
@@ -105,18 +105,27 @@
   function shellResults() {
     ev.box.innerHTML =
       '<div class="ev-bar"><p class="fine" id="ev-note" style="margin:0;flex:1 1 260px"></p><div class="ph-actions" id="ev-actions"></div></div>' +
+      '<h3 class="ev-sub" id="ev-sub"></h3>' +
       '<div class="list-card" id="ev-wrap" style="position:relative"><ul class="rows" id="ev-rows"></ul><div class="es" id="ev-empty" hidden></div>' +
       '<div class="busy" id="ev-busy" hidden role="status">Loading…</div></div>';
   }
 
   function drawActions() {
     var a = $('#ev-actions', ev.box);
+    var dsel = '<select class="ev-dept" id="ev-dept" aria-label="Show one department"><option value="">All departments</option>' +
+      Object.keys(depts()).map(function (k) { return '<option value="' + k + '"' + (ev.dept === k ? ' selected' : '') + '>' + esc(depts()[k]) + '</option>'; }).join('') + '</select>';
+    var wire = function () {
+      var d = $('#ev-dept', ev.box);
+      d.addEventListener('change', function () { ev.dept = d.value; drawList(); });
+    };
     if (ev.tab === 'forms') {
-      a.innerHTML = '<button class="btn btn-primary btn-sm" type="button" data-a="new-form">Create new form</button>';
+      a.innerHTML = dsel + '<button class="btn btn-primary btn-sm" type="button" data-a="new-form">Create new form</button>';
+      wire();
       return;
     }
-    a.innerHTML = '<div class="sbox">' + I('search') + '<input id="ev-search" type="search" placeholder="Search" aria-label="Search by employee, form or period" autocomplete="off" value="' + esc(ev.q) + '"></div>' +
+    a.innerHTML = dsel + '<div class="sbox">' + I('search') + '<input id="ev-search" type="search" placeholder="Search" aria-label="Search by employee, form or period" autocomplete="off" value="' + esc(ev.q) + '"></div>' +
       IB('download', 'Download these evaluations as a spreadsheet', { 'data-a': 'export' });
+    wire();
     var s = $('#ev-search', ev.box);
     s.addEventListener('input', function () { ev.q = s.value; drawRows(); });
   }
@@ -128,6 +137,7 @@
       $('#ev-note', ev.box).textContent = ev.cat === 'manager'
         ? 'Manager evaluations of employees, written by the Senior Managers.'
         : ev.cat === 'self' ? 'Self-assessments by the employees.' : 'Peer evaluations. The colleague never sees who wrote them.';
+      drawHeading();
       drawActions();
       drawRows();
       return;
@@ -138,6 +148,7 @@
       ? 'Total Rewards builds the forms, one department at a time. Self and peer answers are in Records.'
       : 'Each department\u2019s Senior Managers evaluate their own employees. You edit only your own evaluations, and employees never see them.';
     $('#ev-team', ev.box).hidden = ev.tab !== 'evals';
+    drawHeading();
     drawTeamPanel();
     drawActions();
     drawRows();
@@ -145,7 +156,7 @@
 
   /* ---------- the team panel: one card for each open form of your department, with how far along you are ---------- */
   function usableForms() {
-    return ev.cards.filter(function (c) { return c.category === 'manager' && isOpen(c) && c.department && (state.isAdmin || c.department === myDept()); });
+    return ev.cards.filter(function (c) { return c.category === 'manager' && isOpen(c) && c.department && (state.isAdmin || c.department === myDept()) && (!ev.dept || c.department === ev.dept); });
   }
   function teamOf(c) {
     return ev.people.filter(function (x) { return x.active && x.department === c.department; })
@@ -162,7 +173,9 @@
     if (!forms.length) {
       var why = !state.isAdmin && !myDept()
         ? 'Your account has no department yet, so there are no teams to evaluate. The Administrator sets it in the Accounts tab.'
-        : 'There is no open evaluation form for ' + (state.isAdmin ? 'any department' : deptName(myDept())) + ' right now. Ask Total Rewards to create one in the Evaluation forms tab.';
+        : !state.isAdmin && ev.dept && ev.dept !== myDept()
+          ? 'Only the Senior Managers of ' + deptName(ev.dept) + ' evaluate its employees. You can still read the evaluations below.'
+          : 'There is no open evaluation form for ' + (ev.dept ? deptName(ev.dept) : state.isAdmin ? 'any department' : deptName(myDept())) + ' right now. Ask Total Rewards to create one in the Evaluation forms tab.';
       box.innerHTML = '<div class="tm-empty"><span class="eic">' + I('users') + '</span><div><b>Nothing to evaluate yet</b><p>' + esc(why) + '</p></div></div>';
       return;
     }
@@ -182,11 +195,20 @@
     }).join('') + '</div>';
   }
 
+  /* the label over the list: which department's evaluated employees these are */
+  function drawHeading() {
+    var h = $('#ev-sub', ev.box);
+    if (!h) return;
+    h.hidden = ev.tab === 'forms';
+    h.textContent = ev.tab === 'forms' ? '' : (ev.mode === 'results' ? (CATS[ev.cat] || CATS.manager).name + ' evaluations' : 'Evaluated employees') + (ev.dept ? ' under ' + deptName(ev.dept) : ' under all departments');
+  }
+
   function visibleRows() {
     var q = ev.q.trim().toLowerCase();
     return ev.rows.filter(function (r) {
       if (ev.cat !== 'all' && r.category !== ev.cat) return false;
       var p = person(r.employee_id);
+      if (ev.dept && (!p || p.department !== ev.dept)) return false;
       return !q || (p && (p.full_name.toLowerCase().indexOf(q) !== -1 || p.employee_no.toLowerCase().indexOf(q) !== -1)) ||
         r.scorecard_title.toLowerCase().indexOf(q) !== -1 || r.period.toLowerCase().indexOf(q) !== -1 || (r.evaluator_name || '').toLowerCase().indexOf(q) !== -1;
     });
@@ -208,7 +230,8 @@
       return;
     }
     if (ev.tab === 'forms') {
-      rows.innerHTML = ev.cards.map(function (c) {
+      var shown = ev.cards.filter(function (c) { return !ev.dept || c.department === ev.dept; });
+      rows.innerHTML = shown.map(function (c) {
         var n = Array.isArray(c.criteria) ? c.criteria.length : 0;
         var dates = c.opens_on || c.closes_on ? [c.opens_on ? 'Opens ' + fmtDate(c.opens_on) : '', c.closes_on ? 'Closes ' + fmtDate(c.closes_on) : ''].filter(Boolean).join(', ') : '';
         var meta = [(CATS[c.category] || CATS.manager).long, c.department ? deptName(c.department) : 'All departments', n + (n === 1 ? ' question' : ' questions'), c.period, dates].filter(Boolean).join(' · ');
@@ -220,8 +243,8 @@
           (c.active ? IB('eyeOff', 'Hide: stop using it', { 'data-a': 'toggle-form' }) : IB('eye', 'Use it again', { 'data-a': 'toggle-form' }, 'good')) +
           IB('trash', 'Delete this form', { 'data-a': 'del-form' }, 'danger') + '</div></div></li>';
       }).join('');
-      if (!ev.cards.length) {
-        empty.innerHTML = emptyHtml('clipboard', 'No forms yet', 'Press Create new form to build a Self, Peer or Manager evaluation form.');
+      if (!shown.length) {
+        empty.innerHTML = emptyHtml('clipboard', ev.cards.length ? 'No forms for this department' : 'No forms yet', ev.cards.length ? 'Choose another department, or press Create new form.' : 'Press Create new form to build a Self, Peer or Manager evaluation form.');
         empty.hidden = false;
       } else empty.hidden = true;
       return;
@@ -877,6 +900,7 @@
       ev.tab = 'evals';
       ev.cat = 'manager';
       ev.q = '';
+      ev.dept = !state.isAdmin && myDept() ? myDept() : '';
       shellList();
       box.onclick = onClick;
       box.onchange = onChange;
@@ -893,6 +917,7 @@
       ev.tab = 'evals';
       ev.cat = category;
       ev.q = '';
+      ev.dept = '';
       shellResults();
       box.onclick = onClick;
       box.onchange = onChange;
