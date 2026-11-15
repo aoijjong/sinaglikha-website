@@ -293,4 +293,37 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .sec-bn h1{font-size:1.2rem}
   .sec-bn p{font-size:.78rem;margin-top:2px;max-width:none}
   .sec-img{right:10px;bottom:-14px;height:112%;max-width:100px}
-}
+}
+
+/* ---------- Quick Access, second pass: smaller objects, text that never runs under them, and an object that pops out over the card edge on hover ---------- */
+.qa-1{--c1:#FDE3C4;--c2:#FEF0D0}
+.qa-2{--c1:#FBD0B4;--c2:#FDE2C6}
+.qa-3{--c1:#F9DCC0;--c2:#FDEBCF}
+.qa-4{--c1:#FCDDB8;--c2:#FEEFC6}
+.qa-5{--c1:#F8D4BC;--c2:#FCE6D0}
+.qa-6{--c1:#FCD9BC;--c2:#FDE8C8}
+.qa-c{container-type:inline-size;overflow:visible;min-height:132px;padding:14px 14px 70px;
+  background:radial-gradient(circle 80px at calc(100% - 34px) 34px,rgba(255,255,255,.45) 99%,rgba(255,255,255,0) 100%),linear-gradient(135deg,var(--c1),var(--c2))}
+.qa-c::before,.qa-c::after{display:none}
+.qa-c .qa-img{width:clamp(60px,42%,104px);height:auto;right:10px;bottom:8px;transform-origin:60% 90%}
+.qa-1 .qa-img{width:clamp(70px,50%,124px)}
+.qa-2 .qa-img,.qa-4 .qa-img,.qa-5 .qa-img{width:clamp(56px,38%,98px)}
+@media (hover:hover) and (pointer:fine){
+  .qa-c:hover{z-index:4}
+  .qa-c:hover .qa-img{transform:translate(8px,-16px) scale(1.18) rotate(-4deg);filter:drop-shadow(0 16px 12px rgba(150,80,30,.3))}
+}
+/* a card wide enough keeps its words on the left and the object on the right, side by side */
+@container (min-width:190px){
+  .qa-t{max-width:56%}
+}
+@media (max-width:1024px){
+  .qa-c{min-height:112px;padding:11px 11px 60px}
+  .qa-c .qa-img{width:clamp(52px,46%,84px);right:6px;bottom:6px}
+  .qa-1 .qa-img{width:clamp(58px,54%,92px)}
+}
+
+/* phones and tablets: two cards to a row, and a last odd card stretches across the row */
+@media (max-width:1024px){
+  .qa-row{gap:10px}
+  .qa-c{flex:1 1 calc(50% - 10px);min-width:0;min-height:124px}
+}
