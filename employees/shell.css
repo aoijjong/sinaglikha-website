@@ -404,4 +404,9 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 @media (min-width:1500px){
   body.sh[data-sec="files"] #tiles{grid-template-columns:repeat(5,minmax(0,1fr))}
   body.sh[data-sec="files"] #tiles>.lrow,body.sh[data-sec="files"] #tiles>.lrow:nth-child(n+4){grid-column:span 1}
+
+/* the back-to-Home button on desktop: larger, easier to hit */
+@media (min-width:1025px){
+  .sec-back{gap:8px;margin:0 0 14px;padding:10px 20px 10px 14px;border-width:1.5px;box-shadow:0 8px 18px -12px rgba(160,80,30,.45)}
+  .sec-back svg{width:26px;height:26px;stroke-width:2.1}
 }
