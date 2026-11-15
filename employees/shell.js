@@ -77,7 +77,7 @@
   quick.className = 'qa';
   quick.id = 'home-quick';
   quick.innerHTML = '<div class="sh-h"><h2>Quick Access</h2></div><div class="qa-row">' + QA.map(function (q) {
-    return '<button class="qa-c ' + q[6] + '" type="button" data-qa="' + q[0] + '"><span class="qa-ic">' + ICON[q[3]] + '</span><b>' + q[1] + '</b><small>' + q[2] + '</small></button>';
+    return '<button class="qa-c ' + q[6] + '" type="button" data-qa="' + q[0] + '"><span class="qa-ic">' + ICON[q[3]] + '</span><span class="qa-t"><b>' + q[1] + '</b><small>' + q[2] + '</small></span></button>';
   }).join('') + '</div>';
   var recent = document.createElement('section');
   recent.className = 'rc';
