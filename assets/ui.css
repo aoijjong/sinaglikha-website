@@ -1278,3 +1278,9 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
   #panel-employees .ph-actions .ev-dept{flex:1 1 100%;min-width:0;margin-bottom:6px}
   #panel-employees .ph-actions .sbox{flex:1 1 0;min-width:0}
 }
+
+/* every dropdown is slimmer on phones (the text stays 16px so iPhones do not zoom in when one is tapped) */
+@media (max-width:640px){
+  select{padding-top:7px!important;padding-bottom:7px!important}
+  .ev-dept{padding-left:14px;font-weight:600;background-position:right 12px center;background-size:12px}
+}
