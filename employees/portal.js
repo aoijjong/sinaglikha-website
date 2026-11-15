@@ -58,6 +58,8 @@
     window.scrollTo(0, 0);
   }
 
+  window.EmpPortal = { show: show };   // used by shell.js to return to the dashboard from a sub-page
+
   var toastTimer;
   function toast(msg) {
     var t = $('#toast');
