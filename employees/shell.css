@@ -394,3 +394,9 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .emp-nav button{color:#7A5236}
   .emp-nav button[aria-current="page"]{background:var(--grad-btn);color:#fff;box-shadow:0 8px 16px -8px rgba(206,32,32,.6)}
 }
+
+/* the back-to-Home button on desktop: larger, easier to hit */
+@media (min-width:1025px){
+  .sec-back{gap:8px;margin:0 0 14px;padding:10px 20px 10px 14px;border-width:1.5px;box-shadow:0 8px 18px -12px rgba(160,80,30,.45)}
+  .sec-back svg{width:26px;height:26px;stroke-width:2.1}
+}
