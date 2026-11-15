@@ -2,7 +2,7 @@
   Employee Portal shell. On desktop the dashboard opens on Home and the Quick Access cards lead to the other sections, with a Back to Home
   button on each; the avatar and Sign out stay in the top bar. Phones and tablets get a floating bar at the bottom.
   The dashboard stays one page in portal.js; this file splits it into sections:
-    Home    greeting, a "share" bar, Quick Access cards and the latest announcements
+    Home    greeting, a "share" bar, Quick Access cards, and the latest announcements and community posts side by side
     Feeds   announcements and the community
     My Work attendance, evaluations, learning and compensation records
     Files   the file search and the department folders
@@ -148,31 +148,43 @@
       go(q[5], function () { var p = $(q[4]); if (p) p.scrollIntoView({ block: 'start', behavior: 'smooth' }); });
       return;
     }
-    if (e.target.closest('[data-recent]')) { feed = 'ann'; go('feeds'); }
+    var rc = e.target.closest('[data-recent]');
+    if (rc) { feed = rc.dataset.recent === 'forum' ? 'forum' : 'ann'; go('feeds'); }
   });
 
-  /* ---- the latest announcements, as small cards on Home ---- */
+  /* ---- the latest announcements and community posts, side by side on Home ---- */
   var timer;
+  function cards(sel, kind) {
+    return [].slice.call(document.querySelectorAll(sel)).slice(0, 3).map(function (p) {
+      var av = $('.av-sm', p), who = $('.who b', p), when = $('.who span', p), title = $('.post-title', p), body = $('.post-body', p);
+      var like = $('.p-like span', p), com = $('[data-replies] span', p), cat = $('.chip', p);
+      var n = like && /\d/.test(like.textContent) ? like.textContent.replace(/\D+/g, '') : '';
+      var c = com && /\d/.test(com.textContent) ? com.textContent.trim() : '';
+      return '<article class="rc-c" data-recent="' + kind + '" tabindex="0"><div class="rc-top">' + (av ? av.outerHTML : '') + '<div class="who"><b>' + (who ? who.innerHTML : '') + '</b><span>' + (when ? when.innerHTML : '') + '</span></div>' +
+        (kind === 'forum' && cat ? '<span class="chip plain">' + cat.innerHTML + '</span>' : '') + '</div>' +
+        (title ? '<h3>' + title.innerHTML + '</h3>' : '') + '<p>' + (body ? body.innerHTML : '') + '</p>' +
+        (n || c ? '<div class="rc-foot">' + (c ? '<span class="rc-com">' + c + '</span>' : '') + (n ? '<span>' + ICON.heart + n + '</span>' : '') + '</div>' : '') + '</article>';
+    });
+  }
+  function column(title, kind, list) {
+    return '<div class="rc-col"><div class="sh-h"><h2>' + title + '</h2><button class="sh-all" type="button" data-recent="' + kind + '">View all</button></div>' +
+      (list.length ? '<div class="rc-list">' + list.join('') + '</div>' : '<p class="rc-none">Nothing here yet.</p>') + '</div>';
+  }
   function buildRecent() {
-    var posts = [].slice.call(document.querySelectorAll('#ann-feed article.post')).slice(0, 3);
-    if (!posts.length) { setHidden(recent, true); return; }
-    recent.innerHTML = '<div class="sh-h"><h2>Recent activity</h2><button class="sh-all" type="button" data-recent="1">View all</button></div><div class="rc-list">' +
-      posts.map(function (p) {
-        var av = $('.av-sm', p), who = $('.who b', p), when = $('.who span', p), title = $('.post-title', p), body = $('.post-body', p), like = $('.p-like span', p);
-        var n = like && /\d/.test(like.textContent) ? like.textContent.replace(/\D+/g, '') : '';
-        return '<article class="rc-c" data-recent="1" tabindex="0"><div class="rc-top">' + (av ? av.outerHTML : '') + '<div class="who"><b>' + (who ? who.innerHTML : '') + '</b><span>' + (when ? when.innerHTML : '') + '</span></div></div>' +
-          (title ? '<h3>' + title.innerHTML + '</h3>' : '') + '<p>' + (body ? body.innerHTML : '') + '</p>' +
-          (n ? '<div class="rc-foot"><span>' + ICON.heart + n + '</span></div>' : '') + '</article>';
-      }).join('') + '</div>';
+    var anns = cards('#ann-feed article.post', 'ann'), posts = cards('#forum-feed article.post', 'forum');
+    var forumOn = !$('#forum-panel').hidden;
+    if (!anns.length && !posts.length) { setHidden(recent, true); return; }
+    recent.innerHTML = '<div class="rc-cols' + (forumOn ? '' : ' one') + '">' + column('Recent announcements', 'ann', anns) + (forumOn ? column('Recent posts', 'forum', posts) : '') + '</div>';
     setHidden(recent, false);
   }
-  var feedEl = $('#ann-feed');
-  if (feedEl) {
-    new MutationObserver(function () { clearTimeout(timer); timer = setTimeout(buildRecent, 120); }).observe(feedEl, { childList: true, subtree: true, characterData: true });
-    buildRecent();
-  }
+  ['#ann-feed', '#forum-feed'].forEach(function (s) {
+    var el = $(s);
+    if (el) new MutationObserver(function () { clearTimeout(timer); timer = setTimeout(buildRecent, 120); }).observe(el, { childList: true, subtree: true, characterData: true });
+  });
+  buildRecent();
   recent.addEventListener('keydown', function (e) {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.rc-c')) { e.preventDefault(); feed = 'ann'; go('feeds'); }
+    var c = e.target.closest('.rc-c');
+    if ((e.key === 'Enter' || e.key === ' ') && c) { e.preventDefault(); feed = c.dataset.recent === 'forum' ? 'forum' : 'ann'; go('feeds'); }
   });
 
   /* ---- keep the navigation in step with whichever page is showing ---- */
