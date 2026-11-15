@@ -342,3 +342,10 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .qa-c{flex:0 0 148px;min-height:122px;scroll-snap-align:start}
   .qa-1{flex-basis:160px}
 }
+
+/* phones and tablets: the space between the two recent boxes matches the space between the other boxes */
+@media (max-width:1024px){
+  .rc-cols{gap:12px}
+  .rc-col{margin-bottom:0}
+  .rc{margin-bottom:12px}
+}
