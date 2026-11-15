@@ -92,6 +92,16 @@
     '<div class="seg" id="feeds-seg" role="group" aria-label="Show"><button type="button" data-feed="ann">Announcements</button><button type="button" data-feed="forum">Community</button></div>';
   var after = hello || home.firstChild;
   after.after(quick, share, recent, head);
+  /* a tap on a page banner plays the hover effect (touch screens have no hover), like the greeting banner on Home */
+  var tapTimer;
+  head.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse') return;
+    var bn = e.target.closest('.sec-bn');
+    if (!bn) return;
+    bn.classList.add('tapped');
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(function () { bn.classList.remove('tapped'); }, 1200);
+  });
   var qbox = $('#q', home) && $('#q', home).closest('.sbox');
   if (qbox) qbox.id = 'q-wrap';
 

@@ -327,3 +327,9 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .qa-row{gap:10px}
   .qa-c{flex:1 1 calc(50% - 10px);min-width:0;min-height:124px}
 }
+
+/* touch: the same lift and lean as the hover, for a moment after a tap */
+.sec-bn{-webkit-tap-highlight-color:transparent}
+.sec-bn.tapped{transform:translateY(-3px);box-shadow:0 22px 32px -22px rgba(226,120,40,.6)}
+.sec-bn.tapped .sec-img{transform:scale(1.06) translateX(4px) rotate(-2deg);filter:drop-shadow(0 14px 12px rgba(150,80,30,.28))}
+@media (prefers-reduced-motion:reduce){.sec-bn.tapped,.sec-bn.tapped .sec-img{transform:none}}
