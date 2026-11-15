@@ -364,3 +364,7 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 @media (max-width:1024px){
   .qa-row{scroll-padding-left:12px;scroll-padding-right:12px}
 }
+
+/* the Post now button uses the brand gradient */
+.hs-btn{background:var(--grad-btn);box-shadow:0 10px 20px -10px rgba(206,32,32,.65);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+@media (hover:hover) and (pointer:fine){.hs-bar:hover .hs-btn{transform:translateY(-2px)}}
