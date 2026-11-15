@@ -114,6 +114,8 @@
   #forum-panel .cmp-open .icon{width:18px;height:18px}
   .composer .cmp-row{flex-direction:column;gap:8px}
   .composer .cmp-row select,.composer .cmp-row input,.composer textarea{width:100%;font-size:.9rem;padding:10px 12px;border-radius:12px}
+  /* in a column the input's 200px basis became its height; it should be one line tall */
+  .composer .cmp-row input{flex:0 0 auto}
   .composer textarea{min-height:76px}
   .composer .cmp-foot{margin-top:8px;gap:8px}
   .composer .cmp-foot .fine{font-size:.76rem;line-height:1.35}
