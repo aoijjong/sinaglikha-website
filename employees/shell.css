@@ -165,3 +165,7 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 @media (max-width:1024px){
   body.sh .top-in.wrap,body.sh main#main.wrap{width:calc(100% - 28px);max-width:none}
 }
+
+/* Recent activity: each announcement is one full-width card with its whole message */
+.rc-list{grid-template-columns:minmax(0,1fr)}
+.rc-c p{display:block;-webkit-line-clamp:unset;overflow:visible}
