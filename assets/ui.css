@@ -1278,3 +1278,8 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
   #panel-employees .ph-actions .ev-dept{flex:1 1 100%;min-width:0;margin-bottom:6px}
   #panel-employees .ph-actions .sbox{flex:1 1 0;min-width:0}
 }
+
+/* evaluation rows on phones: the category, the status and the actions sit together on the right */
+@media (max-width:640px){
+  #ev-rows .lside{justify-content:flex-end;gap:8px}
+}
