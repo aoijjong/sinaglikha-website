@@ -349,3 +349,13 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .rc-col{margin-bottom:0}
   .rc{margin-bottom:12px}
 }
+
+/* Quick Access cards: a deeper peach than the greeting banner (which runs #FCD9BC to #FEEFC4), so they stand out against it */
+.qa-1{--c1:#F7BB82;--c2:#FBD59A}
+.qa-2{--c1:#F2A383;--c2:#F7BE9E}
+.qa-3{--c1:#F4B386;--c2:#F8CEA6}
+.qa-4{--c1:#F5BC78;--c2:#F9D594}
+.qa-5{--c1:#EEA689;--c2:#F4C2A3}
+.qa-6{--c1:#F5AC82;--c2:#F9C69B}
+.qa-c{background:radial-gradient(circle 80px at calc(100% - 34px) 34px,rgba(255,255,255,.36) 99%,rgba(255,255,255,0) 100%),linear-gradient(135deg,var(--c1),var(--c2))}
+.qa-t small{color:#6B4533}
