@@ -1,43 +1,42 @@
 /*
   The Self and Peer evaluations an employee fills in (supabase/phase6.sql). Needs an employee sign-in.
 
-  GET  /api/employee-evaluate                       the open Self and Peer forms (same as on the dashboard)
+  GET  /api/employee-evaluate                       the open Self and Peer forms for this employee's department
   POST /api/employee-evaluate { "action": "self",  "form_id", "answers": [...], "overall", "submit": true|false }
                                                     save a draft or submit the employee's OWN self-assessment
-  POST /api/employee-evaluate { "action": "peer_lookup", "name": "..." }
-                                                    check that a typed name is one colleague; answers with that name
-  POST /api/employee-evaluate { "action": "peer", "form_id", "name": "...", "answers": [...], "overall" }
-                                                    submit a peer evaluation of the colleague with that exact name
+  POST /api/employee-evaluate { "action": "peer_list", "form_id" }
+                                                    the colleagues of the SAME DEPARTMENT, and which ones this employee already evaluated
+  POST /api/employee-evaluate { "action": "peer", "form_id", "colleague_id", "answers": [...], "overall" }
+                                                    submit a peer evaluation of one colleague of the same department
 
   answers = [{ "id": "<question id>", "rating": 4, "comment": "...", "picked": ["Option A"] }]
   Question types: short, paragraph, choice, checkbox, dropdown, rating (linear scale), stars, date, time.
 
-  Who is evaluating comes from the sign-in cookie, never from the request. There is no list or search of
-  colleagues: the employee types a full name, and it must match exactly one active employee. Lookups are
-  limited and logged. A peer evaluation is final once sent; a self-assessment can be saved as a draft first.
-  Nobody can read these answers through this function: Total Rewards reads them in the Senior Manager area.
+  Who is evaluating comes from the sign-in cookie, never from the request. A peer evaluation is only for
+  an active colleague of the employee's own department (set in the Employee Directory), and never for
+  oneself. The employee sees the names of their own department only. A form made for one department can
+  only be used by that department. A peer evaluation is final once sent; a self-assessment can be saved
+  as a draft first. Nobody can read these answers through this function: Total Rewards reads them in the
+  Senior Manager area.
 */
 
 const E = require('./_employee');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const LOOKUPS_PER_HOUR = 20;
-const PEER_PER_HOUR = 20;
+const PEER_PER_HOUR = 60;
 
 const list = (r) => (r.ok && Array.isArray(r.data) ? r.data : []);
 
-/* Lower case, no accents, no punctuation, single spaces: so "Juan  dela Cruz" matches "Juan Dela Cruz". */
-function norm(s) {
-  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-/* The form, if it is a switched on, open form of that category. */
-async function openForm(id, category) {
+/* The form, if it is a switched on, open form of that category that this department may use. */
+async function openForm(id, category, dept) {
   if (!UUID_RE.test(String(id || ''))) return null;
-  const r = await E.rest('GET', `scorecards?id=eq.${id}&active=eq.true&category=eq.${category}&select=id,title,category,period,scale_max,criteria,opens_on,closes_on`);
+  const cols = 'id,title,category,period,scale_max,criteria,opens_on,closes_on';
+  let r = await E.rest('GET', `scorecards?id=eq.${id}&active=eq.true&category=eq.${category}&select=${cols},department`);
+  if (!r.ok) r = await E.rest('GET', `scorecards?id=eq.${id}&active=eq.true&category=eq.${category}&select=${cols}`);   // before phase10.sql
   const f = list(r)[0];
   const today = E.manilaDate();
   if (!f || (f.opens_on && f.opens_on > today) || (f.closes_on && f.closes_on < today)) return null;
+  if (!E.formFits(f, dept)) return null;
   return f;
 }
 
@@ -90,16 +89,15 @@ async function recent(action, who, minutes) {
   return list(r).length;
 }
 
-/* The one active colleague whose full name is exactly what was typed. */
-async function findColleague(typed, me) {
-  const n = norm(typed);
-  if (n.length < 3) return { error: 'Type the colleague\'s full name.', status: 400 };
-  const r = await E.rest('GET', 'employees?active=eq.true&select=id,employee_no,full_name&limit=5000');
-  const hits = list(r).filter((e) => norm(e.full_name) === n);
-  if (!hits.length) return { error: "We couldn't find a colleague with that name. Check the spelling and type their full name.", status: 404 };
-  if (hits.length > 1) return { error: 'More than one colleague has that name, so it cannot be used here. Please ask Total Rewards.', status: 409 };
-  if (hits[0].id === me.emp.id) return { error: "That's you. Use your own self-assessment for that.", status: 400 };
-  return { emp: hits[0] };
+/* The active colleague with this id, if (and only if) they are in the same department as the employee. */
+async function findColleague(colleagueId, me, dept) {
+  if (!dept) return { error: "Your department hasn't been set yet, so peer evaluations aren't available. Please ask Staffing and Recruitment.", status: 403 };
+  if (!UUID_RE.test(String(colleagueId || ''))) return { error: 'Choose a colleague from the list.', status: 400 };
+  if (colleagueId === me.emp.id) return { error: "That's you. Use your own self-assessment for that.", status: 400 };
+  const r = await E.rest('GET', `employees?id=eq.${colleagueId}&active=eq.true&department=eq.${dept}&select=id,employee_no,full_name`);
+  const hit = list(r)[0];
+  if (!hit) return { error: 'You can only evaluate colleagues in your own department.', status: 403 };
+  return { emp: hit };
 }
 
 module.exports = async function handler(req, res) {
@@ -111,6 +109,7 @@ module.exports = async function handler(req, res) {
   const me = await E.currentEmployee(req);
   if (!me) return E.send(res, 401, { error: 'Please sign in.' });
   const eid = me.emp.id, no = me.emp.employee_no;
+  const dept = await E.deptOf(eid);
 
   if (req.method === 'GET') return E.send(res, 200, await E.evaluationForms(eid));
 
@@ -120,7 +119,7 @@ module.exports = async function handler(req, res) {
 
   /* ---- the employee's own self-assessment ---- */
   if (body.action === 'self') {
-    const form = await openForm(body.form_id, 'self');
+    const form = await openForm(body.form_id, 'self', dept);
     if (!form) return E.send(res, 404, gone);
     const criteria = snapshot(form, body.answers);
     if (!criteria) return E.send(res, 400, { error: 'Some answers are not valid.' });
@@ -142,21 +141,25 @@ module.exports = async function handler(req, res) {
     return E.send(res, 200, { ok: true, status: submit ? 'final' : 'draft' });
   }
 
-  /* ---- who is being evaluated: a typed name, matched exactly ---- */
-  if (body.action === 'peer_lookup') {
-    if ((await recent('eval.lookup', no, 60)) >= LOOKUPS_PER_HOUR) return E.send(res, 429, { error: 'Too many tries. Wait a little and try again.' });
-    const found = await findColleague(body.name, me);
-    await E.logAudit('eval.lookup', no, { ok: !!found.emp });
-    if (!found.emp) return E.send(res, found.status, { error: found.error });
-    return E.send(res, 200, { name: found.emp.full_name });
+  /* ---- the colleagues of the same department, and which ones this employee has already evaluated ---- */
+  if (body.action === 'peer_list') {
+    const form = await openForm(body.form_id, 'peer', dept);
+    if (!form) return E.send(res, 404, gone);
+    if (!dept) return E.send(res, 200, { colleagues: [], no_department: true });
+    const [mates, given] = await Promise.all([
+      E.rest('GET', `employees?active=eq.true&department=eq.${dept}&id=neq.${eid}&select=id,full_name,position&order=full_name&limit=2000`),
+      E.rest('GET', `evaluations?evaluator_employee_id=eq.${eid}&scorecard_id=eq.${form.id}&category=eq.peer&select=employee_id&limit=2000`)
+    ]);
+    const done = new Set(list(given).map((x) => x.employee_id));
+    return E.send(res, 200, { colleagues: list(mates).map((m) => ({ id: m.id, name: m.full_name, position: m.position || '', done: done.has(m.id) })) });
   }
 
   /* ---- a peer evaluation, final once sent ---- */
   if (body.action === 'peer') {
-    const form = await openForm(body.form_id, 'peer');
+    const form = await openForm(body.form_id, 'peer', dept);
     if (!form) return E.send(res, 404, gone);
     if ((await recent('eval.peer', no, 60)) >= PEER_PER_HOUR) return E.send(res, 429, { error: 'You have sent a lot of evaluations. Wait a little and try again.' });
-    const found = await findColleague(body.name, me);
+    const found = await findColleague(body.colleague_id, me, dept);
     if (!found.emp) return E.send(res, found.status, { error: found.error });
     const criteria = snapshot(form, body.answers);
     if (!criteria) return E.send(res, 400, { error: 'Some answers are not valid.' });

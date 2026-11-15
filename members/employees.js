@@ -41,9 +41,9 @@
   /* ---------- the list ---------- */
   async function load() {
     busy('Loading…');
-    var res = await sb.from('employees')
-      .select('id,employee_no,full_name,position,active,pin_set,code_expires_at,locked_until,last_login_at,created_at')
-      .order('employee_no', { ascending: true }).limit(2000);
+    var cols = 'id,employee_no,full_name,position,active,pin_set,code_expires_at,locked_until,last_login_at,created_at';
+    var res = await sb.from('employees').select(cols + ',department').order('employee_no', { ascending: true }).limit(2000);
+    if (res.error) res = await sb.from('employees').select(cols).order('employee_no', { ascending: true }).limit(2000);   // before phase10.sql
     busy('');
     if (res.error) {
       toast("Couldn't load the Employee Directory. " + (res.error.message || ''), 'bad');
@@ -63,9 +63,9 @@
 
   function rowHtml(r) {
     var st = statusOf(r);
-    var meta = [r.employee_no, r.position].filter(Boolean).join(' · ');
+    var meta = [r.employee_no, r.position, r.department ? (app.depts || {})[r.department] || r.department : 'No department'].filter(Boolean).join(' · ');
     var last = r.last_login_at ? 'Last sign-in ' + app.fmtDate(r.last_login_at) : '';
-    var acts = IB('pencil', 'Edit name and position', { 'data-act': 'edit' });
+    var acts = IB('pencil', 'Edit name, position and department', { 'data-act': 'edit' });
     if (r.active) {
       acts += IB('key', r.pin_set ? 'Reset PIN: issue a new activation code' : 'Issue an activation code', { 'data-act': 'code' }, r.pin_set ? '' : 'good');
       acts += IB('userX', 'Deactivate', { 'data-act': 'deactivate' }, 'danger');
@@ -80,13 +80,15 @@
 
   function drawPills() {
     var cur = em.rows.filter(function (r) { return r.active; }).length;
+    var nodept = em.rows.filter(function (r) { return r.active && !r.department; }).length;
     var tabs = [['current', 'Current', cur], ['inactive', 'Inactive', em.rows.length - cur], ['all', 'Everyone', em.rows.length]];
+    if (nodept) tabs.push(['nodept', 'No department', nodept]);
     $('#em-show').innerHTML = tabs.map(function (t) {
       return '<button class="pill" type="button" data-show="' + t[0] + '" aria-pressed="' + (em.show === t[0]) + '">' + t[1] + ' <small>' + t[2] + '</small></button>';
     }).join('');
     var need = em.rows.filter(function (r) { return r.active && !r.pin_set; }).length;
     $('#em-sub').textContent = em.rows.length
-      ? cur + ' current' + (need ? ' · ' + need + ' without a PIN yet' : '')
+      ? cur + ' current' + (need ? ' · ' + need + ' without a PIN yet' : '') + (nodept ? ' · ' + nodept + ' without a department' : '')
       : 'People who sign in to the Employee Portal with their ID and a PIN.';
   }
 
@@ -100,6 +102,7 @@
     var list = em.rows.filter(function (r) {
       if (em.show === 'current' && !r.active) return false;
       if (em.show === 'inactive' && r.active) return false;
+      if (em.show === 'nodept' && (!r.active || r.department)) return false;
       return !q || r.full_name.toLowerCase().indexOf(q) !== -1 || r.employee_no.toLowerCase().indexOf(q) !== -1;
     });
     $('#em-rows').innerHTML = list.map(rowHtml).join('');
@@ -188,20 +191,24 @@
     $('#em-no').readOnly = !!r;
     $('#em-name').value = r ? r.full_name : '';
     $('#em-pos').value = r ? r.position || '' : '';
+    var dsel = $('#em-dept'), dm = app.depts || {};
+    dsel.innerHTML = '<option value="">Not set yet</option>' + Object.keys(dm).map(function (k) { return '<option value="' + k + '">' + esc(dm[k]) + '</option>'; }).join('');
+    dsel.value = r && r.department ? r.department : '';
     err.hidden = true;
     form.onsubmit = async function (e) {
       e.preventDefault();
       var no = $('#em-no').value.trim().toUpperCase();
       var name = $('#em-name').value.trim();
       var pos = $('#em-pos').value.trim();
+      var dept = $('#em-dept').value || null;
       var problem = '';
       if (!r && !ID_RE.test(no)) problem = 'The Employee ID looks like SNG-0001: three capital letters, a dash and four digits.';
       else if (!name) problem = 'Enter the full name.';
       if (problem) { err.textContent = problem; err.hidden = false; return; }
       $('#em-ok').disabled = true;
       var res;
-      if (r) res = await sb.from('employees').update({ full_name: name, position: pos || null }).eq('id', r.id).select('id').maybeSingle();
-      else res = await sb.from('employees').insert({ employee_no: no, full_name: name, position: pos || null }).select('id').maybeSingle();
+      if (r) res = await sb.from('employees').update({ full_name: name, position: pos || null, department: dept }).eq('id', r.id).select('id').maybeSingle();
+      else res = await sb.from('employees').insert({ employee_no: no, full_name: name, position: pos || null, department: dept }).select('id').maybeSingle();
       $('#em-ok').disabled = false;
       if (res.error || !res.data) {
         err.textContent = res.error && /duplicate|unique|23505/i.test(res.error.code + ' ' + res.error.message)
@@ -265,16 +272,24 @@
     if (file.size > 1048576) { toast('That file is too large. Keep it under 1 MB.', 'bad'); return; }
     var table = parseCsv(await file.text());
     if (!table.length) { toast('That file has no rows.', 'bad'); return; }
-    var col = { no: 0, name: 1, pos: 2 }, head = table[0].map(function (h) { return h.trim().toLowerCase(); });
-    var hasHead = head.some(function (h) { return /^(employee[ _-]?(id|no|number)|id|full[ _-]?name|name|position|title)$/.test(h); });
+    var col = { no: 0, name: 1, pos: 2, dept: -1 }, head = table[0].map(function (h) { return h.trim().toLowerCase(); });
+    var hasHead = head.some(function (h) { return /^(employee[ _-]?(id|no|number)|id|full[ _-]?name|name|position|title|department|dept)$/.test(h); });
     if (hasHead) {
       table.shift();
       head.forEach(function (h, i) {
         if (/^(employee[ _-]?(id|no|number)|id)$/.test(h)) col.no = i;
         else if (/^(full[ _-]?name|name)$/.test(h)) col.name = i;
         else if (/^(position|title)$/.test(h)) col.pos = i;
+        else if (/^(department|dept)$/.test(h)) col.dept = i;
       });
     }
+    // a department may be written as its short name (Rewards), its full name (Total Rewards) or its key (rewards)
+    var deptOf = function (text) {
+      var t = String(text || '').trim().toLowerCase(), dm = app.depts || {}, hit = null;
+      if (!t) return null;
+      Object.keys(dm).forEach(function (k) { if (k === t || dm[k].toLowerCase() === t || dm[k].toLowerCase().indexOf(t) !== -1) hit = hit || k; });
+      return hit === null ? undefined : hit;
+    };
     var good = [], seen = {}, skipped = [];
     table.forEach(function (r, i) {
       var no = String(r[col.no] || '').trim().toUpperCase(), name = String(r[col.name] || '').trim().slice(0, 120);
@@ -283,13 +298,20 @@
       if (!ID_RE.test(no)) skipped.push('row ' + line + ': ID "' + no + '" is not like SNG-0001');
       else if (!name) skipped.push('row ' + line + ': no name');
       else if (seen[no]) skipped.push('row ' + line + ': ' + no + ' appears twice');
-      else { seen[no] = 1; good.push({ employee_no: no, full_name: name, position: pos || null }); }
+      else {
+        var dp = col.dept >= 0 ? deptOf(r[col.dept]) : null;
+        if (dp === undefined) { skipped.push('row ' + line + ': "' + String(r[col.dept]).trim() + '" is not one of the departments'); return; }
+        seen[no] = 1;
+        var rec = { employee_no: no, full_name: name, position: pos || null };
+        if (dp) rec.department = dp;
+        good.push(rec);
+      }
     });
     if (!good.length) { toast('Nothing to import. ' + (skipped[0] || ''), 'bad'); return; }
     var ok = await ask({
       title: 'Import ' + good.length + ' Employee' + (good.length === 1 ? '' : 's') + '?',
       text: (skipped.length ? skipped.length + ' row' + (skipped.length === 1 ? '' : 's') + ' will be skipped (' + skipped.slice(0, 3).join('; ') + (skipped.length > 3 ? '; …' : '') + '). ' : '') +
-        'People whose ID already exists are left as they are.',
+        'People whose ID already exists keep their name and position' + (good.some(function (g) { return g.department; }) ? '; their department is set from the file.' : '.'),
       ok: 'Import'
     });
     if (!ok) return;
@@ -299,6 +321,13 @@
       var res = await sb.from('employees').upsert(good.slice(i, i + 200), { onConflict: 'employee_no', ignoreDuplicates: true }).select('id');
       if (res.error) { busy(''); toast("Couldn't import. " + (res.error.message || ''), 'bad'); await load(); return; }
       added += (res.data || []).length;
+    }
+    // people who already exist keep their name and position, but a department in the file is applied to them too
+    var byDept = {};
+    good.forEach(function (g) { if (g.department) (byDept[g.department] = byDept[g.department] || []).push(g.employee_no); });
+    for (var dk of Object.keys(byDept)) {
+      var up = await sb.from('employees').update({ department: dk }).in('employee_no', byDept[dk]).select('id');
+      if (up.error) { busy(''); toast("Added, but couldn't set the departments. " + (up.error.message || ''), 'bad'); await load(); return; }
     }
     busy('');
     logAction('employee.import', file.name, { rows: good.length, added: added });

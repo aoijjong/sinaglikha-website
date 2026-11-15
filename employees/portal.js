@@ -515,12 +515,15 @@
   }
 
   /* ---------- evaluations: the Self and Peer forms, filled in on a page of their own ---------- */
-  var evals = { self: [], peer: [] };
-  var ef = null;   // the form being filled in: { kind, form, qs, name, overall, step, readonly }
+  var evals = { self: [], peer: [], department: null };
+  var ef = null;   // the form being filled in: { kind, form, qs, name, colleagueId, mates, overall, step, readonly }
+  var DEPT_NAMES = { staffing: 'Staffing and Recruitment', training: 'Training and Development', engagement: 'Employee Engagement', rewards: 'Total Rewards', legal: 'Legal Compliance' };
+  function deptName() { return DEPT_NAMES[evals.department] || ''; }
   var F = window.SngEvalForm;
 
   function renderEvals() {
     var all = (evals.self || []).length + (evals.peer || []).length;
+    var dn = deptName();
     // the box always shows, so the dashboard keeps its shape; it says so when no form is open
     $('#evl-panel').hidden = false;
     if (!all) { $('#evl-list').innerHTML = '<li class="none">No evaluations are open right now. When one opens, it will appear here.</li>'; return; }
@@ -529,9 +532,14 @@
       return '<li class="lrow"><button class="lmain" type="button" data-evself="' + esc(f.id) + '"><span class="lico">' + I('clipboard') + '</span><span class="ltext"><span class="lname">' + esc(f.title) +
         '</span><span class="lmeta">' + esc(['Self-assessment', f.period].filter(Boolean).join(' · ')) + '</span></span></button><span class="chip ' + chip[0] + '" style="margin-right:6px">' + chip[1] + '</span></li>';
     }).concat((evals.peer || []).map(function (f) {
+      var left = f.total ? f.total - f.done : 0;
+      var chip = !f.total ? ['plain', 'No teammates yet'] : left === 0 ? ['s-published', 'All done'] : f.done ? ['s-draft', f.done + ' of ' + f.total] : ['plain', 'Not started'];
       return '<li class="lrow"><button class="lmain" type="button" data-evpeer="' + esc(f.id) + '"><span class="lico">' + I('users') + '</span><span class="ltext"><span class="lname">' + esc(f.title) +
-        '</span><span class="lmeta">' + esc(['Evaluate a colleague', f.period, f.done ? f.done + ' sent' : 'Optional'].filter(Boolean).join(' · ')) + '</span></span></button>' + I('chevron', 'lgo') + '</li>';
+        '</span><span class="lmeta">' + esc(['Evaluate your teammates' + (dn ? ' in ' + dn : ''), f.period].filter(Boolean).join(' · ')) + '</span></span></button><span class="chip ' + chip[0] + '" style="margin-right:6px">' + chip[1] + '</span></li>';
     }));
+    if ((evals.peer || []).length && !evals.department) {
+      rows.push('<li class="none">Your department has not been set yet, so peer evaluations are not available. Please ask Staffing and Recruitment.</li>');
+    }
     $('#evl-list').innerHTML = rows.join('');
   }
 
@@ -539,7 +547,7 @@
 
   function efHead(f) {
     var meta = [f.period, f.closes_on ? 'Open until ' + fmtDate(f.closes_on + 'T00:00:00+08:00') : ''].filter(Boolean);
-    var who = ef.kind === 'peer' && ef.name ? '<div class="gf-meta">Evaluating <b>' + esc(ef.name) + '</b></div>' : '';
+    var who = ef.kind === 'peer' && ef.name && ef.step !== 'pick' ? '<div class="gf-meta">Evaluating <b>' + esc(ef.name) + '</b></div>' : '';
     return efCard('<h1 class="gf-h1">' + esc(f.title) + '</h1>' + (f.description ? '<div class="gf-desc">' + esc(f.description) + '</div>' : '') +
       (meta.length ? '<div class="gf-meta">' + meta.map(esc).join(' · ') + '</div>' : '') + who +
       (ef.step === 'form' && !ef.readonly ? '<div class="gf-req">* Required</div>' : '') +
@@ -548,41 +556,83 @@
 
   function drawEval() {
     var f = ef.form, html = efHead(f);
-    if (ef.step === 'who') {
-      html += efCard('<div class="gf-qt">Who would you like to evaluate? <span class="s">*</span></div><div class="gf-qd">Type your colleague\'s full name. Your answers are private: they will not see them, or that you wrote them.</div>' +
-        '<div class="gf-ans"><input id="ef-name" type="text" maxlength="120" autocomplete="off" placeholder="Full name" value="' + esc(ef.name) + '"></div><div class="gf-err" id="ef-who-err" hidden></div>' +
-        '<div class="gf-bar" style="margin-top:14px"><span></span><button class="btn btn-primary btn-sm" type="button" id="ef-next">Continue</button></div>');
+    if (ef.step === 'pick') {
+      html += pickCard();
     } else if (ef.step === 'done') {
-      html += efCard('<div class="gf-done"><h2>Thank you</h2><p>' + (ef.kind === 'self' ? 'Your self-assessment has been submitted.' : 'Your evaluation has been sent.') + '</p>' +
+      var next = ef.kind === 'peer' ? (ef.mates || []).filter(function (m) { return !m.done; })[0] : null;
+      var total = (ef.mates || []).length, got = (ef.mates || []).filter(function (m) { return m.done; }).length;
+      html += efCard('<div class="gf-done"><h2>Thank you</h2><p>' + (ef.kind === 'self' ? 'Your self-assessment has been submitted.'
+        : 'Your evaluation has been sent.' + (total ? ' ' + got + ' of ' + total + ' teammates done.' : '')) + '</p>' +
+        (ef.kind === 'peer' && !next ? '<p>You have evaluated everyone on your team.</p>' : '') +
         '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">' +
-        (ef.kind === 'peer' ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-again">Evaluate another colleague</button>' : '') +
-        '<button class="btn btn-primary btn-sm" type="button" id="ef-home">Back to the dashboard</button></div></div>');
+        (next ? '<button class="btn btn-primary btn-sm" type="button" id="ef-next-mate">Evaluate ' + esc(next.name.split(' ')[0]) + ' next</button>' : '') +
+        (ef.kind === 'peer' && total > 1 && next ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-mates">Choose someone else</button>' : '') +
+        '<button class="btn ' + (next ? 'btn-ghost' : 'btn-primary') + ' btn-sm" type="button" id="ef-home">Back to the dashboard</button></div></div>');
     } else {
       html += ef.qs.map(function (q, i) { return F.card(q, f, ef.readonly, i); }).join('');
       html += efCard('<div class="gf-qt">Anything else you would like to add?</div><div class="gf-ans"><textarea id="ef-over" maxlength="3000" rows="3" placeholder="Optional"' + (ef.readonly ? ' disabled' : '') + '>' + esc(ef.overall) + '</textarea></div>');
       if (!ef.readonly) {
         html += '<div class="gf-bar"><div class="l"><button class="btn btn-primary btn-sm" type="button" id="ef-send">' + (ef.kind === 'self' ? 'Submit' : 'Send evaluation') + '</button>' +
-          (ef.kind === 'self' ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-draft">Save draft</button>' : '') + '</div><span class="fine" id="ef-msg" role="alert"></span></div>';
+          (ef.kind === 'self' ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-draft">Save draft</button>' : '<button class="btn btn-ghost btn-sm" type="button" id="ef-mates">Back to teammates</button>') + '</div><span class="fine" id="ef-msg" role="alert"></span></div>';
       }
     }
     $('#eval-body').innerHTML = '<div class="gf">' + html + '</div>';
   }
 
+  /* peer evaluations: the teammates of the same department, each with a Done mark, so nobody is missed */
+  function pickCard() {
+    var dn = deptName();
+    if (ef.loading) return efCard('<div class="gf-qt">Loading your teammates…</div>');
+    if (ef.noDept) return efCard('<div class="gf-qt">Your department has not been set yet</div><div class="gf-qd">Peer evaluations are for your teammates in the same department. Please ask Staffing and Recruitment to set yours.</div>');
+    if (ef.loadError) return efCard('<div class="gf-qt">' + esc(ef.loadError) + '</div>');
+    var m = ef.mates || [], got = m.filter(function (x) { return x.done; }).length;
+    if (!m.length) return efCard('<div class="gf-qt">No teammates yet</div><div class="gf-qd">There is nobody else in ' + esc(dn || 'your department') + ' to evaluate right now.</div>');
+    var pct = Math.round((got / m.length) * 100);
+    return efCard('<div class="gf-qt">Who would you like to evaluate?</div><div class="gf-qd">Your teammates in ' + esc(dn || 'your department') + '. Your answers are private: they will not see them, or that you wrote them.</div>' +
+      '<div class="ef-prog"><div class="ef-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + m.length + '" aria-valuenow="' + got + '"><i style="width:' + pct + '%"></i></div><span>' + got + ' of ' + m.length + ' done</span></div>' +
+      '<ul class="ef-mates">' + m.map(function (x) {
+        var w = x.name.trim().split(/\s+/).map(function (s) { return Array.from(s)[0]; }).filter(Boolean);
+        var init = (w[0] || '?') + (w.length > 1 ? w[w.length - 1] : '');
+        return '<li><button class="ef-mate' + (x.done ? ' done' : '') + '" type="button" data-mate="' + esc(x.id) + '"' + (x.done ? ' disabled' : '') + '><span class="ef-av">' + esc(init.toUpperCase()) + '</span>' +
+          '<span class="ef-who"><b>' + esc(x.name) + '</b>' + (x.position ? '<small>' + esc(x.position) + '</small>' : '') + '</span>' +
+          (x.done ? '<span class="chip s-published">Done</span>' : '<span class="chip plain">Evaluate</span>') + '</button></li>';
+      }).join('') + '</ul>');
+  }
+  function chooseMate(m) {
+    ef.colleagueId = m.id;
+    ef.name = m.name;
+    ef.qs = ef.form.questions.map(function (q) { return Object.assign({}, q, { rating: null, comment: '', picked: [] }); });
+    ef.overall = '';
+    ef.step = 'form';
+    drawEval();
+    window.scrollTo(0, 0);
+  }
+  async function loadMates() {
+    var r = await call('POST', '/api/employee-evaluate', { action: 'peer_list', form_id: ef.form.id });
+    if (!ef || ef.kind !== 'peer') return;
+    ef.loading = false;
+    if (r.status === 401) { show('signin'); return; }
+    if (!r.ok) ef.loadError = (r.data && r.data.error) || "Couldn't load your teammates. Try again.";
+    else if (r.data.no_department) ef.noDept = true;
+    else ef.mates = r.data.colleagues || [];
+    if (ef.step === 'pick') drawEval();
+  }
   function openEvalForm(kind, id) {
     var f = (evals[kind] || []).filter(function (x) { return x.id === id; })[0];
     if (!f) return;
     var mine = {};
     if (kind === 'self') (f.answers || []).forEach(function (a) { mine[a.id] = a; });
     ef = {
-      kind: kind, form: f, name: '', overall: kind === 'self' ? f.overall || '' : '', step: kind === 'peer' ? 'who' : 'form', readonly: kind === 'self' && f.status === 'final',
+      kind: kind, form: f, name: '', colleagueId: '', mates: [], loading: kind === 'peer', overall: kind === 'self' ? f.overall || '' : '', step: kind === 'peer' ? 'pick' : 'form', readonly: kind === 'self' && f.status === 'final',
       qs: f.questions.map(function (q) {
         var a = mine[q.id] || {};
         return Object.assign({}, q, { rating: a.rating || null, comment: a.comment || '', picked: Array.isArray(a.picked) ? a.picked.slice() : [] });
       })
     };
-    $('#eval-title').textContent = kind === 'self' ? 'Self-assessment' : 'Evaluate a colleague';
+    $('#eval-title').textContent = kind === 'self' ? 'Self-assessment' : 'Evaluate your teammates';
     drawEval();
     show('eval');
+    if (kind === 'peer') loadMates();
   }
 
   function efPayload(extra) {
@@ -597,7 +647,7 @@
   }
   async function refreshEvals() {
     var r = await call('GET', '/api/employee-evaluate');
-    if (r.ok) { evals = { self: r.data.self || [], peer: r.data.peer || [] }; renderEvals(); }
+    if (r.ok) { evals = { self: r.data.self || [], peer: r.data.peer || [], department: r.data.department || null }; renderEvals(); }
   }
 
   async function efSubmit(kind) {
@@ -608,11 +658,12 @@
     btns.forEach(function (b) { b.disabled = true; });
     var r = ef.kind === 'self'
       ? await call('POST', '/api/employee-evaluate', efPayload({ action: 'self', submit: kind !== 'draft' }))
-      : await call('POST', '/api/employee-evaluate', efPayload({ action: 'peer', name: ef.name }));
+      : await call('POST', '/api/employee-evaluate', efPayload({ action: 'peer', colleague_id: ef.colleagueId }));
     btns.forEach(function (b) { b.disabled = false; });
     if (r.status === 401) { show('signin'); return; }
     if (!r.ok) { msg.textContent = (r.data && r.data.error) || "Couldn't send that. Try again."; return; }
     if (kind === 'draft') { toast('Draft saved.'); refreshEvals(); return; }
+    (ef.mates || []).forEach(function (m) { if (m.id === ef.colleagueId) m.done = true; });
     ef.step = 'done';
     drawEval();
     window.scrollTo(0, 0);
@@ -630,31 +681,16 @@
     if (e.target.closest('#ef-send')) efSubmit('send');
     else if (e.target.closest('#ef-draft')) efSubmit('draft');
     else if (e.target.closest('#ef-home')) { show('home'); }
-    else if (e.target.closest('#ef-again')) {
-      ef.name = ''; ef.overall = ''; ef.step = 'who';
-      ef.qs = ef.form.questions.map(function (q) { return Object.assign({}, q, { rating: null, comment: '', picked: [] }); });
-      drawEval();
-      window.scrollTo(0, 0);
-    } else if (e.target.closest('#ef-next')) efLookup();
+    else if (e.target.closest('#ef-mates')) { ef.step = 'pick'; drawEval(); window.scrollTo(0, 0); }
+    else if (e.target.closest('#ef-next-mate')) {
+      var nx = (ef.mates || []).filter(function (m) { return !m.done; })[0];
+      if (nx) chooseMate(nx); else { ef.step = 'pick'; drawEval(); }
+    } else if ((t = e.target.closest('[data-mate]'))) {
+      var pk = (ef.mates || []).filter(function (m) { return m.id === t.getAttribute('data-mate'); })[0];
+      if (pk && !pk.done) chooseMate(pk);
+    }
   });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && e.target && e.target.id === 'ef-name') { e.preventDefault(); efLookup(); }
-  });
-  async function efLookup() {
-    var input = $('#ef-name'), err = $('#ef-who-err'), name = input.value.trim();
-    if (!name) { err.textContent = 'Type your colleague\'s full name.'; err.hidden = false; return; }
-    err.hidden = true;
-    var btn = $('#ef-next');
-    btn.disabled = true;
-    var r = await call('POST', '/api/employee-evaluate', { action: 'peer_lookup', name: name });
-    btn.disabled = false;
-    if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { err.textContent = (r.data && r.data.error) || "Couldn't check that name."; err.hidden = false; return; }
-    ef.name = r.data.name;
-    ef.step = 'form';
-    drawEval();
-    window.scrollTo(0, 0);
-  }
+
   $('#eval-back').addEventListener('click', function () { show('home'); });
 
   /* ---------- attendance: time in and time out ---------- */
