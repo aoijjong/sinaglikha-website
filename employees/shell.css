@@ -240,3 +240,32 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 .rc-cols:has(.rc-none){align-items:start}
 .rc-col:has(.rc-none){padding-bottom:14px}
 .rc-none{padding:12px 14px}
+
+/* ---------- Quick Access: soft peach cards with a small 3D object leaning off the bottom-right corner ---------- */
+.qa-c{color:#4A2E22;padding:14px 14px 78px;min-height:150px;justify-content:flex-start;gap:0;box-shadow:0 14px 26px -22px rgba(160,80,30,.55);border:1px solid rgba(255,255,255,.7)}
+.qa-c::before{background:rgba(255,255,255,.4);right:-40px;top:-46px;width:130px;height:130px}
+.qa-c::after{display:none}
+.qa-1{background:linear-gradient(135deg,#FDE3C4,#FEF0D0)}
+.qa-2{background:linear-gradient(135deg,#FBD0B4,#FDE2C6)}
+.qa-3{background:linear-gradient(135deg,#F9DCC0,#FDEBCF)}
+.qa-4{background:linear-gradient(135deg,#FCDDB8,#FEEFC6)}
+.qa-5{background:linear-gradient(135deg,#F8D4BC,#FCE6D0)}
+.qa-6{background:linear-gradient(135deg,#FCD9BC,#FDE8C8)}
+.qa-t b{color:#4A2E22;font-size:.98rem}
+.qa-t small{color:#7A5236;opacity:1;font-size:.78rem}
+.qa-img{position:absolute;right:-5%;bottom:-7%;width:66%;height:auto;z-index:0;pointer-events:none;filter:drop-shadow(0 8px 8px rgba(150,80,30,.22));transform-origin:70% 90%;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .5s}
+.qa-4 .qa-img{width:62%}
+.qa-2 .qa-img{width:60%}
+.qa-5 .qa-img{width:60%}
+.qa-1 .qa-img{width:76%}
+.qa-3 .qa-img{width:66%}
+@media (hover:hover) and (pointer:fine){
+  .qa-c:hover .qa-img{transform:translateY(-6px) rotate(-4deg) scale(1.06);filter:drop-shadow(0 14px 12px rgba(150,80,30,.28))}
+}
+@media (prefers-reduced-motion:reduce){.qa-img{transition:none}.qa-c:hover .qa-img{transform:none}}
+@media (max-width:1024px){
+  .qa-c{padding:11px 11px 58px;min-height:118px}
+  .qa-t b{font-size:.86rem}
+  .qa-t small{font-size:.68rem}
+  .qa-img{right:-8%;bottom:-9%}
+}

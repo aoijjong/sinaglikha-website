@@ -35,12 +35,12 @@
     files: ['Files', 'Search documents, or open the folders of each department.']
   };
   var QA = [
-    ['feeds', 'Feeds', 'Announcements and community', 'feeds', '#ann-panel', 'feeds', 'qa-6'],
-    ['att', 'Attendance', 'Time in and out', 'clock', '#att-panel', 'work', 'qa-1'],
-    ['evl', 'Evaluations', 'Forms to fill in', 'clip', '#evl-panel', 'work', 'qa-2'],
-    ['learn', 'Learning', 'Courses and modules', 'book', '#learn-panel', 'work', 'qa-3'],
-    ['files', 'Files', 'Department folders', 'files', '#dept-panel', 'files', 'qa-4'],
-    ['rec', 'My records', 'Only you see these', 'lock', '#rec-panel', 'work', 'qa-5']
+    ['feeds', 'Feeds', 'Announcements and community', 'feeds', '#ann-panel', 'feeds', 'qa-6', 344, 330],
+    ['att', 'Attendance', 'Time in and out', 'attendance', '#att-panel', 'work', 'qa-1', 383, 247],
+    ['evl', 'Evaluations', 'Forms to fill in', 'evaluations', '#evl-panel', 'work', 'qa-2', 349, 363],
+    ['learn', 'Learning', 'Courses and modules', 'learning', '#learn-panel', 'work', 'qa-3', 358, 303],
+    ['files', 'Files', 'Department folders', 'files', '#dept-panel', 'files', 'qa-4', 327, 333],
+    ['rec', 'My records', 'Only you see these', 'records', '#rec-panel', 'work', 'qa-5', 332, 334]
   ];
 
   /* setting "hidden" to the value it already has still counts as a change to the observers below, so only touch it when it differs */
@@ -77,7 +77,7 @@
   quick.className = 'qa';
   quick.id = 'home-quick';
   quick.innerHTML = '<div class="sh-h"><h2>Quick Access</h2></div><div class="qa-row">' + QA.map(function (q) {
-    return '<button class="qa-c ' + q[6] + '" type="button" data-qa="' + q[0] + '"><span class="qa-ic">' + ICON[q[3]] + '</span><span class="qa-t"><b>' + q[1] + '</b><small>' + q[2] + '</small></span></button>';
+    return '<button class="qa-c ' + q[6] + '" type="button" data-qa="' + q[0] + '"><span class="qa-t"><b>' + q[1] + '</b><small>' + q[2] + '</small></span><img class="qa-img" src="../assets/quick/' + q[3] + '.webp" alt="" width="' + q[7] + '" height="' + q[8] + '" decoding="async"></button>';
   }).join('') + '</div>';
   var recent = document.createElement('section');
   recent.className = 'rc';
