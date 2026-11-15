@@ -158,11 +158,16 @@
     return [].slice.call(document.querySelectorAll(sel)).slice(0, 3).map(function (p) {
       var av = $('.av-sm', p), who = $('.who b', p), when = $('.who span', p), title = $('.post-title', p), body = $('.post-body', p);
       var like = $('.p-like span', p), com = $('[data-replies] span', p), cat = $('.chip', p);
+      var pics = [].slice.call(p.querySelectorAll('.ann-img img')).filter(function (i) { return i.getAttribute('src'); }).map(function (i) {
+        return '<img src="' + i.getAttribute('src').replace(/"/g, '&quot;') + '" alt="' + (i.getAttribute('alt') || '').replace(/"/g, '&quot;') + '">';
+      }).join('');
+      var files = [].slice.call(p.querySelectorAll('.fchip')).map(function (f) { return '<span class="rc-file">' + f.innerHTML + '</span>'; }).join('');
       var n = like && /\d/.test(like.textContent) ? like.textContent.replace(/\D+/g, '') : '';
       var c = com && /\d/.test(com.textContent) ? com.textContent.trim() : '';
       return '<article class="rc-c" data-recent="' + kind + '" tabindex="0"><div class="rc-top">' + (av ? av.outerHTML : '') + '<div class="who"><b>' + (who ? who.innerHTML : '') + '</b><span>' + (when ? when.innerHTML : '') + '</span></div>' +
         (kind === 'forum' && cat ? '<span class="chip plain">' + cat.innerHTML + '</span>' : '') + '</div>' +
         (title ? '<h3>' + title.innerHTML + '</h3>' : '') + '<p>' + (body ? body.innerHTML : '') + '</p>' +
+        (pics ? '<div class="rc-pics">' + pics + '</div>' : '') + (files ? '<div class="rc-files">' + files + '</div>' : '') +
         (n || c ? '<div class="rc-foot">' + (c ? '<span class="rc-com">' + c + '</span>' : '') + (n ? '<span>' + ICON.heart + n + '</span>' : '') + '</div>' : '') + '</article>';
     });
   }
@@ -179,7 +184,7 @@
   }
   ['#ann-feed', '#forum-feed'].forEach(function (s) {
     var el = $(s);
-    if (el) new MutationObserver(function () { clearTimeout(timer); timer = setTimeout(buildRecent, 120); }).observe(el, { childList: true, subtree: true, characterData: true });
+    if (el) new MutationObserver(function () { clearTimeout(timer); timer = setTimeout(buildRecent, 120); }).observe(el, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['src'] });
   });
   buildRecent();
   recent.addEventListener('keydown', function (e) {
