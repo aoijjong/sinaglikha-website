@@ -815,6 +815,7 @@
   function renderCourses() {
     learn.course = null;
     $('#learn-title').textContent = 'Learning';
+    $('#learn-desc').hidden = true;
     $('#learn-body').innerHTML = learn.courses.length ? learn.courses.map(function (c) {
       return '<button class="dcard" type="button" data-course="' + esc(c.id) + '" style="width:100%;margin-bottom:12px"><span class="di">' + I('book') + '</span><span class="dt"><b>' + esc(c.title) +
         '</b>' + (c.description ? '<span class="dm">' + esc(c.description) + '</span>' : '') + bar(c.done, c.total) + '<span class="dm">' + esc(progressText(c.done, c.total)) + '</span></span>' + I('chevron', 'go') + '</button>';
@@ -824,7 +825,10 @@
   function renderCourse() {
     var c = learn.course, done = learn.modules.filter(function (m) { return m.done; }).length;
     $('#learn-title').textContent = c.title;
-    $('#learn-body').innerHTML = (c.description ? '<p class="fine" style="margin-bottom:12px">' + esc(c.description) + '</p>' : '') +
+    // the description sits right under the title, above the divider
+    $('#learn-desc').textContent = c.description || '';
+    $('#learn-desc').hidden = !c.description;
+    $('#learn-body').innerHTML =
       '<div class="panel" style="padding:16px 20px;margin-bottom:14px">' + bar(done, learn.modules.length) + '<p class="fine" style="margin-top:8px">' + esc(progressText(done, learn.modules.length)) + '. Only you can see your progress.</p></div>' +
       '<div class="panel plist"><ul class="items">' + (learn.modules.length ? learn.modules.map(function (m) {
         return '<li class="lrow"><button class="ib ' + (m.done ? 'good' : '') + '" type="button" data-toggle="' + esc(m.id) + '" aria-label="' + (m.done ? 'Mark as not done' : 'Mark as done') + '" data-tip="' + (m.done ? 'Mark as not done' : 'Mark as done') + '"' +
@@ -842,6 +846,7 @@
   async function openCourse(id, fromList) {
     learn.fromList = !!fromList;
     show('learn');
+    $('#learn-desc').hidden = true;
     $('#learn-body').innerHTML = '<p class="fine">Loading…</p>';
     var r = await call('GET', '/api/employee-learning?course=' + encodeURIComponent(id));
     if (r.status === 401) { show('signin'); return; }
