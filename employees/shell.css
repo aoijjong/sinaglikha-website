@@ -394,3 +394,14 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .emp-nav button{color:#7A5236}
   .emp-nav button[aria-current="page"]{background:var(--grad-btn);color:#fff;box-shadow:0 8px 16px -8px rgba(206,32,32,.6)}
 }
+
+/* Files on desktop: five departments laid out evenly (three above, two below; all five in one row on a wide screen) */
+@media (min-width:1025px){
+  body.sh[data-sec="files"] #tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;padding:6px 20px 20px}
+  body.sh[data-sec="files"] #tiles>.lrow{flex:none;grid-column:span 2}
+  body.sh[data-sec="files"] #tiles>.lrow:nth-child(n+4){grid-column:span 3}
+}
+@media (min-width:1500px){
+  body.sh[data-sec="files"] #tiles{grid-template-columns:repeat(5,minmax(0,1fr))}
+  body.sh[data-sec="files"] #tiles>.lrow,body.sh[data-sec="files"] #tiles>.lrow:nth-child(n+4){grid-column:span 1}
+}
