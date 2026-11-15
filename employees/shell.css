@@ -374,3 +374,16 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 /* the Post now button uses the brand gradient */
 .hs-btn{background:var(--grad-btn);box-shadow:0 10px 20px -10px rgba(206,32,32,.65);transition:transform .3s cubic-bezier(.22,1,.36,1)}
 @media (hover:hover) and (pointer:fine){.hs-bar:hover .hs-btn{transform:translateY(-2px)}}
+
+/* the swipe row stays inside the box: cards slide out of view a little inside the border, so the border is always whole */
+@media (max-width:1024px){
+  .qa-row{margin:0;padding:6px 0 10px;scroll-padding-left:0;scroll-padding-right:0}
+  .qa-row::after{flex:0 0 0}
+}
+
+/* the bottom bar on phones uses the brand gradient */
+@media (max-width:1024px){
+  body.sh .emp-nav:not([hidden]){background:var(--grad-btn);box-shadow:0 18px 34px -12px rgba(206,32,32,.55);border:1px solid rgba(255,255,255,.28)}
+  .emp-nav button{color:rgba(255,255,255,.82)}
+  .emp-nav button[aria-current="page"]{background:rgba(255,255,255,.24);color:#fff}
+}
