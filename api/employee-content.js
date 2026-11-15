@@ -27,7 +27,7 @@ const AVATAR_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
    content itself can't be read. */
 async function contentPayload() {
   const [d, c] = await Promise.all([
-    E.rest('GET', 'deliverables?kind=neq.special&select=key,name,department&order=name'),
+    E.rest('GET', 'deliverables?kind=not.in.(special,evaluation,module)&select=key,name,department&order=name'),
     E.rest('GET', 'content_items?status=eq.published&audience=in.(employees,public)&kind=neq.folder' +
       '&select=id,deliverable,kind,folder_path,title,description,category,version,external_url,extra,file_path,published_at' +
       '&order=published_at.desc&limit=1000')
@@ -36,7 +36,11 @@ async function contentPayload() {
   // a title often has no extension ("Organizational Structure"), so the type comes from the stored file's name;
   // only the type goes out, the path stays here
   const extOf = (p) => { const m = /\.([A-Za-z0-9]{1,5})$/.exec(String(p || '')); return m ? m[1].toLowerCase() : ''; };
-  const items = c.data.map((i) => ({
+  // The Departments box lists folders of files only. The Attendance Tracker, Employee Forum, Learning Management
+  // System and Performance Management System (kinds special, module and evaluation) already have their own box
+  // on the dashboard, so they are left out here.
+  const shown = new Set(d.data.map((x) => x.key));
+  const items = c.data.filter((i) => shown.has(i.deliverable)).map((i) => ({
     id: i.id, deliverable: i.deliverable, kind: i.kind, folder: i.folder_path || '', title: i.title,
     ext: i.kind === 'link' ? '' : extOf(i.file_path),
     description: i.description || '', category: i.category || '', version: i.version || '',
