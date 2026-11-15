@@ -38,9 +38,9 @@ grant update (title, description, scale_max, labels, criteria, active, category,
 -- ---------------------------------------------------------------------------
 drop function if exists public.employee_options();
 create or replace function public.employee_options()
-returns table (id uuid, employee_no text, full_name text, active boolean, department text, position text)
+returns table (id uuid, employee_no text, full_name text, active boolean, department text, "position" text)
 language sql stable security definer set search_path = public as $$
-  select e.id, e.employee_no, e.full_name, e.active, e.department, e.position
+  select e.id, e.employee_no, e.full_name, e.active, e.department, e."position"
   from public.employees e
   where public.is_manager()
   order by e.employee_no;
