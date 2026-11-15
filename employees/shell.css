@@ -205,3 +205,10 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .qa-c{min-height:0;padding:12px;gap:8px}
   .qa-ic{left:auto;top:auto}
 }
+
+/* Home colours: the boxes are pure white, and the cream gradient is the panel behind them */
+.hs,.qa,.rc-col{background:#fff}
+.rc-c{background:linear-gradient(165deg,#FFFFFF 0%,#FFF9EF 100%)}
+@media (min-width:1025px){
+  body.sh #v-home{background:linear-gradient(180deg,#FFFDF8 0%,#FFF3E0 100%)}
+}
