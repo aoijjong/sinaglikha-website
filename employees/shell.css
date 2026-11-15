@@ -144,3 +144,16 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   body.sh main#main{padding-bottom:92px}
   body.sh .toast{bottom:80px}
 }
+
+/* phones and tablets: a slimmer top bar and greeting banner */
+@media (max-width:1024px){
+  body.sh .top-in{min-height:58px}
+  body.sh .brand img{height:28px}
+  body.sh .avatar{width:36px;height:36px;font-size:.78rem}
+  body.sh .top-right .ib{width:36px;height:36px}
+  body.sh main#main{padding-top:14px}
+  body.sh .hello.sb-banner{min-height:92px;margin-bottom:12px;border-radius:20px}
+  body.sh .hello.sb-banner .bn-art{height:92px}
+  body.sh .hello.sb-banner h1{font-size:clamp(1.15rem,4.8vw,1.5rem)}
+  body.sh .hello.sb-banner p{font-size:.78rem}
+}
