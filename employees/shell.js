@@ -42,6 +42,9 @@
     ['rec', 'My records', 'Only you see these', 'lock', '#rec-panel', 'work', 'qa-5']
   ];
 
+  /* setting "hidden" to the value it already has still counts as a change to the observers below, so only touch it when it differs */
+  function setHidden(el, v) { v = !!v; if (el && el.hidden !== v) el.hidden = v; }
+
   var sec = 'home';
   try { sec = sessionStorage.getItem('sng-emp-sec') || 'home'; } catch (e) { /* no storage */ }
   if (sec !== 'home' && !HEAD[sec]) sec = 'home';
@@ -100,16 +103,16 @@
     // quick cards for things that are switched off (no courses, no records, attendance not set up) are left out
     QA.forEach(function (q) {
       var card = $('[data-qa="' + q[0] + '"]', quick), panel = $(q[4]);
-      if (card) card.hidden = !!(panel && panel.hidden);
+      if (card) setHidden(card, panel && panel.hidden);
     });
     var forum = $('#forum-panel');
-    share.hidden = !!(forum && forum.hidden);
+    setHidden(share, forum && forum.hidden);
     // the sidebar or the bar marks where you are, even on a sub-page (a folder, a course, an evaluation)
     var at = !$('#v-profile').hidden ? 'profile' : !$('#v-dept').hidden ? 'files' : (!$('#v-learn').hidden || !$('#v-eval').hidden) ? 'work' : sec;
     Array.prototype.forEach.call(nav.children, function (b) {
       if (b.dataset.go === at) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
-    nav.hidden = $('#top-right').hidden;
+    setHidden(nav, $('#top-right').hidden);
   }
 
   function remember() { try { sessionStorage.setItem('sng-emp-sec', sec); } catch (e) { /* no storage */ } }
@@ -151,7 +154,7 @@
   var timer;
   function buildRecent() {
     var posts = [].slice.call(document.querySelectorAll('#ann-feed article.post')).slice(0, 3);
-    if (!posts.length) { recent.hidden = true; return; }
+    if (!posts.length) { setHidden(recent, true); return; }
     recent.innerHTML = '<div class="sh-h"><h2>Recent activity</h2><button class="sh-all" type="button" data-recent="1">View all</button></div><div class="rc-list">' +
       posts.map(function (p) {
         var av = $('.av-sm', p), who = $('.who b', p), when = $('.who span', p), title = $('.post-title', p), body = $('.post-body', p), like = $('.p-like span', p);
@@ -160,7 +163,7 @@
           (title ? '<h3>' + title.innerHTML + '</h3>' : '') + '<p>' + (body ? body.innerHTML : '') + '</p>' +
           (n ? '<div class="rc-foot"><span>' + ICON.heart + n + '</span></div>' : '') + '</article>';
       }).join('') + '</div>';
-    recent.hidden = false;
+    setHidden(recent, false);
   }
   var feedEl = $('#ann-feed');
   if (feedEl) {
