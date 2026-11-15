@@ -846,8 +846,14 @@
   async function openCourse(id, fromList) {
     learn.fromList = !!fromList;
     show('learn');
-    $('#learn-desc').hidden = true;
-    $('#learn-body').innerHTML = '<p class="fine">Loading…</p>';
+    // the title and description are already known from the list, so they show at once; the rest is a calm placeholder
+    var known = learn.courses.filter(function (x) { return x.id === id; })[0];
+    $('#learn-title').textContent = known ? known.title : 'Learning';
+    $('#learn-desc').textContent = known && known.description ? known.description : '';
+    $('#learn-desc').hidden = !(known && known.description);
+    var row = '<li class="lrow lk-row"><span class="lk lk-dot"></span><span class="lk lk-line"></span></li>';
+    $('#learn-body').innerHTML = '<div class="panel lk-box" aria-busy="true"><span class="lk lk-bar"></span><span class="lk lk-sub"></span></div>' +
+      '<div class="panel plist"><ul class="items">' + row + row + row + '</ul></div>';
     var r = await call('GET', '/api/employee-learning?course=' + encodeURIComponent(id));
     if (r.status === 401) { show('signin'); return; }
     if (!r.ok) { toast(r.data.error || "Couldn't open that course."); renderCourses(); return; }
