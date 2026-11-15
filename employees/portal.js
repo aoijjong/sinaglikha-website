@@ -27,7 +27,7 @@
   var content = { deliverables: [], items: [] };
   var att = { today: '', records: [], unavailable: false };
   var recs = [];
-  var learn = { courses: [], course: null, modules: [] };
+  var learn = { courses: [], course: null, modules: [], fromList: false };   // fromList: the course was opened from the full list, so Back returns to it
   var forum = { cats: [], threads: [], photos: [] };
   var anns = [], annPhotos = [], annShown = 3;
   var esc = function (s) {
@@ -797,6 +797,19 @@
       return '<li class="lrow"><button class="lmain" type="button" data-course="' + esc(c.id) + '"><span class="lico">' + I('book') + '</span><span class="ltext"><span class="lname">' + esc(c.title) +
         '</span>' + bar(c.done, c.total) + '<span class="lmeta">' + esc(progressText(c.done, c.total)) + '</span></span></button>' + I('chevron', 'lgo') + '</li>';
     }).join('');
+    // the dashboard shows the first four; the rest are one tap away
+    var all = $('#learn-all');
+    if (learn.courses.length > 4) {
+      if (!all) {
+        all = document.createElement('button');
+        all.type = 'button';
+        all.id = 'learn-all';
+        all.className = 'feed-more';
+        all.setAttribute('data-learn-all', '1');
+        $('#learn-list').after(all);
+      }
+      all.textContent = 'See all ' + learn.courses.length + ' courses';
+    } else if (all) all.remove();
   }
 
   function renderCourses() {
@@ -826,7 +839,8 @@
     renderCourses();
   }
 
-  async function openCourse(id) {
+  async function openCourse(id, fromList) {
+    learn.fromList = !!fromList;
     show('learn');
     $('#learn-body').innerHTML = '<p class="fine">Loading…</p>';
     var r = await call('GET', '/api/employee-learning?course=' + encodeURIComponent(id));
@@ -911,7 +925,8 @@
     else if ((t = e.target.closest('[data-open]'))) { if (!viewImage(t.dataset.open)) openUrl('/api/employee-content?file=' + encodeURIComponent(t.dataset.open)); }
     else if ((t = e.target.closest('[data-rec]'))) openUrl('/api/employee-content?record=' + encodeURIComponent(t.dataset.rec));
     else if ((t = e.target.closest('[data-dept]'))) openDept(t.dataset.dept);
-    else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course);
+    else if ((t = e.target.closest('[data-learn-all]'))) openLearning();
+    else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course, !!t.closest('#learn-body'));
     else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
     else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
     else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
@@ -947,7 +962,8 @@
     if (e.target.closest('[data-all]')) runSearch(); else if (e.target.closest('[data-open]')) hideSuggest();
   });
   $('#dept-back').addEventListener('click', function () { show('home'); });
-  $('#learn-back').addEventListener('click', function () { if (learn.course) renderCourses(); else show('home'); });
+  /* Back goes straight to where you came from: the dashboard, or the full course list if that is where you opened the course */
+  $('#learn-back').addEventListener('click', function () { if (learn.course && learn.fromList) renderCourses(); else show('home'); });
 
   /* ---------- sign in, first-time activation ---------- */
   $('#f-signin').addEventListener('submit', async function (e) {
