@@ -269,3 +269,7 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .qa-t small{font-size:.68rem}
   .qa-img{right:-8%;bottom:-9%}
 }
+
+/* the Announcements / Community switch uses the brand colours */
+.seg button[aria-pressed="true"]{background:var(--grad-btn);color:#fff;box-shadow:0 10px 20px -10px rgba(206,32,32,.65)}
+@media (hover:hover) and (pointer:fine){.seg button[aria-pressed="false"]:hover{color:var(--brown)}}
