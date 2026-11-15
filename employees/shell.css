@@ -109,3 +109,38 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 @media (max-width:1024px){
   body.sh .top-in.wrap,body.sh main#main.wrap{width:calc(100% - 28px);max-width:none}
 }
+
+/* phones and tablets: smaller elements, so more fits on the screen */
+@media (max-width:1024px){
+  .hs{margin-bottom:16px}
+  .hs h2{font-size:1.05rem;margin-bottom:8px}
+  .hs-bar{padding:4px 4px 4px 16px;border-radius:18px}
+  .hs-t{font-size:.9rem}
+  .hs-btn{padding:9px 15px;border-radius:14px;font-size:.86rem;gap:6px}
+  .hs-btn svg{width:15px;height:15px}
+  .sh-h h2{font-size:1rem}
+  .sh-all{font-size:.8rem}
+  .qa{margin-bottom:16px}
+  .qa-row{gap:10px}
+  .qa-c{flex:0 0 118px;min-height:100px;padding:11px;border-radius:18px}
+  .qa-ic{left:11px;top:11px;width:32px;height:32px}
+  .qa-ic svg{width:17px;height:17px}
+  .qa-c b{font-size:.86rem}
+  .qa-c small{font-size:.68rem}
+  .rc{margin-bottom:14px}
+  .rc-c{padding:12px 14px;gap:6px;border-radius:18px}
+  .rc-top .av-sm{width:32px;height:32px;font-size:.72rem}
+  .rc-top .who b{font-size:.88rem}
+  .rc-top .who span{font-size:.74rem}
+  .rc-c h3{font-size:.92rem}
+  .rc-c p{font-size:.84rem}
+  .rc-foot span{font-size:.8rem}
+  .sec-head h1{font-size:1.35rem}
+  .sec-head p{font-size:.86rem}
+  /* the floating bar is slimmer */
+  body.sh .emp-nav:not([hidden]){left:22px;right:22px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:5px;border-radius:22px}
+  .emp-nav button{padding:5px 2px;gap:2px;font-size:.6rem;border-radius:16px}
+  .emp-nav svg{width:19px;height:19px}
+  body.sh main#main{padding-bottom:92px}
+  body.sh .toast{bottom:80px}
+}
