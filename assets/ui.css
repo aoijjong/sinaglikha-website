@@ -1256,3 +1256,4 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .ev-dept:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
 .ev-sub{margin:18px 2px 10px;font-family:var(--sans);font-size:1.02rem;font-weight:700;color:var(--brown)}
 #ev-team{margin:16px 0 0}
+.ev-sub-d{color:#C2410C}

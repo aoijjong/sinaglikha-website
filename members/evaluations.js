@@ -200,7 +200,7 @@
     var h = $('#ev-sub', ev.box);
     if (!h) return;
     h.hidden = ev.tab === 'forms';
-    h.textContent = ev.tab === 'forms' ? '' : (ev.mode === 'results' ? (CATS[ev.cat] || CATS.manager).name + ' evaluations' : 'Evaluated employees') + (ev.dept ? ' under ' + deptName(ev.dept) : ' under all departments');
+    h.innerHTML = ev.tab === 'forms' ? '' : esc((ev.mode === 'results' ? (CATS[ev.cat] || CATS.manager).name + ' evaluations' : 'Evaluated employees') + ' under ') + '<span class="ev-sub-d">' + esc(ev.dept ? deptName(ev.dept) : 'all departments') + '</span>';
   }
 
   function visibleRows() {
