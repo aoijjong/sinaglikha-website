@@ -139,7 +139,7 @@
   home.addEventListener('click', function (e) {
     var g = e.target.closest('[data-go]');
     if (g) { go(g.dataset.go); return; }
-    var f = e.target.closest('[data-feed]');
+    var f = e.target.closest('button[data-feed]');   // not any [data-feed]: the page itself carries one
     if (f) { feed = f.dataset.feed; paint(); return; }
     var c = e.target.closest('[data-qa]');
     if (c) {
