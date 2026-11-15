@@ -1222,7 +1222,7 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
 
 /* team evaluation (Senior Manager area): a card for each open form, and one page for each employee of the department */
 
-.tm-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.tm-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:12px}
 .tm-card{display:flex;flex-direction:column;gap:12px;padding:16px 18px;border:1px solid rgba(74,46,34,.1);border-radius:18px;background:linear-gradient(165deg,#FFFFFF 0%,#FFF8EC 100%);box-shadow:0 12px 24px -20px rgba(160,80,30,.5)}
 .tm-top{display:flex;gap:12px;align-items:center}
 .tm-t{display:flex;flex-direction:column;min-width:0}
@@ -1257,3 +1257,17 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .ev-sub{margin:18px 2px 10px;font-family:var(--sans);font-size:1.02rem;font-weight:700;color:var(--brown)}
 #ev-team{margin:16px 0 0}
 .ev-sub-d{color:#C2410C}
+
+/* Performance Management System on phones */
+@media (max-width:640px){
+  #ev-actions{width:100%}
+  #ev-actions .ev-dept{flex:1 1 100%;min-width:0}
+  #ev-actions .sbox{flex:1 1 0;min-width:0}
+  .tm-card{padding:14px}
+  .tm-emp{gap:10px}
+  .tm-av{width:42px;height:42px}
+  .tm-emp .gf-h1{font-size:1.25rem;overflow-wrap:anywhere}
+  .tm-sum .lname,.tm-sum .lmeta{overflow-wrap:anywhere}
+  .gf-bar .l,.gf-bar .r{flex:1 1 100%}
+  .gf-bar .r .btn{flex:1}
+}
