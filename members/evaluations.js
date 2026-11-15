@@ -28,8 +28,8 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var CATS = {
     self: { name: 'Self', long: 'Self-assessment', who: 'Every employee, about themselves. Shown on their dashboard.' },
-    peer: { name: 'Peer', long: 'Peer evaluation', who: 'Any employee, about a colleague they name. Optional.' },
-    manager: { name: 'Manager', long: 'Manager evaluation', who: 'Any Senior Manager, about an employee.' }
+    peer: { name: 'Peer', long: 'Peer evaluation', who: 'Any employee, about the teammates in their own department. Optional.' },
+    manager: { name: 'Manager', long: 'Manager evaluation', who: 'The Senior Managers of a department, about each of its employees.' }
   };
   var COLS = 'id,employee_id,scorecard_id,scorecard_title,period,scale_max,criteria,overall_comment,status,category,evaluator_id,evaluator_employee_id,evaluator_name,finalized_at,created_at,updated_at';
   var ev = { box: null, ctx: null, mode: 'pms', view: 'list', tab: 'evals', cat: 'manager', cards: [], rows: [], people: [], failed: false, q: '', cur: null, card: null };
