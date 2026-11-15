@@ -2,7 +2,7 @@
   Employee Portal shell. On desktop the dashboard opens on Home and the Quick Access cards lead to the other sections, with a Back to Home
   button on each; the avatar and Sign out stay in the top bar. Phones and tablets get a floating bar at the bottom.
   The dashboard stays one page in portal.js; this file splits it into sections:
-    Home    greeting, a "share" bar, Quick Access cards, and the latest announcements and community posts side by side
+    Home    greeting, Quick Access cards, a "share" bar, and the latest announcements and community posts side by side
     Feeds   announcements and the community
     My Work attendance, evaluations, learning and compensation records
     Files   the file search and the department folders
@@ -89,7 +89,7 @@
   head.innerHTML = '<button class="sec-back" type="button" data-go="home" aria-label="Back to Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Home</button><h1 id="sec-t"></h1><p id="sec-d"></p>' +
     '<div class="seg" id="feeds-seg" role="group" aria-label="Show"><button type="button" data-feed="ann">Announcements</button><button type="button" data-feed="forum">Community</button></div>';
   var after = hello || home.firstChild;
-  after.after(share, quick, recent, head);
+  after.after(quick, share, recent, head);
   var qbox = $('#q', home) && $('#q', home).closest('.sbox');
   if (qbox) qbox.id = 'q-wrap';
 
