@@ -62,7 +62,7 @@
   nav.id = 'emp-nav';
   nav.setAttribute('aria-label', 'Sections');
   nav.hidden = true;
-  nav.innerHTML = NAV.map(function (n) {
+  nav.innerHTML = '<span class="nv-pill" aria-hidden="true"></span>' + NAV.map(function (n) {
     return '<button type="button" data-go="' + n[0] + '"><span class="nv-ic">' + ICON[n[0]] + '</span><span class="nv-t">' + n[1] + '</span></button>';
   }).join('');
   document.body.appendChild(nav);
@@ -131,8 +131,19 @@
     [].slice.call(nav.querySelectorAll('[data-go]')).forEach(function (b) {
       if (b.dataset.go === at) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
+    placePill();
     setHidden(nav, $('#top-right').hidden);
   }
+
+  /* the round highlight glides to the open page's button (the circle itself is drawn by the stylesheet) */
+  function placePill() {
+    var cur = nav.querySelector('[aria-current]');
+    if (!cur || !cur.offsetWidth) return;
+    nav.style.setProperty('--x', (cur.offsetLeft + cur.offsetWidth / 2 - 26) + 'px');
+    // the first placement is instant; after that it slides
+    if (!nav.classList.contains('nv-ready')) requestAnimationFrame(function () { requestAnimationFrame(function () { nav.classList.add('nv-ready'); }); });
+  }
+  window.addEventListener('resize', placePill);
 
   function remember() { try { sessionStorage.setItem('sng-emp-sec', sec); } catch (e) { /* no storage */ } }
 

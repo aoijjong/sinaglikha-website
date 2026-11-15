@@ -438,3 +438,14 @@ body.sh footer.foot{width:calc(100% - clamp(20px,1.8vw,32px) - clamp(20px,1.8vw,
 @media (max-width:1024px){
   body.sh footer.foot{width:calc(100% - 28px)}
 }
+
+/* the round highlight slides between the pages, and the icons rise and settle, instead of popping */
+.nv-pill{display:none}
+@media (max-width:1024px){
+  .emp-nav .nv-pill{display:block;position:absolute;left:0;top:-22px;width:52px;height:52px;border-radius:50%;background:var(--grad-btn);border:5px solid var(--paper);box-sizing:border-box;box-shadow:0 8px 14px -8px rgba(206,32,32,.7);transform:translateX(var(--x,0));pointer-events:none;z-index:0}
+  .emp-nav.nv-ready .nv-pill{transition:transform .5s cubic-bezier(.34,1.35,.5,1)}
+  .emp-nav button{position:relative;z-index:1;transition:color .3s}
+  .emp-nav .nv-ic{transition:transform .45s cubic-bezier(.34,1.4,.5,1),color .3s}
+  .emp-nav button[aria-current="page"] .nv-ic::before{display:none}
+}
+@media (prefers-reduced-motion:reduce){.emp-nav .nv-pill,.emp-nav .nv-ic,.emp-nav button{transition:none!important}}
