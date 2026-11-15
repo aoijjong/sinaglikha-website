@@ -438,3 +438,6 @@ body.sh footer.foot{width:calc(100% - clamp(20px,1.8vw,32px) - clamp(20px,1.8vw,
 @media (max-width:1024px){
   body.sh footer.foot{width:calc(100% - 28px)}
 }
+
+/* a file's actions sit behind one dotted button; the real buttons stay in the page for the menu to press */
+.dacts .dorig{display:none}
