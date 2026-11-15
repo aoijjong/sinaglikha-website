@@ -172,4 +172,15 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 /* phones and tablets: the two lists sit one under the other */
 @media (max-width:1024px){
   .rc-cols{grid-template-columns:minmax(0,1fr);gap:14px}
-}
+}
+
+/* Quick Access cards fit their text at any width: the icon on top, the words under it, and the card grows to hold them */
+.qa-c{justify-content:space-between;gap:12px;min-height:0}
+.qa-ic{position:relative;left:auto;top:auto}
+.qa-t{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;min-width:0;max-width:100%}
+.qa-t b,.qa-t small{overflow-wrap:anywhere}
+.qa-row{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+@media (max-width:1024px){
+  .qa-c{min-height:0;padding:12px;gap:8px}
+  .qa-ic{left:auto;top:auto}
+}
