@@ -21,7 +21,7 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 .sh-all{border:0;background:none;color:#B3361A;font:inherit;font-weight:700;font-size:.86rem;cursor:pointer;padding:4px 2px}
 .hs{margin:0 0 22px}
 .hs h2{font-size:1.45rem;line-height:1.2;margin:0 0 12px}
-.hs-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;max-width:560px;padding:6px 6px 6px 20px;border:0;border-radius:22px;background:#F3ECE3;font:inherit;cursor:pointer;text-align:left}
+.hs-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:6px 6px 6px 20px;border:0;border-radius:22px;background:#F3ECE3;font:inherit;cursor:pointer;text-align:left}
 .hs-t{color:#8A7568}
 .hs-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 20px;border-radius:18px;background:#2A1A12;color:#fff;font-weight:700;white-space:nowrap}
 .hs-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -172,4 +172,25 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 /* phones and tablets: the two lists sit one under the other */
 @media (max-width:1024px){
   .rc-cols{grid-template-columns:minmax(0,1fr);gap:14px}
+}
+
+/* Home: each part sits in its own box */
+.hs,.qa,.rc-col{padding:18px 20px 20px;margin:0 0 16px;border:1px solid rgba(74,46,34,.1);border-radius:26px;background:linear-gradient(180deg,#FFFDF8 0%,#FFF7EB 100%);box-shadow:0 14px 28px -24px rgba(160,80,30,.5)}
+.rc{margin:0}
+.rc-cols{align-items:stretch}
+.rc-col{margin:0}
+.hs h2{font-size:1.1rem;margin:0 0 12px}
+.sh-h{margin:0 0 12px}
+.rc-pics{display:grid;gap:8px;margin-top:2px}
+.rc-pics img{display:block;width:100%;height:auto;max-height:420px;object-fit:contain;border-radius:14px;border:1px solid rgba(74,46,34,.12);background:#F7EDE0}
+.rc-files{display:flex;flex-wrap:wrap;gap:6px}
+.rc-file{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:6px 10px;border-radius:12px;background:#FBE2C0;border:1px solid rgba(214,128,60,.38);color:#7A5236;font-size:.8rem;font-weight:600}
+.rc-file svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rc-file span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.rc-file small{opacity:.8}
+@media (max-width:1024px){
+  .hs,.qa,.rc-col{padding:12px 12px 14px;margin-bottom:12px;border-radius:20px}
+  .rc-cols{gap:12px}
+  .hs h2{font-size:1rem;margin-bottom:8px}
+  .sh-h{margin-bottom:8px}
 }
