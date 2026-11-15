@@ -34,6 +34,7 @@
     work: ['My Work', 'Your attendance, evaluations, learning and compensation records.'],
     files: ['Files', 'Search documents, or open the folders of each department.']
   };
+  var SEC_IMG = { feeds: ['feeds', 344, 330], work: ['evaluations', 349, 363], files: ['files', 327, 333] };
   var QA = [
     ['feeds', 'Feeds', 'Announcements and community', 'feeds', '#ann-panel', 'feeds', 'qa-6', 344, 330],
     ['att', 'Attendance', 'Time in and out', 'attendance', '#att-panel', 'work', 'qa-1', 383, 247],
@@ -86,7 +87,8 @@
   var head = document.createElement('div');
   head.className = 'sec-head';
   head.id = 'sec-head';
-  head.innerHTML = '<button class="sec-back" type="button" data-go="home" aria-label="Back to Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Home</button><h1 id="sec-t"></h1><p id="sec-d"></p>' +
+  head.innerHTML = '<button class="sec-back" type="button" data-go="home" aria-label="Back to Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Home</button>' +
+    '<div class="sec-bn"><div class="sec-tx"><h1 id="sec-t"></h1><p id="sec-d"></p></div><img class="sec-img" id="sec-img" alt="" decoding="async"></div>' +
     '<div class="seg" id="feeds-seg" role="group" aria-label="Show"><button type="button" data-feed="ann">Announcements</button><button type="button" data-feed="forum">Community</button></div>';
   var after = hello || home.firstChild;
   after.after(quick, share, recent, head);
@@ -100,6 +102,12 @@
     var h = HEAD[sec];
     $('#sec-t').textContent = h ? h[0] : '';
     $('#sec-d').textContent = h ? h[1] : '';
+    var si = SEC_IMG[sec], im = $('#sec-img');
+    if (si && im && im.getAttribute('data-k') !== si[0]) {
+      im.setAttribute('data-k', si[0]);
+      im.width = si[1]; im.height = si[2];
+      im.src = '../assets/quick/' + si[0] + '.webp';
+    }
     Array.prototype.forEach.call($('#feeds-seg').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.feed === feed)); });
     // quick cards for things that are switched off (no courses, no records, attendance not set up) are left out
     QA.forEach(function (q) {
