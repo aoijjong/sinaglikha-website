@@ -87,7 +87,7 @@
   var head = document.createElement('div');
   head.className = 'sec-head';
   head.id = 'sec-head';
-  head.innerHTML = '<button class="sec-back" type="button" data-go="home" aria-label="Back to Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Home</button>' +
+  head.innerHTML = '<button class="sec-back" type="button" data-go="home" aria-label="Back to Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>' + ICON.home + '</button>' +
     '<div class="sec-bn"><div class="sec-tx"><h1 id="sec-t"></h1><p id="sec-d"></p></div><img class="sec-img" id="sec-img" alt="" decoding="async"></div>' +
     '<div class="seg" id="feeds-seg" role="group" aria-label="Show"><button type="button" data-feed="ann">Announcements</button><button type="button" data-feed="forum">Community</button></div>';
   var after = hello || home.firstChild;
