@@ -110,8 +110,8 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   body.sh .top-in.wrap,body.sh main#main.wrap{width:calc(100% - 28px);max-width:none}
 }
 
-/* Recent activity: each announcement is one full-width card with its whole message */
-.rc-list{grid-template-columns:minmax(0,1fr)}
+/* Recent activity: cards side by side on desktop (one column on phones, above), each showing the whole message */
+.rc-list{align-items:start}
 .rc-c p{display:block;-webkit-line-clamp:unset;overflow:visible}
 
 /* phones and tablets: smaller elements, so more fits on the screen */
