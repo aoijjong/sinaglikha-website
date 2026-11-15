@@ -547,7 +547,7 @@
 
   function efHead(f) {
     var meta = [f.period, f.closes_on ? 'Open until ' + fmtDate(f.closes_on + 'T00:00:00+08:00') : ''].filter(Boolean);
-    var who = ef.kind === 'peer' && ef.name && ef.step !== 'pick' ? '<div class="gf-meta">Evaluating <b>' + esc(ef.name) + '</b></div>' : '';
+    var who = ef.kind === 'peer' && ef.name && ef.step === 'form' ? '<div class="gf-meta">Evaluating <b>' + esc(ef.name) + '</b></div>' : '';
     return efCard('<h1 class="gf-h1">' + esc(f.title) + '</h1>' + (f.description ? '<div class="gf-desc">' + esc(f.description) + '</div>' : '') +
       (meta.length ? '<div class="gf-meta">' + meta.map(esc).join(' · ') + '</div>' : '') + who +
       (ef.step === 'form' && !ef.readonly ? '<div class="gf-req">* Required</div>' : '') +

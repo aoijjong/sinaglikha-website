@@ -237,7 +237,7 @@
         (deletable(r) ? IB('trash', 'Delete this evaluation', { 'data-a': 'del-eval' }, 'danger') : '') + '</div></div></li>';
     }).join('');
     if (!ev.rows.length) {
-      empty.innerHTML = emptyHtml('clipboard', 'No evaluations yet', ev.mode === 'pms' ? 'Press Evaluate an employee to write the first one.' : 'None have been submitted yet.');
+      empty.innerHTML = emptyHtml('clipboard', 'No evaluations yet', ev.mode === 'pms' ? 'Press Start on a form above to evaluate your team.' : 'None have been submitted yet.');
       empty.hidden = false;
     } else if (!list.length) {
       empty.innerHTML = emptyHtml('search', 'Nothing matches', 'Try another search or category.');
