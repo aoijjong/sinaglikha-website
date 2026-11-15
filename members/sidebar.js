@@ -64,7 +64,7 @@
     var d = SECTION[currentKey()] || SECTION.library;
     var st = window.MembersApp && window.MembersApp.state, prof = st && st.profile;
     var nm = (prof && (prof.full_name || '')) || (document.getElementById('who') && document.getElementById('who').textContent.trim()) || '';
-    var first = nm.trim().split(/\s+/)[0] || (prof && prof.email ? prof.email.split('@')[0] : '');
+    var first = (window.SngGreetName ? window.SngGreetName(nm) : nm.trim().split(/\s+/)[0]) || (prof && prof.email ? prof.email.split('@')[0] : '');
     document.getElementById('bn-hi').textContent = first ? 'Hi, ' + first : 'Hello';
     var msg = document.getElementById('bn-msg');
     msg.textContent = '';
