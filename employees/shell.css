@@ -253,12 +253,12 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 .qa-6{background:linear-gradient(135deg,#FCD9BC,#FDE8C8)}
 .qa-t b{color:#4A2E22;font-size:.98rem}
 .qa-t small{color:#7A5236;opacity:1;font-size:.78rem}
-.qa-img{position:absolute;right:-5%;bottom:-7%;width:58%;height:auto;z-index:0;pointer-events:none;filter:drop-shadow(0 8px 8px rgba(150,80,30,.22));transform-origin:70% 90%;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .5s}
-.qa-4 .qa-img{width:54%}
-.qa-2 .qa-img{width:52%}
-.qa-5 .qa-img{width:52%}
-.qa-1 .qa-img{width:66%}
-.qa-3 .qa-img{width:58%}
+.qa-img{position:absolute;right:-5%;bottom:-7%;width:66%;height:auto;z-index:0;pointer-events:none;filter:drop-shadow(0 8px 8px rgba(150,80,30,.22));transform-origin:70% 90%;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .5s}
+.qa-4 .qa-img{width:62%}
+.qa-2 .qa-img{width:60%}
+.qa-5 .qa-img{width:60%}
+.qa-1 .qa-img{width:76%}
+.qa-3 .qa-img{width:66%}
 @media (hover:hover) and (pointer:fine){
   .qa-c:hover .qa-img{transform:translateY(-6px) rotate(-4deg) scale(1.06);filter:drop-shadow(0 14px 12px rgba(150,80,30,.28))}
 }
