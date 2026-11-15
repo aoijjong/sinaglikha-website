@@ -1278,3 +1278,8 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
   #panel-employees .ph-actions .ev-dept{flex:1 1 100%;min-width:0;margin-bottom:6px}
   #panel-employees .ph-actions .sbox{flex:1 1 0;min-width:0}
 }
+
+/* the department filter, smaller on phones */
+@media (max-width:640px){
+  .ev-dept{padding:7px 32px 7px 14px;font-size:.88rem;font-weight:600;background-position:right 12px center;background-size:12px}
+}
