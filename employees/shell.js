@@ -1,12 +1,11 @@
 /*
-  Employee Portal shell. On desktop the navigation is the same sidebar as the Senior Manager portal (members/sidebar.js): a person's
-  card on top, the sections as a list with a pill that glides between them, and sign out at the bottom. The dashboard stays one page in portal.js; this file splits it into sections and adds the navigation:
+  Employee Portal shell. On desktop the dashboard opens on Home and the Quick Access cards lead to the other sections, with a Back to Home
+  button on each; the avatar and Sign out stay in the top bar. Phones and tablets get a floating bar at the bottom.
+  The dashboard stays one page in portal.js; this file splits it into sections:
     Home    greeting, a "share" bar, Quick Access cards and the latest announcements
     Feeds   announcements and the community
     My Work attendance, evaluations, learning and compensation records
     Files   the file search and the department folders
-    Profile opens the profile page
-  On desktop (1025px and wider) the navigation is a sidebar on the left; on phones and tablets it is a floating bar at the bottom.
   portal.js is only asked for one thing: window.EmpPortal.show, to return to the dashboard from a sub-page.
 */
 (function () {
@@ -29,13 +28,14 @@
     send: SVG('<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>'),
     heart: SVG('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>')
   };
-  var NAV = [['home', 'Home'], ['feeds', 'Feeds'], ['work', 'My Work'], ['files', 'Files'], ['profile', 'Profile']];
+  var NAV = [['home', 'Home'], ['feeds', 'Feeds'], ['work', 'My Work'], ['files', 'Files']];
   var HEAD = {
     feeds: ['Feeds', 'Announcements from the Senior Managers, and conversations with your colleagues.'],
     work: ['My Work', 'Your attendance, evaluations, learning and compensation records.'],
     files: ['Files', 'Search documents, or open the folders of each department.']
   };
   var QA = [
+    ['feeds', 'Feeds', 'Announcements and community', 'feeds', '#ann-panel', 'feeds', 'qa-6'],
     ['att', 'Attendance', 'Time in and out', 'clock', '#att-panel', 'work', 'qa-1'],
     ['evl', 'Evaluations', 'Forms to fill in', 'clip', '#evl-panel', 'work', 'qa-2'],
     ['learn', 'Learning', 'Courses and modules', 'book', '#learn-panel', 'work', 'qa-3'],
@@ -55,45 +55,16 @@
   document.body.dataset.sec = sec;
   document.body.dataset.feed = feed;
 
-  /* ---- the navigation: a sidebar on desktop, a floating bar on phones ---- */
+  /* ---- the navigation: a floating bar on phones and tablets (desktop uses the Quick Access cards) ---- */
   var nav = document.createElement('nav');
-  nav.className = 'emp-nav sb';
+  nav.className = 'emp-nav';
   nav.id = 'emp-nav';
   nav.setAttribute('aria-label', 'Sections');
   nav.hidden = true;
-  var SI = function (n) { return window.SngIcon ? window.SngIcon(n) : ''; };
-  nav.innerHTML = '<button class="sb-me" id="sb-prof" type="button" aria-label="Open my profile settings" title="Profile settings"><span class="sb-avw"><span class="sb-av" id="sb-av"></span><span class="sb-edit" aria-hidden="true">' + SI('pencil') + '</span></span>' +
-    '<b id="sb-name">Profile</b><small id="sb-sub"></small><em id="sb-no">Employee</em><span class="sb-go" aria-hidden="true">My profile<span>' + SI('chevron') + '</span></span></button>' +
-    '<div class="sb-tabs" id="sb-tabs"><span class="tab-thumb" aria-hidden="true"></span>' + NAV.map(function (n) {
-      return '<button class="sb-tab" type="button" data-go="' + n[0] + '"><span class="tic nv-ic">' + ICON[n[0]] + '</span><span class="nv-t">' + n[1] + '</span></button>';
-    }).join('') + '</div>' +
-    '<div class="sb-foot"><button class="sb-item sb-out" id="sb-out" type="button"><span class="tic">' + SI('logout') + '</span>Sign out</button></div>';
+  nav.innerHTML = NAV.map(function (n) {
+    return '<button type="button" data-go="' + n[0] + '"><span class="nv-ic">' + ICON[n[0]] + '</span><span class="nv-t">' + n[1] + '</span></button>';
+  }).join('');
   document.body.appendChild(nav);
-
-  /* the person's card follows the profile: photo or initials, name, position and employee number */
-  function refreshMe() {
-    var av = $('#btn-profile'), pic = av && av.querySelector('img'), box = $('#sb-av');
-    if (!box) return;
-    if (pic && pic.getAttribute('src')) {
-      if (!box.firstChild || box.firstChild.tagName !== 'IMG') { box.textContent = ''; box.appendChild(document.createElement('img')); }
-      if (box.firstChild.getAttribute('src') !== pic.getAttribute('src')) box.firstChild.setAttribute('src', pic.getAttribute('src'));
-      box.firstChild.alt = '';
-    } else {
-      var t = (av && av.textContent.trim()) || '';
-      if (box.textContent !== t || box.firstChild && box.firstChild.tagName === 'IMG') box.textContent = t;
-    }
-    var nm = ($('#pf-name') || {}).textContent || '', pos = (($('#pf-pos') || {}).textContent || '').trim(), no = ($('#pf-no') || {}).textContent || '';
-    $('#sb-name').textContent = nm || 'Profile';
-    $('#sb-sub').textContent = pos && pos !== 'Not set' ? pos : '';
-    $('#sb-no').textContent = no || 'Employee';
-  }
-  $('#sb-prof').addEventListener('click', function () { var pb = $('#btn-profile'); if (pb) pb.click(); });
-  $('#sb-out').addEventListener('click', function () { var o = $('#btn-out'); if (o) o.click(); });
-  ['#btn-profile', '#pf-name', '#pf-pos', '#pf-no'].forEach(function (s) {
-    var el = $(s);
-    if (el) new MutationObserver(refreshMe).observe(el, { childList: true, characterData: true, subtree: true });
-  });
-  refreshMe();
 
   /* ---- the pieces that only the Home section shows ---- */
   var hello = $('.hello', home);
@@ -115,7 +86,7 @@
   var head = document.createElement('div');
   head.className = 'sec-head';
   head.id = 'sec-head';
-  head.innerHTML = '<h1 id="sec-t"></h1><p id="sec-d"></p>' +
+  head.innerHTML = '<button class="sec-back" type="button" data-go="home" aria-label="Back to Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Home</button><h1 id="sec-t"></h1><p id="sec-d"></p>' +
     '<div class="seg" id="feeds-seg" role="group" aria-label="Show"><button type="button" data-feed="ann">Announcements</button><button type="button" data-feed="forum">Community</button></div>';
   var after = hello || home.firstChild;
   after.after(share, quick, recent, head);
@@ -137,17 +108,11 @@
     });
     var forum = $('#forum-panel');
     setHidden(share, forum && forum.hidden);
-    // the sidebar or the bar marks where you are, even on a sub-page (a folder, a course, an evaluation)
+    // the bar marks where you are, even on a sub-page (a folder, a course, an evaluation)
     var at = !$('#v-profile').hidden ? 'profile' : !$('#v-dept').hidden ? 'files' : (!$('#v-learn').hidden || !$('#v-eval').hidden) ? 'work' : sec;
-    var tabs = [].slice.call(nav.querySelectorAll('[data-go]')), k = 0;
-    tabs.forEach(function (b) {
+    [].slice.call(nav.querySelectorAll('[data-go]')).forEach(function (b) {
       if (b.dataset.go === at) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
-    // the sidebar's gliding pill sits on the active section (the profile page is opened from the card, so it has none)
-    k = ['home', 'feeds', 'work', 'files'].indexOf(at);
-    nav.style.setProperty('--pos', String(Math.max(0, k)));
-    nav.classList.toggle('no-thumb', k < 0);
-    refreshMe();
     setHidden(nav, $('#top-right').hidden);
   }
 
