@@ -565,7 +565,7 @@
         : 'Your evaluation has been sent.' + (total ? ' ' + got + ' of ' + total + ' teammates done.' : '')) + '</p>' +
         (ef.kind === 'peer' && !next ? '<p>You have evaluated everyone on your team.</p>' : '') +
         '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">' +
-        (next ? '<button class="btn btn-primary btn-sm" type="button" id="ef-next-mate">Evaluate ' + esc(next.name.split(' ')[0]) + ' next</button>' : '') +
+        (next ? '<button class="btn btn-primary btn-sm" type="button" id="ef-next-mate">Evaluate ' + esc(firstNameOf(next.name)) + ' next</button>' : '') +
         (ef.kind === 'peer' && total > 1 && next ? '<button class="btn btn-ghost btn-sm" type="button" id="ef-mates">Choose someone else</button>' : '') +
         '<button class="btn ' + (next ? 'btn-ghost' : 'btn-primary') + ' btn-sm" type="button" id="ef-home">Back to the dashboard</button></div></div>');
     } else {
@@ -580,6 +580,12 @@
   }
 
   /* peer evaluations: the teammates of the same department, each with a Done mark, so nobody is missed */
+  /* names are written "Last, First M.": the first name is what follows the comma */
+  function firstNameOf(n) {
+    var s = String(n || '').trim(), i = s.indexOf(',');
+    if (i !== -1) s = s.slice(i + 1).trim();
+    return s.split(/\s+/)[0] || String(n || '');
+  }
   function pickCard() {
     var dn = deptName();
     if (ef.loading) return efCard('<div class="gf-qt">Loading your teammates…</div>');
