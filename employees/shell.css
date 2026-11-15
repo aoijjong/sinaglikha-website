@@ -360,8 +360,8 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
 .qa-c{background:radial-gradient(circle 80px at calc(100% - 34px) 34px,rgba(255,255,255,.36) 99%,rgba(255,255,255,0) 100%),linear-gradient(135deg,var(--c1),var(--c2))}
 .qa-t small{color:#6B4533}
 
-/* Files on desktop: the departments fill the width, in columns, instead of one narrow list */
+/* Files on desktop: the departments fill the width in a row of tiles; the last row stretches, so nothing is left empty on the right */
 @media (min-width:1025px){
-  body.sh[data-sec="files"] #tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;padding:6px 20px 20px}
-  body.sh[data-sec="files"] #tiles>.lrow{margin:0;height:100%}
+  body.sh[data-sec="files"] #tiles{display:flex;flex-wrap:wrap;gap:12px;padding:6px 20px 20px}
+  body.sh[data-sec="files"] #tiles>.lrow{margin:0;flex:1 1 360px;min-width:0}
 }
