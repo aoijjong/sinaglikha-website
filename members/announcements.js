@@ -80,7 +80,7 @@
     rows.innerHTML = A.rows.map(function (a) {
       var n = Array.isArray(a.files) ? a.files.length : 0;
       var meta = [a.author_name || 'A Senior Manager', app.depts[a.author_dept] || '', app.fmtDate(a.created_at), n ? n + (n === 1 ? ' file' : ' files') : '', cmLabel(a.id)].filter(Boolean).join(' · ');
-      return '<li class="lrow" data-id="' + esc(a.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' +
+      return '<li class="lrow" data-id="' + esc(a.id) + '"><div class="lmain" style="cursor:default"><span class="ltext"><span class="lname">' +
         esc(a.title || excerpt(a.body, 70)) + '</span><span class="lmeta">' + esc(meta) + '</span>' +
         (a.title ? '<span class="lmeta" style="white-space:normal">' + esc(excerpt(a.body, 140)) + '</span>' : '') + '</span></div>' +
         '<div class="lside"><span class="chip ' + (a.published ? 's-published' : 's-archived') + '">' + (a.published ? 'Posted' : 'Hidden') + '</span><div class="lacts">' +
