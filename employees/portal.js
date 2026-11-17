@@ -810,6 +810,24 @@
     } else if (all) all.remove();
   }
 
+  /* the progress box on a course: the figure, one segment per module (a smooth bar when there are many), and what to do next */
+  function progressBox(done, total, mods) {
+    var pct = total ? Math.round((done / total) * 100) : 0, complete = total > 0 && done === total;
+    var next = (mods || []).filter(function (m) { return !m.done; })[0];
+    var track = '';
+    if (total && total <= 10) {
+      track = '<span class="pg-seg" aria-hidden="true">';
+      for (var i = 0; i < total; i++) track += '<i' + (i < done ? ' class="on"' : '') + '></i>';
+      track += '</span>';
+    } else if (total) track = bar(done, total);
+    var msg = !total ? 'No modules yet.'
+      : complete ? I('checkCircle') + '<span>Course complete. Well done!</span>'
+      : done === 0 ? '<span>Not started yet. Start with <b>' + esc(next ? next.title : 'the first module') + '</b>.</span>'
+      : '<span>' + done + ' of ' + total + (total === 1 ? ' module' : ' modules') + ' done. Next: <b>' + esc(next ? next.title : '') + '</b>.</span>';
+    return '<div class="panel pg' + (complete ? ' pg-done' : '') + '"><div class="pg-top"><b>Your progress</b><span class="pg-pct">' + pct + '%</span></div>' + track +
+      '<p class="pg-msg">' + msg + '</p><p class="pg-lock">' + I('lock') + '<span>Only you can see your progress.</span></p></div>';
+  }
+
   function renderCourses() {
     learn.course = null;
     $('#learn-title').textContent = 'Learning';
@@ -827,7 +845,7 @@
     $('#learn-desc').textContent = c.description || '';
     $('#learn-desc').hidden = !c.description;
     $('#learn-body').innerHTML =
-      '<div class="panel" style="padding:16px 20px;margin-bottom:14px">' + bar(done, learn.modules.length) + '<p class="fine" style="margin-top:8px">' + esc(progressText(done, learn.modules.length)) + '. Only you can see your progress.</p></div>' +
+      progressBox(done, learn.modules.length, learn.modules) +
       '<div class="panel plist"><ul class="items">' + (learn.modules.length ? learn.modules.map(function (m) {
         return '<li class="lrow"><button class="ib ' + (m.done ? 'good' : '') + '" type="button" data-toggle="' + esc(m.id) + '" aria-label="' + (m.done ? 'Mark as not done' : 'Mark as done') + '" data-tip="' + (m.done ? 'Mark as not done' : 'Mark as done') + '"' +
           (m.done ? ' style="color:#1E6B2A"' : '') + '>' + I(m.done ? 'checkCircle' : 'circle') + '</button>' +
