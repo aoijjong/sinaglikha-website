@@ -1,7 +1,7 @@
 /*
   Comments on announcements (Employee Portal).
   Every announcement card gets a "Comment" button next to its heart. Tapping it opens the comments under
-  the post, with a box to write one. Comments are kept on the server (api/employee-comments.js); the
+  the post, with a box to write one. Comments are kept on the server (api/_comments.js, reached through /api/employee-forum?cm=1); the
   count shows on the button. Text is always shown as plain text, never as HTML.
 */
 (function () {
@@ -90,7 +90,7 @@
   }
   async function loadCounts(ids) {
     ids = ids.slice(0, 60);
-    var r = await api('GET', '/api/employee-comments?counts=' + encodeURIComponent(ids.join(',')));
+    var r = await api('GET', '/api/employee-forum?cm=1&counts=' + encodeURIComponent(ids.join(',')));
     if (!r.ok || !r.data.counts) return;
     ids.forEach(function (id) { counts[id] = r.data.counts[id] || 0; paintCount(id); });
   }
@@ -114,7 +114,7 @@
     box.hidden = false;
     btn.setAttribute('aria-expanded', 'true');
     box.innerHTML = '<div class="skel" style="width:60%;margin:8px 0"></div>';
-    var r = await api('GET', '/api/employee-comments?announcement=' + encodeURIComponent(id));
+    var r = await api('GET', '/api/employee-forum?cm=1&announcement=' + encodeURIComponent(id));
     if (r.status === 401) { location.reload(); return; }
     if (!r.ok) { box.innerHTML = '<p class="fine">' + esc(r.data.error || "Couldn't load the comments.") + '</p>'; return; }
     var photos = r.data.photos || [], list = r.data.comments || [];
@@ -133,7 +133,7 @@
     if (!text) { msg.textContent = 'Write a comment first.'; msg.hidden = false; return; }
     msg.hidden = true;
     btn.disabled = true;
-    var r = await api('POST', '/api/employee-comments', { action: 'add', announcement_id: id, body: text });
+    var r = await api('POST', '/api/employee-forum?cm=1', { action: 'add', announcement_id: id, body: text });
     btn.disabled = false;
     if (r.status === 401) { location.reload(); return; }
     if (!r.ok) { msg.textContent = r.data.error || "Couldn't post that."; msg.hidden = false; return; }
@@ -144,7 +144,7 @@
   async function remove(cid, btn) {
     var row = btn.closest('.reply'), card = btn.closest('article.post');
     btn.disabled = true;
-    var r = await api('POST', '/api/employee-comments', { action: 'delete', comment_id: cid });
+    var r = await api('POST', '/api/employee-forum?cm=1', { action: 'delete', comment_id: cid });
     if (!r.ok) { btn.disabled = false; toast(r.data.error || "Couldn't delete that."); return; }
     toast('Comment deleted.');
     var id = card.dataset.aid;
@@ -158,7 +158,7 @@
   async function report(cid, btn) {
     if (!window.confirm('Report this comment to the moderators?')) return;
     btn.disabled = true;
-    var r = await api('POST', '/api/employee-comments', { action: 'report', comment_id: cid });
+    var r = await api('POST', '/api/employee-forum?cm=1', { action: 'report', comment_id: cid });
     if (!r.ok) { btn.disabled = false; toast(r.data.error || "Couldn't send that report."); return; }
     btn.querySelector('span').textContent = 'Reported';
     toast('Thanks. A moderator will take a look.');

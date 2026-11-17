@@ -1,11 +1,11 @@
 /*
   Comments on announcements for the signed-in employee (supabase/announcement_comments.sql).
 
-  GET  /api/employee-comments?counts=<id>,<id>,...         how many comments each announcement has
-  GET  /api/employee-comments?announcement=<id>            the comments on one announcement, oldest first
-  POST /api/employee-comments { "action": "add",    "announcement_id": "...", "body": "..." }
-  POST /api/employee-comments { "action": "delete", "comment_id": "..." }      remove one of your OWN comments
-  POST /api/employee-comments { "action": "report", "comment_id": "...", "reason": "..." }   report someone else's comment
+  GET  /api/employee-forum?cm=1&counts=<id>,<id>,...         how many comments each announcement has
+  GET  /api/employee-forum?cm=1&announcement=<id>            the comments on one announcement, oldest first
+  POST /api/employee-forum?cm=1 { "action": "add",    "announcement_id": "...", "body": "..." }
+  POST /api/employee-forum?cm=1 { "action": "delete", "comment_id": "..." }      remove one of your OWN comments
+  POST /api/employee-forum?cm=1 { "action": "report", "comment_id": "...", "reason": "..." }   report someone else's comment
 
   The author comes from the sign-in cookie, never from the request. Only published announcements take
   comments. Text is kept as plain text; the page shows it without ever treating it as HTML.

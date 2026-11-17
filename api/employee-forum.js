@@ -45,6 +45,8 @@ async function tooFast(table, eid, minutes, limit) {
 }
 
 module.exports = async function handler(req, res) {
+  // comments on announcements live in _comments.js; they share this endpoint so the site stays within Vercel's 12-function limit
+  if (req.query && req.query.cm !== undefined) return require('./_comments')(req, res);
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST');
     return E.send(res, 405, { error: 'Use GET or POST.' });
