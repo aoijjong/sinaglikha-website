@@ -177,6 +177,7 @@
       go(q[5], function () { var p = $(q[4]); if (p) p.scrollIntoView({ block: 'start', behavior: 'smooth' }); });
       return;
     }
+    if (e.target.closest('.rc-c a')) return;          // a web address in a card opens the link; the rest of the card goes to Feeds
     var rc = e.target.closest('[data-recent]');
     if (rc) { feed = rc.dataset.recent === 'forum' ? 'forum' : 'ann'; go('feeds'); }
   });
@@ -195,7 +196,7 @@
       var c = com && /\d/.test(com.textContent) ? com.textContent.trim() : '';
       return '<article class="rc-c" data-recent="' + kind + '" tabindex="0"><div class="rc-top">' + (av ? av.outerHTML : '') + '<div class="who"><b>' + (who ? who.innerHTML : '') + '</b><span>' + (when ? when.innerHTML : '') + '</span></div>' +
         (kind === 'forum' && cat ? '<span class="chip plain">' + cat.innerHTML + '</span>' : '') + '</div>' +
-        (title ? '<h3>' + title.innerHTML + '</h3>' : '') + '<p>' + (body ? body.innerHTML.replace(/<a\b[^>]*>([\s\S]*?)<\/a>/g, '$1') : '') + '</p>' +
+        (title ? '<h3>' + title.innerHTML + '</h3>' : '') + '<p>' + (body ? body.innerHTML : '') + '</p>' +
         (pics ? '<div class="rc-pics">' + pics + '</div>' : '') + (files ? '<div class="rc-files">' + files + '</div>' : '') +
         (n || c ? '<div class="rc-foot">' + (c ? '<span class="rc-com">' + c + '</span>' : '') + (n ? '<span>' + ICON.heart + n + '</span>' : '') + '</div>' : '') + '</article>';
     });
@@ -229,6 +230,7 @@
   });
   buildRecent();
   recent.addEventListener('keydown', function (e) {
+    if (e.target.closest('a')) return;
     var c = e.target.closest('.rc-c');
     if ((e.key === 'Enter' || e.key === ' ') && c) { e.preventDefault(); feed = c.dataset.recent === 'forum' ? 'forum' : 'ann'; go('feeds'); }
   });

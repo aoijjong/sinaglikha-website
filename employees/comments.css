@@ -38,3 +38,4 @@
 /* web addresses in an announcement are links */
 #ann-feed .post-body a{color:#C21E1E;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;word-break:break-word}
 @media (hover:hover) and (pointer:fine){#ann-feed .post-body a:hover{color:#DE5A14}}
+.rc-c a{color:#C21E1E;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;word-break:break-word}
