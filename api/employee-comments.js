@@ -5,6 +5,7 @@
   GET  /api/employee-comments?announcement=<id>            the comments on one announcement, oldest first
   POST /api/employee-comments { "action": "add",    "announcement_id": "...", "body": "..." }
   POST /api/employee-comments { "action": "delete", "comment_id": "..." }      remove one of your OWN comments
+  POST /api/employee-comments { "action": "report", "comment_id": "...", "reason": "..." }   report someone else's comment
 
   The author comes from the sign-in cookie, never from the request. Only published announcements take
   comments. Text is kept as plain text; the page shows it without ever treating it as HTML.
@@ -16,6 +17,7 @@ const E = require('./_employee');
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FLOOD = 8;
 const FLOOD_MINUTES = 10;
+const FLOOD_REPORTS = 5;
 const MAX_IDS = 60;
 const list = (r) => (r.ok && Array.isArray(r.data) ? r.data : []);
 
@@ -57,6 +59,21 @@ module.exports = async function handler(req, res) {
       const r = await E.rest('PATCH', `announcement_comments?id=eq.${cid}&employee_id=eq.${eid}&hidden=eq.false`, { hidden: true }, 'return=representation');
       if (!r.ok || !list(r)[0]) return E.send(res, 404, gone);
       await E.logAudit('announcement.comment.delete', me.emp.employee_no, { comment: cid });
+      return E.send(res, 200, { ok: true });
+    }
+    if (body.action === 'report') {
+      const cid = String(body.comment_id || '');
+      if (!UUID_RE.test(cid)) return E.send(res, 400, { error: 'Bad request.' });
+      const c = list(await E.rest('GET', `announcement_comments?id=eq.${cid}&hidden=eq.false&select=id,employee_id`))[0];
+      if (!c) return E.send(res, 404, gone);
+      if (c.employee_id === eid) return E.send(res, 400, { error: "That's your own comment. You can delete it instead." });
+      const since = new Date(Date.now() - 60 * 60000).toISOString();
+      const mine = list(await E.rest('GET', `announcement_comment_reports?employee_id=eq.${eid}&created_at=gte.${encodeURIComponent(since)}&select=id&limit=${FLOOD_REPORTS}`));
+      if (mine.length >= FLOOD_REPORTS) return E.send(res, 429, { error: 'You have sent several reports already. A moderator will look at them.' });
+      // one report per person per comment: a second one is quietly ignored
+      const r = await E.rest('POST', 'announcement_comment_reports?on_conflict=comment_id,employee_id', { comment_id: cid, employee_id: eid, reason: clean(body.reason, 300) }, 'resolution=ignore-duplicates,return=minimal');
+      if (!r.ok) return E.send(res, 500, { error: "Couldn't send that report. Try again." });
+      await E.logAudit('announcement.comment.report', me.emp.employee_no, { comment: cid });
       return E.send(res, 200, { ok: true });
     }
     return E.send(res, 400, { error: 'Bad request.' });

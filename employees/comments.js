@@ -12,6 +12,7 @@
   var CHAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.7 8.7 0 0 1-3.6-.8L3 21l1.9-5.3A8.4 8.4 0 0 1 3 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z"/></svg>';
   var SEND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>';
   var TRASH = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>';
+  var FLAG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 22V4"/><path d="M4 4h13l-2 4 2 4H4"/></svg>';
   var TINTS = ['#FFE7A8', '#FBD2B0', '#F6C9C0', '#D8E6C4', '#CFE3F1', '#E4D6F0'];
   var PHOTO_OK = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
   var counts = {};      // announcement id -> number of comments
@@ -56,7 +57,11 @@
   function label(n) { return n > 0 ? n + (n === 1 ? ' comment' : ' comments') : 'Comment'; }
   function paintCount(id) {
     var b = feed.querySelector('.p-com[data-acom="' + id + '"]');
-    if (b) { b.dataset.n = String(counts[id] || 0); b.lastChild.textContent = label(counts[id] || 0); }
+    if (!b) return;
+    // only when the words change: writing the same text again would count as a change and wake the observer below for ever
+    var n = counts[id] || 0, s = b.lastChild;
+    if (s.textContent !== label(n)) s.textContent = label(n);
+    if (b.dataset.n !== String(n)) b.dataset.n = String(n);
   }
 
   /* ---- the button row and the comment box under each announcement ---- */
@@ -93,7 +98,8 @@
   function commentHtml(c, photos) {
     return '<div class="reply" data-cid="' + esc(c.id) + '"><div class="post-top">' + avatar(c.author, photos[c.pic]) +
       '<div class="who"><b>' + esc(c.author) + (c.mine ? ' (you)' : '') + '</b><span>' + esc(ago(c.created_at)) + '</span></div>' +
-      (c.mine ? '<button class="pbtn push" type="button" data-cdel="' + esc(c.id) + '">' + TRASH + '<span>Delete</span></button>' : '') +
+      (c.mine ? '<button class="pbtn push" type="button" data-cdel="' + esc(c.id) + '">' + TRASH + '<span>Delete</span></button>'
+        : '<button class="pbtn push" type="button" data-crep="' + esc(c.id) + '">' + FLAG + '<span>Report</span></button>') +
       '</div><p>' + esc(c.body).replace(/\n/g, '<br>') + '</p></div>';
   }
   function formHtml(id) {
@@ -149,7 +155,18 @@
     if (!box.querySelector('.reply') && !box.querySelector('.ac-none')) box.insertAdjacentHTML('afterbegin', '<p class="fine ac-none">No comments yet. Be the first to comment.</p>');
   }
 
+  async function report(cid, btn) {
+    if (!window.confirm('Report this comment to the moderators?')) return;
+    btn.disabled = true;
+    var r = await api('POST', '/api/employee-comments', { action: 'report', comment_id: cid });
+    if (!r.ok) { btn.disabled = false; toast(r.data.error || "Couldn't send that report."); return; }
+    btn.querySelector('span').textContent = 'Reported';
+    toast('Thanks. A moderator will take a look.');
+  }
+
   feed.addEventListener('click', function (e) {
+    var rp = e.target.closest('[data-crep]');
+    if (rp) { report(rp.dataset.crep, rp); return; }
     var b = e.target.closest('.p-com');
     if (b) {
       var card = b.closest('article.post');

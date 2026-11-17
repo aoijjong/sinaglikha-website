@@ -15,6 +15,8 @@
 .ann-cm .reply .post-top{margin:0 0 4px;padding-right:0}
 .ann-cm .reply p{margin:0;overflow-wrap:anywhere;font-size:.93rem;line-height:1.5;color:var(--ink)}
 .ann-cm .reply .pbtn.push{margin-left:auto;padding:4px 8px;font-size:.8rem}
+.ann-cm .pbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ann-cm .pbtn[disabled]{opacity:.6;cursor:default}
 .ann-cm .ac-none{margin:8px 0 2px}
 .ann-cm .rcmp{margin-top:8px}
 .ann-cm .rcmp textarea{background:#fff}

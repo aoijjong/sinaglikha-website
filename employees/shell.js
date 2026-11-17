@@ -186,7 +186,7 @@
   function cards(sel, kind) {
     return [].slice.call(document.querySelectorAll(sel)).slice(0, 3).map(function (p) {
       var av = $('.av-sm', p), who = $('.who b', p), when = $('.who span', p), title = $('.post-title', p), body = $('.post-body', p);
-      var like = $('.p-like span', p), com = $('[data-replies] span', p), cat = $('.chip', p);
+      var like = $('.p-like span', p), com = $('[data-replies] span, .p-com span', p), cat = $('.chip', p);
       var pics = [].slice.call(p.querySelectorAll('.ann-img img')).filter(function (i) { return i.getAttribute('src'); }).map(function (i) {
         return '<img src="' + i.getAttribute('src').replace(/"/g, '&quot;') + '" alt="' + (i.getAttribute('alt') || '').replace(/"/g, '&quot;') + '">';
       }).join('');
