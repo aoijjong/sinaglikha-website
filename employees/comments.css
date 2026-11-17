@@ -8,11 +8,13 @@
 @media (hover:hover) and (pointer:fine){.p-com:hover{background:#FFF0DA;color:var(--brown)}}
 .p-com:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
 
-.ann-cm{order:6;margin-top:4px;padding:6px 12px 12px;border-radius:16px;background:#FFF6EA}
+.ann-cm{order:6;margin-top:4px;padding:6px 12px 12px;border-radius:16px;background:#fff;border:1px solid rgba(74,46,34,.08)}
 .ann-cm[hidden]{display:none}
 .ann-cm .reply{padding:10px 0;border-top:1px solid rgba(74,46,34,.08)}
 .ann-cm .reply:first-child{border-top:0}
-.ann-cm .reply .post-top{margin:0 0 4px;padding-right:0}
+#ann-feed .ann-cm .reply .post-top{margin:0 0 4px;padding-right:0}
+.ann-cm .reply .pbtn[data-cdel]{padding:6px;margin-left:auto}
+.ann-cm .reply .pbtn[data-cdel] svg{width:18px;height:18px}
 .ann-cm .reply p{margin:0;overflow-wrap:anywhere;font-size:.93rem;line-height:1.5;color:var(--ink)}
 .ann-cm .reply .pbtn.push{margin-left:auto;padding:4px 8px;font-size:.8rem}
 .ann-cm .pbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -20,6 +22,7 @@
 .ann-cm .ac-none{margin:8px 0 2px}
 .ann-cm .rcmp{margin-top:8px}
 .ann-cm .rcmp textarea{background:#fff}
+.ann-cm .reply{border-top-color:rgba(74,46,34,.08)}
 .ac-send svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 @media (max-width:600px){
