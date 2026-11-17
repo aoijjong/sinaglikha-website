@@ -34,6 +34,13 @@
     return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   };
   var text = function (s) { return esc(s).replace(/\n/g, '<br>'); };
+  /* like text(), but a web address in an announcement becomes a link that opens in a new tab (only http and https) */
+  var linkText = function (s) {
+    return text(s).replace(/https?:\/\/(?:(?!&quot;|&#39;|&lt;|&gt;)[^\s<])+/g, function (m) {
+      var tail = (m.match(/[.,;:!?)\]]+$/) || [''])[0], url = tail ? m.slice(0, -tail.length) : m;
+      return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>' + tail;
+    });
+  };
 
   $('#year').textContent = new Date().getFullYear();
 
@@ -269,7 +276,7 @@
     feed.innerHTML = anns.slice(0, annShown).map(function (a) {
       return '<article class="post" data-aid="' + esc(a.id) + '"><div class="post-top">' + avSm(a.author, '', annPhotos[a.pic]) + '<div class="who"><b>' + esc(a.author) + '</b><span>' +
         esc((DEPT_NAME[a.dept] ? DEPT_NAME[a.dept] + ' · ' : '') + ago(a.created_at)) + '</span></div></div>' +
-        (a.title ? '<h3 class="post-title">' + esc(a.title) + '</h3>' : '') + '<p class="post-body">' + text(a.body) + '</p>' +
+        (a.title ? '<h3 class="post-title">' + esc(a.title) + '</h3>' : '') + '<p class="post-body">' + linkText(a.body) + '</p>' +
         (a.files.length ? '<div class="fchips">' + a.files.map(function (f, i) {
           return '<button class="fchip" type="button" data-annfile="' + esc(a.id) + '" data-i="' + i + '">' + I('file') + '<span>' + esc(f.name) + '</span>' + (f.size ? '<small>' + esc(fmtSize(f.size)) + '</small>' : '') + '</button>';
         }).join('') + '</div>' : '') + '</article>';
