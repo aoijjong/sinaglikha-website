@@ -18,7 +18,7 @@
   var MAX_FILES = 5;
   var ALLOWED = /\.(pdf|png|jpe?g|gif|webp|docx?|xlsx?|pptx?|txt|csv)$/i;
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var A = { box: null, ctx: null, rows: [], failed: false };
+  var A = { box: null, ctx: null, rows: [], failed: false, comments: [], reports: [], people: {}, cmOk: false, cmFor: null };
 
   function newId() {
     return window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
@@ -48,14 +48,38 @@
     busy('');
     A.failed = !!res.error;
     A.rows = res.error ? [] : res.data || [];
+    await loadComments();
     render();
+  }
+
+  /* ---------- comments: the people who moderate the forum can see, hide and delete them ---------- */
+  async function loadComments() {
+    A.cmOk = false; A.comments = []; A.reports = [];
+    var c = await sb.from('announcement_comments').select('id,announcement_id,employee_id,body,hidden,created_at').order('created_at', { ascending: true }).limit(2000);
+    if (c.error) return;          // the SQL has not been run yet, or this person cannot moderate: the Comments item stays away
+    A.cmOk = true;
+    A.comments = c.data || [];
+    var r = await sb.from('announcement_comment_reports').select('id,comment_id,employee_id,reason,resolved,created_at').limit(2000);
+    A.reports = r.error ? [] : r.data || [];
+    var p = await sb.rpc('employee_options');
+    (Array.isArray(p.data) ? p.data : []).forEach(function (x) { A.people[x.id] = x; });
+  }
+  function personOf(id) { return A.people[id] ? A.people[id].full_name : 'An employee'; }
+  function openReports(cid) { return A.reports.filter(function (r) { return r.comment_id === cid && !r.resolved; }); }
+  function commentsOf(aid) { return A.comments.filter(function (c) { return c.announcement_id === aid; }); }
+  function reportedCount(aid) { return commentsOf(aid).filter(function (c) { return openReports(c.id).length; }).length; }
+
+  function cmLabel(aid) {
+    if (!A.cmOk) return '';
+    var n = commentsOf(aid).filter(function (c) { return !c.hidden; }).length, rp = reportedCount(aid);
+    return (n ? n + (n === 1 ? ' comment' : ' comments') : '') + (rp ? (n ? ' · ' : '') + rp + ' reported' : '');
   }
 
   function render() {
     var rows = $('#an-rows', A.box), empty = $('#an-empty', A.box);
     rows.innerHTML = A.rows.map(function (a) {
       var n = Array.isArray(a.files) ? a.files.length : 0;
-      var meta = [a.author_name || 'A Senior Manager', app.depts[a.author_dept] || '', app.fmtDate(a.created_at), n ? n + (n === 1 ? ' file' : ' files') : ''].filter(Boolean).join(' · ');
+      var meta = [a.author_name || 'A Senior Manager', app.depts[a.author_dept] || '', app.fmtDate(a.created_at), n ? n + (n === 1 ? ' file' : ' files') : '', cmLabel(a.id)].filter(Boolean).join(' · ');
       return '<li class="lrow" data-id="' + esc(a.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' +
         esc(a.title || excerpt(a.body, 70)) + '</span><span class="lmeta">' + esc(meta) + '</span>' +
         (a.title ? '<span class="lmeta" style="white-space:normal">' + esc(excerpt(a.body, 140)) + '</span>' : '') + '</span></div>' +
@@ -137,8 +161,9 @@
   /* ---------- the dotted menu on each row ---------- */
   var amBtn = null;
   function actionsFor(a) {
-    return [['preview', 'eye', 'Preview as employees see it'], ['edit', 'pencil', 'Edit'],
-      a.published ? ['toggle', 'eyeOff', 'Hide from employees'] : ['toggle', 'eye', 'Show to employees'], ['del', 'trash', 'Delete']];
+    return [['preview', 'eye', 'Preview as employees see it'], ['edit', 'pencil', 'Edit']]
+      .concat(A.cmOk ? [['comments', 'chat', 'Comments' + (commentsOf(a.id).length ? ' (' + commentsOf(a.id).length + ')' : '')]] : []).concat([
+      a.published ? ['toggle', 'eyeOff', 'Hide from employees'] : ['toggle', 'eye', 'Show to employees'], ['del', 'trash', 'Delete']]);
   }
   function closeAMenu(focusBack) {
     var m = document.getElementById('an-amenu');
@@ -176,6 +201,7 @@
   function runAct(act, a) {
     if (act === 'preview') openPreview(previewOf(a));
     else if (act === 'edit') openDialog(a);
+    else if (act === 'comments') openComments(a);
     else if (act === 'toggle') toggle(a);
     else if (act === 'del') remove(a);
   }
@@ -202,6 +228,69 @@
   });
   window.addEventListener('scroll', function () { closeAMenu(false); }, true);
   window.addEventListener('resize', function () { closeAMenu(false); });
+
+  /* ---------- the comments on one announcement ---------- */
+  function drawComments() {
+    var a = A.rows.filter(function (x) { return x.id === A.cmFor; })[0], dlg = $('#an-cm');
+    if (!a || !dlg) return;
+    var list = commentsOf(a.id);
+    dlg.innerHTML = '<div class="apv-top"><div><b>Comments</b><span>' + esc(a.title || excerpt(a.body, 70)) + '</span></div>' + IB('x', 'Close', { 'data-cm-close': '1' }, 'line') + '</div>' +
+      '<div class="list-card" style="margin:12px"><ul class="rows">' + (list.length ? list.map(function (c) {
+        var rp = openReports(c.id);
+        return '<li class="lrow" data-cid="' + esc(c.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(personOf(c.employee_id)) +
+          '</span><span class="lmeta">' + esc(app.fmtDate(c.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(c.body) + '</span>' +
+          (rp.length ? '<span class="lmeta" style="white-space:normal;color:#B3261E">Reported by ' + rp.map(function (r) { return esc(personOf(r.employee_id)); }).join(', ') + '</span>' : '') + '</span></div>' +
+          '<div class="lside">' + (c.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + '<div class="lacts">' +
+          (rp.length ? IB('check', 'Mark the reports as dealt with', { 'data-cm': 'resolve' }, 'good') : '') +
+          (c.hidden ? IB('eye', 'Show this comment again', { 'data-cm': 'unhide' }, 'good') : IB('eyeOff', 'Hide this comment', { 'data-cm': 'hide' })) +
+          IB('trash', 'Delete this comment', { 'data-cm': 'del' }, 'danger') + '</div></div></li>';
+      }).join('') : '<li class="none" style="padding:16px 20px;color:var(--muted)">No comments yet.</li>') + '</ul></div>';
+  }
+  function openComments(a) {
+    var dlg = $('#an-cm');
+    if (!dlg) {
+      dlg = document.createElement('dialog');
+      dlg.id = 'an-cm';
+      dlg.className = 'apv-dlg';
+      dlg.setAttribute('aria-label', 'Comments on the announcement');
+      document.body.appendChild(dlg);
+      dlg.addEventListener('click', function (e) {
+        if (e.target === dlg || e.target.closest('[data-cm-close]')) { dlg.close(); render(); return; }
+        var b = e.target.closest('[data-cm]'), li = e.target.closest('li[data-cid]');
+        if (b && li) commentAct(b.dataset.cm, li.dataset.cid);
+      });
+    }
+    A.cmFor = a.id;
+    drawComments();
+    if (!dlg.open) dlg.showModal();
+  }
+  async function commentAct(act, cid) {
+    var c = A.comments.filter(function (x) { return x.id === cid; })[0];
+    if (!c) return;
+    if (act === 'hide' || act === 'unhide') {
+      var r = await sb.from('announcement_comments').update({ hidden: act === 'hide' }).eq('id', cid).select('id').maybeSingle();
+      if (r.error || !r.data) { toast("Couldn't save that. You may not have permission.", 'bad'); return; }
+      c.hidden = act === 'hide';
+      logAction('announcement.comment.' + act, excerpt(c.body, 60), { id: cid });
+      toast(c.hidden ? 'Hidden from employees.' : 'Shown again.', 'ok');
+    } else if (act === 'del') {
+      var ok = await ask({ title: 'Delete This Comment?', text: 'It will be permanently deleted.', ok: 'Delete', danger: true });
+      if (!ok) return;
+      var d = await sb.from('announcement_comments').delete().eq('id', cid).select('id');
+      if (d.error || !(d.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
+      A.comments = A.comments.filter(function (x) { return x.id !== cid; });
+      A.reports = A.reports.filter(function (x) { return x.comment_id !== cid; });
+      logAction('announcement.comment.delete', excerpt(c.body, 60), { id: cid });
+      toast('Comment deleted.', 'ok');
+    } else if (act === 'resolve') {
+      var res = await sb.from('announcement_comment_reports').update({ resolved: true }).eq('comment_id', cid).eq('resolved', false).select('id');
+      if (res.error) { toast("Couldn't save that.", 'bad'); return; }
+      A.reports.forEach(function (x) { if (x.comment_id === cid) x.resolved = true; });
+      logAction('announcement.comment.resolve', excerpt(c.body, 60), { id: cid });
+      toast('Marked as dealt with.', 'ok');
+    }
+    drawComments();
+  }
 
   /* ---------- the write / edit dialog ---------- */
   function openDialog(a) {

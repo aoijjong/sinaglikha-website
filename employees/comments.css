@@ -1,0 +1,33 @@
+/* ---------- comments under announcements ---------- */
+#ann-feed .post.has-cm{padding-bottom:12px}
+.ann-foot{order:5;display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:8px;border-top:1px solid rgba(74,46,34,.08)}
+#ann-feed .ann-foot .p-like{position:static;margin-left:auto}
+.p-com{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;font-size:.86rem;padding:6px 10px;border-radius:999px;cursor:pointer;transition:background .25s,color .25s}
+.p-com svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.p-com[aria-expanded="true"]{background:#FFF0DA;color:var(--brown)}
+@media (hover:hover) and (pointer:fine){.p-com:hover{background:#FFF0DA;color:var(--brown)}}
+.p-com:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+
+.ann-cm{order:6;margin-top:4px;padding:6px 12px 12px;border-radius:16px;background:#FFF6EA}
+.ann-cm[hidden]{display:none}
+.ann-cm .reply{padding:10px 0;border-top:1px solid rgba(74,46,34,.08)}
+.ann-cm .reply:first-child{border-top:0}
+.ann-cm .reply .post-top{margin:0 0 4px;padding-right:0}
+.ann-cm .reply p{margin:0;overflow-wrap:anywhere;font-size:.93rem;line-height:1.5;color:var(--ink)}
+.ann-cm .reply .pbtn.push{margin-left:auto;padding:4px 8px;font-size:.8rem}
+.ann-cm .pbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ann-cm .pbtn[disabled]{opacity:.6;cursor:default}
+.ann-cm .ac-none{margin:8px 0 2px}
+.ann-cm .rcmp{margin-top:8px}
+.ann-cm .rcmp textarea{background:#fff}
+.ac-send svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+@media (max-width:600px){
+  .ann-foot{gap:2px}
+  .p-com{font-size:.78rem;padding:5px 8px}
+  .p-com svg{width:17px;height:17px}
+  .ann-cm{padding:4px 10px 10px}
+  /* on a phone the send button is just the arrow, so the box keeps its width */
+  .ac-send span{display:none}
+  .ac-send{padding:0;width:44px;height:44px;flex:none}
+}
