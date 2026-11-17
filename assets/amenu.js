@@ -50,6 +50,9 @@
       menu.hidden = true;
       document.body.appendChild(menu);
     }
+    // a button inside an open dialog needs its menu inside that dialog too: the dialog sits above the rest of the page, so a menu on the page would open behind it
+    var host = btn.closest('dialog[open]') || document.body;
+    if (menu.parentNode !== host) host.appendChild(menu);
     if (!menu.hidden && openBtn === btn) { closeMenu(true); return; }
     closeMenu(false);
     menu.innerHTML = '';
