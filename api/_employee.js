@@ -57,18 +57,41 @@ function svc(extra) {
   );
 }
 
+/* Supabase calls give up after 8 seconds (Vercel stops a function at 10 on the free plan), so a stalled
+   database answers with a clean "not ok" result instead of hanging until the platform kills the request. */
+const DB_TIMEOUT_MS = 8000;
+
 async function rest(method, path, body, prefer) {
   const headers = svc({ 'Content-Type': 'application/json' });
   if (prefer) headers.Prefer = prefer;
-  const r = await fetch(`${URL_BASE}/rest/v1/${path}`, {
-    method, headers, body: body === undefined ? undefined : JSON.stringify(body)
-  });
+  let r;
+  try {
+    r = await fetch(`${URL_BASE}/rest/v1/${path}`, {
+      method, headers, body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(DB_TIMEOUT_MS)
+    });
+  } catch {
+    return { ok: false, status: 504, data: null };   // timed out or could not connect
+  }
   let data = null;
   try { data = await r.json(); } catch { data = null; }
   return { ok: r.ok, status: r.status, data };
 }
 
+/* True when a request that names an Origin comes from another site. Browsers always send Origin on a
+   cross-site POST; requests with no Origin (the same site, or a tool) are left alone. */
+function foreignOrigin(req) {
+  const origin = req.headers && req.headers.origin;
+  if (!origin) return false;
+  let host;
+  try { host = new URL(origin).host; } catch { return true; }
+  const own = [req.headers.host, req.headers['x-forwarded-host']]
+    .filter(Boolean).flatMap((h) => String(h).split(',')).map((h) => h.trim().toLowerCase());
+  return !own.includes(host.toLowerCase());
+}
+
 async function readJson(req) {
+  if (foreignOrigin(req)) return null;
   if (!/application\/json/i.test(req.headers['content-type'] || '')) return null;
   let body = req.body;
   if (typeof body === 'string') {
@@ -232,7 +255,8 @@ async function signUrl(bucket, filePath) {
     const s = await fetch(`${URL_BASE}/storage/v1/object/sign/${bucket}/${path}`, {
       method: 'POST',
       headers: svc({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ expiresIn: 300 })
+      body: JSON.stringify({ expiresIn: 300 }),
+      signal: AbortSignal.timeout(DB_TIMEOUT_MS)
     });
     const data = s.ok ? await s.json() : null;
     if (!data || !data.signedURL) return null;
@@ -406,7 +430,7 @@ async function forumFeed(eid) {
 module.exports = {
   list, namesOf, photoPack, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
-  configured, send, svc, rest, readJson, hashPin, checkPin, burnTime, sameText,
+  configured, send, svc, rest, readJson, foreignOrigin, makeToken, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
   setSession, clearSession, currentEmployee, ipHash, deviceBlocked, noteAttempt, noteFailure, isLocked,
   logAudit, loadEmployee
