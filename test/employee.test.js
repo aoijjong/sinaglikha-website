@@ -97,7 +97,7 @@ test('session cookie: valid, tampered, expired, wrong version, deactivated', asy
   const [payload, sig] = token.split('.');
   const forged = Buffer.from(JSON.stringify({ sub: 'e2', no: 'HRS-0002', v: 1, exp: 9999999999 })).toString('base64url');
   assert.equal(await E.currentEmployee(withCookie(`sng_emp=${forged}.${sig}`)), null, 'forged payload');
-  assert.equal(await E.currentEmployee(withCookie(`sng_emp=${payload}.${sig.slice(0, -1)}0`)), null, 'bad signature');
+  assert.equal(await E.currentEmployee(withCookie(`sng_emp=${payload}.${sig.slice(0, -1)}${sig.endsWith('0') ? '1' : '0'}`)), null, 'bad signature');
 
   const realNow = Date.now;
   Date.now = () => realNow() + 13 * 3600 * 1000;
