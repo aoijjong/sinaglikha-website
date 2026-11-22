@@ -8,7 +8,7 @@
 @media (hover:hover) and (pointer:fine){.p-com:hover{background:#FFF0DA;color:var(--brown)}}
 .p-com:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
 
-.ann-cm{order:6;margin-top:4px;padding:6px 12px 12px;border-radius:16px;background:#fff;border:1px solid rgba(74,46,34,.08)}
+.ann-cm{order:6;margin-top:4px;padding:10px 20px 16px;border-radius:16px;background:#fff;border:1px solid rgba(74,46,34,.08)}
 .ann-cm[hidden]{display:none}
 .ann-cm .reply{padding:10px 0;border-top:1px solid rgba(74,46,34,.08)}
 .ann-cm .reply:first-child{border-top:0}
@@ -29,7 +29,7 @@
   .ann-foot{gap:2px}
   .p-com{font-size:.78rem;padding:5px 8px}
   .p-com svg{width:17px;height:17px}
-  .ann-cm{padding:4px 10px 10px}
+  .ann-cm{padding:8px 16px 14px}
   /* on a phone the send button is just the arrow, so the box keeps its width */
   .ac-send span{display:none}
   .ac-send{padding:0;width:44px;height:44px;flex:none}
