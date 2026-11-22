@@ -99,7 +99,7 @@
     return '<div class="reply" data-cid="' + esc(c.id) + '"><div class="post-top">' + avatar(c.author, photos[c.pic]) +
       '<div class="who"><b>' + esc(c.author) + (c.mine ? ' (you)' : '') + '</b><span>' + esc(ago(c.created_at)) + '</span></div>' +
       (c.mine ? '<button class="pbtn push" type="button" data-cdel="' + esc(c.id) + '" aria-label="Delete your comment" title="Delete">' + TRASH + '</button>'
-        : '<button class="pbtn push" type="button" data-crep="' + esc(c.id) + '">' + FLAG + '<span>Report</span></button>') +
+        : '<button class="pbtn push" type="button" data-crep="' + esc(c.id) + '" aria-label="Report this comment" title="Report">' + FLAG + '</button>') +
       '</div><p>' + esc(c.body).replace(/\n/g, '<br>') + '</p></div>';
   }
   function formHtml(id) {
@@ -160,7 +160,8 @@
     btn.disabled = true;
     var r = await api('POST', '/api/employee-forum?cm=1', { action: 'report', comment_id: cid });
     if (!r.ok) { btn.disabled = false; toast(r.data.error || "Couldn't send that report."); return; }
-    btn.querySelector('span').textContent = 'Reported';
+    btn.setAttribute('aria-label', 'Reported');
+    btn.title = 'Reported';
     toast('Thanks. A moderator will take a look.');
   }
 

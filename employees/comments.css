@@ -13,8 +13,8 @@
 .ann-cm .reply{padding:10px 0;border-top:1px solid rgba(74,46,34,.08)}
 .ann-cm .reply:first-child{border-top:0}
 #ann-feed .ann-cm .reply .post-top{margin:0 0 4px;padding-right:0}
-.ann-cm .reply .pbtn[data-cdel]{padding:6px;margin-left:auto}
-.ann-cm .reply .pbtn[data-cdel] svg{width:18px;height:18px}
+.ann-cm .reply .pbtn[data-cdel],.ann-cm .reply .pbtn[data-crep]{padding:6px;margin-left:auto}
+.ann-cm .reply .pbtn[data-cdel] svg,.ann-cm .reply .pbtn[data-crep] svg{width:18px;height:18px}
 .ann-cm .reply p{margin:0;overflow-wrap:anywhere;font-size:.93rem;line-height:1.5;color:var(--ink)}
 .ann-cm .reply .pbtn.push{margin-left:auto;padding:4px 8px;font-size:.8rem}
 .ann-cm .pbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
