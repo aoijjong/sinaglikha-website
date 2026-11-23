@@ -10,7 +10,7 @@
 
 /* ---------- Employee Portal ---------- */
 .gv-body{padding:6px 16px 18px}
-.gv-lead{color:var(--muted);font-size:.93rem;margin:0 0 12px}
+.gv-lead{color:var(--muted);font-size:.93rem;margin:0 0 10px}
 .gv-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
 .gv-list{display:flex;flex-direction:column;gap:8px}
 .gv-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);cursor:pointer;font:inherit}
@@ -42,7 +42,7 @@
 .gv-warn{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:#FFF0B0;color:#5A4300;font-size:.9rem;text-align:left}
 .gv-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 6px}
 .gv-head h3{font-size:1.15rem;flex:1 1 220px;min-width:0}
-.gv-tn{font-weight:700;color:var(--brown);letter-spacing:.04em;font-size:.88rem}
+.gv-tn{font-weight:700;color:var(--brown);letter-spacing:.04em;font-size:.88rem;margin-bottom:12px}
 .gv-facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0;font-size:.88rem}
 .gv-facts dt{color:var(--muted)}
 .gv-facts dd{margin:0;overflow-wrap:anywhere}
@@ -58,6 +58,23 @@
 .gv-reply{display:flex;gap:8px;align-items:flex-end}
 .gv-reply textarea{flex:1;min-height:44px;padding:10px 13px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);font:inherit;font-size:.93rem;resize:vertical}
 @media (max-width:600px){.gv-body{padding:4px 12px 14px}.gv-actions .btn{flex:1 1 100%}.gv-ticket{font-size:1.1rem}.gv-msg{max-width:100%}}
+
+/* sections: a small label above each group, a line between groups */
+.gv-sec{padding:14px 0 4px;border-top:1px solid var(--line)}
+.gv-sec:first-of-type{border-top:0;padding-top:4px}
+.gv-h{font-family:var(--sans);font-weight:700;font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.gv-form .gv-sec .gv-l:first-of-type{margin-top:0}
+.gv-link{border:0;background:none;color:#B3361A;font:inherit;font-weight:700;font-size:.88rem;padding:8px 4px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.gv-more{margin:12px 0 0;border:1px dashed var(--line);border-radius:14px;padding:0 14px}
+.gv-more summary{cursor:pointer;padding:12px 0;font-weight:600;font-size:.9rem;color:var(--brown);list-style:none}
+.gv-more summary::-webkit-details-marker{display:none}
+.gv-more summary::before{content:"+";display:inline-block;width:18px;font-weight:700;color:#B3361A}
+.gv-more[open] summary::before{content:"\2212"}
+.gv-more[open]{padding-bottom:12px}
+.gv-more .gv-l{margin-top:8px}
+.gv-attach{margin-top:14px}
+.gv-keys{margin:8px 0}
+.gv-kl{display:block;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
 
 /* attachments */
 .gv-fine{margin:6px 0 0;color:var(--muted);font-size:.8rem;line-height:1.4}
@@ -95,10 +112,20 @@
 .gvm-num{padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff;display:grid;gap:2px}
 .gvm-num b{font-size:1.5rem;color:var(--brown);line-height:1.1}
 .gvm-num span{color:var(--muted);font-size:.78rem;line-height:1.3}
-.gvm-barrow{display:grid;grid-template-columns:minmax(90px,1.2fr) 3fr auto;gap:10px;align-items:center;margin:6px 0;font-size:.88rem}
-.gvm-bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gvm-barrow{display:grid;grid-template-columns:minmax(120px,1.5fr) 2fr auto;gap:10px;align-items:center;margin:6px 0;font-size:.88rem}
+.gvm-bl{white-space:normal;line-height:1.25}
 .gvm-bar{display:block;height:10px;border-radius:999px;background:#F1E6E2;overflow:hidden}
 .gvm-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#DE5A14,#F0A030)}
 .gvm-conflict{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 .gvm-conflict .fine{margin:6px 0 0}
+/* the inbox: the tabs live inside the white card, like the feed switch in the Employee Portal */
+.gvm-inbox .gvm-tabs{padding:10px 12px 4px;margin:0}
+.gvm-tabs .pill b{margin-left:4px;font-weight:700;opacity:.8}
+/* a case: conversation on the left, actions on the right (one column on a phone) */
+.gvm-cols{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.gvm-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.gvm-col .gvm-card{margin:0}
+@media (min-width:1000px){.gvm-cols{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}}
+/* keep the header buttons on the title's row on a phone */
+.ph.gvm-ph .ph-main{flex:1 1 110px}
 

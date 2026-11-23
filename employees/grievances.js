@@ -50,34 +50,39 @@
   function err() { return S.error ? '<p class="msg bad" role="alert">' + esc(S.error) + '</p>' : ''; }
 
   /* ---------- the screens ---------- */
+  function sec(title, html) { return '<section class="gv-sec"><h4 class="gv-h">' + esc(title) + '</h4>' + html + '</section>'; }
+  function back(label) { return '<button class="gv-back" type="button" data-gv="list">' + icon('back') + esc(label || 'Back') + '</button>'; }
+
   function listView() {
     var rows = S.mine.length ? '<ul class="gv-list">' + S.mine.map(function (g) {
       return '<li><button class="gv-row" type="button" data-gv-open="' + esc(g.id) + '"><span class="gv-t"><b>' + esc(g.ticket_no) + '</b> &middot; ' + esc(g.subject) + '</span>' +
         '<span class="gv-m">' + esc(G.categoryLabel(g.category)) + ' &middot; ' + esc(when(g.created_at)) + '</span>' + chip(g.status) + '</button></li>';
-    }).join('') + '</ul>' : '<div class="gv-none">You have not raised a grievance.</div>';
-    return '<p class="gv-lead">Raise a concern with Legal Compliance, in confidence. Each one gets a ticket number so you can follow it.</p>' +
+    }).join('') + '</ul>' : '<div class="gv-none">You have not raised any.</div>';
+    return '<p class="gv-lead">Raise a concern privately with Legal Compliance.</p>' +
       '<div class="gv-actions"><button class="btn btn-primary btn-sm" type="button" data-gv="new">' + icon('plus') + 'Raise a grievance</button>' +
-      '<button class="btn btn-ghost btn-sm" type="button" data-gv="find">Check an anonymous grievance</button></div>' + rows;
+      '<button class="gv-link" type="button" data-gv="find">Check an anonymous one</button></div>' + sec('My grievances', rows);
   }
 
   function newView() {
     var cats = G.CATEGORIES.map(function (c) { return '<option value="' + esc(c.key) + '">' + esc(c.label) + '</option>'; }).join('');
-    return '<button class="gv-back" type="button" data-gv="list">' + icon('back') + 'Back</button>' + err() +
-      '<form class="gv-form" id="gv-form" novalidate>' +
-      '<label class="gv-l" for="gv-cat">What is it about?</label><select id="gv-cat"><option value="">Choose one</option>' + cats + '</select>' +
-      '<label class="gv-l" for="gv-sub">Short title</label><input id="gv-sub" type="text" maxlength="' + G.LIMITS.subject + '" autocomplete="off">' +
-      '<label class="gv-l" for="gv-body">What happened?</label><textarea id="gv-body" maxlength="' + G.LIMITS.body + '" placeholder="Describe what happened, as clearly as you can."></textarea>' +
-      '<label class="gv-l" for="gv-date">When did it happen? <span class="gv-opt">(optional)</span></label><input id="gv-date" type="date" max="' + today() + '">' +
-      '<label class="gv-l" for="gv-loc">Where? <span class="gv-opt">(optional)</span></label><input id="gv-loc" type="text" maxlength="' + G.LIMITS.location + '" autocomplete="off">' +
-      '<label class="gv-l" for="gv-inv">Who was involved? <span class="gv-opt">(optional)</span></label><input id="gv-inv" type="text" maxlength="' + G.LIMITS.involved + '" autocomplete="off">' +
-      '<label class="gv-l" for="gv-involves">Does it involve someone in Legal Compliance, or the Administrator?</label><select id="gv-involves">' +
-      G.INVOLVES.map(function (o) { return '<option value="' + esc(o.key) + '">' + esc(o.label) + '</option>'; }).join('') + '</select>' +
-      '<p class="gv-fine">If it does, it will go only to the other people, never to the person it is about.</p>' +
-      '<div class="gv-l">Files <span class="gv-opt">(optional)</span></div>' + fileBox('gv-files') +
-      '<div class="gv-l" id="gv-who-l">Who can see your name?</div><div class="gv-choices" role="radiogroup" aria-labelledby="gv-who-l">' +
-      '<label class="gv-choice"><input type="radio" name="gv-who" value="confidential" checked><b>Keep my name confidential</b><span>Only Legal Compliance can see who you are, and only if they need to. You can follow the case under My Work.</span></label>' +
-      '<label class="gv-choice"><input type="radio" name="gv-who" value="anonymous"><b>Send it anonymously</b><span>We do not record who you are. You get a ticket number and an access code, the only way to see replies. Legal Compliance may find it harder to look into it.</span></label>' +
-      '</div><div class="gv-foot"><button class="btn btn-primary" type="submit" id="gv-send">Send grievance</button><button class="btn btn-ghost" type="button" data-gv="list">Cancel</button></div></form>';
+    return back() + err() + '<form class="gv-form" id="gv-form" novalidate>' +
+      sec('What happened',
+        '<label class="gv-l" for="gv-cat">Topic</label><select id="gv-cat"><option value="">Choose one</option>' + cats + '</select>' +
+        '<label class="gv-l" for="gv-sub">Title</label><input id="gv-sub" type="text" maxlength="' + G.LIMITS.subject + '" autocomplete="off">' +
+        '<label class="gv-l" for="gv-body">Details</label><textarea id="gv-body" maxlength="' + G.LIMITS.body + '" placeholder="What happened?"></textarea>' +
+        '<details class="gv-more"><summary>When, where and who <span class="gv-opt">(optional)</span></summary>' +
+        '<label class="gv-l" for="gv-date">When</label><input id="gv-date" type="date" max="' + today() + '">' +
+        '<label class="gv-l" for="gv-loc">Where</label><input id="gv-loc" type="text" maxlength="' + G.LIMITS.location + '" autocomplete="off">' +
+        '<label class="gv-l" for="gv-inv">Who was involved</label><input id="gv-inv" type="text" maxlength="' + G.LIMITS.involved + '" autocomplete="off"></details>') +
+      sec('Who can see it',
+        '<label class="gv-l" for="gv-involves">Does it involve Legal Compliance or the Administrator?</label><select id="gv-involves">' +
+        G.INVOLVES.map(function (o) { return '<option value="' + esc(o.key) + '">' + esc(o.label) + '</option>'; }).join('') + '</select>' +
+        '<p class="gv-fine">If yes, it skips the person it is about.</p>' +
+        '<div class="gv-choices" role="radiogroup" aria-label="Your name">' +
+        '<label class="gv-choice"><input type="radio" name="gv-who" value="confidential" checked><b>Confidential</b><span>Only Legal Compliance can see your name.</span></label>' +
+        '<label class="gv-choice"><input type="radio" name="gv-who" value="anonymous"><b>Anonymous</b><span>No name is recorded. You get a ticket number and access code to follow it.</span></label></div>') +
+      sec('Files (optional)', fileBox('gv-files')) +
+      '<div class="gv-foot"><button class="btn btn-primary" type="submit" id="gv-send">Send grievance</button><button class="btn btn-ghost" type="button" data-gv="list">Cancel</button></div></form>';
   }
 
   /* the file picker, shared by the form and by an open case */
@@ -86,7 +91,7 @@
     return '<input class="sr-only" type="file" id="' + id + '" multiple accept="' + esc(accept) + '">' +
       '<label class="btn btn-ghost btn-sm" for="' + id + '">' + icon('upload') + 'Choose files</label>' +
       '<ul class="gv-files" id="' + id + '-list" aria-live="polite"></ul><p class="msg bad" id="' + id + '-err" role="alert" hidden></p>' +
-      '<p class="gv-fine">Up to ' + G.FILES.max + ' files, 10 MB each: PDF, JPG, PNG, WEBP, TXT or DOCX. Files can carry hidden details, such as an author\'s name or where a photo was taken. If you are sending anonymously, check your files first.</p>';
+      '<p class="gv-fine">Up to ' + G.FILES.max + ' files, 10 MB each (PDF, image, TXT or DOCX). Files can hide details such as an author\'s name, so check them if you send anonymously.</p>';
   }
   function fileRows() {
     return S.files.map(function (f, i) {
@@ -132,45 +137,43 @@
   }
   function doneView() {
     var d = S.done, anon = !!d.access_code;
-    return '<div class="gv-done"><h3>Your grievance was sent</h3><p class="gv-lead">Legal Compliance will acknowledge it. Quote this ticket number if you contact them.</p>' +
-      '<div class="gv-ticket"><span id="gv-tn">' + esc(d.ticket_no) + '</span><button class="gv-copy" type="button" data-copy="' + esc(d.ticket_no) + '">Copy</button></div>' +
-      (d.upload && d.upload.total ? '<p class="' + (d.upload.failed.length ? 'gv-warn' : 'gv-lead') + '">' + (d.upload.failed.length
-        ? 'These files did not upload: ' + esc(d.upload.failed.join(', ')) + '. Your grievance was saved. Open it and add them again.'
-        : (d.upload.total === 1 ? 'Your file was attached.' : 'Your ' + d.upload.total + ' files were attached.')) + '</p>' : '') +
-      (anon ? '<div class="gv-ticket"><span id="gv-ac">' + esc(d.access_code) + '</span><button class="gv-copy" type="button" data-copy="' + esc(d.access_code) + '">Copy</button></div>' +
-        '<p class="gv-warn"><b>Save both now.</b> You need the ticket number and this access code to see replies. Because it is anonymous, we cannot recover them for you.</p>'
-        : '<p class="gv-lead">You can follow it from this page under My Work.</p>') +
-      '<div class="gv-foot" style="justify-content:center"><button class="btn btn-primary btn-sm" type="button" data-gv="' + (anon ? 'find' : 'list') + '">' + (anon ? 'Check an anonymous grievance' : 'Back to my grievances') + '</button>' +
+    var up = d.upload && d.upload.total ? '<p class="' + (d.upload.failed.length ? 'gv-warn' : 'gv-lead') + '">' + (d.upload.failed.length
+      ? 'These files did not upload: ' + esc(d.upload.failed.join(', ')) + '. Your grievance was saved. Open it to add them again.'
+      : (d.upload.total === 1 ? 'Your file was attached.' : 'Your ' + d.upload.total + ' files were attached.')) + '</p>' : '';
+    var box = function (id, label, val) { return '<div class="gv-keys"><span class="gv-kl">' + label + '</span><div class="gv-ticket"><span id="' + id + '">' + esc(val) + '</span><button class="gv-copy" type="button" data-copy="' + esc(val) + '">Copy</button></div></div>'; };
+    return '<div class="gv-done"><h3>Grievance sent</h3><p class="gv-lead">Quote the ticket number if you contact Legal Compliance.</p>' +
+      box('gv-tn', 'Ticket number', d.ticket_no) + (anon ? box('gv-ac', 'Access code', d.access_code) : '') + up +
+      (anon ? '<p class="gv-warn"><b>Save both now.</b> You need them to see replies, and they cannot be recovered.</p>' : '<p class="gv-lead">Follow it here under My Work.</p>') +
+      '<div class="gv-foot" style="justify-content:center"><button class="btn btn-primary btn-sm" type="button" data-gv="' + (anon ? 'find' : 'list') + '">' + (anon ? 'Check an anonymous one' : 'My grievances') + '</button>' +
       (anon ? '<button class="btn btn-ghost btn-sm" type="button" data-gv="list">Done</button>' : '') + '</div></div>';
   }
 
   function findView() {
-    return '<button class="gv-back" type="button" data-gv="list">' + icon('back') + 'Back</button>' + err() +
-      '<p class="gv-lead">Enter the ticket number and the access code you were given when you sent it anonymously.</p>' +
+    return back() + err() + '<p class="gv-lead">Enter the ticket number and access code you were given.</p>' +
       '<form class="gv-find" id="gv-find" novalidate><input id="gv-ft" type="text" placeholder="Ticket number, e.g. GRV-2026-0001" autocomplete="off" aria-label="Ticket number">' +
       '<input id="gv-fc" type="text" placeholder="Access code, e.g. ABCD-2345" autocomplete="off" aria-label="Access code">' +
       '<div class="gv-foot" style="margin-top:4px"><button class="btn btn-primary btn-sm" type="submit" id="gv-fgo">Open</button></div></form>';
   }
 
   function caseView() {
-    var c = S.cur.case, m = S.cur.messages, closed = c.status === 'closed';
-    var facts = [['Topic', G.categoryLabel(c.category)], ['Sent', when(c.created_at)], ['When it happened', dateOnly(c.incident_date)], ['Where', c.location], ['Involved', c.involved],
-      ['Privacy', c.confidentiality === 'anonymous' ? 'Anonymous' : 'Name kept confidential']].filter(function (f) { return f[1]; });
-    return '<button class="gv-back" type="button" data-gv="list">' + icon('back') + 'Back</button>' + err() +
+    var c = S.cur.case, m = S.cur.messages, files = S.cur.files || [], closed = c.status === 'closed';
+    var facts = [['Topic', G.categoryLabel(c.category)], ['Sent', when(c.created_at)], ['Date', dateOnly(c.incident_date)], ['Place', c.location], ['Involved', c.involved],
+      ['Privacy', c.confidentiality === 'anonymous' ? 'Anonymous' : 'Confidential']].filter(function (f) { return f[1]; });
+    return back() + err() +
       '<div class="gv-head"><h3>' + esc(c.subject) + '</h3>' + chip(c.status) + '</div><div class="gv-tn">' + esc(c.ticket_no) + '</div>' +
-      '<dl class="gv-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
-      '<p class="gv-text">' + esc(c.body) + '</p>' +
       (c.outcome ? '<div class="gv-outcome"><b>Outcome</b>' + esc(c.outcome) + '</div>' : '') +
-      ((S.cur.files || []).length ? '<ul class="gv-files gv-attached" aria-label="Files you attached">' + S.cur.files.map(function (f) {
+      sec('Details', '<dl class="gv-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + '</dl><p class="gv-text">' + esc(c.body) + '</p>') +
+      (files.length ? sec('Files', '<ul class="gv-files gv-attached" aria-label="Files you attached">' + files.map(function (f) {
         return '<li><span class="gv-fn">' + icon('file') + esc(f.name) + '</span><span class="gv-fs">' + esc(G.fileSize(f.size)) + '</span></li>';
-      }).join('') + '</ul>' : '') +
-      '<div class="gv-thread" aria-live="polite">' + (m.length ? m.map(function (x) {
+      }).join('') + '</ul>') : '') +
+      sec('Messages', '<div class="gv-thread" aria-live="polite">' + (m.length ? m.map(function (x) {
         return '<div class="gv-msg ' + (x.from === 'you' ? 'you' : 'legal') + '"><span class="gv-who">' + (x.from === 'you' ? 'You' : 'Legal Compliance') + '</span>' + esc(x.body) + '<small>' + esc(when(x.created_at)) + '</small></div>';
-      }).join('') : '<p class="gv-lead">No replies yet. Legal Compliance will write here.</p>') + '</div>' +
-      (closed ? '<p class="gv-lead">This grievance is closed.</p>'
-        : '<form class="gv-reply" id="gv-reply" novalidate><label class="sr-only" for="gv-rb">Your message</label><textarea id="gv-rb" maxlength="' + G.LIMITS.message + '" rows="1" placeholder="Add a message…"></textarea>' +
-          '<button class="btn btn-primary btn-sm" type="submit" id="gv-rs">Send</button></form>') +
-      (closed || (S.cur.files || []).length >= G.FILES.max ? '' : '<div class="gv-add">' + fileBox('gv-more') + '<button class="btn btn-ghost btn-sm" type="button" data-gv="attach" id="gv-attach">Attach these files</button></div>') +
+      }).join('') : '<p class="gv-fine">No replies yet.</p>') + '</div>' +
+        (closed ? '<p class="gv-fine">This grievance is closed.</p>'
+          : '<form class="gv-reply" id="gv-reply" novalidate><label class="sr-only" for="gv-rb">Your message</label><textarea id="gv-rb" maxlength="' + G.LIMITS.message + '" rows="1" placeholder="Add a message…"></textarea>' +
+            '<button class="btn btn-primary btn-sm" type="submit" id="gv-rs">Send</button></form>')) +
+      (closed || files.length >= G.FILES.max ? '' : '<details class="gv-more gv-attach"><summary>Attach files</summary><div class="gv-add">' + fileBox('gv-more') +
+        '<button class="btn btn-ghost btn-sm" type="button" data-gv="attach" id="gv-attach">Attach these files</button></div></details>') +
       '<div class="gv-foot"><button class="btn btn-ghost btn-sm" type="button" data-gv="refresh">Refresh</button></div>';
   }
 
