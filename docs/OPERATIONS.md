@@ -128,6 +128,11 @@ Set-up is one SQL file, `supabase/grievances.sql` (safe to run again; try it on 
   the screens. Handlers use database functions that check the rule and keep a trail; the tables cannot be read from the browser.
 
 **Handling**
+- **Who handles a case:** the Handling card has an "Assigned to" list and an Assign button. The list holds only the people who may see that
+  case: the Legal Compliance Senior Managers (and the Administrator, only to the Administrator, because that account is hidden from
+  Senior Managers), minus anyone who stepped away from it, and following the routing (a case involving Legal Compliance lists only the
+  Administrator; one involving the Administrator lists only Legal Compliance). Any handler who may see a case can give it to someone
+  else or back to nobody; each change is in the case trail and the activity log by name. Assigning does not send an email.
 - **Statuses:** Submitted, Acknowledged, Under review, Resolved, Escalated, Closed. Resolving or closing needs an outcome, which the
   employee can read. Private notes are never shown to the employee.
 - **Time limits** (the Administrator sets them under Grievances, Settings): acknowledge within 2 working days, update at least every

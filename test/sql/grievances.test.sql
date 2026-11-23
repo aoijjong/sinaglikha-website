@@ -466,3 +466,100 @@ begin
   perform set_config('role', 'postgres', true);
   perform pg_temp.check(not exists (select 1 from public.grievances where id = g_hidden), 'the Administrator can delete a case routed to them');
 end $$;
+
+-- ===========================================================================
+-- 13. Choosing who handles a case
+-- ===========================================================================
+do $$
+declare g_legal uuid; g_admin uuid; g_legalonly uuid; g_recuse uuid; j jsonb; names text; a_to uuid; me_name text;
+begin
+  insert into public.grievances (category, subject, body, confidentiality, employee_id) values ('other', 'ASSIGN normal', 'b', 'confidential', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') returning id into g_legal;
+  insert into public.grievances (category, subject, body, confidentiality, employee_id, routing) values ('other', 'ASSIGN involves Legal', 'b', 'confidential', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'admin_only') returning id into g_admin;
+  insert into public.grievances (category, subject, body, confidentiality, employee_id, routing) values ('other', 'ASSIGN involves Admin', 'b', 'confidential', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'legal_only') returning id into g_legalonly;
+  insert into public.grievances (category, subject, body, confidentiality, employee_id) values ('other', 'ASSIGN recuse', 'b', 'confidential', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') returning id into g_recuse;
+
+  -- Legal Compliance sees the Legal Compliance managers, and NOT the hidden Administrator
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
+  j := public.grievance_open(g_legal);
+  select string_agg(h->>'name', ', ' order by h->>'name') into names from jsonb_array_elements(j->'handlers') h;
+  perform pg_temp.check(names = 'Lea Legal, Luz Legal', 'Legal sees exactly the Legal Compliance managers to choose from (' || names || ')');
+  perform pg_temp.check(j::text !~* '(admin@x.test|legal@x.test|Ada)', 'the list holds no emails and does not reveal the hidden Administrator');
+  perform pg_temp.check(not (j->'handlers'->0 ? 'department') and not (j->'handlers'->0 ? 'email'), 'a person in the list is only an id, a name and a role');
+  begin perform * from public.grievance_handlers(g_legal); perform pg_temp.check(false, 'x');
+  exception when insufficient_privilege then perform pg_temp.check(true, 'the list function itself is not callable from a browser (only through the opened case)'); end;
+
+  -- assigning
+  select (h->>'id')::uuid into a_to from jsonb_array_elements(j->'handlers') h where h->>'name' = 'Luz Legal';
+  perform public.grievance_assign(g_legal, a_to);
+  perform pg_temp.check((select assigned_name from public.grievance_list() where id = g_legal) = 'Luz Legal', 'Legal gave the case to Luz');
+  j := public.grievance_open(g_legal);
+  perform pg_temp.check((select e->>'kind' from jsonb_array_elements(j->'events') e where e->>'kind' <> 'open' limit 1) = 'assign'
+                    and (select e->'detail'->>'to' from jsonb_array_elements(j->'events') e where e->>'kind' <> 'open' limit 1) = 'Luz Legal', 'the trail says who it was given to');
+  perform public.grievance_assign(g_legal, null);
+  perform pg_temp.check((select assigned_to from public.grievance_list() where id = g_legal) is null, 'a case can be given back to nobody');
+  perform pg_temp.check((select e->>'kind' from jsonb_array_elements(public.grievance_open(g_legal)->'events') e where e->>'kind' <> 'open' limit 1) = 'unassign', 'and that is in the trail too');
+
+  -- who it cannot be given to
+  begin perform public.grievance_assign(g_legal, '22222222-2222-4222-8222-222222222222'); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'it cannot be given to a manager of another department'); end;
+  begin perform public.grievance_assign(g_legal, '33333333-3333-4333-8333-333333333333'); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'Legal cannot give a case to the hidden Administrator'); end;
+  begin perform public.grievance_assign(g_legal, 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'nor to someone who does not exist'); end;
+  begin perform public.grievance_assign(g_admin, a_to); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'Legal cannot assign a case that is routed away from them'); end;
+
+  -- a case that involves the Administrator lists only Legal Compliance, and it cannot go to the Administrator
+  j := public.grievance_open(g_legalonly);
+  select string_agg(h->>'name', ', ' order by h->>'name') into names from jsonb_array_elements(j->'handlers') h;
+  perform pg_temp.check(names = 'Lea Legal, Luz Legal', 'a case involving the Administrator lists only Legal Compliance');
+
+  -- someone who stepped away is no longer on the list, and cannot be given the case
+  perform set_config('request.jwt.claim.sub', '44444444-4444-4444-8444-444444444444', true);   -- Luz recuses
+  perform public.grievance_recuse(g_recuse);
+  perform set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);   -- Lea
+  j := public.grievance_open(g_recuse);
+  select string_agg(h->>'name', ', ') into names from jsonb_array_elements(j->'handlers') h;
+  perform pg_temp.check(names = 'Lea Legal', 'a manager who stepped away is not offered (' || names || ')');
+  begin perform public.grievance_assign(g_recuse, '44444444-4444-4444-8444-444444444444'); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'and the case cannot be given to them'); end;
+
+  -- the Administrator: sees themselves (and the Legal managers) on a normal case, and only themselves on one that involves Legal
+  perform set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);
+  j := public.grievance_open(g_legal);
+  select string_agg(h->>'name', ', ' order by (h->>'role') = 'admin', h->>'name') into names from jsonb_array_elements(j->'handlers') h;
+  perform pg_temp.check(names = 'Lea Legal, Luz Legal, Ada Admin', 'the Administrator sees themself last, after the Legal managers (' || names || ')');
+  j := public.grievance_open(g_admin);
+  select string_agg(h->>'name', ', ') into names from jsonb_array_elements(j->'handlers') h;
+  perform pg_temp.check(names = 'Ada Admin', 'on a case involving Legal only the Administrator is offered');
+  perform public.grievance_assign(g_admin, '33333333-3333-4333-8333-333333333333');
+  perform pg_temp.check((select assigned_name from public.grievance_list() where id = g_admin) = 'Ada Admin', 'and can take it');
+  begin perform public.grievance_assign(g_admin, '11111111-1111-4111-8111-111111111111'); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'a case involving Legal cannot be given to a Legal manager, even by the Administrator'); end;
+
+  -- everyone else (taking a case off someone is an assignment too, so it is checked as well)
+  perform set_config('role', 'postgres', true);
+  update public.grievances set assigned_to = '44444444-4444-4444-8444-444444444444' where id = g_legal;
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true);
+  begin perform public.grievance_assign(g_legal, a_to); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'another department cannot assign'); end;
+  begin perform public.grievance_assign(g_legal, null); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'another department cannot take a case off its handler either'); end;
+  perform set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
+  begin perform public.grievance_assign(g_admin, null); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'Legal cannot unassign a case that is routed away from them'); end;
+  perform set_config('role', 'postgres', true);
+  perform pg_temp.check((select assigned_to from public.grievances where id = g_legal) = '44444444-4444-4444-8444-444444444444' and (select assigned_to from public.grievances where id = g_admin) = '33333333-3333-4333-8333-333333333333', 'and neither case changed hands');
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true);
+  perform set_config('role', 'anon', true);
+  begin perform public.grievance_assign(g_legal, a_to); perform pg_temp.check(false, 'x');
+  exception when insufficient_privilege then perform pg_temp.check(true, 'a signed-out visitor cannot assign'); end;
+
+  perform set_config('role', 'postgres', true);
+  perform pg_temp.check((select count(*) from public.audit_log where action = 'grievance.assign' and actor_email = 'legal@x.test' and detail->>'to' = 'Luz Legal') = 1
+                    and not exists (select 1 from public.audit_log where action in ('grievance.assign','grievance.unassign') and detail::text like '%aaaaaaaa%'), 'assigning is in the activity log by name, never naming the complainant');
+end $$;
+

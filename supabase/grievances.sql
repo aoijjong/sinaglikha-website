@@ -286,6 +286,8 @@ begin
     'messages', coalesce((select jsonb_agg(jsonb_build_object('id', m.id, 'kind', m.author_kind, 'author', coalesce(pr.full_name, ''),
                   'body', m.body, 'created_at', m.created_at) order by m.id)
                   from public.grievance_messages m left join public.profiles pr on pr.id = m.author_id where m.grievance_id = p_id), '[]'::jsonb),
+    'handlers', coalesce((select jsonb_agg(jsonb_build_object('id', h.id, 'name', h.full_name, 'role', h.role) order by (h.role = 'admin'), h.full_name)
+                  from public.grievance_handlers(p_id) h), '[]'::jsonb),
     'files', coalesce((select jsonb_agg(jsonb_build_object('id', f.id, 'path', f.path, 'name', f.name, 'size', f.size_bytes, 'mime', f.mime,
                   'created_at', f.created_at) order by f.created_at)
                   from public.grievance_files f where f.grievance_id = p_id and f.confirmed), '[]'::jsonb),
@@ -314,6 +316,38 @@ begin
       closed_at = case when p_status = 'closed' then now() else null end
     where id = p_id;
   perform public.grievance_trail(p_id, 'status', jsonb_build_object('from', g.status, 'to', p_status));
+end $$;
+
+-- Who this case can be given to: the people who may see it (so a case that involves Legal Compliance only lists the Administrator,
+-- one that involves the Administrator only lists Legal Compliance), not anyone who stepped away from it. The Administrator's account
+-- is hidden from Senior Managers everywhere on this site, so it is listed only to the Administrator, as themselves.
+create or replace function public.grievance_handlers(p_id uuid)
+returns table (id uuid, full_name text, role text)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  perform public.grievance_require(p_id);
+  return query
+    select p.id, p.full_name, p.role
+    from public.profiles p, public.grievances g
+    where g.id = p_id and p.active
+      and (p.role = 'admin' or (p.role = 'senior_manager' and p.department = 'legal'))
+      and (g.routing = 'legal' or (g.routing = 'admin_only' and p.role = 'admin') or (g.routing = 'legal_only' and p.role = 'senior_manager'))
+      and (not p.hidden or p.id = auth.uid())
+      and not exists (select 1 from public.grievance_recusals r where r.grievance_id = g.id and r.profile_id = p.id)
+    order by (p.role = 'admin'), p.full_name;
+end $$;
+
+-- Give a case to a chosen person (or to nobody). Any handler who may see the case can do this. Logged with the person's name.
+create or replace function public.grievance_assign(p_id uuid, p_to uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  perform public.grievance_require(p_id);
+  if p_to is not null and not exists (select 1 from public.grievance_handlers(p_id) h where h.id = p_to) then
+    raise exception 'That person cannot handle this grievance.';
+  end if;
+  update public.grievances set assigned_to = p_to where id = p_id;
+  perform public.grievance_trail(p_id, case when p_to is null then 'unassign' else 'assign' end,
+                                 jsonb_build_object('to', (select pr.full_name from public.profiles pr where pr.id = p_to)));
 end $$;
 
 create or replace function public.grievance_take(p_id uuid) returns void
@@ -465,7 +499,7 @@ begin
   foreach f in array array[
     'can_handle_grievances()', 'grievance_is_admin()', 'grievance_visible(uuid)', 'grievance_workdays(timestamptz,timestamptz)',
     'grievance_audit(text,text,jsonb)', 'grievance_trail(uuid,text,jsonb)', 'grievance_require(uuid)', 'grievance_due(public.grievances)',
-    'grievance_list()', 'grievance_open(uuid)', 'grievance_set_status(uuid,text,text)', 'grievance_take(uuid)',
+    'grievance_list()', 'grievance_open(uuid)', 'grievance_set_status(uuid,text,text)', 'grievance_take(uuid)', 'grievance_handlers(uuid)', 'grievance_assign(uuid,uuid)',
     'grievance_reply(uuid,text,boolean)', 'grievance_reveal(uuid)', 'grievance_recuse(uuid)', 'grievance_delete(uuid)', 'grievance_counts()',
     'grievance_get_settings()', 'grievance_set_settings(integer,integer,integer,integer)', 'grievance_purge_preview()', 'grievance_purge()',
     'grievance_digest()'] loop
@@ -474,7 +508,7 @@ begin
   -- the ones a signed-in manager may call (each checks the rule itself)
   -- (grievance_is_admin is also used by the storage delete rule, which runs with the caller's own permissions)
   foreach f in array array[
-    'can_handle_grievances()', 'grievance_is_admin()', 'grievance_list()', 'grievance_open(uuid)', 'grievance_set_status(uuid,text,text)', 'grievance_take(uuid)',
+    'can_handle_grievances()', 'grievance_is_admin()', 'grievance_list()', 'grievance_open(uuid)', 'grievance_set_status(uuid,text,text)', 'grievance_take(uuid)', 'grievance_assign(uuid,uuid)',
     'grievance_reply(uuid,text,boolean)', 'grievance_reveal(uuid)', 'grievance_recuse(uuid)', 'grievance_delete(uuid)', 'grievance_counts()',
     'grievance_get_settings()', 'grievance_set_settings(integer,integer,integer,integer)', 'grievance_purge_preview()', 'grievance_purge()'] loop
     execute format('grant execute on function public.%s to authenticated', f);

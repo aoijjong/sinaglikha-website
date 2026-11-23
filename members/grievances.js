@@ -215,7 +215,6 @@
   }
   function renderCase() {
     var c = G.cur, g = c.grievance, anon = g.confidentiality === 'anonymous', closed = g.status === 'closed';
-    var mine = state.profile && g.assigned_to && state.profile.id === g.assigned_to;
     var facts = [['Topic', M.categoryLabel(g.category)], ['Privacy', anon ? 'Anonymous. No name recorded.' : 'Confidential'], ['Sent', when(g.created_at, anon)],
       ['Date', g.incident_date ? day(g.incident_date + 'T00:00:00+08:00') : ''], ['Place', g.location], ['Involved', g.involved],
       ['Assigned to', g.assigned_name || 'Nobody yet'], ['Visible to', ROUTE[g.routing] ? ROUTE[g.routing][0] : '']].filter(function (f) { return f[1]; });
@@ -230,10 +229,16 @@
     var opened = c.events.filter(function (e) { return e.kind === 'open'; }).length;
     var trail = c.events.filter(function (e) { return e.kind !== 'open'; }).map(function (e) {
       var d = e.detail || {}, what = e.kind === 'status' ? 'Status ' + M.statusLabel(d.from) + ' → ' + M.statusLabel(d.to) : e.kind === 'reply' ? 'Replied' : e.kind === 'note' ? 'Private note'
-        : e.kind === 'assign' ? 'Took the case' : e.kind === 'reveal' ? 'Revealed who raised it' : e.kind === 'recuse' ? 'Stepped away' : e.kind;
+        : e.kind === 'assign' ? (d.to ? 'Assigned to ' + d.to : 'Took the case') : e.kind === 'unassign' ? 'Unassigned' : e.kind === 'reveal' ? 'Revealed who raised it' : e.kind === 'recuse' ? 'Stepped away' : e.kind;
       return '<span>' + esc(when(e.created_at) + ' · ' + (e.actor || 'Someone') + ' · ' + what) + '</span>';
     }).join('');
     var files = c.files || [];
+    // who this case can be given to (the database lists only people who may see it); the current holder stays visible even if they no longer qualify
+    var me = state.profile && state.profile.id, hs = c.handlers || [];
+    var assignOptions = '<option value="">Unassigned</option>' + hs.map(function (h) {
+      return '<option value="' + esc(h.id) + '"' + (h.id === g.assigned_to ? ' selected' : '') + '>' + esc(h.name + (h.id === me ? ' (you)' : '') + (h.role === 'admin' ? ' · Administrator' : '')) + '</option>';
+    }).join('');
+    if (g.assigned_to && !hs.some(function (h) { return h.id === g.assigned_to; })) assignOptions += '<option value="keep" selected>' + esc((g.assigned_name || 'Someone') + ' (current)') + '</option>';
     var card = function (title, html, cls) { return '<section class="gvm-card' + (cls ? ' ' + cls : '') + '"><h3>' + esc(title) + '</h3>' + html + '</section>'; };
     // the same layout as the employee's side, turned round: the employee on the left, the handlers on the right
     var thread = c.messages.length ? c.messages.map(function (m) {
@@ -252,7 +257,9 @@
         '<button class="btn btn-primary btn-sm" type="button" data-a="reply">Send</button></div>' +
         '<label class="gvm-priv"><input type="checkbox" id="gv-priv"> Private note (handlers only)</label></div>') +
       '</div><div class="gvm-col">' +
-      card('Handling', '<div class="gvm-ctl">' + (mine ? '' : '<div><button class="btn btn-ghost btn-sm" type="button" data-a="take">Assign to me</button></div>') +
+      card('Handling', '<div class="gvm-ctl">' +
+        '<label class="fine" for="gv-as">Assigned to</label><div class="gvm-assign"><select id="gv-as">' + assignOptions + '</select>' +
+        '<button class="btn btn-primary btn-sm" type="button" data-a="assign">Assign</button></div>' +
         '<label class="fine" for="gv-st">Status</label><select id="gv-st">' + opts + '</select>' +
         '<label class="fine" for="gv-out">Outcome (the employee sees it; needed to resolve or close)</label><textarea id="gv-out" maxlength="' + M.LIMITS.outcome + '">' + esc(g.outcome) + '</textarea>' +
         '<div><button class="btn btn-primary btn-sm" type="button" data-a="status">Save status</button></div>' +
@@ -317,6 +324,14 @@
     G.cur = null; G.who = null;
     loadList();
   }
+  async function assign() {
+    var g = G.cur.grievance, sel = $('#gv-as', G.box), v = sel.value, hs = G.cur.handlers || [];
+    if (v === 'keep') { toast('It is already with ' + (g.assigned_name || 'them') + '.'); return; }
+    var to = v || null;
+    if (to === (g.assigned_to || null)) { toast(to ? 'It is already assigned to them.' : 'It is already unassigned.'); return; }
+    var who = to ? (hs.filter(function (h) { return h.id === to; })[0] || {}).name : '';
+    act(function () { return sb.rpc('grievance_assign', { p_id: g.id, p_to: to }); }, to ? 'Assigned to ' + who + '.' : 'Now unassigned.');
+  }
   async function download(id) {
     var f = (G.cur.files || []).filter(function (x) { return x.id === id; })[0];
     if (!f) return;
@@ -343,7 +358,7 @@
     else if (a === 'recuse') recuse();
     else if (a === 'delete') deleteCase();
     else if (a === 'download') download(b.dataset.file);
-    else if (a === 'take') act(function () { return sb.rpc('grievance_take', { p_id: id }); }, 'This case is now with you.');
+    else if (a === 'assign') assign();
     else if (a === 'status') {
       var st = $('#gv-st', G.box).value, out = $('#gv-out', G.box).value.trim();
       act(function () { return sb.rpc('grievance_set_status', { p_id: id, p_status: st, p_outcome: out || null }); }, 'Status saved.');
