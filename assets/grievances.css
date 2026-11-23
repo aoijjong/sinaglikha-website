@@ -119,22 +119,10 @@
 .gvm-inbox .gvm-tabs{padding:0;margin:0 0 10px}
 .gvm-tabs .pill b{margin-left:4px;font-weight:700;opacity:.8}
 /* a case: conversation on the left, actions on the right (one column on a phone) */
-.gvm-cols{display:grid;gap:12px;grid-template-columns:minmax(0,1fr);grid-template-areas:"case" "messages" "handling" "side"}
-.gvm-cols > .gvm-card,.gvm-side .gvm-card{margin:0}
-.gvm-a-case{grid-area:case}
-.gvm-a-messages{grid-area:messages}
-.gvm-handling{grid-area:handling}
-.gvm-side{grid-area:side;display:flex;flex-direction:column;gap:12px;min-width:0}
-.gvm-side .gvm-card:last-child{flex:1}   /* the last card takes the spare height, so the bottom edge lines up */
-/* wide screens: two rows, so the cards in each row are the same height (Case with Handling, Messages with Files and the trail) */
-@media (min-width:1000px){
-  .gvm-cols{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);grid-template-areas:"case handling" "messages side";align-items:stretch}
-  .gvm-handling{display:flex;flex-direction:column}
-  .gvm-handling .gvm-ctl{flex:1;display:flex;flex-direction:column}
-  .gvm-handling .gvm-conflict{margin-top:auto}   /* any spare height sits above this, not below it */
-  .gvm-a-case{display:flex;flex-direction:column}
-  .gvm-a-case .gvm-details{flex:1}               /* the outline box fills the card, so its bottom edge lines up with Handling's */
-}
+.gvm-cols{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.gvm-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.gvm-col .gvm-card{margin:0}
+@media (min-width:1000px){.gvm-cols{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}}
 /* keep the header buttons on the title's row on a phone */
 .ph.gvm-ph .ph-main{flex:1 1 110px}
 /* an inbox row: two pills at most (status, who has it); they wrap rather than run off the card */
