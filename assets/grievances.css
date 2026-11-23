@@ -9,7 +9,7 @@
 .gv-chip.gv-soft{background:#EFEAE4;color:#5A4538}
 
 /* ---------- Employee Portal ---------- */
-.gv-body{padding:6px 16px 18px}
+.gv-body{padding:8px 24px 24px}
 .gv-lead{color:var(--muted);font-size:.93rem;margin:0 0 10px}
 .gv-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
 .gv-list{display:flex;flex-direction:column;gap:8px}
@@ -57,7 +57,7 @@
 .gv-msg .gv-who{display:block;font-weight:700;font-size:.78rem;color:var(--brown);margin-bottom:2px}
 .gv-reply{display:flex;gap:8px;align-items:flex-end}
 .gv-reply textarea{flex:1;min-height:44px;padding:10px 13px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);font:inherit;font-size:.93rem;resize:vertical}
-@media (max-width:600px){.gv-body{padding:4px 12px 14px}.gv-actions .btn{flex:1 1 100%}.gv-ticket{font-size:1.1rem}.gv-msg{max-width:100%}}
+@media (max-width:600px){.gv-body{padding:6px 20px 20px}.gv-actions .btn{flex:1 1 100%}.gv-ticket{font-size:1.1rem}.gv-msg{max-width:100%}}
 
 /* sections: a small label above each group, a line between groups */
 .gv-sec{padding:14px 0 4px;border-top:1px solid var(--line)}
@@ -89,7 +89,8 @@
 
 /* ---------- Senior Manager portal ---------- */
 .gvm-who{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
-.gvm-card{margin:0 0 12px;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:#fff}
+.gvm-card{margin:0 0 14px;padding:20px 24px;border:1px solid var(--line);border-radius:18px;background:#fff}
+@media (max-width:600px){.gvm-card{padding:18px 20px}}
 .gvm-card h3{font-size:1.05rem;margin:0 0 6px}
 .gvm-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}
 .gvm-facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0;font-size:.9rem}
