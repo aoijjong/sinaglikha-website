@@ -419,8 +419,14 @@ function byline(row, names, pack, eid) {
 }
 const publicIds = (rows) => rows.filter((r) => !isAnon(r)).map((r) => r.employee_id);
 
+/* A forum category as the portal sees it. `color` is a colour NAME chosen by a Senior Manager (see
+   assets/forum-colors.js); anything that is not a plain lowercase word is dropped, so it can never carry markup. */
+function catView(x) {
+  return { id: x.id, name: x.name, description: x.description || '', color: /^[a-z]{2,20}$/.test(x.color || '') ? x.color : null };
+}
+
 async function forumFeed(eid) {
-  const c = await rest('GET', 'forum_categories?active=eq.true&select=id,name,description&order=position,created_at');
+  const c = await rest('GET', 'forum_categories?active=eq.true&select=*&order=position,created_at');
   if (!c.ok || !Array.isArray(c.data) || !c.data.length) return { categories: [], threads: [] };
   const ids = c.data.map((x) => x.id).join(',');
   const threads = list(await rest('GET', `forum_threads?category_id=in.(${ids})&hidden=eq.false&select=*&order=last_post_at.desc&limit=20`));
@@ -433,7 +439,7 @@ async function forumFeed(eid) {
   const count = {};
   list(p).forEach((x) => { count[x.thread_id] = (count[x.thread_id] || 0) + 1; });
   return {
-    categories: c.data.map((x) => ({ id: x.id, name: x.name, description: x.description || '' })),
+    categories: c.data.map(catView),
     photos: pack.pics,
     threads: threads.map((x) => ({
       id: x.id, category_id: x.category_id, title: x.title, body: x.body, locked: x.locked, replies: count[x.id] || 0,
@@ -443,7 +449,7 @@ async function forumFeed(eid) {
 }
 
 module.exports = {
-  list, namesOf, photoPack, byline, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
+  list, namesOf, photoPack, catView, byline, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, foreignOrigin, makeToken, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
