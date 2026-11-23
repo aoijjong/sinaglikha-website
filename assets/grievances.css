@@ -125,4 +125,8 @@
 @media (min-width:1000px){.gvm-cols{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}}
 /* keep the header buttons on the title's row on a phone */
 .ph.gvm-ph .ph-main{flex:1 1 110px}
+/* an inbox row: two pills at most (status, who has it); they wrap rather than run off the card */
+.gvm-inbox .lside{flex-wrap:wrap}
+.gvm-flags{font-size:.8rem}
+.gvm-flags .gvm-od{color:#8F1D1D;font-weight:700}
 
