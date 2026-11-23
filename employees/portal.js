@@ -305,7 +305,7 @@
     if (keep) sel.value = keep;
     var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
     $('#forum-feed').innerHTML = forum.threads.length ? forum.threads.map(function (t) {
-      return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
+      return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain">' + esc(catName(t.category_id)) + '</span></div>' +
         '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
@@ -320,7 +320,7 @@
   }
 
   function replyHtml(p, photos) {
-    return '<div class="reply"><div class="post-top">' + avSm(p.author, '', photos[p.pic]) + '<div class="who"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span></div>' +
+    return '<div class="reply"><div class="post-top">' + avSm(p.author, p.anonymous ? 'anon' : '', photos[p.pic]) + '<div class="who"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span></div>' +
       modBtn(p.mine, 'post', p.id) + '</div><p>' + text(p.body) + '</p></div>';
   }
 
@@ -337,6 +337,7 @@
     if (!r.ok) { box.innerHTML = '<p class="fine">' + esc(r.data.error || "Couldn't load the replies.") + '</p>'; return; }
     var photos = r.data.photos || [];
     box.innerHTML = r.data.posts.map(function (p) { return replyHtml(p, photos); }).join('') + (r.data.thread.locked ? '<p class="fine" style="margin-top:8px">This thread is locked, so it cannot take new replies.</p>' :
+      '<label class="anon-opt"><input type="checkbox" data-anon-for="' + esc(id) + '"> Reply anonymously</label>' +
       '<form class="rcmp" data-reply-form="' + esc(id) + '" novalidate><label class="sr-only" for="rb-' + esc(id) + '">Your reply</label><textarea id="rb-' + esc(id) + '" maxlength="2000" rows="1" placeholder="Write a reply…"></textarea>' +
       IB('send', 'Send reply', { 'data-send-reply': '1' }, 'solid') + '</form><p class="msg bad" role="alert" hidden style="margin-top:8px"></p>');
   }
@@ -348,7 +349,8 @@
     msg.hidden = true;
     var btn = form.querySelector('button');
     btn.disabled = true;
-    var r = await call('POST', '/api/employee-forum', { action: 'reply', thread_id: id, body: textVal });
+    var anonBox = document.querySelector('[data-anon-for="' + id + '"]');
+    var r = await call('POST', '/api/employee-forum', { action: 'reply', thread_id: id, body: textVal, anonymous: !!(anonBox && anonBox.checked) });
     btn.disabled = false;
     if (r.status === 401) { show('signin'); return; }
     if (!r.ok) { msg.textContent = r.data.error || "Couldn't post that."; msg.hidden = false; return; }
@@ -377,12 +379,13 @@
     note('#fc-msg', '');
     var btn = $('#fc-post');
     btn.disabled = true;
-    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: $('#fc-cat').value, title: title, body: body });
+    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: $('#fc-cat').value, title: title, body: body, anonymous: $('#fc-anon').checked });
     btn.disabled = false;
     if (r.status === 401) { show('signin'); return; }
     if (!r.ok) { note('#fc-msg', r.data.error || "Couldn't post that."); return; }
     $('#fc-title').value = '';
     $('#fc-body').value = '';
+    $('#fc-anon').checked = false;
     toast('Posted.');
     composerOpen(false);
     refreshFeed();

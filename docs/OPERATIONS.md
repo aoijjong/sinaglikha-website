@@ -26,6 +26,11 @@ run on the live project here, so a fresh project can be rebuilt:
 2. ... (fill in)
 ```
 
+Optional features that need a SQL file before they work:
+- `forum_anonymous.sql`: lets employees post anonymously in the Community forum. Deploying the code first is safe
+  (the forum works as before and an anonymous post is refused with a clear message). Moderators always see the
+  real author, and the portal says so next to the checkbox.
+
 Rules going forward:
 - Never edit a file that has already been run. Add a new, dated file (`2026-12-01_add_x.sql`).
 - Write each file so it is safe to run twice (`create table if not exists`, `add column if not exists`,

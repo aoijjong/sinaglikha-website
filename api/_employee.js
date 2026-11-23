@@ -404,16 +404,31 @@ async function evaluationForms(eid) {
 }
 
 /* The open forum categories and the latest threads across them, with reply counts and author names. */
+/* How a forum thread or reply names its author to OTHER employees. An anonymous row shows "Anonymous" and no
+   photo; only the author sees `mine`. The author's id is never sent to the portal. Rows come from select=* so
+   this still works before supabase/forum_anonymous.sql has added the `anonymous` column. */
+function isAnon(row) { return !!row && row.anonymous === true; }
+function byline(row, names, pack, eid) {
+  const anon = isAnon(row);
+  return {
+    author: anon ? 'Anonymous' : (names[row.employee_id] || 'Employee'),
+    pic: anon || !pack ? undefined : pack.at(row.employee_id),
+    anonymous: anon,
+    mine: row.employee_id === eid
+  };
+}
+const publicIds = (rows) => rows.filter((r) => !isAnon(r)).map((r) => r.employee_id);
+
 async function forumFeed(eid) {
   const c = await rest('GET', 'forum_categories?active=eq.true&select=id,name,description&order=position,created_at');
   if (!c.ok || !Array.isArray(c.data) || !c.data.length) return { categories: [], threads: [] };
   const ids = c.data.map((x) => x.id).join(',');
-  const threads = list(await rest('GET', `forum_threads?category_id=in.(${ids})&hidden=eq.false&select=id,category_id,employee_id,title,body,locked,created_at,last_post_at&order=last_post_at.desc&limit=20`));
+  const threads = list(await rest('GET', `forum_threads?category_id=in.(${ids})&hidden=eq.false&select=*&order=last_post_at.desc&limit=20`));
   const tids = threads.map((x) => x.id);
   const [p, who, pack] = await Promise.all([
     tids.length ? rest('GET', `forum_posts?thread_id=in.(${tids.join(',')})&hidden=eq.false&select=thread_id&limit=5000`) : { ok: true, data: [] },
-    namesOf(threads.map((x) => x.employee_id)),
-    photoPack('employees', threads.map((x) => x.employee_id))
+    namesOf(publicIds(threads)),
+    photoPack('employees', publicIds(threads))
   ]);
   const count = {};
   list(p).forEach((x) => { count[x.thread_id] = (count[x.thread_id] || 0) + 1; });
@@ -422,13 +437,13 @@ async function forumFeed(eid) {
     photos: pack.pics,
     threads: threads.map((x) => ({
       id: x.id, category_id: x.category_id, title: x.title, body: x.body, locked: x.locked, replies: count[x.id] || 0,
-      author: who[x.employee_id] || 'Employee', pic: pack.at(x.employee_id), mine: x.employee_id === eid, created_at: x.created_at, last_post_at: x.last_post_at
+      ...byline(x, who, pack, eid), created_at: x.created_at, last_post_at: x.last_post_at
     }))
   };
 }
 
 module.exports = {
-  list, namesOf, photoPack, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
+  list, namesOf, photoPack, byline, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, foreignOrigin, makeToken, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
