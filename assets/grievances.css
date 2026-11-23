@@ -129,4 +129,16 @@
 .gvm-inbox .lside{flex-wrap:wrap}
 .gvm-flags{font-size:.8rem}
 .gvm-flags .gvm-od{color:#8F1D1D;font-weight:700}
+/* the details of a case sit in an outline box */
+.gvm-details{margin:10px 0;padding:12px 16px;border:1.5px solid rgba(74,46,34,.22);border-radius:14px}
+.gvm-details .gvm-facts{margin:0}
+.gvm-details .gvm-text{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+/* "Raised by": dots, and the same eye as the show-password button (that one is positioned inside a field, so here it sits in line) */
+.gvm-who{display:flex;align-items:center;gap:2px}
+.gvm-mask{letter-spacing:.14em;color:var(--muted)}
+.pw-toggle.gvm-eye{position:static;transform:none;width:32px;height:32px;margin:-6px 0}
+.pw-toggle.gvm-eye .icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* choosing who handles a case: the list and its button on one row */
+.gvm-assign{display:flex;gap:8px;align-items:center}
+.gvm-assign select{flex:1;min-width:0}
 
