@@ -12,7 +12,7 @@
   var G = window.SngGrievance;
   if (!panel || !body || !G) return;
 
-  var S = { available: false, mine: [], view: 'list', cur: null, access: null, done: null, error: '', loading: false };
+  var S = { available: false, mine: [], view: 'list', cur: null, access: null, done: null, error: '', loading: false, files: [], uploading: '' };
   var toastTimer;
 
   function esc(s) {
@@ -70,16 +70,73 @@
       '<label class="gv-l" for="gv-date">When did it happen? <span class="gv-opt">(optional)</span></label><input id="gv-date" type="date" max="' + today() + '">' +
       '<label class="gv-l" for="gv-loc">Where? <span class="gv-opt">(optional)</span></label><input id="gv-loc" type="text" maxlength="' + G.LIMITS.location + '" autocomplete="off">' +
       '<label class="gv-l" for="gv-inv">Who was involved? <span class="gv-opt">(optional)</span></label><input id="gv-inv" type="text" maxlength="' + G.LIMITS.involved + '" autocomplete="off">' +
+      '<label class="gv-l" for="gv-involves">Does it involve someone in Legal Compliance, or the Administrator?</label><select id="gv-involves">' +
+      G.INVOLVES.map(function (o) { return '<option value="' + esc(o.key) + '">' + esc(o.label) + '</option>'; }).join('') + '</select>' +
+      '<p class="gv-fine">If it does, it will go only to the other people, never to the person it is about.</p>' +
+      '<div class="gv-l">Files <span class="gv-opt">(optional)</span></div>' + fileBox('gv-files') +
       '<div class="gv-l" id="gv-who-l">Who can see your name?</div><div class="gv-choices" role="radiogroup" aria-labelledby="gv-who-l">' +
       '<label class="gv-choice"><input type="radio" name="gv-who" value="confidential" checked><b>Keep my name confidential</b><span>Only Legal Compliance can see who you are, and only if they need to. You can follow the case under My Work.</span></label>' +
       '<label class="gv-choice"><input type="radio" name="gv-who" value="anonymous"><b>Send it anonymously</b><span>We do not record who you are. You get a ticket number and an access code, the only way to see replies. Legal Compliance may find it harder to look into it.</span></label>' +
       '</div><div class="gv-foot"><button class="btn btn-primary" type="submit" id="gv-send">Send grievance</button><button class="btn btn-ghost" type="button" data-gv="list">Cancel</button></div></form>';
   }
 
+  /* the file picker, shared by the form and by an open case */
+  function fileBox(id) {
+    var accept = Object.keys(G.FILES.types).join(',');
+    return '<input class="sr-only" type="file" id="' + id + '" multiple accept="' + esc(accept) + '">' +
+      '<label class="btn btn-ghost btn-sm" for="' + id + '">' + icon('upload') + 'Choose files</label>' +
+      '<ul class="gv-files" id="' + id + '-list" aria-live="polite"></ul><p class="msg bad" id="' + id + '-err" role="alert" hidden></p>' +
+      '<p class="gv-fine">Up to ' + G.FILES.max + ' files, 10 MB each: PDF, JPG, PNG, WEBP, TXT or DOCX. Files can carry hidden details, such as an author\'s name or where a photo was taken. If you are sending anonymously, check your files first.</p>';
+  }
+  function fileRows() {
+    return S.files.map(function (f, i) {
+      return '<li><span class="gv-fn">' + esc(f.name) + '</span><span class="gv-fs">' + esc(G.fileSize(f.size)) + '</span><button class="gv-copy" type="button" data-rmfile="' + i + '" aria-label="Remove ' + esc(f.name) + '">Remove</button></li>';
+    }).join('');
+  }
+  function showFiles(listId) { var el = document.getElementById(listId + '-list'); if (el) el.innerHTML = fileRows(); }
+  function fileError(listId, msg) { var el = document.getElementById(listId + '-err'); if (!el) return; el.textContent = msg || ''; el.hidden = !msg; }
+  function pickFiles(input, already) {
+    var errs = [];
+    Array.prototype.forEach.call(input.files, function (f) {
+      var mime = G.mimeFor(f);
+      if (S.files.length + already >= G.FILES.max) { errs.push('You can attach up to ' + G.FILES.max + ' files.'); return; }
+      if (!G.fileExt(mime)) { errs.push(f.name + ': that kind of file is not allowed.'); return; }
+      if (f.size < 1 || f.size > G.FILES.maxBytes) { errs.push(f.name + ': each file must be 10 MB or smaller.'); return; }
+      S.files.push({ file: f, name: f.name, size: f.size, mime: mime });
+    });
+    input.value = '';
+    showFiles(input.id);
+    fileError(input.id, errs.filter(function (e, i) { return errs.indexOf(e) === i; }).join(' '));
+  }
+  /* sends the chosen files one at a time: reserve a place, upload straight to storage, then confirm it arrived */
+  async function uploadAll(access, label) {
+    var failed = [], total = S.files.length;
+    for (var i = 0; i < total; i++) {
+      var f = S.files[i], ok = false;
+      S.uploading = 'Uploading file ' + (i + 1) + ' of ' + total + '…';
+      if (label) label.textContent = S.uploading;
+      var r = await api('POST', '', Object.assign({ action: 'file_url', name: f.name, size: f.size, mime: f.mime }, access));
+      if (r.ok && r.data.upload_url) {
+        try {
+          var fd = new FormData();
+          fd.append('cacheControl', '3600');
+          fd.append('', f.file);
+          var up = await fetch(r.data.upload_url, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
+          if (up.ok) { var d = await api('POST', '', Object.assign({ action: 'file_done', file_id: r.data.file_id }, access)); ok = d.ok; }
+        } catch (e) { ok = false; }
+      }
+      if (!ok) failed.push(f.name);
+    }
+    S.files = []; S.uploading = '';
+    return { total: total, failed: failed };
+  }
   function doneView() {
     var d = S.done, anon = !!d.access_code;
     return '<div class="gv-done"><h3>Your grievance was sent</h3><p class="gv-lead">Legal Compliance will acknowledge it. Quote this ticket number if you contact them.</p>' +
       '<div class="gv-ticket"><span id="gv-tn">' + esc(d.ticket_no) + '</span><button class="gv-copy" type="button" data-copy="' + esc(d.ticket_no) + '">Copy</button></div>' +
+      (d.upload && d.upload.total ? '<p class="' + (d.upload.failed.length ? 'gv-warn' : 'gv-lead') + '">' + (d.upload.failed.length
+        ? 'These files did not upload: ' + esc(d.upload.failed.join(', ')) + '. Your grievance was saved. Open it and add them again.'
+        : (d.upload.total === 1 ? 'Your file was attached.' : 'Your ' + d.upload.total + ' files were attached.')) + '</p>' : '') +
       (anon ? '<div class="gv-ticket"><span id="gv-ac">' + esc(d.access_code) + '</span><button class="gv-copy" type="button" data-copy="' + esc(d.access_code) + '">Copy</button></div>' +
         '<p class="gv-warn"><b>Save both now.</b> You need the ticket number and this access code to see replies. Because it is anonymous, we cannot recover them for you.</p>'
         : '<p class="gv-lead">You can follow it from this page under My Work.</p>') +
@@ -104,12 +161,16 @@
       '<dl class="gv-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
       '<p class="gv-text">' + esc(c.body) + '</p>' +
       (c.outcome ? '<div class="gv-outcome"><b>Outcome</b>' + esc(c.outcome) + '</div>' : '') +
+      ((S.cur.files || []).length ? '<ul class="gv-files gv-attached" aria-label="Files you attached">' + S.cur.files.map(function (f) {
+        return '<li><span class="gv-fn">' + icon('file') + esc(f.name) + '</span><span class="gv-fs">' + esc(G.fileSize(f.size)) + '</span></li>';
+      }).join('') + '</ul>' : '') +
       '<div class="gv-thread" aria-live="polite">' + (m.length ? m.map(function (x) {
         return '<div class="gv-msg ' + (x.from === 'you' ? 'you' : 'legal') + '"><span class="gv-who">' + (x.from === 'you' ? 'You' : 'Legal Compliance') + '</span>' + esc(x.body) + '<small>' + esc(when(x.created_at)) + '</small></div>';
       }).join('') : '<p class="gv-lead">No replies yet. Legal Compliance will write here.</p>') + '</div>' +
       (closed ? '<p class="gv-lead">This grievance is closed.</p>'
         : '<form class="gv-reply" id="gv-reply" novalidate><label class="sr-only" for="gv-rb">Your message</label><textarea id="gv-rb" maxlength="' + G.LIMITS.message + '" rows="1" placeholder="Add a message…"></textarea>' +
           '<button class="btn btn-primary btn-sm" type="submit" id="gv-rs">Send</button></form>') +
+      (closed || (S.cur.files || []).length >= G.FILES.max ? '' : '<div class="gv-add">' + fileBox('gv-more') + '<button class="btn btn-ghost btn-sm" type="button" data-gv="attach" id="gv-attach">Attach these files</button></div>') +
       '<div class="gv-foot"><button class="btn btn-ghost btn-sm" type="button" data-gv="refresh">Refresh</button></div>';
   }
 
@@ -120,7 +181,7 @@
     if (v === 'new' && (f = document.getElementById('gv-cat'))) f.focus();
     if (v === 'find' && (f = document.getElementById('gv-ft'))) f.focus();
   }
-  function go(view, keepError) { S.view = view; if (!keepError) S.error = ''; render(); panel.scrollIntoView({ block: 'nearest' }); }
+  function go(view, keepError) { S.view = view; if (!keepError) S.error = ''; if (view !== 'new' && view !== 'case') S.files = []; render(); panel.scrollIntoView({ block: 'nearest' }); }
 
   /* ---------- actions ---------- */
   async function load() {
@@ -150,21 +211,24 @@
     e.preventDefault();
     var v = function (id) { return document.getElementById(id).value; };
     var who = document.querySelector('input[name="gv-who"]:checked');
-    var form = { action: 'submit', category: v('gv-cat'), subject: v('gv-sub').trim(), body: v('gv-body').trim(), incident_date: v('gv-date'), location: v('gv-loc').trim(), involved: v('gv-inv').trim(), anonymous: !!(who && who.value === 'anonymous') };
+    var form = { action: 'submit', category: v('gv-cat'), subject: v('gv-sub').trim(), body: v('gv-body').trim(), incident_date: v('gv-date'), location: v('gv-loc').trim(), involved: v('gv-inv').trim(), anonymous: !!(who && who.value === 'anonymous'), involves: v('gv-involves') };
     var bad = !G.validCategory(form.category) ? 'Choose what it is about.' : !form.subject ? 'Give your grievance a short title.' : !form.body ? 'Describe what happened.' : '';
     if (bad) { S.error = bad; return keepForm(form); }
     var btn = document.getElementById('gv-send');
     btn.disabled = true;
     var r = await api('POST', '', form);
-    btn.disabled = false;
-    if (!r.ok) { S.error = r.data.error || "Couldn't send that. Try again."; return keepForm(form); }
+    if (!r.ok) { btn.disabled = false; S.error = r.data.error || "Couldn't send that. Try again."; return keepForm(form); }
     S.done = r.data; S.error = '';
+    // the grievance is saved; now any files, using the ticket and code (anonymous) or the case id (confidential)
+    if (S.files.length) S.done.upload = await uploadAll(r.data.access_code ? { ticket: r.data.ticket_no, code: r.data.access_code } : { id: r.data.id }, btn);
+    btn.disabled = false;
     if (!form.anonymous) { var l = await api('GET', ''); if (l.ok && l.data.available) S.mine = l.data.mine || []; }
     go('done');
   }
   function keepForm(f) {   // show the error and put back what was typed
     render();
     var set = function (id, val) { var el = document.getElementById(id); if (el) el.value = val; };
+    set('gv-involves', f.involves); showFiles('gv-files');
     set('gv-cat', f.category); set('gv-sub', f.subject); set('gv-body', f.body); set('gv-date', f.incident_date); set('gv-loc', f.location); set('gv-inv', f.involved);
     var r = document.querySelector('input[name="gv-who"][value="' + (f.anonymous ? 'anonymous' : 'confidential') + '"]');
     if (r) r.checked = true;
@@ -190,6 +254,15 @@
     toast('Message sent.');
     await reloadCase();
   }
+  async function attachMore() {
+    if (!S.files.length) { fileError('gv-more', 'Choose a file first.'); return; }
+    var btn = document.getElementById('gv-attach'), a = S.access || {};
+    btn.disabled = true;
+    var res = await uploadAll(a.id ? { id: a.id } : { ticket: a.ticket, code: a.code }, btn);
+    btn.disabled = false;
+    toast(res.failed.length ? 'Did not upload: ' + res.failed.join(', ') : res.total === 1 ? 'File attached.' : res.total + ' files attached.');
+    await reloadCase();
+  }
   function copy(text, btn) {
     var done = function () { var old = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = old; }, 1500); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { toast('Press and hold to copy.'); });
@@ -197,14 +270,20 @@
   }
 
   body.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-gv],[data-gv-open],[data-copy]');
+    var t = e.target.closest('[data-gv],[data-gv-open],[data-copy],[data-rmfile]');
     if (!t) return;
+    if (t.hasAttribute('data-rmfile')) { S.files.splice(Number(t.getAttribute('data-rmfile')), 1); showFiles(S.view === 'new' ? 'gv-files' : 'gv-more'); return; }
     if (t.hasAttribute('data-copy')) return copy(t.getAttribute('data-copy'), t);
     if (t.hasAttribute('data-gv-open')) return openCase(t.getAttribute('data-gv-open'));
     var a = t.getAttribute('data-gv');
     if (a === 'refresh') return reloadCase();
+    if (a === 'attach') return attachMore();
     if (a === 'list') { load(); return go('list'); }
     go(a);
+  });
+  body.addEventListener('change', function (e) {
+    if (e.target.id === 'gv-files') pickFiles(e.target, 0);
+    else if (e.target.id === 'gv-more') pickFiles(e.target, (S.cur && S.cur.files || []).length);
   });
   body.addEventListener('submit', function (e) {
     if (e.target.id === 'gv-form') submitNew(e);
@@ -216,7 +295,7 @@
   var top = document.getElementById('top-right');
   function sync() {
     if (top && !top.hidden) load();
-    else { S = { available: false, mine: [], view: 'list', cur: null, access: null, done: null, error: '', loading: false }; panel.hidden = true; body.innerHTML = ''; }
+    else { S = { available: false, mine: [], view: 'list', cur: null, access: null, done: null, error: '', loading: false, files: [], uploading: '' }; panel.hidden = true; body.innerHTML = ''; }
   }
   if (top && window.MutationObserver) new MutationObserver(sync).observe(top, { attributes: true, attributeFilter: ['hidden'] });
   sync();

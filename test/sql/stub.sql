@@ -12,3 +12,10 @@ insert into public.profiles (id,email,full_name,role,department) values
  ('22222222-2222-4222-8222-222222222222','rewards@x.test','Rey Rewards','senior_manager','rewards'),
  ('33333333-3333-4333-8333-333333333333','admin@x.test','Ada Admin','admin',null);
 insert into public.employees (id, employee_no, full_name, position) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','SNG-0001','Maria Santos','Analyst');
+-- a stand-in for Supabase Storage, enough for the bucket and its access rules
+create schema storage;
+create table storage.buckets (id text primary key, name text, public boolean not null default false, file_size_limit bigint, allowed_mime_types text[]);
+create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text, created_at timestamptz not null default now());
+alter table storage.objects enable row level security;
+grant usage on schema storage to authenticated;
+grant select, delete on storage.objects to authenticated;

@@ -339,6 +339,15 @@
         if (n) items.push({ icon: 'flag', text: plural(n, 'forum report needs', 'forum reports need') + ' a moderator', special: 'forum', tab: 'reports' });
       }));
     }
+    // grievances: only Legal Compliance and the Administrator are told, and only if there is something to do
+    if ((state.isAdmin || myDept() === 'legal') && window.MembersGrievances) {
+      extra.push(sb.rpc('grievance_counts').then(function (r) {
+        var c = r.error || !r.data ? null : r.data;
+        if (!c) return;   // not set up yet, or no access: say nothing
+        if (c.overdue) items.push({ icon: 'scale', text: plural(c.overdue, 'grievance is', 'grievances are') + ' overdue', special: 'grievances' });
+        else if (c.attention) items.push({ icon: 'scale', text: plural(c.attention, 'grievance needs', 'grievances need') + ' attention', special: 'grievances' });
+      }));
+    }
     await Promise.all(extra);
     if (cs.view !== 'home' || !items.length) return;
     box.innerHTML = items.map(function (it, i) {
