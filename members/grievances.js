@@ -1,5 +1,5 @@
 /*
-  SINAGLIKHA Grievances: the inbox, case screen, statistics and settings, for Legal Compliance Senior Managers and the Administrator.
+  SINAGLIKHA Grievance Management System: the inbox, case screen and settings, for Legal Compliance Senior Managers and the Administrator.
   Employees raise grievances in the Employee Portal (through /api/employee-evaluate?gr=1). Here a handler reads them, takes a case,
   replies to the employee, keeps private notes, changes the status and closes it with an outcome, opens attached files, or steps away
   from a case they have a conflict of interest in. The Administrator also sets the time limits and the retention period.
@@ -18,7 +18,7 @@
   var sb = app.sb, state = app.state, esc = app.esc, toast = app.toast, ask = app.ask;
   var I = window.SngIcon, IB = window.SngIconButton;
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var G = { box: null, ctx: null, view: 'list', filter: 'todo', rows: [], cur: null, who: null, error: '', token: 0, stats: null, settings: null, preview: null };
+  var G = { box: null, ctx: null, view: 'list', filter: 'todo', rows: [], cur: null, who: null, error: '', token: 0, settings: null, preview: null };
 
   function canHandle() { return state.isAdmin || (state.profile && state.profile.department === 'legal'); }
   function chip(status) { return '<span class="gv-chip gv-' + M.statusTone(status) + '">' + esc(M.statusLabel(status)) + '</span>'; }
@@ -86,10 +86,10 @@
   }
 
   function renderList() {
-    // Statistics, Settings and Export are buttons up here, not a second row of tabs
-    var actions = G.error ? '' : IB('chart', 'Statistics', { 'data-a': 'stats' }, 'line') + (state.isAdmin ? IB('sliders', 'Settings', { 'data-a': 'settings' }, 'line') : '') +
+    // Settings and Export are buttons up here, not a second row of tabs
+    var actions = G.error ? '' : (state.isAdmin ? IB('sliders', 'Settings', { 'data-a': 'settings' }, 'line') : '') +
       IB('download', 'Export all as a CSV file (no names, no text)', { 'data-a': 'csv' }, 'line');
-    var head = header('Grievances', 'Legal Compliance', 'back', 'Back to the deliverables', actions);
+    var head = header('Grievance Management System', 'Legal Compliance', 'back', 'Back to the deliverables', actions);
     if (G.error) { G.box.innerHTML = head + notSet(); return; }
     var tabs = '<div class="pills gvm-tabs" role="group" aria-label="Show">' + TABS.map(function (t) {
       var n = G.rows.filter(t[2]).length;
@@ -133,45 +133,14 @@
     toast('Exported ' + rows.length + (rows.length === 1 ? ' case' : ' cases') + ', with no names or text.', 'ok');
   }
 
-  /* ---------- statistics ---------- */
-  async function openStats() {
-    G.view = 'stats';
-    G.box.innerHTML = header('Grievances', 'Statistics', 'list-back', 'Back to the inbox') + '<p class="fine">Loading…</p>';
-    var s = await sb.rpc('grievance_stats'), t = await sb.rpc('grievance_get_settings');
-    if (G.view !== 'stats') return;
-    if (s.error) { G.error = problem(s); G.box.innerHTML = header('Grievances', 'Statistics', 'list-back', 'Back to the inbox') + notSet(); return; }
-    G.stats = s.data; G.settings = t.error ? null : t.data;
-    renderStats();
-  }
-  function bars(title, pairs, label) {
-    var max = Math.max.apply(null, pairs.map(function (p) { return p[1]; }).concat([1]));
-    return '<div class="gvm-card"><h3>' + esc(title) + '</h3>' + (pairs.length ? pairs.map(function (p) {
-      return '<div class="gvm-barrow"><span class="gvm-bl">' + esc(label ? label(p[0]) : p[0]) + '</span><span class="gvm-bar" aria-hidden="true"><span style="width:' + Math.round(100 * Number(p[1]) / max) + '%"></span></span><b>' + Number(p[1]) + '</b></div>';
-    }).join('') : '<p class="fine">Nothing yet.</p>') + '</div>';
-  }
-  function renderStats() {
-    var s = G.stats, st = G.settings;
-    var num = function (label, v) { return '<div class="gvm-num"><b>' + esc(v) + '</b><span>' + esc(label) + '</span></div>'; };
-    var pairs = function (o) { return Object.keys(o || {}).map(function (k) { return [k, Number(o[k])]; }).sort(function (a, b) { return b[1] - a[1]; }); };
-    G.box.innerHTML = header('Grievances', 'Statistics', 'list-back', 'Back to the inbox') +
-      '<div class="gvm-nums">' + num('Total', s.total) + num('Open', s.open) + num('Overdue', s.overdue) + num('Anonymous', s.anonymous) +
-      num('Days to acknowledge (average, working days)', s.avg_ack_workdays === null ? '–' : s.avg_ack_workdays) + num('Days to close (average)', s.avg_days_to_close === null ? '–' : s.avg_days_to_close) + '</div>' +
-      bars('By status', M.STATUSES.map(function (x) { return [x.key, Number((s.by_status || {})[x.key] || 0)]; }), M.statusLabel) +
-      bars('By topic', pairs(s.by_category), M.categoryLabel) +
-      bars('Sent per month (last 12)', (s.by_month || []).map(function (m) { return [m.month, m.n]; })) +
-      (st ? '<p class="fine">Limits: acknowledge in ' + esc(st.ack_days) + ' working days, update every ' + esc(st.update_days) + ', resolve in ' + esc(st.resolve_days) +
-        ' days. ' + (st.retention_months ? 'Closed cases are kept ' + esc(st.retention_months) + ' months.' : 'Closed cases are kept until a retention period is set.') +
-        ' Holidays count as working days. No names or text here.</p>' : '');
-  }
-
   /* ---------- settings (the Administrator only) ---------- */
   async function openSettings() {
     if (!state.isAdmin) return;
     G.view = 'settings';
-    G.box.innerHTML = header('Grievances', 'Settings', 'list-back', 'Back to the inbox') + '<p class="fine">Loading…</p>';
+    G.box.innerHTML = header('Grievance Management System', 'Settings', 'list-back', 'Back to the inbox') + '<p class="fine">Loading…</p>';
     var t = await sb.rpc('grievance_get_settings'), p = await sb.rpc('grievance_purge_preview');
     if (G.view !== 'settings') return;
-    if (t.error) { G.error = problem(t); G.box.innerHTML = header('Grievances', 'Settings', 'list-back', 'Back to the inbox') + notSet(); return; }
+    if (t.error) { G.error = problem(t); G.box.innerHTML = header('Grievance Management System', 'Settings', 'list-back', 'Back to the inbox') + notSet(); return; }
     G.settings = t.data; G.preview = p.error ? null : p.data;
     renderSettings();
   }
@@ -180,7 +149,7 @@
     var field = function (id, label, val, min, max, hint) {
       return '<div class="field"><label for="' + id + '">' + esc(label) + '</label><input id="' + id + '" type="number" inputmode="numeric" min="' + min + '" max="' + max + '" value="' + esc(val === null || val === undefined ? '' : val) + '"><p class="fine">' + esc(hint) + '</p></div>';
     };
-    G.box.innerHTML = header('Grievances', 'Settings', 'list-back', 'Back to the inbox') +
+    G.box.innerHTML = header('Grievance Management System', 'Settings', 'list-back', 'Back to the inbox') +
       '<div class="gvm-card"><h3>Time limits</h3><p class="fine">A case is flagged Overdue past these. Weekends do not count; holidays do.</p><form id="gv-set" novalidate>' +
       field('gv-s-ack', 'Acknowledge within (working days)', s.ack_days, 1, 30, 'From when it was sent.') +
       field('gv-s-upd', 'Update at least every (working days)', s.update_days, 1, 60, 'A reply or status change.') +
@@ -261,7 +230,7 @@
       return '<div class="gvm-msg ' + esc(m.kind) + '"><b class="k">' + esc(label) + '</b>' + esc(m.body) + '<small>' + esc(when(m.created_at, anon && m.kind === 'employee')) + '</small></div>';
     }).join('') : '<p class="fine">No messages yet.</p>';
     // left: what happened and the conversation. right: what you do about it.
-    G.box.innerHTML = header(g.ticket_no, g.subject, 'list-back', 'Back to the inbox') +
+    G.box.innerHTML = header(g.ticket_no, g.subject, 'list-back', 'Back to the inbox', IB('trash', 'Delete this grievance', { 'data-a': 'delete' }, 'danger')) +
       '<div class="gvm-cols"><div class="gvm-col">' +
       card('Case', '<div class="gvm-row"><span>' + chip(g.status) + '</span>' + (g.overdue ? alert('Overdue') : '') + '</div>' + (g.overdue ? '<p class="fine"><b>' + esc(g.overdue) + '.</b></p>' : '') +
         '<dl class="gvm-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + who + '</dl>' +
@@ -314,6 +283,27 @@
     G.cur = null; G.who = null;
     loadList();
   }
+  /* Permanent. The files are removed from storage first, while this person can still see them; if that fails, nothing is deleted. */
+  async function deleteCase() {
+    var g = G.cur.grievance, files = G.cur.files || [];
+    var ok = await ask({ title: 'Delete this grievance?', text: g.ticket_no + ', with its messages, files and trail, will be deleted for good. This cannot be undone. The activity log keeps only the ticket number and your name.', ok: 'Delete', danger: true });
+    if (!ok) return;
+    busy(true);
+    var missed = 0;
+    if (files.length) {
+      var rm = await sb.storage.from('grievances').remove(files.map(function (f) { return f.path; }));
+      if (rm.error) { busy(false); toast("Couldn't remove the files. Nothing was deleted. Try again.", 'bad'); return; }
+      missed = files.length - ((rm.data || []).length);
+    }
+    var r = await sb.rpc('grievance_delete', { p_id: g.id });
+    if (r.error) { busy(false); fail(r); return; }
+    var left = (r.data && r.data.leftover) || [];
+    if (left.length) await sb.storage.from('grievances').remove(left).catch(function () {});   // half-finished uploads: best effort
+    busy(false);
+    toast(missed > 0 ? 'Deleted, but ' + missed + (missed === 1 ? ' file' : ' files') + ' could not be removed from storage.' : 'Grievance deleted.', missed > 0 ? 'bad' : 'ok');
+    G.cur = null; G.who = null;
+    loadList();
+  }
   async function download(id) {
     var f = (G.cur.files || []).filter(function (x) { return x.id === id; })[0];
     if (!f) return;
@@ -333,12 +323,12 @@
     if (a === 'back') G.ctx.back();
     else if (a === 'list-back') { G.cur = null; G.who = null; loadList(); }
     else if (a === 'csv') downloadCsv();
-    else if (a === 'stats') openStats();
     else if (a === 'settings') openSettings();
     else if (a === 'purge') purge();
     else if (a === 'view' && li) openCase(li.dataset.id);
     else if (a === 'reveal') reveal();
     else if (a === 'recuse') recuse();
+    else if (a === 'delete') deleteCase();
     else if (a === 'download') download(b.dataset.file);
     else if (a === 'take') act(function () { return sb.rpc('grievance_take', { p_id: id }); }, 'This case is now with you.');
     else if (a === 'status') {
@@ -357,7 +347,7 @@
       box.onclick = onClick;
       box.onsubmit = function (e) { if (e.target.id === 'gv-set') saveSettings(e); };
       if (!canHandle()) {
-        box.innerHTML = header('Grievances', '', 'back', 'Back to the deliverables') +
+        box.innerHTML = header('Grievance Management System', '', 'back', 'Back to the deliverables') +
           '<div class="list-card"><div class="es"><span class="eic">' + I('lock') + '</span><b>Legal Compliance only</b><p>Grievances are handled by Legal Compliance and the Administrator.</p></div></div>';
         return;
       }
@@ -366,6 +356,6 @@
     },
     csv: buildCsv,
     /* on sign-out nothing about a case is left on the page */
-    reset: function () { G.cur = null; G.who = null; G.rows = []; G.stats = null; G.settings = null; G.preview = null; G.error = ''; if (G.box) G.box.innerHTML = ''; }
+    reset: function () { G.cur = null; G.who = null; G.rows = []; G.settings = null; G.preview = null; G.error = ''; if (G.box) G.box.innerHTML = ''; }
   };
 })();

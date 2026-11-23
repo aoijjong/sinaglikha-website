@@ -109,18 +109,11 @@
 .gvm-priv{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--brown)}
 .gvm-priv input{width:18px;height:18px;accent-color:#CE2020}
 .gvm-events{font-size:.82rem;color:var(--muted);display:grid;gap:3px;margin-top:6px}
-.gvm-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:0 0 12px}
-.gvm-num{padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff;display:grid;gap:2px}
-.gvm-num b{font-size:1.5rem;color:var(--brown);line-height:1.1}
-.gvm-num span{color:var(--muted);font-size:.78rem;line-height:1.3}
-.gvm-barrow{display:grid;grid-template-columns:minmax(120px,1.5fr) 2fr auto;gap:10px;align-items:center;margin:6px 0;font-size:.88rem}
-.gvm-bl{white-space:normal;line-height:1.25}
-.gvm-bar{display:block;height:10px;border-radius:999px;background:#F1E6E2;overflow:hidden}
-.gvm-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#DE5A14,#F0A030)}
 .gvm-conflict{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 .gvm-conflict .fine{margin:6px 0 0}
 /* the inbox: the tabs live inside the white card, like the feed switch in the Employee Portal */
-.gvm-inbox .gvm-tabs{padding:10px 12px 4px;margin:0}
+/* flush with the rows on the left, and the same gap below as between two rows (10px) */
+.gvm-inbox .gvm-tabs{padding:0;margin:0 0 10px}
 .gvm-tabs .pill b{margin-left:4px;font-weight:700;opacity:.8}
 /* a case: conversation on the left, actions on the right (one column on a phone) */
 .gvm-cols{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}

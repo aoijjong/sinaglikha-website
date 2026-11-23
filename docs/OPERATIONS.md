@@ -134,10 +134,13 @@ Set-up is one SQL file, `supabase/grievances.sql` (safe to run again; try it on 
   5 working days, resolution target 30 days. A case past a limit shows **Overdue** with the reason, has its own filter, and is
   counted on the Content tab ("3 grievances are overdue"). Weekends do not count; **public holidays do** (the database does not
   know them).
-- **Statistics:** counts and averages only, no names or text. **Export:** the inbox can be downloaded as a CSV (tickets, topic,
-  status, dates; never a name or any text).
-- **Retention:** nothing is ever deleted until the Administrator sets "keep closed cases for N months" **and** presses "Delete expired
-  cases". The deletion is logged as a count. Ask your counsel or Data Privacy Officer which period is right.
+- **Export:** the inbox can be downloaded as a CSV (tickets, topic, status, dates; never a name or any text).
+- **Deleting one case:** the trash icon at the top of a case deletes it for good, with its messages and files, after a confirmation. Any
+  handler who may see the case can do it. The activity log keeps one line with the ticket number and who deleted it (never the
+  complainant). There is no undo, so consider closing a case instead.
+- **Retention:** nothing is deleted automatically. The Administrator can set "keep closed cases for N months" and then press "Delete
+  expired cases" to remove every closed case past that age at once (logged as a count). Ask your counsel or Data Privacy Officer
+  which period is right.
 
 **Files** (private bucket `grievances`): up to 5 per grievance, 10 MB each, PDF, JPG, PNG, WEBP, TXT or DOCX. The browser uploads straight
 to Storage with a one-time address from the server; the file keeps a random name and the employee's name for it is kept only in the
