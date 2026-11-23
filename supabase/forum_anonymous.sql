@@ -2,9 +2,9 @@
 -- Safe to run more than once. Run it in the Supabase SQL editor.
 --
 -- employee_id stays on every row, so moderators can still see who wrote an anonymous post, the author can
--- still delete their own post, and the flood limits still work. "Anonymous" only hides the name and photo
+-- still delete their own post, and the flood limits still work. "Anon Likhain" only hides the name and photo
 -- from other employees: the API never sends employee_id to the portal, and for an anonymous row it sends
--- "Anonymous" and no photo.
+-- "Anon Likhain" and no photo.
 --
 -- Deploy order does not matter: until this has run, the site works exactly as before, and a request to post
 -- anonymously is refused with a clear message (it is never posted under the person's name instead).
