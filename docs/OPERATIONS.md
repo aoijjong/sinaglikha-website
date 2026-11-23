@@ -12,6 +12,11 @@ npm test         # sign-in helpers: PIN rules, hashing, session cookies, lockout
 
 GitHub runs both on every push (`.github/workflows/ci.yml`). A red check means do not deploy.
 
+**Speed.** The functions run in Tokyo (`"regions": ["hnd1"]` in `vercel.json`) because the Supabase database is in
+Tokyo (`ap-northeast-1`). Each page load makes several database calls, so keep the two in the same place: if the
+database ever moves, change the region to match. The free plan allows one region. The HTML pages are `no-store`; their
+scripts and styles are re-checked with the server (ETag) instead of being re-downloaded in full.
+
 Vercel (free plan) allows **12 serverless functions**. `api/` holds exactly 12 (files starting with `_` are helpers, not
 functions). A 13th file fails the deploy. Add new routes to an existing function (as `employee-forum.js` does for
 comments) or move to a paid plan.
