@@ -6,13 +6,14 @@
   GET  /api/employee-forum                          the open categories, with how many threads each has
   GET  /api/employee-forum?category=<id>            the threads in one category, newest activity first
   GET  /api/employee-forum?thread=<id>              one thread and its replies
-  POST /api/employee-forum  { "action": "thread", "category_id": "...", "title": "...", "body": "..." }
-  POST /api/employee-forum  { "action": "reply",  "thread_id": "...", "body": "..." }
+  POST /api/employee-forum  { "action": "thread", "category_id": "...", "title": "...", "body": "...", "anonymous": true? }
+  POST /api/employee-forum  { "action": "reply",  "thread_id": "...", "body": "...", "anonymous": true? }
   POST /api/employee-forum  { "action": "report", "thread_id" | "post_id": "...", "reason": "..." }
   POST /api/employee-forum  { "action": "delete", "thread_id" | "post_id": "..." }   remove one of your OWN posts
 
-  Posts carry the employee's own name. The author comes from the sign-in cookie, never from the
-  request. Hidden threads and posts, closed categories and locked threads are never sent or accepted.
+  Posts carry the employee's own name unless they chose "anonymous": then other employees see "Anonymous" and no
+  photo. The author is still stored (employee_id) so moderators can see who wrote it, the author can delete it, and
+  the flood limits work. The author comes from the sign-in cookie, never from the request. Hidden threads and posts, closed categories and locked threads are never sent or accepted.
   Flood limit: 5 new threads or replies in 10 minutes, and 5 reports in an hour. Text is kept as plain
   text; the pages show it without ever treating it as HTML.
 */
@@ -28,6 +29,12 @@ function clean(v, max) {
   return String(v === undefined || v === null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\r\n?/g, '\n').trim().slice(0, max);
 }
 const list = (r) => (r.ok && Array.isArray(r.data) ? r.data : []);
+
+/* Anonymous posting needs supabase/forum_anonymous.sql. Until it has run, the insert is refused by the database;
+   say so plainly. A post the author asked to hide is never published under their name instead. */
+const ANON_OFF = { error: "Anonymous posting isn't switched on yet. Ask your administrator, or post with your name." };
+const wantsAnon = (body) => body.anonymous === true;
+const noAnonColumn = (r) => !r.ok && r.status === 400 && /anonymous/i.test(JSON.stringify(r.data || ''));
 
 async function names(ids) {
   const out = {};
@@ -71,7 +78,9 @@ module.exports = async function handler(req, res) {
       if ((await tooFast('forum_threads', eid, FLOOD_MINUTES, FLOOD_POSTS)) || (await tooFast('forum_posts', eid, FLOOD_MINUTES, FLOOD_POSTS))) {
         return E.send(res, 429, { error: 'You are posting very quickly. Wait a few minutes and try again.' });
       }
-      const r = await E.rest('POST', 'forum_threads', { category_id: cat, employee_id: eid, title, body: text }, 'return=representation');
+      const anon = wantsAnon(body);
+      const r = await E.rest('POST', 'forum_threads', Object.assign({ category_id: cat, employee_id: eid, title, body: text }, anon ? { anonymous: true } : {}), 'return=representation');
+      if (anon && noAnonColumn(r)) return E.send(res, 503, ANON_OFF);
       if (!r.ok || !list(r)[0]) return E.send(res, 500, { error: "Couldn't post that. Try again." });
       return E.send(res, 200, { ok: true, id: r.data[0].id });
     }
@@ -87,7 +96,9 @@ module.exports = async function handler(req, res) {
       if ((await tooFast('forum_threads', eid, FLOOD_MINUTES, FLOOD_POSTS)) || (await tooFast('forum_posts', eid, FLOOD_MINUTES, FLOOD_POSTS))) {
         return E.send(res, 429, { error: 'You are posting very quickly. Wait a few minutes and try again.' });
       }
-      const r = await E.rest('POST', 'forum_posts', { thread_id: tid, employee_id: eid, body: text }, 'return=representation');
+      const anon = wantsAnon(body);
+      const r = await E.rest('POST', 'forum_posts', Object.assign({ thread_id: tid, employee_id: eid, body: text }, anon ? { anonymous: true } : {}), 'return=representation');
+      if (anon && noAnonColumn(r)) return E.send(res, 503, ANON_OFF);
       if (!r.ok || !list(r)[0]) return E.send(res, 500, { error: "Couldn't post that. Try again." });
       await E.rest('PATCH', `forum_threads?id=eq.${tid}`, { last_post_at: new Date().toISOString() }, 'return=minimal');
       return E.send(res, 200, { ok: true, id: r.data[0].id });
@@ -124,21 +135,21 @@ module.exports = async function handler(req, res) {
   if (q.thread !== undefined) {
     const id = String(q.thread);
     if (!UUID_RE.test(id)) return E.send(res, 400, { error: 'Bad request.' });
-    const t = await E.rest('GET', `forum_threads?id=eq.${id}&hidden=eq.false&select=id,category_id,employee_id,title,body,locked,created_at`);
+    const t = await E.rest('GET', `forum_threads?id=eq.${id}&hidden=eq.false&select=*`);
     const thread = list(t)[0];
     if (!thread) return E.send(res, 404, gone);
     const c = await E.rest('GET', `forum_categories?id=eq.${thread.category_id}&active=eq.true&select=id,name`);
     const cat = list(c)[0];
     if (!cat) return E.send(res, 404, gone);
-    const p = await E.rest('GET', `forum_posts?thread_id=eq.${id}&hidden=eq.false&select=id,employee_id,body,created_at&order=created_at.asc&limit=500`);
+    const p = await E.rest('GET', `forum_posts?thread_id=eq.${id}&hidden=eq.false&select=*&order=created_at.asc&limit=500`);
     const posts = list(p);
-    const authors = [thread.employee_id].concat(posts.map((x) => x.employee_id));
+    const authors = E.publicIds([thread].concat(posts));
     const [who, pack] = await Promise.all([names(authors), E.photoPack('employees', authors)]);
     return E.send(res, 200, {
       category: cat,
       photos: pack.pics,
-      thread: { id: thread.id, title: thread.title, body: thread.body, locked: thread.locked, created_at: thread.created_at, author: who[thread.employee_id] || 'Employee', mine: thread.employee_id === eid },
-      posts: posts.map((x) => ({ id: x.id, body: x.body, created_at: x.created_at, author: who[x.employee_id] || 'Employee', pic: pack.at(x.employee_id), mine: x.employee_id === eid }))
+      thread: { id: thread.id, title: thread.title, body: thread.body, locked: thread.locked, created_at: thread.created_at, ...E.byline(thread, who, null, eid) },
+      posts: posts.map((x) => ({ id: x.id, body: x.body, created_at: x.created_at, ...E.byline(x, who, pack, eid) }))
     });
   }
 
@@ -148,18 +159,18 @@ module.exports = async function handler(req, res) {
     const c = await E.rest('GET', `forum_categories?id=eq.${id}&active=eq.true&select=id,name,description`);
     const cat = list(c)[0];
     if (!cat) return E.send(res, 404, gone);
-    const t = await E.rest('GET', `forum_threads?category_id=eq.${id}&hidden=eq.false&select=id,employee_id,title,body,locked,created_at,last_post_at&order=last_post_at.desc&limit=100`);
+    const t = await E.rest('GET', `forum_threads?category_id=eq.${id}&hidden=eq.false&select=*&order=last_post_at.desc&limit=100`);
     const threads = list(t);
     const ids = threads.map((x) => x.id);
     const p = ids.length ? list(await E.rest('GET', `forum_posts?thread_id=in.(${ids.join(',')})&hidden=eq.false&select=thread_id&limit=5000`)) : [];
     const count = {};
     p.forEach((x) => { count[x.thread_id] = (count[x.thread_id] || 0) + 1; });
-    const who = await names(threads.map((x) => x.employee_id));
+    const who = await names(E.publicIds(threads));
     return E.send(res, 200, {
       category: cat,
       threads: threads.map((x) => ({
         id: x.id, title: x.title, preview: x.body.slice(0, 160), locked: x.locked, replies: count[x.id] || 0,
-        author: who[x.employee_id] || 'Employee', created_at: x.created_at, last_post_at: x.last_post_at
+        ...E.byline(x, who, null, eid), created_at: x.created_at, last_post_at: x.last_post_at
       }))
     });
   }

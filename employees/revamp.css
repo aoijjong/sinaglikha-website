@@ -187,3 +187,9 @@
 .dpic:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
 @keyframes dpic-shim{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.dpic.loading{animation:none}}
+
+/* optional anonymous posting in the Community forum */
+.anon-opt{display:inline-flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:.88rem;font-weight:600;color:var(--brown);cursor:pointer}
+.anon-opt input{width:18px;height:18px;margin:0;accent-color:#CE2020;cursor:pointer}
+.anon-opt:focus-within{outline:3px solid #CE2020;outline-offset:2px;border-radius:6px}
+#fc-anon-note{margin:2px 0 0;font-size:.8rem;line-height:1.4}
