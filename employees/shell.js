@@ -119,6 +119,15 @@
       im.src = '../assets/quick/' + si[0] + '.webp';
     }
     Array.prototype.forEach.call($('#feeds-seg').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.feed === feed)); });
+    /* on phones and tablets the Announcements / Community switch sits inside the white box it controls. If that box is
+       hidden (no categories yet) it stays in the page header, so there is always a way to switch back. */
+    var seg = $('#feeds-seg'), box = sec === 'feeds' ? $(feed === 'forum' ? '#forum-panel' : '#ann-panel') : null;
+    var dock = box && !box.hidden ? box : head;
+    if (seg.parentNode !== dock) {
+      var had = seg.contains(document.activeElement) ? document.activeElement : null;   // moving an element drops its focus
+      if (dock === head) head.appendChild(seg); else dock.insertBefore(seg, dock.firstChild);
+      if (had) had.focus();
+    }
     // quick cards for things that are switched off (no courses, no records, attendance not set up) are left out
     QA.forEach(function (q) {
       var card = $('[data-qa="' + q[0] + '"]', quick), panel = $(q[4]);

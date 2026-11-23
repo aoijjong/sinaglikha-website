@@ -108,6 +108,8 @@ body.sh[data-sec="work"] #rec-panel{order:4!important}
   .seg button[aria-pressed="true"]{background:#2A1A12;color:#fff}
   body.sh[data-sec="feeds"][data-feed="ann"] #forum-panel,body.sh[data-sec="feeds"][data-feed="forum"] #ann-panel{display:none!important}
   body.sh[data-sec="feeds"] .panel-h{display:none}
+  /* the switch inside the white box: it takes the place of the box's title */
+  body.sh[data-sec="feeds"] .panel > .seg{order:-1;margin:14px 16px 6px}
 }
 @media (prefers-reduced-motion:reduce){.qa-c,.emp-nav button{transition:none}}
 
