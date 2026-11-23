@@ -99,12 +99,17 @@
     var none = { todo: ['Nothing to do', 'New grievances, replies and overdue cases show here.'], progress: ['Nothing in progress', 'Cases being handled show here.'], closed: ['Nothing closed', 'Closed cases show here.'] }[G.filter];
     G.box.innerHTML = head + '<div class="list-card gvm-inbox">' + tabs + (rows.length ? '<ul class="rows">' + rows.map(function (g) {
       var anon = g.confidentiality === 'anonymous';
-      var meta = [M.categoryLabel(g.category), anon ? 'Anonymous' : 'Confidential', 'Sent ' + when(g.created_at, anon), g.assigned_name ? 'With ' + g.assigned_name : 'Unassigned'].join(' · ');
+      var meta = [M.categoryLabel(g.category), anon ? 'Anonymous' : 'Confidential', 'Sent ' + when(g.created_at, anon)].join(' · ');
+      // the pills say only two things, the status and who has it; anything else that needs a look is plain text under the title
+      var flags = [];
+      if (g.overdue) flags.push('<b class="gvm-od" title="' + esc(g.overdue) + '">Overdue</b>');
+      if (g.last_from === 'employee' && g.status !== 'closed') flags.push('Awaiting reply');
+      if (g.file_count) flags.push(g.file_count + (g.file_count === 1 ? ' file' : ' files'));
+      if (ROUTE[g.routing]) flags.push('<span title="' + esc(ROUTE[g.routing][1]) + '">' + esc(ROUTE[g.routing][0]) + '</span>');
       return '<li class="lrow" data-id="' + esc(g.id) + '"><button class="lmain" type="button" data-a="view"><span class="lico">' + I('scale') + '</span>' +
-        '<span class="ltext"><span class="lname">' + esc(g.ticket_no) + ' · ' + esc(g.subject) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
-        '<div class="lside">' + (g.overdue ? alert('Overdue', g.overdue) : '') + (ROUTE[g.routing] ? soft(ROUTE[g.routing][0], ROUTE[g.routing][1]) : '') +
-        (g.file_count ? soft(g.file_count + (g.file_count === 1 ? ' file' : ' files')) : '') +
-        (g.last_from === 'employee' && g.status !== 'closed' ? soft('Awaiting reply') : '') + chip(g.status) + '</div></li>';
+        '<span class="ltext"><span class="lname">' + esc(g.ticket_no) + ' · ' + esc(g.subject) + '</span><span class="lmeta">' + esc(meta) + '</span>' +
+        (flags.length ? '<span class="lmeta gvm-flags">' + flags.join(' · ') + '</span>' : '') + '</span></button>' +
+        '<div class="lside">' + chip(g.status) + soft(g.assigned_name ? 'With ' + g.assigned_name : 'Unassigned') + '</div></li>';
     }).join('') + '</ul>' : empty('inbox', none[0], none[1])) + '</div>';
   }
 
