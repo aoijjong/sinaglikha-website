@@ -101,6 +101,8 @@ async function findColleague(colleagueId, me, dept) {
 }
 
 module.exports = async function handler(req, res) {
+  // grievances live in _grievance.js; they share this function so the site stays within Vercel's 12-function limit
+  if (req.query && req.query.gr !== undefined) return require('./_grievance')(req, res);
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST');
     return E.send(res, 405, { error: 'Use GET or POST.' });

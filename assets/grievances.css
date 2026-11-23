@@ -1,0 +1,82 @@
+/* Grievances: the Employee Portal screen (gv-) and the Senior Manager screen (gvm-). Uses each page's own colour variables. */
+
+/* status chips, shared */
+.gv-chip{display:inline-flex;align-items:center;white-space:nowrap;font-size:.76rem;font-weight:700;border-radius:999px;padding:4px 11px;background:#EFEAE4;color:#5A4538}
+.gv-chip.gv-wait{background:#FFF0B0;color:#6B4E00}
+.gv-chip.gv-work{background:#DCEBFA;color:#1B4B7A}
+.gv-chip.gv-done{background:#E3F3E4;color:#1E6B2A}
+.gv-chip.gv-alert{background:#FDECEA;color:#8F1D1D}
+.gv-chip.gv-soft{background:#EFEAE4;color:#5A4538}
+
+/* ---------- Employee Portal ---------- */
+.gv-body{padding:6px 16px 18px}
+.gv-lead{color:var(--muted);font-size:.93rem;margin:0 0 12px}
+.gv-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.gv-list{display:flex;flex-direction:column;gap:8px}
+.gv-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);cursor:pointer;font:inherit}
+.gv-row b{color:var(--brown);font-size:.84rem;letter-spacing:.02em}
+.gv-row .gv-t{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gv-row .gv-m{grid-column:1;color:var(--muted);font-size:.82rem}
+.gv-row .gv-chip{grid-column:2;grid-row:1 / span 2}
+@media (hover:hover) and (pointer:fine){.gv-row:hover{border-color:rgba(214,128,60,.6);background:#FFFBF2}}
+.gv-row:focus-visible,.gv-choice:focus-within,.gv-copy:focus-visible{outline:3px solid #CE2020;outline-offset:2px}
+.gv-none{padding:14px;border-radius:14px;background:#FBF6EC;color:var(--muted);font-size:.93rem}
+.gv-back{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--brown);font:inherit;font-weight:700;font-size:.9rem;padding:6px 2px;margin:0 0 8px;cursor:pointer}
+.gv-form label.gv-l,.gv-form .gv-l{display:block;font-weight:600;font-size:.9rem;margin:12px 0 6px;color:var(--brown)}
+.gv-form input[type=text],.gv-form input[type=date],.gv-form select,.gv-form textarea,.gv-find input{width:100%;padding:11px 14px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);color:var(--ink);font:inherit;font-size:.95rem}
+.gv-form textarea{resize:vertical;min-height:110px}
+.gv-form input:focus,.gv-form select:focus,.gv-form textarea:focus,.gv-find input:focus{outline:none;border-color:#CE2020;box-shadow:0 0 0 4px rgba(206,32,32,.15);background:#fff}
+.gv-opt{font-weight:500;color:var(--muted)}
+.gv-choices{display:grid;gap:8px;margin-top:4px}
+.gv-choice{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:12px 14px;border:1.5px solid var(--line);border-radius:16px;background:#fff;cursor:pointer}
+.gv-choice input{grid-row:1 / span 2;margin:3px 0 0;width:18px;height:18px;accent-color:#CE2020}
+.gv-choice b{color:var(--brown);font-size:.95rem}
+.gv-choice span{color:var(--muted);font-size:.84rem;line-height:1.4}
+.gv-choice:has(input:checked){border-color:#DE5A14;background:#FFF6EA}
+.gv-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.gv-find{display:grid;gap:8px;margin:0 0 12px}
+.gv-done{text-align:center;padding:8px 4px}
+.gv-done h3{font-size:1.25rem;margin:0 0 6px}
+.gv-ticket{display:inline-flex;align-items:center;gap:8px;margin:10px 0 2px;padding:10px 16px;border-radius:14px;background:#FFF6EA;border:1.5px solid #DE5A14;font-weight:700;font-size:1.25rem;letter-spacing:.06em;color:var(--brown);font-variant-numeric:tabular-nums}
+.gv-copy{border:0;background:none;color:#B3361A;font:inherit;font-weight:700;font-size:.8rem;cursor:pointer;padding:2px 4px}
+.gv-warn{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:#FFF0B0;color:#5A4300;font-size:.9rem;text-align:left}
+.gv-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 6px}
+.gv-head h3{font-size:1.15rem;flex:1 1 220px;min-width:0}
+.gv-tn{font-weight:700;color:var(--brown);letter-spacing:.04em;font-size:.88rem}
+.gv-facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0;font-size:.88rem}
+.gv-facts dt{color:var(--muted)}
+.gv-facts dd{margin:0;overflow-wrap:anywhere}
+.gv-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 10px}
+.gv-outcome{margin:10px 0;padding:12px 14px;border-radius:14px;background:#E3F3E4;color:#1E5A27;font-size:.92rem}
+.gv-outcome b{display:block;margin-bottom:2px}
+.gv-thread{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.gv-msg{max-width:92%;padding:10px 13px;border-radius:16px;font-size:.93rem;overflow-wrap:anywhere;white-space:pre-wrap}
+.gv-msg small{display:block;margin-top:4px;color:var(--muted);font-size:.74rem}
+.gv-msg.you{align-self:flex-end;background:#FFF1D6}
+.gv-msg.legal{align-self:flex-start;background:#fff;border:1px solid var(--line)}
+.gv-msg .gv-who{display:block;font-weight:700;font-size:.78rem;color:var(--brown);margin-bottom:2px}
+.gv-reply{display:flex;gap:8px;align-items:flex-end}
+.gv-reply textarea{flex:1;min-height:44px;padding:10px 13px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);font:inherit;font-size:.93rem;resize:vertical}
+@media (max-width:600px){.gv-body{padding:4px 12px 14px}.gv-actions .btn{flex:1 1 100%}.gv-ticket{font-size:1.1rem}.gv-msg{max-width:100%}}
+
+/* ---------- Senior Manager portal ---------- */
+.gvm-who{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gvm-card{margin:0 0 12px;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:#fff}
+.gvm-card h3{font-size:1.05rem;margin:0 0 6px}
+.gvm-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}
+.gvm-facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0;font-size:.9rem}
+.gvm-facts dt{color:var(--muted)}
+.gvm-facts dd{margin:0;overflow-wrap:anywhere}
+.gvm-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px}
+.gvm-thread{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.gvm-msg{padding:10px 13px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:.92rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.gvm-msg small{display:block;margin-top:4px;color:var(--muted);font-size:.76rem}
+.gvm-msg.employee{background:#FFF6EA}
+.gvm-msg.note{background:#F3EEFA;border-style:dashed}
+.gvm-msg b.k{display:block;font-size:.76rem;color:var(--brown);margin-bottom:2px}
+.gvm-ctl{display:grid;gap:8px;margin-top:8px}
+.gvm-ctl select,.gvm-ctl textarea{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper,#FFFDF6);color:inherit;font:inherit}
+.gvm-ctl textarea{min-height:76px;resize:vertical}
+.gvm-priv{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--brown)}
+.gvm-priv input{width:18px;height:18px;accent-color:#CE2020}
+.gvm-events{font-size:.82rem;color:var(--muted);display:grid;gap:3px;margin-top:6px}
