@@ -414,8 +414,26 @@
     if (cur.data.session) await enterApp(cur.data.session); else resetToSignIn();
   });
 
-  $('#btn-signout').addEventListener('click', function () { sb.auth.signOut(); });
-  $('#btn-denied-out').addEventListener('click', function () { sb.auth.signOut(); });
+  /* If the server can't be reached, supabase-js returns an error (or never answers) and keeps the session, so the button seemed to do
+     nothing. Then this phone forgets its own saved login and shows the sign-in screen. */
+  var signingOut = false;
+  async function signOutNow() {
+    if (signingOut) return;
+    signingOut = true;
+    var res;
+    /* a stuck saved login can also make signOut wait forever, so give up after 8 seconds */
+    var gaveUp = new Promise(function (resolve) { setTimeout(function () { resolve({ error: new Error('sign-out timed out') }); }, 8000); });
+    try { res = await Promise.race([sb.auth.signOut(), gaveUp]); } catch (e) { res = { error: e }; }
+    if (res && res.error) {
+      var store = function (name) { try { return window[name]; } catch (e) { return null; } };   // reading it can throw when storage is blocked
+      if (window.SngSessionClear) window.SngSessionClear.forgetSession(store('localStorage'), store('sessionStorage'));
+      resetToSignIn();
+      toast('Signed out on this phone. Your connection was weak, so the sign-out was not sent to the server.', 'ok');
+    }
+    signingOut = false;
+  }
+  $('#btn-signout').addEventListener('click', signOutNow);
+  $('#btn-denied-out').addEventListener('click', signOutNow);
 
   /* ---------- tabs ---------- */
   var TAB_NAMES = ['library', 'content', 'employees', 'records', 'people'];
