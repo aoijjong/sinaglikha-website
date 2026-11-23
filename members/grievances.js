@@ -245,26 +245,26 @@
       var label = m.kind === 'employee' ? (anon ? 'Anonymous employee' : 'Employee') : m.kind === 'note' ? 'Private note · ' + (m.author || 'Legal') + ' (employee cannot see)' : (m.author || 'Legal Compliance');
       return '<div class="gv-msg ' + (m.kind === 'employee' ? 'in' : m.kind === 'note' ? 'note' : 'out') + '"><span class="gv-who">' + esc(label) + '</span>' + esc(m.body) + '<small>' + esc(when(m.created_at, anon && m.kind === 'employee')) + '</small></div>';
     }).join('') : '<p class="gv-fine">No messages yet.</p>';
-    // left: what happened and the conversation. right: what you do about it.
+    // On a wide screen the cards sit in two rows so each row lines up: Case beside Handling, then Messages beside Files and the trail.
+    // (On a phone they stack in this order. The layout is in assets/grievances.css.)
     G.box.innerHTML = header(g.ticket_no, g.subject, 'list-back', 'Back to the inbox', IB('trash', 'Delete this grievance', { 'data-a': 'delete' }, 'danger')) +
-      '<div class="gvm-cols"><div class="gvm-col">' +
+      '<div class="gvm-cols">' +
       card('Case', '<div class="gvm-row"><span>' + chip(g.status) + '</span>' + (g.overdue ? alert('Overdue') : '') + '</div>' + (g.overdue ? '<p class="fine"><b>' + esc(g.overdue) + '.</b></p>' : '') +
         '<div class="gvm-details"><dl class="gvm-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + who + '</dl>' +
-        '<p class="gvm-text">' + esc(g.body) + '</p></div>' + (g.outcome ? '<p class="gvm-text"><b>Outcome:</b> ' + esc(g.outcome) + '</p>' : '')) +
+        '<p class="gvm-text">' + esc(g.body) + '</p></div>' + (g.outcome ? '<p class="gvm-text"><b>Outcome:</b> ' + esc(g.outcome) + '</p>' : ''), 'gvm-a-case') +
       card('Messages', '<div class="gv-msgbox"><div class="gv-thread" aria-live="polite">' + thread + '</div>' +
         (closed ? '<p class="gv-fine gv-closed">Closed. Change the status to write again.</p>' : '') +
         '<div class="gv-reply"><label class="sr-only" for="gv-rb">Write to the employee, or keep a private note</label><textarea id="gv-rb" maxlength="' + M.LIMITS.message + '" rows="1" placeholder="Write to the employee…"></textarea>' +
         '<button class="btn btn-primary btn-sm" type="button" data-a="reply">Send</button></div>' +
-        '<label class="gvm-priv"><input type="checkbox" id="gv-priv"> Private note (handlers only)</label></div>') +
-      '</div><div class="gvm-col">' +
+        '<label class="gvm-priv"><input type="checkbox" id="gv-priv"> Private note (handlers only)</label></div>', 'gvm-a-messages') +
       card('Handling', '<div class="gvm-ctl">' +
         '<label class="fine" for="gv-as">Assigned to</label><div class="gvm-assign"><select id="gv-as">' + assignOptions + '</select>' +
         '<button class="btn btn-primary btn-sm" type="button" data-a="assign">Assign</button></div>' +
         '<label class="fine" for="gv-st">Status</label><select id="gv-st">' + opts + '</select>' +
         '<label class="fine" for="gv-out">Outcome (the employee sees it; needed to resolve or close)</label><textarea id="gv-out" maxlength="' + M.LIMITS.outcome + '">' + esc(g.outcome) + '</textarea>' +
         '<div><button class="btn btn-primary btn-sm" type="button" data-a="status">Save status</button></div>' +
-        '<div class="gvm-conflict"><button class="btn btn-ghost btn-sm" type="button" data-a="recuse">I have a conflict of interest</button><p class="fine">You stop seeing the case and it is unassigned.</p></div></div>') +
-      (files.length ? card('Files', '<ul class="gv-files">' + files.map(function (f) {
+        '<div class="gvm-conflict"><button class="btn btn-ghost btn-sm" type="button" data-a="recuse">I have a conflict of interest</button><p class="fine">You stop seeing the case and it is unassigned.</p></div></div>', 'gvm-handling') +
+      '<div class="gvm-side">' + (files.length ? card('Files', '<ul class="gv-files">' + files.map(function (f) {
         return '<li><span class="gv-fn">' + I('file') + esc(f.name) + '</span><span class="gv-fs">' + esc(M.fileSize(f.size)) + '</span><button class="btn btn-ghost btn-sm" type="button" data-a="download" data-file="' + esc(f.id) + '">Download</button></li>';
       }).join('') + '</ul><p class="fine">Not scanned. Open with care.' + (anon ? ' May hold the author\'s details.' : '') + '</p>') : '') +
       card('Case trail', '<div class="gvm-events">' + (trail || '<span>Nothing yet.</span>') + '<span>Opened ' + opened + (opened === 1 ? ' time' : ' times') + ' by handlers.</span></div>') +
