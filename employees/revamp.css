@@ -61,7 +61,7 @@
 #forum-feed .feed>.post:first-child,#forum-feed .post:first-child{border-top:1px solid rgba(74,46,34,.1)}
 #forum-feed .post-top{margin-bottom:10px}
 #forum-feed .post-title{font-family:var(--sans);font-weight:700;font-size:1.02rem;margin:0 0 8px;letter-spacing:0}
-#forum-feed .post-body{padding:14px 16px;border-radius:16px;background:#FFF6EA;font-size:.95rem;line-height:1.6}
+#forum-feed .post-body{font-size:.95rem;line-height:1.6}
 #forum-feed .post-foot{margin-top:12px;padding-top:10px;border-top:1px solid rgba(74,46,34,.08)}
 
 /* when the dashboard is one column (phones and tablets), Departments comes last, below Evaluations */
@@ -92,7 +92,6 @@
   #ann-feed .post-title{font-size:.95rem;padding-right:0}
   #ann-feed .post-body,#forum-feed .post-body{font-size:.88rem;line-height:1.5}
   #forum-feed .post-title{font-size:.95rem}
-  #forum-feed .post-body{padding:11px 13px;border-radius:14px}
   #ann-feed .post-top{margin:0 0 4px;padding-right:56px;gap:9px}
   #ann-feed .av-sm,#forum-feed .av-sm{width:30px;height:30px;font-size:.68rem}
   #ann-feed .who b,#forum-feed .who b{font-size:.84rem}
@@ -192,4 +191,3 @@
 .anon-opt{display:inline-flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:.88rem;font-weight:600;color:var(--brown);cursor:pointer}
 .anon-opt input{width:18px;height:18px;margin:0;accent-color:#CE2020;cursor:pointer}
 .anon-opt:focus-within{outline:3px solid #CE2020;outline-offset:2px;border-radius:6px}
-#fc-anon-note{margin:2px 0 0;font-size:.8rem;line-height:1.4}
