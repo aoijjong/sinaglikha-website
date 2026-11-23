@@ -7,7 +7,6 @@ cd "$(dirname "$0")/.."
 DB="sng_test_$$"
 psql -qv ON_ERROR_STOP=1 -d postgres -c "create database $DB" >/dev/null
 trap 'psql -q -d postgres -c "drop database if exists $DB" >/dev/null 2>&1' EXIT
-run() { psql -qv ON_ERROR_STOP=1 -d "$DB" "$@" 2>&1 | grep -v "NOTICE:  \(trigger\|relation\|constraint\)" || true; }
 psql -qv ON_ERROR_STOP=1 -d "$DB" -f test/sql/stub.sql >/dev/null
 for f in supabase/grievances.sql supabase/grievances.sql; do psql -qv ON_ERROR_STOP=1 -d "$DB" -f "$f" >/dev/null 2>&1 || { echo "FAILED: $f did not run cleanly"; psql -qv ON_ERROR_STOP=1 -d "$DB" -f "$f" 2>&1 | tail -5; exit 1; }; done
 echo "ok: grievances.sql runs, and runs again"

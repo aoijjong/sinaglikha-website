@@ -319,6 +319,7 @@
     if (window.MembersContent) window.MembersContent.reset();
     if (window.MembersEmployees) window.MembersEmployees.reset();
     if (window.MembersRecords) window.MembersRecords.reset();
+    if (window.MembersGrievances) window.MembersGrievances.reset();
     state.session = null;
     state.profile = null;
     state.isAdmin = false;

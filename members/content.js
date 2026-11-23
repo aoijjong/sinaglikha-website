@@ -57,7 +57,7 @@
   };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], applicants: ['MembersApplicants', 'Follow each applicant from application to placement'], recdocs: ['MembersRecruitmentDocs', 'Interview, rating, selection and placement documents'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
+  var SPECIAL = { grievances: ['MembersGrievances', 'Receive and handle employee grievances'], announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], applicants: ['MembersApplicants', 'Follow each applicant from application to placement'], recdocs: ['MembersRecruitmentDocs', 'Interview, rating, selection and placement documents'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
@@ -140,6 +140,8 @@
       nRec = rec.length;
       list = rec.concat(list);
     }
+    // Grievances are for Legal Compliance and the Administrator only: nobody else is even shown the card
+    if (cs.dept === 'legal' && !(state.isAdmin || myDept() === 'legal')) list = list.filter(function (d) { return d.key !== 'grievances'; });
     var eng = cs.dept === 'engagement' && canModerate() && !!window.MembersAnnouncements && !!window.MembersForum;
     if (eng) list = list.filter(function (d) { return d.key !== 'announcements' && d.key !== 'forum'; });
     var pub = 0, drafts = 0;

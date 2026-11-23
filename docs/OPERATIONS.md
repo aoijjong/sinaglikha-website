@@ -40,6 +40,10 @@ Optional features that need a SQL file before they work:
   id) and the picker still opens; saving a chosen colour is skipped with a message and the rest of the category is
   saved normally.
 
+- `grievances.sql`: the Grievances system for Legal Compliance (tables, ticket numbers, the access rules, and the
+  Grievances card on the Legal Compliance page). Until it runs, nothing shows: employees see no Grievances panel and
+  Senior Managers see no card. Run it on staging first.
+
 Rules going forward:
 - Never edit a file that has already been run. Add a new, dated file (`2026-12-01_add_x.sql`).
 - Write each file so it is safe to run twice (`create table if not exists`, `add column if not exists`,
@@ -101,3 +105,24 @@ branch while testing, and never merge that change.
 
 Run Chrome DevTools, Lighthouse (mobile and desktop) on `/`, `/careers/`, `/employees/` and `/members/`, and the axe
 DevTools extension. Fix "serious" and "critical" findings first: contrast, form labels, button names, focus order.
+
+## 8. Grievances (Legal Compliance)
+
+Employees raise a grievance under **My Work, Grievances** and get a ticket number such as `GRV-2026-0001`. Legal Compliance
+Senior Managers and the Administrator handle them under **Content, Legal Compliance, Grievances**. Nobody else can see them.
+
+- **Confidential** grievances record the employee. Handlers see "Raised by: Hidden" until they press Reveal, and every reveal is
+  written to the activity log with the handler's name. **Anonymous** grievances record no employee at all: the employee gets a
+  ticket number and a secret access code and needs both to follow the case. Times on anonymous cases are rounded to the day, they
+  write nothing to the activity log, and wrong ticket/code guesses are counted per device and then blocked. Anonymity has limits:
+  Legal cannot verify details or protect the person from retaliation, so the form says so.
+- **Statuses:** Submitted, Acknowledged, Under review, Resolved, Escalated, Closed. Resolving or closing needs an outcome, which the
+  employee can read. Private notes are never shown to the employee.
+- **Access rule:** done in the database (`can_handle_grievances()` in `supabase/grievances.sql`), not in the screens. Handlers use database
+  functions that check the rule and keep a trail; the tables themselves cannot be read from the browser.
+- **Defaults chosen** (change in `assets/grievance-meta.js` and the matching lists in the SQL; a test checks they agree): seven categories,
+  3 confidential grievances a day per employee, 30 anonymous in all per day, 20 messages a day per grievance.
+- **Not built yet (later phases):** file attachments, email alerts, overdue/time-limit flags, recusal when a handler is the subject of a
+  grievance, a retention/deletion schedule, and statistics. Until alerts exist, handlers must check the inbox ("Needs attention").
+- **Please have counsel or your Data Privacy Officer review** the categories, the retention period and the wording shown to employees.
+- **Tests:** `npm test` covers the server; `./scripts/test-sql.sh` runs the database tests against a throwaway Postgres (CI does this too).
