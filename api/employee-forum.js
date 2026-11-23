@@ -11,7 +11,7 @@
   POST /api/employee-forum  { "action": "report", "thread_id" | "post_id": "...", "reason": "..." }
   POST /api/employee-forum  { "action": "delete", "thread_id" | "post_id": "..." }   remove one of your OWN posts
 
-  Posts carry the employee's own name unless they chose "anonymous": then other employees see "Anonymous" and no
+  Posts carry the employee's own name unless they chose "anonymous": then other employees see "Anon Likhain" and no
   photo. The author is still stored (employee_id) so moderators can see who wrote it, the author can delete it, and
   the flood limits work. The author comes from the sign-in cookie, never from the request. Hidden threads and posts, closed categories and locked threads are never sent or accepted.
   Flood limit: 5 new threads or replies in 10 minutes, and 5 reports in an hour. Text is kept as plain

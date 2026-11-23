@@ -127,7 +127,8 @@
     if (photo && PHOTO_OK.test(photo)) return '<span class="av-sm has-pic' + (cls ? ' ' + cls : '') + '"><img src="' + photo + '" alt=""></span>';
     var h = 0;
     String(name).split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) >>> 0; });
-    return '<span class="av-sm' + (cls ? ' ' + cls : '') + '" style="background:' + TINTS[h % TINTS.length] + '" aria-hidden="true">' + esc(initials(name)) + '</span>';
+    // an anonymous author gets the brand orange (set in CSS) instead of a tint picked from the name
+    return '<span class="av-sm' + (cls ? ' ' + cls : '') + '"' + (cls === 'anon' ? '' : ' style="background:' + TINTS[h % TINTS.length] + '"') + ' aria-hidden="true">' + esc(initials(name)) + '</span>';
   }
   function fmtDate(d) {
     var x = new Date(d);
