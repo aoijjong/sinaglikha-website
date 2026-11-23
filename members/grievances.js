@@ -18,7 +18,7 @@
   var sb = app.sb, state = app.state, esc = app.esc, toast = app.toast, ask = app.ask;
   var I = window.SngIcon, IB = window.SngIconButton;
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var G = { box: null, ctx: null, view: 'list', filter: 'todo', rows: [], cur: null, who: null, error: '', token: 0, settings: null, preview: null };
+  var G = { box: null, ctx: null, view: 'list', filter: 'todo', rows: [], cur: null, who: null, shown: false, error: '', token: 0, settings: null, preview: null };
 
   function canHandle() { return state.isAdmin || (state.profile && state.profile.department === 'legal'); }
   function chip(status) { return '<span class="gv-chip gv-' + M.statusTone(status) + '">' + esc(M.statusLabel(status)) + '</span>'; }
@@ -206,7 +206,7 @@
     var r = await sb.rpc('grievance_open', { p_id: id });
     busy(false);
     if (r.error || !r.data) { fail(r); return; }
-    G.cur = r.data; G.who = null; G.view = 'case';
+    G.cur = r.data; G.who = null; G.shown = false; G.view = 'case';
     renderCase();
   }
   async function refreshCase() {
@@ -219,8 +219,13 @@
     var facts = [['Topic', M.categoryLabel(g.category)], ['Privacy', anon ? 'Anonymous. No name recorded.' : 'Confidential'], ['Sent', when(g.created_at, anon)],
       ['Date', g.incident_date ? day(g.incident_date + 'T00:00:00+08:00') : ''], ['Place', g.location], ['Involved', g.involved],
       ['Assigned to', g.assigned_name || 'Nobody yet'], ['Visible to', ROUTE[g.routing] ? ROUTE[g.routing][0] : '']].filter(function (f) { return f[1]; });
-    var who = anon ? '' : '<dt>Raised by</dt><dd>' + (G.who ? esc(G.who.full_name) + ' (' + esc(G.who.employee_no) + (G.who.job_title ? ', ' + esc(G.who.job_title) : '') + ')'
-      : 'Hidden <button class="btn btn-ghost btn-sm" type="button" data-a="reveal" style="margin-left:6px">Reveal</button>') + '</dd>';
+    // the name stays as dots until a handler presses the eye (the same eye as "show password"); pressed again, it hides again
+    var shown = !!(G.who && G.shown);
+    var eye = '<button class="pw-toggle gvm-eye" type="button" data-a="reveal" aria-pressed="' + shown + '" aria-label="' + (shown ? 'Hide who raised this' : 'Reveal who raised this') +
+      '" title="' + (shown ? 'Hide' : 'Reveal (recorded in the activity log)') + '">' + I('eye', 'on') + I('eyeOff', 'off') + '</button>';
+    var who = anon ? '' : '<dt>Raised by</dt><dd class="gvm-who">' + (shown
+      ? '<span>' + esc(G.who.full_name) + ' (' + esc(G.who.employee_no) + (G.who.job_title ? ', ' + esc(G.who.job_title) : '') + ')</span>'
+      : '<span class="gvm-mask" role="img" aria-label="Name hidden">••••••••</span>') + eye + '</dd>';
     var opts = M.STATUSES.map(function (s) { return '<option value="' + s.key + '"' + (s.key === g.status ? ' selected' : '') + '>' + esc(s.label) + '</option>'; }).join('');
     var opened = c.events.filter(function (e) { return e.kind === 'open'; }).length;
     var trail = c.events.filter(function (e) { return e.kind !== 'open'; }).map(function (e) {
@@ -239,8 +244,8 @@
     G.box.innerHTML = header(g.ticket_no, g.subject, 'list-back', 'Back to the inbox', IB('trash', 'Delete this grievance', { 'data-a': 'delete' }, 'danger')) +
       '<div class="gvm-cols"><div class="gvm-col">' +
       card('Case', '<div class="gvm-row"><span>' + chip(g.status) + '</span>' + (g.overdue ? alert('Overdue') : '') + '</div>' + (g.overdue ? '<p class="fine"><b>' + esc(g.overdue) + '.</b></p>' : '') +
-        '<dl class="gvm-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + who + '</dl>' +
-        '<p class="gvm-text">' + esc(g.body) + '</p>' + (g.outcome ? '<p class="gvm-text"><b>Outcome:</b> ' + esc(g.outcome) + '</p>' : '')) +
+        '<div class="gvm-details"><dl class="gvm-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + who + '</dl>' +
+        '<p class="gvm-text">' + esc(g.body) + '</p></div>' + (g.outcome ? '<p class="gvm-text"><b>Outcome:</b> ' + esc(g.outcome) + '</p>' : '')) +
       card('Messages', '<div class="gv-msgbox"><div class="gv-thread" aria-live="polite">' + thread + '</div>' +
         (closed ? '<p class="gv-fine gv-closed">Closed. Change the status to write again.</p>' : '') +
         '<div class="gv-reply"><label class="sr-only" for="gv-rb">Write to the employee, or keep a private note</label><textarea id="gv-rb" maxlength="' + M.LIMITS.message + '" rows="1" placeholder="Write to the employee…"></textarea>' +
@@ -269,6 +274,7 @@
     return true;
   }
   async function reveal() {
+    if (G.who) { G.shown = !G.shown; renderCase(); return; }   // already revealed (and logged once): only show or hide it here
     var ok = await ask({ title: 'Reveal who raised this?', text: 'You will see their name. This is recorded in the activity log with your name, and the employee was told only Legal Compliance would see it.', ok: 'Reveal' });
     if (!ok) return;
     busy(true);
@@ -276,6 +282,7 @@
     busy(false);
     if (r.error) { fail(r); return; }
     G.who = (Array.isArray(r.data) ? r.data[0] : r.data) || null;
+    G.shown = !!G.who;
     await refreshCase();
   }
   async function recuse() {
@@ -327,7 +334,7 @@
     if (!b) return;
     var a = b.dataset.a, li = e.target.closest('li.lrow'), id = G.cur && G.cur.grievance.id;
     if (a === 'back') G.ctx.back();
-    else if (a === 'list-back') { G.cur = null; G.who = null; loadList(); }
+    else if (a === 'list-back') { G.cur = null; G.who = null; G.shown = false; loadList(); }
     else if (a === 'csv') downloadCsv();
     else if (a === 'settings') openSettings();
     else if (a === 'purge') purge();
@@ -362,6 +369,6 @@
     },
     csv: buildCsv,
     /* on sign-out nothing about a case is left on the page */
-    reset: function () { G.cur = null; G.who = null; G.rows = []; G.settings = null; G.preview = null; G.error = ''; if (G.box) G.box.innerHTML = ''; }
+    reset: function () { G.cur = null; G.who = null; G.shown = false; G.rows = []; G.settings = null; G.preview = null; G.error = ''; if (G.box) G.box.innerHTML = ''; }
   };
 })();
