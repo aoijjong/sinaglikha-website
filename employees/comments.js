@@ -30,15 +30,6 @@
     String(name).split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) >>> 0; });
     return '<span class="av-sm" style="background:' + TINTS[h % TINTS.length] + '" aria-hidden="true">' + esc(initials(name)) + '</span>';
   }
-  function ago(iso) {
-    var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-    if (s < 60) return 'just now';
-    if (s < 3600) return Math.round(s / 60) + ' min ago';
-    if (s < 86400) return Math.round(s / 3600) + ' h ago';
-    if (s < 86400 * 7) return Math.round(s / 86400) + ' d ago';
-    var x = new Date(iso);
-    return isNaN(x) ? '' : x.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  }
   async function api(method, path, body) {
     var opts = { method: method, headers: {}, credentials: 'same-origin' };
     if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
@@ -97,7 +88,7 @@
 
   function commentHtml(c, photos) {
     return '<div class="reply" data-cid="' + esc(c.id) + '"><div class="post-top">' + avatar(c.author, photos[c.pic]) +
-      '<div class="who"><b>' + esc(c.author) + (c.mine ? ' (you)' : '') + '</b><span>' + esc(ago(c.created_at)) + '</span></div>' +
+      '<div class="who"><b>' + esc(c.author) + (c.mine ? ' (you)' : '') + '</b><span>' + esc(window.SngCommentTime ? window.SngCommentTime.stamp(c.created_at) : '') + '</span></div>' +
       (c.mine ? '<button class="pbtn push" type="button" data-cdel="' + esc(c.id) + '" aria-label="Delete your comment" title="Delete">' + TRASH + '</button>'
         : '<button class="pbtn push" type="button" data-crep="' + esc(c.id) + '" aria-label="Report this comment" title="Report">' + FLAG + '</button>') +
       '</div><p>' + esc(c.body).replace(/\n/g, '<br>') + '</p></div>';

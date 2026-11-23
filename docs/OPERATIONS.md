@@ -40,6 +40,10 @@ Optional features that need a SQL file before they work:
   id) and the picker still opens; saving a chosen colour is skipped with a message and the rest of the category is
   saved normally.
 
+- `grievances.sql`: the Grievances system for Legal Compliance (tables, ticket numbers, the access rules, and the
+  Grievances card on the Legal Compliance page). Until it runs, nothing shows: employees see no Grievances panel and
+  Senior Managers see no card. Run it on staging first.
+
 Rules going forward:
 - Never edit a file that has already been run. Add a new, dated file (`2026-12-01_add_x.sql`).
 - Write each file so it is safe to run twice (`create table if not exists`, `add column if not exists`,
@@ -101,3 +105,57 @@ branch while testing, and never merge that change.
 
 Run Chrome DevTools, Lighthouse (mobile and desktop) on `/`, `/careers/`, `/employees/` and `/members/`, and the axe
 DevTools extension. Fix "serious" and "critical" findings first: contrast, form labels, button names, focus order.
+
+## 8. Grievances (Legal Compliance)
+
+Employees raise a grievance under **My Work, Grievances** and get a ticket number such as `GRV-2026-0001`. Legal Compliance
+Senior Managers and the Administrator handle them under **Content, Legal Compliance, Grievances**. Nobody else can see them.
+Set-up is one SQL file, `supabase/grievances.sql` (safe to run again; try it on staging first). Until it runs, nothing shows.
+
+**Privacy**
+- **Confidential** grievances record the employee. Handlers see "Raised by: Hidden" until they press Reveal, and every reveal is
+  written to the activity log with the handler's name. **Anonymous** grievances record no employee at all: the employee gets a
+  ticket number and a secret access code and needs both to follow the case. Times on anonymous cases are rounded to the day, they
+  write nothing to the activity log, never cause an immediate email, and wrong ticket/code guesses are counted per device and then
+  blocked. Anonymity has limits: Legal cannot verify details or protect the person from retaliation, so the form says so. A file
+  attached to an anonymous case can still carry its author's details, and Supabase Storage keeps the exact upload time inside its
+  own tables; the form warns the employee about the first.
+- **Routing (conflicts of interest).** The form asks whether the case involves someone in Legal Compliance or the Administrator.
+  If it involves Legal Compliance, only the Administrator can see it; if it involves the Administrator, only Legal Compliance can.
+  A handler can also press "I have a conflict of interest" on a case: it disappears for them and is unassigned. If a case involves
+  the only person who could handle it, nobody can: that is by design, so handle it outside the system.
+- **Access rule:** done in the database (`can_handle_grievances()` and `grievance_visible()` in `supabase/grievances.sql`), not in
+  the screens. Handlers use database functions that check the rule and keep a trail; the tables cannot be read from the browser.
+
+**Handling**
+- **Statuses:** Submitted, Acknowledged, Under review, Resolved, Escalated, Closed. Resolving or closing needs an outcome, which the
+  employee can read. Private notes are never shown to the employee.
+- **Time limits** (the Administrator sets them under Grievances, Settings): acknowledge within 2 working days, update at least every
+  5 working days, resolution target 30 days. A case past a limit shows **Overdue** with the reason, has its own filter, and is
+  counted on the Content tab ("3 grievances are overdue"). Weekends do not count; **public holidays do** (the database does not
+  know them).
+- **Statistics:** counts and averages only, no names or text. **Export:** the inbox can be downloaded as a CSV (tickets, topic,
+  status, dates; never a name or any text).
+- **Retention:** nothing is ever deleted until the Administrator sets "keep closed cases for N months" **and** presses "Delete expired
+  cases". The deletion is logged as a count. Ask your counsel or Data Privacy Officer which period is right.
+
+**Files** (private bucket `grievances`): up to 5 per grievance, 10 MB each, PDF, JPG, PNG, WEBP, TXT or DOCX. The browser uploads straight
+to Storage with a one-time address from the server; the file keeps a random name and the employee's name for it is kept only in the
+database. Handlers download with a 2-minute link. Files are not virus-scanned.
+
+**Email alerts (optional; off until you set it up).**
+1. Create an account at resend.com and verify a sending domain.
+2. In Vercel, Project, Settings, Environment Variables, add `RESEND_API_KEY`, `GRIEVANCE_MAIL_FROM` (for example
+   `SINAGLIKHA <alerts@yourdomain.com>`), optionally `SITE_URL`, and `CRON_SECRET` (any random string of 16 or more characters).
+3. Redeploy. A new **confidential** grievance, and the employee's first message of the day on one, then emails the right handlers
+   (a ticket number only: never a name, topic or text). **Anonymous** ones never trigger an immediate email, because the minute it
+   arrives could be matched with someone's sign-in time. They are only counted in the **daily summary** at 8:00 AM Philippine time
+   (a Vercel scheduled job in `vercel.json`), which says how many cases are unacknowledged, waiting for a reply or overdue.
+   Without `CRON_SECRET` the scheduled job is refused, and without the Resend settings no email is sent. Neither breaks anything.
+
+**Defaults** (change in `assets/grievance-meta.js` and the matching lists in the SQL; a test checks they agree): seven categories,
+3 confidential grievances a day per employee, 30 anonymous in all per day, 20 messages a day per grievance.
+
+**Tests:** `npm test` covers the server; `./scripts/test-sql.sh` runs the database tests against a throwaway Postgres (CI does this
+too). What no test here could cover: real Supabase Storage uploads and downloads, and real email delivery. Try both on staging
+before relying on them.

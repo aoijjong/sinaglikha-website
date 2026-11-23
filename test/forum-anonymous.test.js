@@ -76,13 +76,13 @@ test('before the SQL is run, an anonymous post is refused and never posted under
   assert.notEqual(r2.status, 200);
 });
 
-test('colleagues see "Anonymous" with no name, photo or id; the author sees "mine"', () => {
+test('colleagues see "Anon Likhain" with no name, photo or id; the author sees "mine"', () => {
   const pack = { at: () => 3 };
   const anon = E.byline({ employee_id: OTHER, anonymous: true }, NAMES, pack, ME);
-  assert.deepEqual(anon, { author: 'Anonymous', pic: undefined, anonymous: true, mine: false });
+  assert.deepEqual(anon, { author: 'Anon Likhain', pic: undefined, anonymous: true, mine: false });
   const mine = E.byline({ employee_id: ME, anonymous: true }, NAMES, pack, ME);
   assert.equal(mine.mine, true);
-  assert.equal(mine.author, 'Anonymous');
+  assert.equal(mine.author, 'Anon Likhain');
   const named = E.byline({ employee_id: OTHER, anonymous: false }, NAMES, pack, ME);
   assert.deepEqual(named, { author: 'Jose Reyes', pic: 3, anonymous: false, mine: false });
   const old = E.byline({ employee_id: OTHER }, NAMES, pack, ME);   // row from before the column existed
@@ -98,12 +98,12 @@ test('thread, category and feed responses never leak an anonymous author', async
     assert.equal(r.status, 200);
     const json = JSON.stringify(r.data);
     assert.ok(!json.includes(OTHER), 'the author id is never sent');
-    assert.ok(json.includes('Anonymous'));
+    assert.ok(json.includes('Anon Likhain'));
   }
-  assert.equal(detail.data.thread.author, 'Anonymous');
-  assert.equal(detail.data.posts[0].author, 'Anonymous');
+  assert.equal(detail.data.thread.author, 'Anon Likhain');
+  assert.equal(detail.data.posts[0].author, 'Anon Likhain');
   assert.equal(detail.data.posts[1].author, 'Jose Reyes', 'a named reply in the same thread still shows its name');
-  assert.equal(feed.data.threads[0].author, 'Anonymous');
+  assert.equal(feed.data.threads[0].author, 'Anon Likhain');
   assert.equal(feed.data.threads[1].author, 'Jose Reyes');
 });
 

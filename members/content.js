@@ -57,7 +57,7 @@
   };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], applicants: ['MembersApplicants', 'Follow each applicant from application to placement'], recdocs: ['MembersRecruitmentDocs', 'Interview, rating, selection and placement documents'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
+  var SPECIAL = { grievances: ['MembersGrievances', 'Receive and handle employee grievances'], announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], applicants: ['MembersApplicants', 'Follow each applicant from application to placement'], recdocs: ['MembersRecruitmentDocs', 'Interview, rating, selection and placement documents'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
@@ -140,6 +140,8 @@
       nRec = rec.length;
       list = rec.concat(list);
     }
+    // Grievances are for Legal Compliance and the Administrator only: nobody else is even shown the card
+    if (cs.dept === 'legal' && !(state.isAdmin || myDept() === 'legal')) list = list.filter(function (d) { return d.key !== 'grievances'; });
     var eng = cs.dept === 'engagement' && canModerate() && !!window.MembersAnnouncements && !!window.MembersForum;
     if (eng) list = list.filter(function (d) { return d.key !== 'announcements' && d.key !== 'forum'; });
     var pub = 0, drafts = 0;
@@ -335,6 +337,15 @@
       extra.push(sb.from('forum_reports').select('id').eq('resolved', false).limit(500).then(function (r) {
         var n = r.error || !r.data ? 0 : r.data.length;
         if (n) items.push({ icon: 'flag', text: plural(n, 'forum report needs', 'forum reports need') + ' a moderator', special: 'forum', tab: 'reports' });
+      }));
+    }
+    // grievances: only Legal Compliance and the Administrator are told, and only if there is something to do
+    if ((state.isAdmin || myDept() === 'legal') && window.MembersGrievances) {
+      extra.push(sb.rpc('grievance_counts').then(function (r) {
+        var c = r.error || !r.data ? null : r.data;
+        if (!c) return;   // not set up yet, or no access: say nothing
+        if (c.overdue) items.push({ icon: 'scale', text: plural(c.overdue, 'grievance is', 'grievances are') + ' overdue', special: 'grievances' });
+        else if (c.attention) items.push({ icon: 'scale', text: plural(c.attention, 'grievance needs', 'grievances need') + ' attention', special: 'grievances' });
       }));
     }
     await Promise.all(extra);

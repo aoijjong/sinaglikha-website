@@ -404,14 +404,17 @@ async function evaluationForms(eid) {
 }
 
 /* The open forum categories and the latest threads across them, with reply counts and author names. */
-/* How a forum thread or reply names its author to OTHER employees. An anonymous row shows "Anonymous" and no
+/* The name other employees see on an anonymous post. */
+const ANON_NAME = 'Anon Likhain';
+
+/* How a forum thread or reply names its author to OTHER employees. An anonymous row shows ANON_NAME and no
    photo; only the author sees `mine`. The author's id is never sent to the portal. Rows come from select=* so
    this still works before supabase/forum_anonymous.sql has added the `anonymous` column. */
 function isAnon(row) { return !!row && row.anonymous === true; }
 function byline(row, names, pack, eid) {
   const anon = isAnon(row);
   return {
-    author: anon ? 'Anonymous' : (names[row.employee_id] || 'Employee'),
+    author: anon ? ANON_NAME : (names[row.employee_id] || 'Employee'),
     pic: anon || !pack ? undefined : pack.at(row.employee_id),
     anonymous: anon,
     mine: row.employee_id === eid
@@ -449,7 +452,7 @@ async function forumFeed(eid) {
 }
 
 module.exports = {
-  list, namesOf, photoPack, catView, byline, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
+  list, namesOf, photoPack, catView, byline, ANON_NAME, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
   ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
   configured, send, svc, rest, readJson, foreignOrigin, makeToken, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,

@@ -80,7 +80,7 @@
   function threadRow(t) {
     var c = cat(t.category_id);
     var meta = [c ? c.name : 'Unknown category', who(t.employee_id), app.fmtDate(t.created_at)].join(' · ');
-    var chips = (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anonymous. You can see the real author.">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '');
+    var chips = (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain. You can see the real author.">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '');
     return '<li class="lrow" data-id="' + esc(t.id) + '"><button class="lmain" type="button" data-a="view"><span class="lico">' + I(t.locked ? 'lock' : 'chat') + '</span>' +
       '<span class="ltext"><span class="lname">' + esc(t.title) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
       '<div class="lside">' + chips + '<div class="lacts">' +
@@ -107,11 +107,11 @@
     body.innerHTML = '<div class="list-card"><ul class="rows">' +
       '<li class="lrow" data-id="' + esc(t.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(t.title) +
       '</span><span class="lmeta">' + esc(who(t.employee_id) + ' · ' + app.fmtDate(t.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(t.body) + '</span></span></div>' +
-      '<div class="lside">' + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anonymous">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '') + '</div></li>' +
+      '<div class="lside">' + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '') + '</div></li>' +
       (F.thread.posts.length ? F.thread.posts.map(function (p) {
         return '<li class="lrow" data-post="' + esc(p.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('send') + '</span><span class="ltext"><span class="lname">' + esc(who(p.employee_id)) +
           '</span><span class="lmeta">' + esc(app.fmtDate(p.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(p.body) + '</span></span></div>' +
-          '<div class="lside">' + (p.anonymous ? '<span class="chip t-none" title="Shown to employees as Anonymous">Anonymous</span>' : '') + (p.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + '<div class="lacts">' +
+          '<div class="lside">' + (p.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (p.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + '<div class="lacts">' +
           (p.hidden ? IB('eye', 'Show this reply again', { 'data-a': 'post-unhide' }, 'good') : IB('eyeOff', 'Hide this reply', { 'data-a': 'post-hide' })) +
           IB('trash', 'Delete this reply', { 'data-a': 'post-del' }, 'danger') + '</div></div></li>';
       }).join('') : '<li class="none" style="padding:16px 20px;color:var(--muted)">No replies yet.</li>') + '</ul></div>';
