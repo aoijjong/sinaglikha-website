@@ -22,11 +22,12 @@ module.exports = async function handler(req, res) {
   if (!E.ID_RE.test(no) || !/^\d{6}$/.test(pin)) return E.send(res, 400, { error: generic });
 
   const ip = E.ipHash(req);
-  if (await E.deviceBlocked(ip)) {
+  // Both reads start at once (they do not depend on each other), which saves a database round trip.
+  const [blocked, found] = await Promise.all([E.deviceBlocked(ip), E.loadEmployee(no)]);
+  if (blocked) {
     return E.send(res, 429, { error: 'Too many wrong tries from this device. Try again in 15 minutes.' });
   }
 
-  const found = await E.loadEmployee(no);
   if (!found || !found.emp.active || !found.emp.pin_set || !found.sec.pin_hash) {
     await E.burnTime(pin);
     await E.noteAttempt(ip, no, false);
@@ -45,11 +46,15 @@ module.exports = async function handler(req, res) {
     return E.send(res, 401, { error: generic });
   }
 
-  await E.rest('PATCH', `employee_secrets?employee_id=eq.${found.emp.id}`, { failed_attempts: 0 }, 'return=minimal');
-  await E.rest('PATCH', `employees?id=eq.${found.emp.id}`, { last_login_at: new Date().toISOString(), locked_until: null }, 'return=minimal');
-  await E.noteAttempt(ip, no, true);
+  // The PIN was right, so these four writes are independent: send them together instead of one after another.
+  // (The wrong-PIN and unknown-ID paths above stay as they were: their timing is part of the guessing protection.)
   E.setSession(res, found.emp, found.sec.session_version);
-  await E.logAudit('employee.login', no);
+  await Promise.all([
+    E.rest('PATCH', `employee_secrets?employee_id=eq.${found.emp.id}`, { failed_attempts: 0 }, 'return=minimal'),
+    E.rest('PATCH', `employees?id=eq.${found.emp.id}`, { last_login_at: new Date().toISOString(), locked_until: null }, 'return=minimal'),
+    E.noteAttempt(ip, no, true),
+    E.logAudit('employee.login', no)
+  ]);
   return E.send(res, 200, {
     ok: true,
     employee: { employee_no: found.emp.employee_no, full_name: found.emp.full_name, position: found.emp.position }
