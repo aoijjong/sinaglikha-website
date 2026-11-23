@@ -49,22 +49,25 @@
 .gv-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 10px}
 .gv-outcome{margin:10px 0;padding:12px 14px;border-radius:14px;background:#E3F3E4;color:#1E5A27;font-size:.92rem}
 .gv-outcome b{display:block;margin-bottom:2px}
-.gv-thread{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+/* the conversation sits in one light cream box, with the reply field at the bottom of it */
+.gv-msgbox{padding:14px;border-radius:18px;background:#FFF8EC;border:1px solid rgba(214,128,60,.22)}
+.gv-msgbox .gv-fine{margin:0;text-align:center}
+.gv-msgbox .gv-reply{margin-top:12px;padding-top:12px;border-top:1px solid rgba(214,128,60,.22)}
+.gv-thread{display:flex;flex-direction:column;gap:8px;margin:0}
 .gv-msg{max-width:92%;padding:10px 13px;border-radius:16px;font-size:.93rem;overflow-wrap:anywhere;white-space:pre-wrap}
 .gv-msg small{display:block;margin-top:4px;color:var(--muted);font-size:.74rem}
-.gv-msg.you{align-self:flex-end;background:#FFF1D6}
+.gv-msg.you{align-self:flex-end;background:#FFE9C4}
 .gv-msg.legal{align-self:flex-start;background:#fff;border:1px solid var(--line)}
 .gv-msg .gv-who{display:block;font-weight:700;font-size:.78rem;color:var(--brown);margin-bottom:2px}
 .gv-reply{display:flex;gap:8px;align-items:flex-end}
 .gv-reply textarea{flex:1;min-height:44px;padding:10px 13px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);font:inherit;font-size:.93rem;resize:vertical}
-@media (max-width:600px){.gv-body{padding:6px 20px 20px}.gv-actions .btn{flex:1 1 100%}.gv-ticket{font-size:1.1rem}.gv-msg{max-width:100%}}
+@media (max-width:600px){.gv-body{padding:6px 20px 20px}.gv-actions .btn{flex:1 1 100%}.gv-ticket{font-size:1.1rem}.gv-msg{max-width:100%}.gv-msgbox{padding:12px}}
 
 /* sections: a small label above each group, a line between groups */
 .gv-sec{padding:14px 0 4px;border-top:1px solid var(--line)}
 .gv-sec:first-of-type{border-top:0;padding-top:4px}
 .gv-h{font-family:var(--sans);font-weight:700;font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
 .gv-form .gv-sec .gv-l:first-of-type{margin-top:0}
-.gv-link{border:0;background:none;color:#B3361A;font:inherit;font-weight:700;font-size:.88rem;padding:8px 4px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .gv-more{margin:12px 0 0;border:1px dashed var(--line);border-radius:14px;padding:0 14px}
 .gv-more summary{cursor:pointer;padding:12px 0;font-weight:600;font-size:.9rem;color:var(--brown);list-style:none}
 .gv-more summary::-webkit-details-marker{display:none}
