@@ -58,6 +58,12 @@
 .gv-msg small{display:block;margin-top:4px;color:var(--muted);font-size:.74rem}
 .gv-msg.you{align-self:flex-end;background:#FFE9C4}
 .gv-msg.legal{align-self:flex-start;background:#fff;border:1px solid var(--line)}
+/* the Senior Manager side of the same conversation: the employee on the left (in), the handlers on the right (out), private notes marked */
+.gv-msg.in{align-self:flex-start;background:#fff;border:1px solid var(--line)}
+.gv-msg.out{align-self:flex-end;background:#FFE9C4}
+.gv-msg.note{align-self:flex-end;background:#F3EEFA;border:1px dashed rgba(106,76,150,.35)}
+.gv-msgbox .gv-closed{margin-top:10px}
+.gv-msgbox .gvm-priv{margin-top:10px}
 .gv-msg .gv-who{display:block;font-weight:700;font-size:.78rem;color:var(--brown);margin-bottom:2px}
 .gv-reply{display:flex;gap:8px;align-items:flex-end}
 .gv-reply textarea{flex:1;min-height:44px;padding:10px 13px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper);font:inherit;font-size:.93rem;resize:vertical}
@@ -100,12 +106,6 @@
 .gvm-facts dt{color:var(--muted)}
 .gvm-facts dd{margin:0;overflow-wrap:anywhere}
 .gvm-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px}
-.gvm-thread{display:flex;flex-direction:column;gap:8px;margin:10px 0}
-.gvm-msg{padding:10px 13px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:.92rem;white-space:pre-wrap;overflow-wrap:anywhere}
-.gvm-msg small{display:block;margin-top:4px;color:var(--muted);font-size:.76rem}
-.gvm-msg.employee{background:#FFF6EA}
-.gvm-msg.note{background:#F3EEFA;border-style:dashed}
-.gvm-msg b.k{display:block;font-size:.76rem;color:var(--brown);margin-bottom:2px}
 .gvm-ctl{display:grid;gap:8px;margin-top:8px}
 .gvm-ctl select,.gvm-ctl textarea{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid rgba(74,46,34,.28);background:var(--paper,#FFFDF6);color:inherit;font:inherit}
 .gvm-ctl textarea{min-height:76px;resize:vertical}
