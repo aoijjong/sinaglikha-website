@@ -195,7 +195,7 @@
       var n = like && /\d/.test(like.textContent) ? like.textContent.replace(/\D+/g, '') : '';
       var c = com && /\d/.test(com.textContent) ? com.textContent.trim() : '';
       return '<article class="rc-c" data-recent="' + kind + '" tabindex="0"><div class="rc-top">' + (av ? av.outerHTML : '') + '<div class="who"><b>' + (who ? who.innerHTML : '') + '</b><span>' + (when ? when.innerHTML : '') + '</span></div>' +
-        (kind === 'forum' && cat ? '<span class="chip plain">' + cat.innerHTML + '</span>' : '') + '</div>' +
+        (kind === 'forum' && cat ? '<span class="chip plain ' + (cat.className.match(/\bcat-[a-z]+\b/) || [''])[0] + '">' + cat.innerHTML + '</span>' : '') + '</div>' +
         (title ? '<h3>' + title.innerHTML + '</h3>' : '') + '<p>' + (body ? body.innerHTML : '') + '</p>' +
         (pics ? '<div class="rc-pics">' + pics + '</div>' : '') + (files ? '<div class="rc-files">' + files + '</div>' : '') +
         (n || c ? '<div class="rc-foot">' + (c ? '<span class="rc-com">' + c + '</span>' : '') + (n ? '<span>' + ICON.heart + n + '</span>' : '') + '</div>' : '') + '</article>';

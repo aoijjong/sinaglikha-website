@@ -193,11 +193,26 @@
   }
 
   /* ---------- categories ---------- */
+  var COL = window.SngCatColors;
+  function colorCls(c) { return COL ? COL.cls(c) : ''; }
+  /* the swatches in the dialog; a new category starts on the first colour no other category uses */
+  function paintColors(c) {
+    var box = $('#fc-colors');
+    if (!COL || !box) return;
+    var used = {};
+    F.cats.forEach(function (x) { if (!c || x.id !== c.id) used[COL.keyFor(x)] = true; });
+    var free = COL.list.filter(function (k) { return !used[k.key]; })[0];
+    var pick = c ? COL.keyFor(c) : (free || COL.list[0]).key;
+    box.innerHTML = COL.list.map(function (k) {
+      return '<label class="cat-pick"><input type="radio" name="fc-color" value="' + k.key + '" aria-label="' + esc(k.name) + '"' + (k.key === pick ? ' checked' : '') + '>' +
+        '<span class="cat-sw cat-' + k.key + '" title="' + esc(k.name) + '"></span></label>';
+    }).join('');
+  }
   function renderCats(body) {
     var list = sortedCats();
     body.innerHTML = '<div class="list-card">' + (list.length ? '<ul class="rows">' + list.map(function (c, i) {
       var n = F.threads.filter(function (t) { return t.category_id === c.id; }).length;
-      return '<li class="lrow" data-id="' + esc(c.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(c.name) +
+      return '<li class="lrow" data-id="' + esc(c.id) + '"><div class="lmain" style="cursor:default"><span class="lico ' + colorCls(c) + '">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(c.name) +
         '</span><span class="lmeta">' + esc((c.description ? c.description + ' · ' : '') + n + (n === 1 ? ' thread' : ' threads')) + '</span></span></div>' +
         '<div class="lside"><span class="chip cat-st ' + (c.active ? 's-published' : 's-archived') + '">' + (c.active ? 'Open' : 'Closed') + '</span><div class="lacts">' +
         (i > 0 ? IB('arrowUp', 'Move up', { 'data-a': 'cup' }) : '<span class="ib-gap" aria-hidden="true"></span>') + (i < list.length - 1 ? IB('arrowDown', 'Move down', { 'data-a': 'cdown' }) : '<span class="ib-gap" aria-hidden="true"></span>') +
@@ -209,21 +224,32 @@
     $('#fc-title').textContent = c ? 'Edit Category' : 'Add Category';
     $('#fc-name').value = c ? c.name : '';
     $('#fc-desc').value = c ? c.description || '' : '';
+    paintColors(c);
     err.hidden = true;
     form.onsubmit = async function (e) {
       e.preventDefault();
       var name = $('#fc-name').value.trim();
       if (!name) { err.textContent = 'Enter a name.'; err.hidden = false; return; }
       var fields = { name: name, description: $('#fc-desc').value.trim() };
+      var chosen = $('#fc-colors input:checked');
+      var color = chosen && COL && COL.valid(chosen.value) ? chosen.value : null;
+      var save = function (f) {
+        return c
+          ? sb.from('forum_categories').update(f).eq('id', c.id).select('*').maybeSingle()
+          : sb.from('forum_categories').insert(Object.assign({ position: F.cats.length }, f)).select('*').maybeSingle();
+      };
       $('#fc-ok').disabled = true;
-      var r = c
-        ? await sb.from('forum_categories').update(fields).eq('id', c.id).select('*').maybeSingle()
-        : await sb.from('forum_categories').insert(Object.assign({ position: F.cats.length }, fields)).select('*').maybeSingle();
+      var r = await save(color ? Object.assign({ color: color }, fields) : fields);
+      var noColor = false;
+      if ((r.error || !r.data) && color) {   // the colour column may not exist yet (forum_category_colors.sql): save everything else
+        r = await save(fields);
+        noColor = !r.error && !!r.data;
+      }
       $('#fc-ok').disabled = false;
       if (r.error || !r.data) { err.textContent = "Couldn't save that. You may not have permission."; err.hidden = false; return; }
       dlg.close();
       logAction(c ? 'forum.category.edit' : 'forum.category.add', name, { id: r.data.id });
-      toast(c ? 'Saved.' : 'Category added.', 'ok');
+      toast(noColor ? (c ? 'Saved' : 'Category added') + ', but the color was not saved. The one-time color update (forum_category_colors.sql) has not been run yet.' : (c ? 'Saved.' : 'Category added.'), noColor ? 'bad' : 'ok');
       loadAll();
     };
     $('#fc-cancel').onclick = function () { dlg.close(); };

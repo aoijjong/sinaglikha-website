@@ -138,7 +138,7 @@ module.exports = async function handler(req, res) {
     const t = await E.rest('GET', `forum_threads?id=eq.${id}&hidden=eq.false&select=*`);
     const thread = list(t)[0];
     if (!thread) return E.send(res, 404, gone);
-    const c = await E.rest('GET', `forum_categories?id=eq.${thread.category_id}&active=eq.true&select=id,name`);
+    const c = await E.rest('GET', `forum_categories?id=eq.${thread.category_id}&active=eq.true&select=*`);
     const cat = list(c)[0];
     if (!cat) return E.send(res, 404, gone);
     const p = await E.rest('GET', `forum_posts?thread_id=eq.${id}&hidden=eq.false&select=*&order=created_at.asc&limit=500`);
@@ -146,7 +146,7 @@ module.exports = async function handler(req, res) {
     const authors = E.publicIds([thread].concat(posts));
     const [who, pack] = await Promise.all([names(authors), E.photoPack('employees', authors)]);
     return E.send(res, 200, {
-      category: cat,
+      category: E.catView(cat),
       photos: pack.pics,
       thread: { id: thread.id, title: thread.title, body: thread.body, locked: thread.locked, created_at: thread.created_at, ...E.byline(thread, who, null, eid) },
       posts: posts.map((x) => ({ id: x.id, body: x.body, created_at: x.created_at, ...E.byline(x, who, pack, eid) }))
@@ -156,7 +156,7 @@ module.exports = async function handler(req, res) {
   if (q.category !== undefined) {
     const id = String(q.category);
     if (!UUID_RE.test(id)) return E.send(res, 400, { error: 'Bad request.' });
-    const c = await E.rest('GET', `forum_categories?id=eq.${id}&active=eq.true&select=id,name,description`);
+    const c = await E.rest('GET', `forum_categories?id=eq.${id}&active=eq.true&select=*`);
     const cat = list(c)[0];
     if (!cat) return E.send(res, 404, gone);
     const t = await E.rest('GET', `forum_threads?category_id=eq.${id}&hidden=eq.false&select=*&order=last_post_at.desc&limit=100`);
@@ -167,7 +167,7 @@ module.exports = async function handler(req, res) {
     p.forEach((x) => { count[x.thread_id] = (count[x.thread_id] || 0) + 1; });
     const who = await names(E.publicIds(threads));
     return E.send(res, 200, {
-      category: cat,
+      category: E.catView(cat),
       threads: threads.map((x) => ({
         id: x.id, title: x.title, preview: x.body.slice(0, 160), locked: x.locked, replies: count[x.id] || 0,
         ...E.byline(x, who, null, eid), created_at: x.created_at, last_post_at: x.last_post_at
@@ -175,11 +175,11 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const c = await E.rest('GET', 'forum_categories?active=eq.true&select=id,name,description&order=position,created_at');
+  const c = await E.rest('GET', 'forum_categories?active=eq.true&select=*&order=position,created_at');
   // Before supabase/phase3.sql has been run the tables don't exist yet: show nothing.
   if (!c.ok || !Array.isArray(c.data)) return E.send(res, 200, { categories: [] });
   const t = list(await E.rest('GET', 'forum_threads?hidden=eq.false&select=category_id&limit=5000'));
   const count = {};
   t.forEach((x) => { count[x.category_id] = (count[x.category_id] || 0) + 1; });
-  return E.send(res, 200, { categories: c.data.map((x) => ({ id: x.id, name: x.name, description: x.description || '', threads: count[x.id] || 0 })) });
+  return E.send(res, 200, { categories: c.data.map((x) => ({ ...E.catView(x), threads: count[x.id] || 0 })) });
 };

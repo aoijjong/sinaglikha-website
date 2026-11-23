@@ -30,6 +30,10 @@ Optional features that need a SQL file before they work:
 - `forum_anonymous.sql`: lets employees post anonymously in the Community forum. Deploying the code first is safe
   (the forum works as before and an anonymous post is refused with a clear message). Moderators always see the
   real author, and the portal says so next to the checkbox.
+- `forum_category_colors.sql`: lets Senior Managers pick a label colour for each forum category, and gives the
+  existing categories different colours. Until it runs, categories still get varied colours (worked out from their
+  id) and the picker still opens; saving a chosen colour is skipped with a message and the rest of the category is
+  saved normally.
 
 Rules going forward:
 - Never edit a file that has already been run. Add a new, dated file (`2026-12-01_add_x.sql`).
