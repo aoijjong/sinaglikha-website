@@ -298,15 +298,22 @@ begin
   perform pg_temp.check(jsonb_array_length(j->'files') = 1 and j->'files'->0->>'name' = 'Payslip.pdf', 'the opened case lists only confirmed files');
   perform pg_temp.check((select file_count from public.grievance_list() where id = g_ok) = 1, 'the inbox counts confirmed files');
   delete from storage.objects where bucket_id = 'grievances'; get diagnostics rc = row_count;
-  perform pg_temp.check(rc = 0, 'Legal cannot delete files');
+  perform pg_temp.check(rc = 1, 'Legal can remove the files of a case they may see, and nothing else (' || rc || ' removed)');
+  perform set_config('role', 'postgres', true);
+  perform pg_temp.check((select count(*) from storage.objects where name = 'f/ok-unconfirmed.pdf') = 1 and (select count(*) from storage.objects where name = 'f/adm-confirmed.pdf') = 1
+                    and (select count(*) from storage.objects where bucket_id = 'other') = 1, 'a hidden case''s file, an unconfirmed upload and another bucket are untouched');
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
 
   perform set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);   -- Administrator
   perform pg_temp.check(public.grievance_file_visible('f/adm-confirmed.pdf'), 'the Administrator can open the file of a case involving Legal');
   perform set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true);   -- another department
-  perform pg_temp.check(not public.grievance_file_visible('f/ok-confirmed.pdf') and (select count(*) from storage.objects) = 0, 'another department sees no files');
+  perform pg_temp.check((select count(*) from storage.objects) = 0, 'another department sees no files');
+  delete from storage.objects where bucket_id = 'grievances'; get diagnostics rc = row_count;
+  perform pg_temp.check(rc = 0, 'and cannot delete any');
   perform set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);
   delete from storage.objects where bucket_id = 'grievances'; get diagnostics rc = row_count;
-  perform pg_temp.check(rc = 2, 'the Administrator can delete the files of cases they may see (' || rc || ' removed; an unconfirmed upload is not theirs to see)');
+  perform pg_temp.check(rc = 1, 'the Administrator can delete the files of cases they may see (' || rc || ' removed; an unconfirmed upload is not theirs to see)');
   perform set_config('role', 'postgres', true);
   perform pg_temp.check((select count(*) from storage.objects where bucket_id = 'other') = 1, 'and only that bucket');
 
@@ -380,20 +387,15 @@ begin
 end $$;
 
 -- ===========================================================================
--- 11. Statistics and the daily summary
+-- 11. The daily summary (statistics were removed)
 -- ===========================================================================
 do $$
 declare j jsonb;
 begin
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
-  j := public.grievance_stats();
-  perform pg_temp.check((j->>'total')::int > 0 and (j->>'open')::int <= (j->>'total')::int and (j->'by_status') ? 'closed' and (j->'by_category') ? 'other' and jsonb_typeof(j->'by_month') = 'array', 'statistics have the expected shape');
-  perform pg_temp.check((select sum(v::int) from jsonb_each_text(j->'by_status') as e(k, v)) = (j->>'total')::int, 'the status counts add up to the total');
-  perform pg_temp.check(j::text !~* '(SNG-0001|Maria|aaaaaaaa|Lea Legal|employee_id)', 'statistics hold no names or ids');
+  perform pg_temp.check(to_regprocedure('public.grievance_stats()') is null, 'the statistics function is gone');
   perform set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true);
-  begin perform public.grievance_stats(); perform pg_temp.check(false, 'x');
-  exception when raise_exception then perform pg_temp.check(true, 'another department cannot read statistics'); end;
   begin perform public.grievance_digest(); perform pg_temp.check(false, 'x');
   exception when insufficient_privilege then perform pg_temp.check(true, 'the daily summary cannot be called from a browser'); end;
   perform set_config('role', 'anon', true);
@@ -408,4 +410,59 @@ begin
   perform pg_temp.check((public.grievance_digest()->'admin'->>'unacknowledged')::int = (j->'admin'->>'unacknowledged')::int + 1
                     and (public.grievance_digest()->'legal'->>'unacknowledged')::int = (j->'legal'->>'unacknowledged')::int,
                     'an admin-only case is counted for the Administrator and not for Legal Compliance');
+end $$;
+
+-- ===========================================================================
+-- 12. Deleting one grievance
+-- ===========================================================================
+do $$
+declare g_del uuid; g_hidden uuid; g_recused uuid; t text; j jsonb; n int;
+begin
+  insert into public.grievances (category, subject, body, confidentiality, employee_id)
+    values ('other', 'DEL me', 'b', 'confidential', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') returning id, ticket_no into g_del, t;
+  insert into public.grievance_messages (grievance_id, author_kind, body) values (g_del, 'employee', 'hello');
+  insert into public.grievance_events (grievance_id, kind) values (g_del, 'status');
+  insert into public.grievance_files (grievance_id, path, name, size_bytes, mime, confirmed) values
+    (g_del, 'f/del-ok.pdf', 'a.pdf', 10, 'application/pdf', true), (g_del, 'f/del-half.pdf', 'b.pdf', 10, 'application/pdf', false);
+  insert into public.grievances (category, subject, body, confidentiality, employee_id, routing)
+    values ('other', 'DEL hidden from Legal', 'b', 'confidential', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'admin_only') returning id into g_hidden;
+  insert into public.grievances (category, subject, body, confidentiality, employee_id)
+    values ('other', 'DEL recused', 'b', 'confidential', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') returning id into g_recused;
+
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true);   -- another department
+  begin perform public.grievance_delete(g_del); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'another department cannot delete'); end;
+  perform set_config('role', 'anon', true);
+  begin perform public.grievance_delete(g_del); perform pg_temp.check(false, 'x');
+  exception when insufficient_privilege then perform pg_temp.check(true, 'a signed-out visitor cannot delete'); end;
+
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);   -- Legal
+  begin perform public.grievance_delete(g_hidden); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'Legal cannot delete a case that is routed away from them'); end;
+  perform public.grievance_recuse(g_recused);
+  begin perform public.grievance_delete(g_recused); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'a handler who stepped away cannot delete the case'); end;
+
+  j := public.grievance_delete(g_del);
+  perform pg_temp.check(j->>'deleted' = 'true' and j->'leftover' @> '"f/del-half.pdf"'::jsonb and not (j->'leftover' @> '"f/del-ok.pdf"'::jsonb),
+                        'Legal deleted the case; only the unconfirmed upload is returned for clean-up (' || j::text || ')');
+  begin perform public.grievance_delete(g_del); perform pg_temp.check(false, 'x');
+  exception when raise_exception then perform pg_temp.check(true, 'deleting the same case twice is refused'); end;
+  perform pg_temp.check(not exists (select 1 from public.grievance_list() where id = g_del), 'it is gone from the inbox');
+
+  perform set_config('role', 'postgres', true);
+  select (select count(*) from public.grievances where id = g_del) + (select count(*) from public.grievance_messages where grievance_id = g_del)
+       + (select count(*) from public.grievance_events where grievance_id = g_del) + (select count(*) from public.grievance_files where grievance_id = g_del) into n;
+  perform pg_temp.check(n = 0, 'its messages, trail and file records went with it');
+  perform pg_temp.check((select count(*) from public.audit_log where action = 'grievance.delete' and target = t and actor_email = 'legal@x.test' and detail is null) = 1,
+                        'the activity log holds one line: the ticket number and who deleted it');
+  perform pg_temp.check(exists (select 1 from public.grievances where id = g_hidden) and exists (select 1 from public.grievances where id = g_recused), 'no other case was touched');
+
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);   -- the Administrator
+  perform public.grievance_delete(g_hidden);
+  perform set_config('role', 'postgres', true);
+  perform pg_temp.check(not exists (select 1 from public.grievances where id = g_hidden), 'the Administrator can delete a case routed to them');
 end $$;

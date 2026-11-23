@@ -32,6 +32,7 @@
     rewards: 'Fair pay, benefits, and recognition.',
     legal: 'Fair, lawful, and safe workplaces.'
   };
+  var NAME = { grievances: 'Grievance Management System' };
   var DELIV_LINE = {
     vacancies: 'The positions shown on the public Careers page',
     applicants: 'Applicants, their status, history and notes',
@@ -53,11 +54,12 @@
     incentive_plan: 'Incentive and recognition plan information',
     handbook: 'The current Employee Handbook, with its versions',
     disciplinary_guidelines: 'The approved guidelines for disciplinary action',
-    risk_plan: 'The Risk Mitigation Plan (management only by default)'
+    risk_plan: 'The Risk Mitigation Plan (management only by default)',
+    grievances: 'Employee grievances: review, reply and close, with time limits and files'
   };
   var SHOW = [['all', 'All'], ['published', 'Published'], ['drafts', 'Drafts'], ['archived', 'Archived']];
   /* deliverables with a screen of their own: the module that draws it, and the line shown on its card */
-  var SPECIAL = { grievances: ['MembersGrievances', 'Receive and handle employee grievances'], announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], applicants: ['MembersApplicants', 'Follow each applicant from application to placement'], recdocs: ['MembersRecruitmentDocs', 'Interview, rating, selection and placement documents'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
+  var SPECIAL = { grievances: ['MembersGrievances', 'Review, reply to and close employee grievances'], announcements: ['MembersAnnouncements', 'Write posts for every employee, with files if you like'], lms: ['MembersLearning', 'Courses and modules for employees'], forum: ['MembersForum', 'Moderation and categories'], attendance: ['MembersAttendance', 'Review and correct time records'], vacancies: ['MembersVacancies', 'Add, publish and close the positions shown on Careers'], applicants: ['MembersApplicants', 'Follow each applicant from application to placement'], recdocs: ['MembersRecruitmentDocs', 'Interview, rating, selection and placement documents'], pms: ['MembersEvaluations', 'Evaluation forms and employee evaluations'] };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
@@ -84,6 +86,8 @@
     if (res.error || !res.data || !res.data.length) { cs.failed = true; cs.deliverables = []; return false; }
     cs.failed = false;
     cs.deliverables = res.data;
+    // the proper names, even if the database still holds an older one
+    cs.deliverables.forEach(function (d) { if (NAME[d.key]) d.name = NAME[d.key]; });
     var mine = myDept();
     cs.dept = DEPT_ORDER.indexOf(mine) !== -1 ? mine : 'staffing';
     var kept = app.nav.get().dept;

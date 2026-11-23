@@ -19,6 +19,7 @@
 -- Retention: the Administrator sets how many months a CLOSED case is kept; nothing is ever deleted until they do, and then
 -- only when they press "Delete expired cases".
 -- Files: a private bucket "grievances". Employees add files through the website's server; handlers open them with short links.
+-- Deleting: any handler who may see a case can delete it for good (confirmed, logged by ticket number only).
 
 -- ---------------------------------------------------------------------------
 -- 1. The rules: who handles grievances, and who may see ONE grievance
@@ -369,26 +370,23 @@ begin
     from public.grievance_list() l);
 end $$;
 
--- numbers only, no names and no text: how many, of what kind, how fast
-create or replace function public.grievance_stats() returns jsonb
-language plpgsql stable security definer set search_path = public as $$
+-- (an earlier version had a statistics function; it is gone)
+drop function if exists public.grievance_stats();
+
+-- Permanently deletes ONE grievance with its messages, trail and file records. Any handler who may see it can do this. The
+-- activity log keeps a line with the ticket number and who did it (never the complainant). Returns the paths of files that were
+-- never confirmed, so the screen can try to remove those too; the confirmed files are removed by the screen BEFORE this runs,
+-- while the person can still see them.
+create or replace function public.grievance_delete(p_id uuid) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare t text; leftover text[];
 begin
-  if not public.can_handle_grievances() then raise exception 'Only Legal Compliance and the Administrator can open grievances.'; end if;
-  return jsonb_build_object(
-    'total', (select count(*) from public.grievances g where public.grievance_visible(g.id)),
-    'open', (select count(*) from public.grievances g where g.status <> 'closed' and public.grievance_visible(g.id)),
-    'overdue', (select count(*) from public.grievances g where public.grievance_visible(g.id) and public.grievance_due(g) is not null),
-    'anonymous', (select count(*) from public.grievances g where g.confidentiality = 'anonymous' and public.grievance_visible(g.id)),
-    'by_status', coalesce((select jsonb_object_agg(s.status, s.n) from (select g.status, count(*) n from public.grievances g where public.grievance_visible(g.id) group by g.status) s), '{}'::jsonb),
-    'by_category', coalesce((select jsonb_object_agg(s.category, s.n) from (select g.category, count(*) n from public.grievances g where public.grievance_visible(g.id) group by g.category) s), '{}'::jsonb),
-    'by_month', coalesce((select jsonb_agg(jsonb_build_object('month', s.m, 'n', s.n) order by s.m) from (
-                  select to_char(g.created_at at time zone 'Asia/Manila', 'YYYY-MM') m, count(*) n from public.grievances g
-                  where public.grievance_visible(g.id) and g.created_at > now() - interval '12 months' group by 1) s), '[]'::jsonb),
-    'avg_ack_workdays', (select round(avg(public.grievance_workdays(g.created_at, g.acknowledged_at))::numeric, 1) from public.grievances g
-                         where g.acknowledged_at is not null and public.grievance_visible(g.id)),
-    'avg_days_to_close', (select round(avg(extract(epoch from (g.closed_at - g.created_at)) / 86400)::numeric, 1) from public.grievances g
-                          where g.closed_at is not null and public.grievance_visible(g.id))
-  );
+  perform public.grievance_require(p_id);
+  select ticket_no into t from public.grievances where id = p_id;
+  select coalesce(array_agg(f.path), '{}') into leftover from public.grievance_files f where f.grievance_id = p_id and not f.confirmed;
+  perform public.grievance_audit('grievance.delete', t, null);
+  delete from public.grievances where id = p_id;
+  return jsonb_build_object('deleted', true, 'leftover', to_jsonb(leftover));
 end $$;
 
 -- ---------------------------------------------------------------------------
@@ -468,7 +466,7 @@ begin
     'can_handle_grievances()', 'grievance_is_admin()', 'grievance_visible(uuid)', 'grievance_workdays(timestamptz,timestamptz)',
     'grievance_audit(text,text,jsonb)', 'grievance_trail(uuid,text,jsonb)', 'grievance_require(uuid)', 'grievance_due(public.grievances)',
     'grievance_list()', 'grievance_open(uuid)', 'grievance_set_status(uuid,text,text)', 'grievance_take(uuid)',
-    'grievance_reply(uuid,text,boolean)', 'grievance_reveal(uuid)', 'grievance_recuse(uuid)', 'grievance_counts()', 'grievance_stats()',
+    'grievance_reply(uuid,text,boolean)', 'grievance_reveal(uuid)', 'grievance_recuse(uuid)', 'grievance_delete(uuid)', 'grievance_counts()',
     'grievance_get_settings()', 'grievance_set_settings(integer,integer,integer,integer)', 'grievance_purge_preview()', 'grievance_purge()',
     'grievance_digest()'] loop
     execute format('revoke all on function public.%s from public, anon, authenticated', f);
@@ -477,7 +475,7 @@ begin
   -- (grievance_is_admin is also used by the storage delete rule, which runs with the caller's own permissions)
   foreach f in array array[
     'can_handle_grievances()', 'grievance_is_admin()', 'grievance_list()', 'grievance_open(uuid)', 'grievance_set_status(uuid,text,text)', 'grievance_take(uuid)',
-    'grievance_reply(uuid,text,boolean)', 'grievance_reveal(uuid)', 'grievance_recuse(uuid)', 'grievance_counts()', 'grievance_stats()',
+    'grievance_reply(uuid,text,boolean)', 'grievance_reveal(uuid)', 'grievance_recuse(uuid)', 'grievance_delete(uuid)', 'grievance_counts()',
     'grievance_get_settings()', 'grievance_set_settings(integer,integer,integer,integer)', 'grievance_purge_preview()', 'grievance_purge()'] loop
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;
@@ -517,13 +515,14 @@ begin
   create policy "grievances: handlers read" on storage.objects for select to authenticated
     using (bucket_id = 'grievances' and public.grievance_file_visible(name));
   drop policy if exists "grievances: administrator removes" on storage.objects;
-  create policy "grievances: administrator removes" on storage.objects for delete to authenticated
-    using (bucket_id = 'grievances' and public.grievance_is_admin());
+  drop policy if exists "grievances: handlers remove" on storage.objects;
+  create policy "grievances: handlers remove" on storage.objects for delete to authenticated
+    using (bucket_id = 'grievances' and (public.grievance_is_admin() or public.grievance_file_visible(name)));
 end $$;
 
 -- ---------------------------------------------------------------------------
 -- 10. The card on the Legal Compliance page of the Content tab (only handlers are shown it)
 -- ---------------------------------------------------------------------------
 insert into public.deliverables (key, name, department, kind, allow_public)
-values ('grievances', 'Grievances', 'legal', 'special', false)
+values ('grievances', 'Grievance Management System', 'legal', 'special', false)
 on conflict (key) do update set name = excluded.name, department = excluded.department, kind = excluded.kind, allow_public = excluded.allow_public;

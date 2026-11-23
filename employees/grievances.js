@@ -60,7 +60,7 @@
     }).join('') + '</ul>' : '<div class="gv-none">You have not raised any.</div>';
     return '<p class="gv-lead">Raise a concern privately with Legal Compliance.</p>' +
       '<div class="gv-actions"><button class="btn btn-primary btn-sm" type="button" data-gv="new">' + icon('plus') + 'Raise a grievance</button>' +
-      '<button class="gv-link" type="button" data-gv="find">Check an anonymous one</button></div>' + sec('My grievances', rows);
+      '<button class="btn btn-ghost btn-sm" type="button" data-gv="find">Check an anonymous grievance</button></div>' + sec('My grievances', rows);
   }
 
   function newView() {
@@ -144,7 +144,7 @@
     return '<div class="gv-done"><h3>Grievance sent</h3><p class="gv-lead">Quote the ticket number if you contact Legal Compliance.</p>' +
       box('gv-tn', 'Ticket number', d.ticket_no) + (anon ? box('gv-ac', 'Access code', d.access_code) : '') + up +
       (anon ? '<p class="gv-warn"><b>Save both now.</b> You need them to see replies, and they cannot be recovered.</p>' : '<p class="gv-lead">Follow it here under My Work.</p>') +
-      '<div class="gv-foot" style="justify-content:center"><button class="btn btn-primary btn-sm" type="button" data-gv="' + (anon ? 'find' : 'list') + '">' + (anon ? 'Check an anonymous one' : 'My grievances') + '</button>' +
+      '<div class="gv-foot" style="justify-content:center"><button class="btn btn-primary btn-sm" type="button" data-gv="' + (anon ? 'find' : 'list') + '">' + (anon ? 'Check an anonymous grievance' : 'My grievances') + '</button>' +
       (anon ? '<button class="btn btn-ghost btn-sm" type="button" data-gv="list">Done</button>' : '') + '</div></div>';
   }
 
@@ -166,15 +166,14 @@
       (files.length ? sec('Files', '<ul class="gv-files gv-attached" aria-label="Files you attached">' + files.map(function (f) {
         return '<li><span class="gv-fn">' + icon('file') + esc(f.name) + '</span><span class="gv-fs">' + esc(G.fileSize(f.size)) + '</span></li>';
       }).join('') + '</ul>') : '') +
-      sec('Messages', '<div class="gv-thread" aria-live="polite">' + (m.length ? m.map(function (x) {
+      sec('Messages', '<div class="gv-msgbox"><div class="gv-thread" aria-live="polite">' + (m.length ? m.map(function (x) {
         return '<div class="gv-msg ' + (x.from === 'you' ? 'you' : 'legal') + '"><span class="gv-who">' + (x.from === 'you' ? 'You' : 'Legal Compliance') + '</span>' + esc(x.body) + '<small>' + esc(when(x.created_at)) + '</small></div>';
       }).join('') : '<p class="gv-fine">No replies yet.</p>') + '</div>' +
         (closed ? '<p class="gv-fine">This grievance is closed.</p>'
           : '<form class="gv-reply" id="gv-reply" novalidate><label class="sr-only" for="gv-rb">Your message</label><textarea id="gv-rb" maxlength="' + G.LIMITS.message + '" rows="1" placeholder="Add a message…"></textarea>' +
-            '<button class="btn btn-primary btn-sm" type="submit" id="gv-rs">Send</button></form>')) +
+            '<button class="btn btn-primary btn-sm" type="submit" id="gv-rs">Send</button></form>') + '</div>') +
       (closed || files.length >= G.FILES.max ? '' : '<details class="gv-more gv-attach"><summary>Attach files</summary><div class="gv-add">' + fileBox('gv-more') +
-        '<button class="btn btn-ghost btn-sm" type="button" data-gv="attach" id="gv-attach">Attach these files</button></div></details>') +
-      '<div class="gv-foot"><button class="btn btn-ghost btn-sm" type="button" data-gv="refresh">Refresh</button></div>';
+        '<button class="btn btn-ghost btn-sm" type="button" data-gv="attach" id="gv-attach">Attach these files</button></div></details>');
   }
 
   function render() {
@@ -207,7 +206,7 @@
   async function reloadCase() {
     var a = S.access || {};
     var r = await api('GET', a.id ? '&id=' + encodeURIComponent(a.id) : '&ticket=' + encodeURIComponent(a.ticket) + '&code=' + encodeURIComponent(a.code));
-    if (!r.ok) { S.error = r.data.error || "Couldn't refresh."; return go('case', true); }
+    if (!r.ok) { S.error = r.data.error || "Couldn't load the latest."; return go('case', true); }
     S.cur = r.data; render();
   }
   async function submitNew(e) {
@@ -279,7 +278,6 @@
     if (t.hasAttribute('data-copy')) return copy(t.getAttribute('data-copy'), t);
     if (t.hasAttribute('data-gv-open')) return openCase(t.getAttribute('data-gv-open'));
     var a = t.getAttribute('data-gv');
-    if (a === 'refresh') return reloadCase();
     if (a === 'attach') return attachMore();
     if (a === 'list') { load(); return go('list'); }
     go(a);
