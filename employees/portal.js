@@ -392,13 +392,6 @@
     var panel = $('#forum-panel');
     panel.hidden = !forum.cats.length;
     if (!forum.cats.length) return;
-    var sel = $('#fc-cat'), keep = sel.value;
-    var opt = function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; };
-    var genCats = forum.cats.filter(function (c) { return c.scope !== 'departmental'; });
-    var depCats = forum.myDept ? forum.cats.filter(function (c) { return c.scope === 'departmental'; }) : [];   // no department: no department space to post in
-    sel.innerHTML = depCats.length ? '<optgroup label="General">' + genCats.map(opt).join('') + '</optgroup><optgroup label="Your department only">' + depCats.map(opt).join('') + '</optgroup>' : genCats.map(opt).join('');
-    if (keep) sel.value = keep;
-    deptNote();
     $('#fc-photos').hidden = !forum.imagesOn;
     var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
     var catCls = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return window.SngCatColors ? window.SngCatColors.cls(c || { id: id }) : ''; };
@@ -409,6 +402,14 @@
     forum.cats.forEach(function (c) { scopeOf[c.id] = c.scope === 'departmental' ? 'dept' : 'general'; });
     var hasDept = !!forum.myDept && forum.cats.some(function (c) { return c.scope === 'departmental'; });
     if (!hasDept) forumScope = 'general';
+    /* The post form follows the space being shown: in General it lists the General categories and posts there; in the
+       department space it lists the department categories and posts to the employee's own department. */
+    var sel = $('#fc-cat'), keep = sel.value;
+    sel.innerHTML = forum.cats.filter(function (c) { return (c.scope === 'departmental') === (forumScope === 'dept'); }).map(function (c) {
+      return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>';
+    }).join('');
+    if (keep) sel.value = keep;
+    deptNote(hasDept);
     var inScope = forum.threads.filter(function (t) { return (scopeOf[t.category_id] || 'general') === forumScope; });
     var counts = {};
     inScope.forEach(function (t) { counts[t.category_id] = (counts[t.category_id] || 0) + 1; });
@@ -460,14 +461,14 @@
   $('#forum-filter').addEventListener('change', function (e) {
     if (e.target.id === 'forum-scope-sel') { forumScope = e.target.value === 'dept' ? 'dept' : 'general'; forumFilter = 'all'; ffOpen = false; renderForum(); }
   });
-  /* a short line in the post form when the chosen category is department-only */
-  function deptNote() {
-    var c = forum.cats.filter(function (x) { return x.id === $('#fc-cat').value; })[0], n = $('#fc-deptnote');
-    var on = !!c && c.scope === 'departmental';
+  /* a short line in the post form saying where the post will go (shown when there are two spaces to choose between) */
+  function deptNote(on) {
+    var n = $('#fc-deptnote');
     n.hidden = !on;
-    n.textContent = on ? 'Only your department (' + (DEPT_NAME[forum.myDept] || 'your team') + ') will see this. Posting anonymously hides your name, but people in your department may still guess who wrote it.' : '';
+    n.textContent = !on ? '' : forumScope === 'dept'
+      ? 'Posting to ' + (DEPT_NAME[forum.myDept] || 'your department') + ' only. Only your department will see it. Posting anonymously hides your name, but people in your department may still guess who wrote it.'
+      : 'Posting to General. Everyone can see it.';
   }
-  $('#fc-cat').addEventListener('change', deptNote);
   /* a click outside the filter closes its panel. Whether the click was inside is noted first (capture phase), because the
      row is redrawn by the click and the clicked button is gone by the time this would ask. */
   var ffInside = false;
@@ -541,6 +542,7 @@
     var title = $('#fc-title').value.trim(), body = $('#fc-body').value.trim();
     if (!title) { note('#fc-msg', 'Give your discussion a title.'); return; }
     if (!body) { note('#fc-msg', 'Write something to share.'); return; }
+    if (!$('#fc-cat').value) { note('#fc-msg', "There's no category to post in here yet."); return; }
     note('#fc-msg', '');
     var btn = $('#fc-post');
     btn.disabled = true;
