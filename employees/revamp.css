@@ -270,3 +270,14 @@
 /* Employee Forum: "Read more" under a post whose text is cut off */
 #forum-feed .post-more{display:none;border:0;background:none;padding:2px 0;margin:2px 0 0;font:inherit;font-weight:700;font-size:.86rem;color:#B3361A;cursor:pointer;align-self:flex-start}
 #forum-feed .post.long .post-more{display:block}
+
+/* Photos on replies and comments: the "add photo" button and thumbnails in the form, and the tiles under a reply or comment */
+.rcmp .ib[data-pk-add]{flex:none;align-self:flex-end;width:44px;height:44px;border-radius:14px;border:1.5px solid rgba(74,46,34,.28);background:#fff;color:var(--brown)}
+.pk-thumbs{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:8px 0 0;padding:0}
+.pk-thumbs:empty{display:none}
+.pk-thumbs li{position:relative;width:64px;height:64px;border-radius:12px;overflow:hidden;background:#F3ECE3}
+.pk-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.pk-thumbs button{position:absolute;top:3px;right:3px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(42,26,18,.78);color:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0}
+.rimgs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rimgs .pimg{border:0;padding:0;border-radius:12px;overflow:hidden;background:#F3ECE3;cursor:zoom-in;display:block;width:104px;height:104px}
+.rimgs .pimg img{width:100%;height:100%;object-fit:cover;display:block}

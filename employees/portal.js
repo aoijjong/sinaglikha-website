@@ -438,7 +438,7 @@
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain ' + catCls(t.category_id) + '">' + esc(catName(t.category_id)) + '</span></div>' +
-        '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' + photosHtml(t.images) +
+        (t.title ? '<h3 class="post-title">' + esc(t.title) + '</h3>' : '') + (t.body ? '<p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' : '') + photosHtml(t.images) +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">' + (forumScope === 'dept' ? 'No discussions in your department yet. Be the first to start one.' : 'No discussions yet. Be the first to start one.') + '</div>';
@@ -484,19 +484,26 @@
     if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [], photos: r.data.photos || [], imagesOn: !!r.data.images_on, myDept: r.data.my_dept || null }; renderForum(); }
   }
 
+  /* the photos on a reply (or comment): small tiles that open full size */
+  function replyImgs(list) {
+    if (!list || !list.length) return '';
+    return '<div class="rimgs">' + list.slice(0, 3).map(function (u) {
+      return '<button class="pimg" type="button" data-pimg="' + esc(u) + '" aria-label="View photo"><img src="' + esc(u) + '" alt="Photo attached to this reply" loading="lazy"></button>';
+    }).join('') + '</div>';
+  }
   function replyHtml(p, photos) {
     return '<div class="reply"><div class="post-top">' + avSm(p.author, p.anonymous ? 'anon' : '', photos[p.pic]) + '<div class="who"><b>' + esc(p.author) + (p.mine ? ' (you)' : '') + '</b><span>' + esc(ago(p.created_at)) + '</span></div>' +
-      modBtn(p.mine, 'post', p.id) + '</div><p>' + text(p.body) + '</p></div>';
+      modBtn(p.mine, 'post', p.id) + '</div>' + (p.body ? '<p>' + text(p.body) + '</p>' : '') + replyImgs(p.images) + '</div>';
   }
+  var replyPickers = {};   // thread id -> the photo picker in that thread's reply form
 
   async function toggleReplies(id) {
     var card = document.querySelector('[data-thread="' + id + '"]');
     if (!card) return;
     var box = card.querySelector('.replies'), body = card.querySelector('.post-body');
-    if (!box.hidden) { box.hidden = true; body.classList.add('clamp'); syncMore(card); markLong(); return; }
+    if (!box.hidden) { box.hidden = true; if (body) { body.classList.add('clamp'); syncMore(card); markLong(); } return; }
     box.hidden = false;
-    body.classList.remove('clamp');
-    syncMore(card);
+    if (body) { body.classList.remove('clamp'); syncMore(card); }
     box.innerHTML = '<div class="skel" style="width:60%;margin:8px 0"></div>';
     var r = await call('GET', '/api/employee-forum?thread=' + encodeURIComponent(id));
     if (r.status === 401) { show('signin'); return; }
@@ -505,22 +512,43 @@
     box.innerHTML = r.data.posts.map(function (p) { return replyHtml(p, photos); }).join('') + (r.data.thread.locked ? '<p class="fine" style="margin-top:8px">This thread is locked, so it cannot take new replies.</p>' :
       '<label class="anon-opt"><input type="checkbox" data-anon-for="' + esc(id) + '"> Reply anonymously</label>' +
       '<form class="rcmp" data-reply-form="' + esc(id) + '" novalidate><label class="sr-only" for="rb-' + esc(id) + '">Your reply</label><textarea id="rb-' + esc(id) + '" maxlength="2000" rows="1" placeholder="Write a reply…"></textarea>' +
-      IB('send', 'Send reply', { 'data-send-reply': '1' }, 'solid') + '</form><p class="msg bad" role="alert" hidden style="margin-top:8px"></p>');
+      (r.data.images_on ? IB('camera', 'Add a photo', { 'data-pk-add': '1' }) : '') + IB('send', 'Send reply', { 'data-send-reply': '1' }, 'solid') + '</form>' +
+      (r.data.images_on ? '<ul class="pk-thumbs" data-pk-thumbs="' + esc(id) + '"></ul>' : '') + '<p class="msg bad" role="alert" hidden style="margin-top:8px"></p>');
+    delete replyPickers[id];
+    var addBtn = box.querySelector('[data-pk-add]');
+    if (addBtn && window.SngPhotoTools) {
+      replyPickers[id] = window.SngPhotoTools.picker({ add: addBtn, thumbs: box.querySelector('[data-pk-thumbs]'), max: 3, onError: function (m) { var el = box.querySelector('p.msg'); el.textContent = m; el.hidden = !m; } });
+    }
   }
 
   async function sendReply(form) {
-    var id = form.getAttribute('data-reply-form'), ta = form.querySelector('textarea'), msg = form.nextElementSibling;
-    var textVal = ta.value.trim();
-    if (!textVal) { msg.textContent = 'Write a reply first.'; msg.hidden = false; return; }
+    var id = form.getAttribute('data-reply-form'), ta = form.querySelector('textarea'), msg = form.parentNode.querySelector('p.msg');
+    var textVal = ta.value.trim(), pk = replyPickers[id], pics = pk ? pk.blobs() : [];
+    if (!textVal && !pics.length) { msg.textContent = 'Write a reply or add a photo first.'; msg.hidden = false; return; }
     msg.hidden = true;
-    var btn = form.querySelector('button');
+    var btn = form.querySelector('[data-send-reply]');
     btn.disabled = true;
     var anonBox = document.querySelector('[data-anon-for="' + id + '"]');
-    var r = await call('POST', '/api/employee-forum', { action: 'reply', thread_id: id, body: textVal, anonymous: !!(anonBox && anonBox.checked) });
+    var r = await call('POST', '/api/employee-forum', { action: 'reply', thread_id: id, body: textVal, photos: pics.length, anonymous: !!(anonBox && anonBox.checked) });
+    if (r.status === 401) { btn.disabled = false; show('signin'); return; }
+    if (!r.ok) { btn.disabled = false; msg.textContent = r.data.error || "Couldn't post that."; msg.hidden = false; return; }
+    var failed = 0;
+    if (pics.length && r.data.id) {
+      failed = await window.SngPhotoTools.upload(pics, function (blob) {
+        return call('POST', '/api/employee-forum', { action: 'reply_image_url', post_id: r.data.id, mime: 'image/jpeg', size: blob.size }).then(function (x) { return x.ok ? x.data : null; });
+      }, function (imageId) { return call('POST', '/api/employee-forum', { action: 'reply_image_done', image_id: imageId }).then(function (x) { return x.ok; }); });
+      if (!textVal && failed === pics.length) {
+        // a photo-only reply whose photos all failed would be empty: take it back and let them try again
+        await call('POST', '/api/employee-forum', { action: 'delete', post_id: r.data.id });
+        btn.disabled = false;
+        msg.textContent = "The photos couldn't be uploaded, so nothing was posted. Try again.";
+        msg.hidden = false;
+        return;
+      }
+    }
     btn.disabled = false;
-    if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { msg.textContent = r.data.error || "Couldn't post that."; msg.hidden = false; return; }
-    toast('Reply posted.');
+    if (pk) pk.clear();
+    toast(failed ? 'Reply posted, but ' + (failed === 1 ? 'one photo' : failed + ' photos') + " didn't upload." : 'Reply posted.');
     var t = forum.threads.filter(function (x) { return x.id === id; })[0];
     if (t) t.replies += 1;
     var card = document.querySelector('[data-thread="' + id + '"]');
@@ -540,18 +568,26 @@
   $('#f-compose').addEventListener('submit', async function (e) {
     e.preventDefault();
     var title = $('#fc-title').value.trim(), body = $('#fc-body').value.trim();
-    if (!title) { note('#fc-msg', 'Give your discussion a title.'); return; }
-    if (!body) { note('#fc-msg', 'Write something to share.'); return; }
+    if (!title && !body && !photos.length) { note('#fc-msg', 'Add a title, a message or a photo to post.'); return; }
     if (!$('#fc-cat').value) { note('#fc-msg', "There's no category to post in here yet."); return; }
     note('#fc-msg', '');
     var btn = $('#fc-post');
     btn.disabled = true;
     $('#fc-cancel').disabled = true;
     var sentCat = $('#fc-cat').value;
-    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: sentCat, title: title, body: body, anonymous: $('#fc-anon').checked });
+    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: sentCat, title: title, body: body, photos: photos.length, anonymous: $('#fc-anon').checked });
     if (r.status === 401) { btn.disabled = false; $('#fc-cancel').disabled = false; show('signin'); return; }
     if (!r.ok) { btn.disabled = false; $('#fc-cancel').disabled = false; note('#fc-msg', r.data.error || "Couldn't post that."); return; }
     var failedPhotos = photos.length && r.data.id ? await uploadPhotos(r.data.id) : 0;
+    if (!title && !body && failedPhotos === photos.length && r.data.id) {
+      // a photo-only post whose photos all failed would be an empty post: take it back and let them try again
+      await call('POST', '/api/employee-forum', { action: 'delete', thread_id: r.data.id });
+      btn.disabled = false;
+      $('#fc-cancel').disabled = false;
+      $('#fc-photo-hint').textContent = photos.length + ' of ' + PHOTO_MAX + ' photos';
+      note('#fc-msg', "The photos couldn't be uploaded, so nothing was posted. Try again.");
+      return;
+    }
     btn.disabled = false;
     $('#fc-cancel').disabled = false;
     clearPhotos();

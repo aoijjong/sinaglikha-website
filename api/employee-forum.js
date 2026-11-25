@@ -6,11 +6,15 @@
   GET  /api/employee-forum                          the open categories, with how many threads each has
   GET  /api/employee-forum?category=<id>            the threads in one category, newest activity first
   GET  /api/employee-forum?thread=<id>              one thread and its replies
-  POST /api/employee-forum  { "action": "thread", "category_id": "...", "title": "...", "body": "...", "anonymous": true? }
+  POST /api/employee-forum  { "action": "thread", "category_id": "...", "title": "..."?, "body": "..."?, "photos": 2?, "anonymous": true? }
+                                                    (title and message are both optional, but there must be one of them or a photo)
   POST /api/employee-forum  { "action": "reply",  "thread_id": "...", "body": "...", "anonymous": true? }
   POST /api/employee-forum  { "action": "image_url",  "thread_id": "...", "mime": "image/jpeg", "size": 123456 }   reserve a photo place on
                                                     YOUR new discussion and get a one-time upload address (supabase/forum_images.sql)
   POST /api/employee-forum  { "action": "image_done", "image_id": "..." }                                      confirm the photo arrived
+  POST /api/employee-forum  { "action": "reply_image_url",  "post_id": "...", "mime": "image/jpeg", "size": 123456 }   the same, for a photo on YOUR reply
+  POST /api/employee-forum  { "action": "reply_image_done", "image_id": "..." }                                       (supabase/comment_images.sql)
+  POST /api/employee-forum  { "action": "reply", ..., "photos": 2? }           a reply may be a photo alone; "photos" says how many are coming
   POST /api/employee-forum  { "action": "report", "thread_id" | "post_id": "...", "reason": "..." }
   POST /api/employee-forum  { "action": "delete", "thread_id" | "post_id": "..." }   remove one of your OWN posts
 
@@ -23,6 +27,7 @@
 
 const crypto = require('crypto');
 const E = require('./_employee');
+const Img = require('./_images');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FLOOD_POSTS = 5;
@@ -42,31 +47,6 @@ const list = (r) => (r.ok && Array.isArray(r.data) ? r.data : []);
 const ANON_OFF = { error: "Anonymous posting isn't switched on yet. Ask your administrator, or post with your name." };
 const wantsAnon = (body) => body.anonymous === true;
 const noAnonColumn = (r) => !r.ok && r.status === 400 && /anonymous/i.test(JSON.stringify(r.data || ''));
-
-/* The one-time address the browser uploads a photo to: it only works for that one path, for a short time. */
-async function signUpload(path) {
-  const enc = path.split('/').map(encodeURIComponent).join('/');
-  try {
-    const r = await fetch(`${E.URL_BASE}/storage/v1/object/upload/sign/forum-images/${enc}`, {
-      method: 'POST', headers: E.svc({ 'Content-Type': 'application/json' }), body: '{}', signal: AbortSignal.timeout(8000)
-    });
-    const d = r.ok ? await r.json() : null;
-    if (!d || typeof d.url !== 'string') return null;
-    const full = d.url.startsWith('http') ? d.url : `${E.URL_BASE}/storage/v1${d.url}`;
-    return full.startsWith(`${E.URL_BASE}/storage/v1/object/upload/sign/forum-images/`) ? full : null;
-  } catch { return null; }
-}
-/* did the photo really arrive? Returns its size, or null. */
-async function storedSize(path) {
-  const enc = path.split('/').map(encodeURIComponent).join('/');
-  try {
-    const r = await fetch(`${E.URL_BASE}/storage/v1/object/info/forum-images/${enc}`, { headers: E.svc(), signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return null;
-    const d = await r.json();
-    const n = Number(d && (d.size !== undefined ? d.size : d.metadata && d.metadata.size));
-    return Number.isFinite(n) ? n : 0;
-  } catch { return null; }
-}
 
 async function names(ids) {
   const out = {};
@@ -103,8 +83,10 @@ module.exports = async function handler(req, res) {
     if (body.action === 'thread') {
       const cat = String(body.category_id || ''), title = clean(body.title, 120), text = clean(body.body, 2000);
       if (!UUID_RE.test(cat)) return E.send(res, 400, { error: 'Bad request.' });
-      if (!title) return E.send(res, 400, { error: 'Give your thread a title.' });
-      if (!text) return E.send(res, 400, { error: 'Write something in your thread.' });
+      // Title and message are both optional, but a discussion needs something: a title, a message, or at least one photo
+      // (the photos are uploaded right after, so the page says how many it is sending).
+      const photoCount = Number.isInteger(body.photos) && body.photos >= 1 && body.photos <= IMG_MAX ? body.photos : 0;
+      if (!title && !text && !photoCount) return E.send(res, 400, { error: 'Add a title, a message or a photo to post.' });
       let c = await E.rest('GET', `forum_categories?id=eq.${cat}&active=eq.true&select=id,scope`);
       if (!c.ok && c.status === 400) c = await E.rest('GET', `forum_categories?id=eq.${cat}&active=eq.true&select=id`);   // before forum_departments.sql
       if (!list(c)[0]) return E.send(res, 404, gone);
@@ -118,16 +100,30 @@ module.exports = async function handler(req, res) {
         return E.send(res, 429, { error: 'You are posting very quickly. Wait a few minutes and try again.' });
       }
       const anon = wantsAnon(body);
-      const r = await E.rest('POST', 'forum_threads', Object.assign({ category_id: cat, employee_id: eid, title, body: text }, dept ? { department: dept } : {}, anon ? { anonymous: true } : {}), 'return=representation');
+      const row = (t, b) => Object.assign({ category_id: cat, employee_id: eid, title: t, body: b }, dept ? { department: dept } : {}, anon ? { anonymous: true } : {});
+      // The title and message may be empty (supabase/forum_optional_title.sql lets the database accept that). Before that SQL
+      // has run it still wants both, so fill the gaps from what was written (or "Photo"), so posting never breaks.
+      let r = await E.rest('POST', 'forum_threads', row(title, text), 'return=representation');
+      if ((!title || !text) && !r.ok && r.status === 400 && /23514|check constraint|title|body/i.test(JSON.stringify(r.data || ''))) {
+        const first = text.replace(/\s+/g, ' ');
+        const t2 = title || (first ? (first.length > 60 ? first.slice(0, 57).trimEnd() + '…' : first) : 'Photo');
+        r = await E.rest('POST', 'forum_threads', row(t2, text || title || 'Photo'), 'return=representation');
+      }
       if (anon && noAnonColumn(r)) return E.send(res, 503, ANON_OFF);
       if (!r.ok || !list(r)[0]) return E.send(res, 500, { error: "Couldn't post that. Try again." });
       return E.send(res, 200, { ok: true, id: r.data[0].id });
     }
 
+    // photos on a reply (supabase/comment_images.sql): the page asks for an upload place per photo, then confirms it
+    if (body.action === 'reply_image_url' || body.action === 'reply_image_done') {
+      return Img.handle(res, Object.assign({}, body, { action: body.action.replace('reply_', ''), parent_id: body.post_id }), { eid, table: 'forum_post_images', parent: 'forum_posts', fk: 'post_id', prefix: 'r' });
+    }
+
     if (body.action === 'reply') {
       const tid = String(body.thread_id || ''), text = clean(body.body, 2000);
       if (!UUID_RE.test(tid)) return E.send(res, 400, { error: 'Bad request.' });
-      if (!text) return E.send(res, 400, { error: 'Write a reply first.' });
+      const photos = Img.photoCount(body.photos);
+      if (!text && !photos) return E.send(res, 400, { error: 'Write a reply or add a photo first.' });
       const seen = await E.visibleThread(eid, tid);
       const thread = seen && seen.thread;
       if (!thread) return E.send(res, 404, gone);
@@ -136,7 +132,10 @@ module.exports = async function handler(req, res) {
         return E.send(res, 429, { error: 'You are posting very quickly. Wait a few minutes and try again.' });
       }
       const anon = wantsAnon(body);
-      const r = await E.rest('POST', 'forum_posts', Object.assign({ thread_id: tid, employee_id: eid, body: text }, anon ? { anonymous: true } : {}), 'return=representation');
+      const prow = (b) => Object.assign({ thread_id: tid, employee_id: eid, body: b }, anon ? { anonymous: true } : {});
+      let r = await E.rest('POST', 'forum_posts', prow(text), 'return=representation');
+      // a photo on its own needs comment_images.sql (an empty reply); before it, the database still wants some text
+      if (!text && !r.ok && r.status === 400 && /23514|check constraint|body/i.test(JSON.stringify(r.data || ''))) r = await E.rest('POST', 'forum_posts', prow('Photo'), 'return=representation');
       if (anon && noAnonColumn(r)) return E.send(res, 503, ANON_OFF);
       if (!r.ok || !list(r)[0]) return E.send(res, 500, { error: "Couldn't post that. Try again." });
       await E.rest('PATCH', `forum_threads?id=eq.${tid}`, { last_post_at: new Date().toISOString() }, 'return=minimal');
@@ -160,7 +159,7 @@ module.exports = async function handler(req, res) {
         const path = `${tid}/${crypto.randomUUID()}.${IMG_EXT[mime]}`;   // a random name inside the discussion's folder: nothing says who posted it
         const made = list(await E.rest('POST', 'forum_images', { thread_id: tid, path, size_bytes: size, mime, confirmed: false }, 'return=representation'))[0];
         if (!made) return E.send(res, 500, { error: "Couldn't prepare that photo. Try again." });
-        const url = await signUpload(path);
+        const url = await E.signImageUpload(path);
         if (!url) {
           await E.rest('DELETE', `forum_images?id=eq.${made.id}`, undefined, 'return=minimal');
           return E.send(res, 502, { error: "Couldn't prepare the upload. Try again in a moment." });
@@ -173,7 +172,7 @@ module.exports = async function handler(req, res) {
       const own = img && list(await E.rest('GET', `forum_threads?id=eq.${img.thread_id}&employee_id=eq.${eid}&select=id`))[0];
       if (!img || !own) return E.send(res, 404, gone);
       if (img.confirmed) return E.send(res, 200, { ok: true });
-      if ((await storedSize(img.path)) === null) return E.send(res, 404, { error: 'That photo did not finish uploading. Please try again.' });
+      if ((await E.storedImageSize(img.path)) === null) return E.send(res, 404, { error: 'That photo did not finish uploading. Please try again.' });
       const done = await E.rest('PATCH', `forum_images?id=eq.${iid}`, { confirmed: true }, 'return=minimal');
       if (!done.ok) return E.send(res, 500, { error: "Couldn't finish that photo. Try again." });
       return E.send(res, 200, { ok: true });
@@ -220,12 +219,13 @@ module.exports = async function handler(req, res) {
     const p = await E.rest('GET', `forum_posts?thread_id=eq.${id}&hidden=eq.false&select=*&order=created_at.asc&limit=500`);
     const posts = list(p);
     const authors = E.publicIds([thread].concat(posts));
-    const [who, pack] = await Promise.all([names(authors), E.photoPack('employees', authors)]);
+    const [who, pack, pim] = await Promise.all([names(authors), E.photoPack('employees', authors), Img.linksFor('forum_post_images', 'post_id', posts.map((x) => x.id))]);
     return E.send(res, 200, {
       category: E.catView(cat),
       photos: pack.pics,
+      images_on: pim.on,
       thread: { id: thread.id, title: thread.title, body: thread.body, locked: thread.locked, created_at: thread.created_at, ...E.byline(thread, who, null, eid) },
-      posts: posts.map((x) => ({ id: x.id, body: x.body, created_at: x.created_at, ...E.byline(x, who, pack, eid) }))
+      posts: posts.map((x) => ({ id: x.id, body: x.body, images: pim.by[x.id] || [], created_at: x.created_at, ...E.byline(x, who, pack, eid) }))
     });
   }
 

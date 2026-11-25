@@ -448,6 +448,31 @@ async function visibleThread(eid, tid) {
   return { thread: t, cat };
 }
 
+/* The one-time address the browser uploads a photo to: it only works for that one path, for a short time. */
+async function signImageUpload(path) {
+  const enc = path.split('/').map(encodeURIComponent).join('/');
+  try {
+    const r = await fetch(`${URL_BASE}/storage/v1/object/upload/sign/forum-images/${enc}`, {
+      method: 'POST', headers: svc({ 'Content-Type': 'application/json' }), body: '{}', signal: AbortSignal.timeout(8000)
+    });
+    const d = r.ok ? await r.json() : null;
+    if (!d || typeof d.url !== 'string') return null;
+    const full = d.url.startsWith('http') ? d.url : `${URL_BASE}/storage/v1${d.url}`;
+    return full.startsWith(`${URL_BASE}/storage/v1/object/upload/sign/forum-images/`) ? full : null;
+  } catch { return null; }
+}
+/* did the photo really arrive? Returns its size, or null. */
+async function storedImageSize(path) {
+  const enc = path.split('/').map(encodeURIComponent).join('/');
+  try {
+    const r = await fetch(`${URL_BASE}/storage/v1/object/info/forum-images/${enc}`, { headers: svc(), signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const n = Number(d && (d.size !== undefined ? d.size : d.metadata && d.metadata.size));
+    return Number.isFinite(n) ? n : 0;
+  } catch { return null; }
+}
+
 /* Short-lived links to forum photos (they live in a private bucket). One request signs them all; a path that cannot
    be signed is simply left out. Returns { path: url }. */
 async function signedImages(paths) {
@@ -502,7 +527,7 @@ async function forumFeed(eid) {
 
 module.exports = {
   list, namesOf, photoPack, catView, byline, ANON_NAME, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
-  ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, signedImages, deptFilter, threadsGet, visibleThread, manilaDate,
+  ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, signedImages, signImageUpload, storedImageSize, deptFilter, threadsGet, visibleThread, manilaDate,
   configured, send, svc, rest, readJson, foreignOrigin, makeToken, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
   setSession, clearSession, currentEmployee, ipHash, deviceBlocked, noteAttempt, noteFailure, isLocked,

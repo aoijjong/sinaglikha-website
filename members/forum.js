@@ -19,6 +19,13 @@
 
   function canModerate() { return state.isAdmin || (state.profile && state.profile.department === 'engagement'); }
   function who(id) { return F.people[id] ? F.people[id].full_name : 'Unknown'; }
+  /* a discussion's name: its title, or (when it has none) the first words of the message, or "Photo post" 
+  function tname(t) {
+    if (!t) return '';
+    if (t.title) return t.title;
+    var m = String(t.body || '').replace(/\s+/g, ' ').trim();
+    return m.length > 60 ? m.slice(0, 57).trimEnd() + '…' : (m || 'Photo post');
+  }
   var DEPT_LABEL = { staffing: 'Staffing and Recruitment', training: 'Training and Development', engagement: 'Employee Engagement', rewards: 'Total Rewards', legal: 'Legal Compliance' };
   function cat(id) { return F.cats.filter(function (c) { return c.id === id; })[0] || null; }
   function sortedCats() {
@@ -83,7 +90,7 @@
     var meta = [c ? c.name : 'Unknown category', who(t.employee_id), app.fmtDate(t.created_at)].join(' · ');
     var chips = (t.department ? '<span class="chip t-none" title="Only this department sees it">' + esc(DEPT_LABEL[t.department] || t.department) + '</span>' : '') + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain. You can see the real author.">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '');
     return '<li class="lrow" data-id="' + esc(t.id) + '"><button class="lmain" type="button" data-a="view"><span class="lico">' + I(t.locked ? 'lock' : 'chat') + '</span>' +
-      '<span class="ltext"><span class="lname">' + esc(t.title) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
+      '<span class="ltext"><span class="lname">' + esc(tname(t)) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
       '<div class="lside">' + chips + '<div class="lacts">' +
       (t.hidden ? IB('eye', 'Show to employees again', { 'data-a': 'unhide' }, 'good') : IB('eyeOff', 'Hide from employees', { 'data-a': 'hide' })) +
       (t.locked ? IB('unlock', 'Unlock: allow replies', { 'data-a': 'unlock' }) : IB('lock', 'Lock: stop new replies', { 'data-a': 'lock' })) +
@@ -100,8 +107,9 @@
     busy('Loading…');
     var p = await sb.from('forum_posts').select('*').eq('thread_id', id).order('created_at', { ascending: true }).limit(500);
     var shots = await threadPhotos(id);
+    var rshots = await postPhotos((p.data || []).map(function (x) { return x.id; }));
     busy('');
-    F.thread = { t: t, posts: p.data || [], shots: shots };
+    F.thread = { t: t, posts: p.data || [], shots: shots, rshots: rshots };
     render();
   }
   /* The photos attached to a discussion (supabase/forum_images.sql), as short-lived links. Empty if there are none or that script has not run. */
@@ -114,16 +122,43 @@
       return (s.data || []).filter(function (x) { return x && x.signedUrl; }).map(function (x) { return x.signedUrl; });
     } catch (e) { return []; }
   }
+  /* The photos on replies (supabase/comment_images.sql): { reply id: [links] }. Empty if there are none or that script has not run. */
+  async function postPhotos(ids) {
+    var out = {};
+    if (!ids.length) return out;
+    try {
+      var im = await sb.from('forum_post_images').select('post_id,path').in('post_id', ids).eq('confirmed', true).order('created_at', { ascending: true }).limit(200);
+      var rows = im.data || [];
+      if (!rows.length) return out;
+      var s = await sb.storage.from('forum-images').createSignedUrls(rows.map(function (x) { return x.path; }), 3600);
+      var link = {};
+      (s.data || []).forEach(function (x) { if (x && x.signedUrl && x.path) link[x.path] = x.signedUrl; });
+      rows.forEach(function (x) { if (link[x.path]) (out[x.post_id] = out[x.post_id] || []).push(link[x.path]); });
+    } catch (e) { /* photos are optional */ }
+    return out;
+  }
+  function shotsHtml(list) {
+    return list && list.length ? '<span class="lmeta fshots">' + list.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Photo attached to this reply" loading="lazy"></a>'; }).join('') + '</span>' : '';
+  }
+  /* remove photo files from storage before their rows go (deleting a reply or a thread deletes the rows with it) */
+  async function dropReplyFiles(postIds) {
+    try {
+      if (!postIds.length) return;
+      var im = await sb.from('forum_post_images').select('path').in('post_id', postIds).limit(300);
+      var gone = (im.data || []).map(function (x) { return x.path; });
+      if (gone.length) await sb.storage.from('forum-images').remove(gone);
+    } catch (e) { /* photos are optional */ }
+  }
   function renderThread(body) {
     var t = F.thread.t;
     body.innerHTML = '<div class="list-card"><ul class="rows">' +
-      '<li class="lrow" data-id="' + esc(t.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(t.title) +
+      '<li class="lrow" data-id="' + esc(t.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(tname(t)) +
       '</span><span class="lmeta">' + esc(who(t.employee_id) + ' · ' + app.fmtDate(t.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(t.body) + '</span>' +
       ((F.thread.shots || []).length ? '<span class="lmeta fshots">' + F.thread.shots.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Photo attached to this discussion" loading="lazy"></a>'; }).join('') + '</span>' : '') + '</span></div>' +
       '<div class="lside">' + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '') + '</div></li>' +
       (F.thread.posts.length ? F.thread.posts.map(function (p) {
         return '<li class="lrow" data-post="' + esc(p.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('send') + '</span><span class="ltext"><span class="lname">' + esc(who(p.employee_id)) +
-          '</span><span class="lmeta">' + esc(app.fmtDate(p.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(p.body) + '</span></span></div>' +
+          '</span><span class="lmeta">' + esc(app.fmtDate(p.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(p.body) + '</span>' + shotsHtml((F.thread.rshots || {})[p.id]) + '</span></div>' +
           '<div class="lside">' + (p.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (p.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + '<div class="lacts">' +
           (p.hidden ? IB('eye', 'Show this reply again', { 'data-a': 'post-unhide' }, 'good') : IB('eyeOff', 'Hide this reply', { 'data-a': 'post-hide' })) +
           IB('trash', 'Delete this reply', { 'data-a': 'post-del' }, 'danger') + '</div></div></li>';
@@ -136,12 +171,12 @@
     busy('');
     if (r.error || !r.data) { toast("Couldn't save that. You may not have permission.", 'bad'); return; }
     Object.assign(t, fields);
-    logAction('forum.thread.' + verb, t.title, { id: t.id });
+    logAction('forum.thread.' + verb, tname(t), { id: t.id });
     toast(okText, 'ok');
     render();
   }
   async function delThread(t) {
-    var ok = await ask({ title: 'Delete This Thread?', text: '"' + t.title + '" and all of its replies will be permanently deleted.', ok: 'Delete', danger: true });
+    var ok = await ask({ title: 'Delete This Thread?', text: '"' + tname(t) + '" and all of its replies will be permanently deleted.', ok: 'Delete', danger: true });
     if (!ok) return;
     busy('Deleting…');
     // its photos go too: the rows disappear with the thread, so remove the files first
@@ -149,11 +184,13 @@
       var im = await sb.from('forum_images').select('path').eq('thread_id', t.id).limit(20);
       var gone = (im.data || []).map(function (x) { return x.path; });
       if (gone.length) await sb.storage.from('forum-images').remove(gone);
+      var ps = await sb.from('forum_posts').select('id').eq('thread_id', t.id).limit(500);
+      await dropReplyFiles((ps.data || []).map(function (x) { return x.id; }));
     } catch (e) { /* photos are optional */ }
     var r = await sb.from('forum_threads').delete().eq('id', t.id).select('id');
     busy('');
     if (r.error || !(r.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
-    logAction('forum.thread.delete', t.title, { id: t.id });
+    logAction('forum.thread.delete', tname(t), { id: t.id });
     F.threads = F.threads.filter(function (x) { return x.id !== t.id; });
     F.reports = F.reports.filter(function (x) { return x.thread_id !== t.id; });
     F.thread = null;
@@ -166,16 +203,17 @@
     busy('');
     if (r.error || !r.data) { toast("Couldn't save that.", 'bad'); return; }
     p.hidden = hidden;
-    logAction(hidden ? 'forum.post.hide' : 'forum.post.show', F.thread.t.title, { id: p.id });
+    logAction(hidden ? 'forum.post.hide' : 'forum.post.show', tname(F.thread.t), { id: p.id });
     toast(hidden ? 'Reply hidden from employees.' : 'Reply shown again.', 'ok');
     render();
   }
   async function delPost(p) {
     var ok = await ask({ title: 'Delete This Reply?', text: 'It will be permanently deleted.', ok: 'Delete', danger: true });
     if (!ok) return;
+    await dropReplyFiles([p.id]);
     var r = await sb.from('forum_posts').delete().eq('id', p.id).select('id');
     if (r.error || !(r.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
-    logAction('forum.post.delete', F.thread.t.title, { id: p.id });
+    logAction('forum.post.delete', tname(F.thread.t), { id: p.id });
     F.thread.posts = F.thread.posts.filter(function (x) { return x.id !== p.id; });
     F.reports = F.reports.filter(function (x) { return x.post_id !== p.id; });
     toast('Reply deleted.', 'ok');
@@ -189,7 +227,7 @@
       var t = r.thread_id ? F.threads.filter(function (x) { return x.id === r.thread_id; })[0] : null;
       var meta = ['Reported by ' + who(r.employee_id), app.fmtDate(r.created_at), r.reason ? 'Reason: ' + r.reason : ''].filter(Boolean).join(' · ');
       return '<li class="lrow" data-report="' + esc(r.id) + '"><button class="lmain" type="button" data-a="report-open"><span class="lico">' + I('flag') + '</span><span class="ltext"><span class="lname">' +
-        esc(r.post_id ? 'A reported reply' : 'Reported thread: ' + (t ? t.title : 'deleted')) + '</span><span class="lmeta" style="white-space:normal">' + esc(meta) + '</span></span></button>' +
+        esc(r.post_id ? 'A reported reply' : 'Reported thread: ' + (t ? tname(t) : 'deleted')) + '</span><span class="lmeta" style="white-space:normal">' + esc(meta) + '</span></span></button>' +
         '<div class="lside"><div class="lacts">' + IB('check', 'Mark as dealt with', { 'data-a': 'resolve' }, 'good') + '</div></div></li>';
     }).join('') + '</ul>' : empty('flag', 'No open reports', 'Reports from employees will appear here.')) + '</div>';
   }
