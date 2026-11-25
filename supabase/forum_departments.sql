@@ -16,6 +16,11 @@ do $$ begin
   end if;
 end $$;
 
+-- Senior Managers set the scope when they add or edit a category. Category permissions are given column by column
+-- (phase3.sql), so the new column needs its own, just like the colour did in forum_category_colors.sql.
+grant insert (scope) on public.forum_categories to authenticated;
+grant update (scope) on public.forum_categories to authenticated;
+
 alter table public.forum_threads
   add column if not exists department text;
 do $$ begin
