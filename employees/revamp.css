@@ -236,3 +236,14 @@
 .lbx{position:fixed;inset:0;z-index:1000;background:rgba(30,18,12,.86);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 .lbx img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
 .lbx button{position:absolute;top:14px;right:14px;width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+
+/* Employee Forum filter: chips on wide screens, one dropdown on small ones */
+#forum-panel .ff-sel{display:none}
+@media (max-width:640px){
+  #forum-panel #forum-filter .ff{display:none}
+  #forum-panel #forum-filter{justify-content:stretch}
+  #forum-panel .ff-sel{display:block;width:100%;appearance:none;-webkit-appearance:none;font:inherit;font-weight:700;font-size:.9rem;text-align:center;text-align-last:center;
+    padding:11px 40px 11px 16px;border-radius:999px;border:1px solid rgba(74,46,34,.14);cursor:pointer;
+    background:#FBE2C0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A4217' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;color:#8A4217}
+  #forum-panel .ff-sel.cat{background-color:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg)}
+}
