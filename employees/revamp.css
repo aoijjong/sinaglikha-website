@@ -218,10 +218,10 @@
 #forum-panel .ffs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #forum-panel .ffs[aria-pressed="true"]{background:linear-gradient(135deg,#FFE6CC 0%,#FBC98F 100%);border-color:#E8A56B;color:#8A4217;box-shadow:0 8px 16px -12px rgba(200,110,30,.55)}
 @media (hover:hover) and (pointer:fine){#forum-panel .ffs[aria-pressed="false"]:hover{background:#FFF8F0}}
-#forum-panel .ffbtn{flex:none;position:relative;width:44px;height:44px;border-radius:14px;border:1.5px solid #F0C9A4;background:#fff;color:#9A5A2E;display:grid;place-items:center;cursor:pointer;padding:0}
+#forum-panel .ffbtn{flex:none;position:relative;width:44px;height:44px;border-radius:50%;border:1.5px solid #F0C9A4;background:#fff;color:#9A5A2E;display:grid;place-items:center;cursor:pointer;padding:0}
 #forum-panel .ffbtn .icon{width:20px;height:20px}
 #forum-panel .ffbtn[aria-expanded="true"]{border-color:#E8A56B}
-#forum-panel .ffbtn.on::after{content:"";position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:#E8731B;border:2px solid #fff}
+#forum-panel .ffbtn.on::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#E8731B;border:2px solid #fff}
 @media (hover:hover) and (pointer:fine){#forum-panel .ffbtn:hover{background:#FFF3E6}#forum-panel .ffbtn[aria-expanded="true"]:hover{background:#FFF8F0}}
 #forum-panel .ffpop{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:10px;padding:12px;border-radius:14px;border:1px solid rgba(74,46,34,.1);background:#fff;box-shadow:0 12px 24px -20px rgba(160,80,30,.5)}
 #forum-panel .ffpop[hidden]{display:none}
@@ -245,7 +245,7 @@
   #forum-panel .ff-selbox:focus-within{box-shadow:0 0 0 3px rgba(206,32,32,.18)}
   #forum-panel .ff-lab{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #forum-panel .ff-sel{display:block;position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;padding:0;border:0;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
-  #forum-panel .ffbtn{width:40px;height:40px;border-radius:12px}
+  #forum-panel .ffbtn{width:40px;height:40px}
   #forum-panel .ff{padding:6px 12px;font-size:.8rem}
   #forum-panel .ffpop{gap:6px;padding:10px}
 }
