@@ -19,6 +19,7 @@
 
   function canModerate() { return state.isAdmin || (state.profile && state.profile.department === 'engagement'); }
   function who(id) { return F.people[id] ? F.people[id].full_name : 'Unknown'; }
+  var DEPT_LABEL = { staffing: 'Staffing and Recruitment', training: 'Training and Development', engagement: 'Employee Engagement', rewards: 'Total Rewards', legal: 'Legal Compliance' };
   function cat(id) { return F.cats.filter(function (c) { return c.id === id; })[0] || null; }
   function sortedCats() {
     return F.cats.slice().sort(function (a, b) { return (a.position - b.position) || String(a.created_at).localeCompare(String(b.created_at)); });
@@ -80,7 +81,7 @@
   function threadRow(t) {
     var c = cat(t.category_id);
     var meta = [c ? c.name : 'Unknown category', who(t.employee_id), app.fmtDate(t.created_at)].join(' · ');
-    var chips = (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain. You can see the real author.">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '');
+    var chips = (t.department ? '<span class="chip t-none" title="Only this department sees it">' + esc(DEPT_LABEL[t.department] || t.department) + '</span>' : '') + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain. You can see the real author.">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '');
     return '<li class="lrow" data-id="' + esc(t.id) + '"><button class="lmain" type="button" data-a="view"><span class="lico">' + I(t.locked ? 'lock' : 'chat') + '</span>' +
       '<span class="ltext"><span class="lname">' + esc(t.title) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
       '<div class="lside">' + chips + '<div class="lacts">' +
@@ -232,7 +233,7 @@
       var n = F.threads.filter(function (t) { return t.category_id === c.id; }).length;
       return '<li class="lrow" data-id="' + esc(c.id) + '"><div class="lmain" style="cursor:default"><span class="lico ' + colorCls(c) + '">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(c.name) +
         '</span><span class="lmeta">' + esc((c.description ? c.description + ' · ' : '') + n + (n === 1 ? ' thread' : ' threads')) + '</span></span></div>' +
-        '<div class="lside"><span class="chip cat-st ' + (c.active ? 's-published' : 's-archived') + '">' + (c.active ? 'Open' : 'Closed') + '</span><div class="lacts">' +
+        '<div class="lside">' + (c.scope === 'departmental' ? '<span class="chip t-none" title="Each department sees only its own discussions here">Departmental</span>' : '') + '<span class="chip cat-st ' + (c.active ? 's-published' : 's-archived') + '">' + (c.active ? 'Open' : 'Closed') + '</span><div class="lacts">' +
         (i > 0 ? IB('arrowUp', 'Move up', { 'data-a': 'cup' }) : '<span class="ib-gap" aria-hidden="true"></span>') + (i < list.length - 1 ? IB('arrowDown', 'Move down', { 'data-a': 'cdown' }) : '<span class="ib-gap" aria-hidden="true"></span>') +
         IB('more', 'Actions for ' + c.name, { 'data-a': 'camenu', 'aria-haspopup': 'menu', 'aria-expanded': 'false' }) + '</div></div></li>';
     }).join('') + '</ul>' : empty('chat', 'No categories', 'Tap ' + I('plus', 'inline') + ' to add one. Employees can only post in open categories.')) + '</div>';
@@ -243,6 +244,10 @@
     $('#fc-name').value = c ? c.name : '';
     $('#fc-desc').value = c ? c.description || '' : '';
     paintColors(c);
+    // the scope is locked once the category has discussions (the database refuses the change too)
+    var used = !!c && F.threads.some(function (t) { return t.category_id === c.id; });
+    $('#fc-scope').value = c && c.scope === 'departmental' ? 'departmental' : 'general';
+    $('#fc-scope').disabled = used;
     err.hidden = true;
     form.onsubmit = async function (e) {
       e.preventDefault();
@@ -251,14 +256,23 @@
       var fields = { name: name, description: $('#fc-desc').value.trim() };
       var chosen = $('#fc-colors input:checked');
       var color = chosen && COL && COL.valid(chosen.value) ? chosen.value : null;
+      var scope = $('#fc-scope').value === 'departmental' ? 'departmental' : 'general';
       var save = function (f) {
         return c
           ? sb.from('forum_categories').update(f).eq('id', c.id).select('*').maybeSingle()
           : sb.from('forum_categories').insert(Object.assign({ position: F.cats.length }, f)).select('*').maybeSingle();
       };
       $('#fc-ok').disabled = true;
-      var r = await save(color ? Object.assign({ color: color }, fields) : fields);
+      // the scope is sent only when it matters, so saving an ordinary category still works before forum_departments.sql has run
+      var withScope = $('#fc-scope').disabled ? {} : (scope === 'departmental' || (c && c.scope === 'departmental') ? { scope: scope } : {});
+      var r = await save(Object.assign({}, color ? { color: color } : {}, withScope, fields));
       var noColor = false;
+      if ((r.error || !r.data) && withScope.scope) {
+        $('#fc-ok').disabled = false;
+        err.textContent = "Couldn't change who can see that. The one-time department update (forum_departments.sql) may not have been run yet, or this category already has discussions.";
+        err.hidden = false;
+        return;
+      }
       if ((r.error || !r.data) && color) {   // the colour column may not exist yet (forum_category_colors.sql): save everything else
         r = await save(fields);
         noColor = !r.error && !!r.data;

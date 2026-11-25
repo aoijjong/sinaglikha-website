@@ -44,6 +44,13 @@ Optional features that need a SQL file before they work:
   names inside the discussion's folder (nothing says who posted them), and the browser re-saves each one as a plain
   JPEG, which drops hidden camera details such as the location. Until it runs, the forum works as before and the
   "Add photo" button is simply not shown.
+- `forum_departments.sql`: General and department-only spaces in the Employee Forum. Each category is either General
+  (everyone) or Departmental (only the poster's own department); set it when adding a category (Senior Manager portal >
+  Forum > Categories). A post in a Departmental category is stamped with the poster's department by the site, from the
+  employee record, and its replies, likes, photos and reports follow the same rule. Moderators (Administrator and
+  Engagement) see every department. A category's scope is locked once it has discussions. Existing categories stay
+  General, so nothing changes until you mark one Departmental. Until it runs, every category is General and the
+  General / My Department switch is not shown.
 
 - `grievances.sql`: the Grievances system for Legal Compliance (tables, ticket numbers, the access rules, and the
   Grievances card on the Legal Compliance page). Until it runs, nothing shows: employees see no Grievances panel and

@@ -425,7 +425,27 @@ const publicIds = (rows) => rows.filter((r) => !isAnon(r)).map((r) => r.employee
 /* A forum category as the portal sees it. `color` is a colour NAME chosen by a Senior Manager (see
    assets/forum-colors.js); anything that is not a plain lowercase word is dropped, so it can never carry markup. */
 function catView(x) {
-  return { id: x.id, name: x.name, description: x.description || '', color: /^[a-z]{2,20}$/.test(x.color || '') ? x.color : null };
+  return { id: x.id, name: x.name, description: x.description || '', color: /^[a-z]{2,20}$/.test(x.color || '') ? x.color : null, scope: x.scope === 'departmental' ? 'departmental' : 'general' };
+}
+
+/* General and department-only forum spaces (supabase/forum_departments.sql). A discussion in a departmental category
+   carries the poster's department and is seen only by that department. General discussions carry none. Before that
+   SQL has run there is no such column, every discussion is general, and these helpers quietly do nothing. */
+const deptFilter = (dept) => (dept ? `&or=(department.is.null,department.eq.${dept})` : '&department=is.null');
+/* GET forum_threads rows that this employee's department may see; falls back to "all" while the column does not exist yet */
+async function threadsGet(path, dept) {
+  const r = await rest('GET', path + deptFilter(dept));
+  return !r.ok && r.status === 400 ? rest('GET', path) : r;
+}
+/* One discussion, only if the employee may see it: not hidden, in an open category, and (if the category is
+   departmental) from the employee's own department. Returns { thread, cat } or null. */
+async function visibleThread(eid, tid) {
+  const t = list(await rest('GET', `forum_threads?id=eq.${tid}&hidden=eq.false&select=*`))[0];
+  if (!t) return null;
+  const cat = list(await rest('GET', `forum_categories?id=eq.${t.category_id}&active=eq.true&select=*`))[0];
+  if (!cat) return null;
+  if (cat.scope === 'departmental' && t.department !== (await deptOf(eid))) return null;
+  return { thread: t, cat };
 }
 
 /* Short-lived links to forum photos (they live in a private bucket). One request signs them all; a path that cannot
@@ -451,7 +471,8 @@ async function forumFeed(eid) {
   const c = await rest('GET', 'forum_categories?active=eq.true&select=*&order=position,created_at');
   if (!c.ok || !Array.isArray(c.data) || !c.data.length) return { categories: [], threads: [] };
   const ids = c.data.map((x) => x.id).join(',');
-  const threads = list(await rest('GET', `forum_threads?category_id=in.(${ids})&hidden=eq.false&select=*&order=last_post_at.desc&limit=20`));
+  const dept = await deptOf(eid);
+  const threads = list(await threadsGet(`forum_threads?category_id=in.(${ids})&hidden=eq.false&select=*&order=last_post_at.desc&limit=40`, dept));
   const tids = threads.map((x) => x.id);
   const [p, who, pack, im] = await Promise.all([
     tids.length ? rest('GET', `forum_posts?thread_id=in.(${tids.join(',')})&hidden=eq.false&select=thread_id&limit=5000`) : { ok: true, data: [] },
@@ -470,6 +491,7 @@ async function forumFeed(eid) {
     categories: c.data.map(catView),
     photos: pack.pics,
     images_on: !!im.ok,
+    my_dept: dept,
     threads: threads.map((x) => ({
       id: x.id, category_id: x.category_id, title: x.title, body: x.body, locked: x.locked, replies: count[x.id] || 0,
       images: byThread[x.id] || [],
@@ -480,7 +502,7 @@ async function forumFeed(eid) {
 
 module.exports = {
   list, namesOf, photoPack, catView, byline, ANON_NAME, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
-  ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, signedImages, manilaDate,
+  ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, signedImages, deptFilter, threadsGet, visibleThread, manilaDate,
   configured, send, svc, rest, readJson, foreignOrigin, makeToken, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
   setSession, clearSession, currentEmployee, ipHash, deviceBlocked, noteAttempt, noteFailure, isLocked,

@@ -37,8 +37,10 @@ module.exports = async function handler(req, res) {
 
     if (body.liked) {
       // the post has to exist and be visible to employees
-      const table = kind === 'announcement' ? `announcements?id=eq.${id}&published=eq.true` : `forum_threads?id=eq.${id}&hidden=eq.false`;
-      if (!list(await E.rest('GET', `${table}&select=id`))[0]) return E.send(res, 404, { error: "That isn't available any more." });
+      const seen = kind === 'announcement'
+        ? list(await E.rest('GET', `announcements?id=eq.${id}&published=eq.true&select=id`))[0]
+        : await E.visibleThread(eid, id);   // a forum discussion the employee may see (a department's own, or a general one)
+      if (!seen) return E.send(res, 404, { error: "That isn't available any more." });
       const r = await E.rest('POST', 'post_likes?on_conflict=employee_id,kind,item_id', { employee_id: eid, kind, item_id: id }, 'resolution=ignore-duplicates,return=minimal');
       if (!r.ok) return E.send(res, 500, { error: "Couldn't save that. Try again." });
     } else {

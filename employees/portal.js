@@ -30,6 +30,8 @@
   var learn = { courses: [], course: null, modules: [], fromList: false };   // fromList: the course was opened from the full list, so Back returns to it
   var forum = { cats: [], threads: [], photos: [] };
   var forumFilter = 'all'; /* 'all' or a category id: which posts the forum shows */
+  var forumScope = 'general'; /* 'general' or 'dept': the General space, or the employee's own department space */
+  var ffOpen = false; /* is the category filter panel open */
   var anns = [], annPhotos = [], annShown = 3;
   var esc = function (s) {
     return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
@@ -213,7 +215,7 @@
     att = d.attendance || { today: '', records: [], unavailable: true };
     recs = d.records || [];
     learn.courses = d.learning || [];
-    forum = { cats: (d.forum && d.forum.categories) || [], threads: (d.forum && d.forum.threads) || [], imagesOn: !!(d.forum && d.forum.images_on) };
+    forum = { cats: (d.forum && d.forum.categories) || [], threads: (d.forum && d.forum.threads) || [], imagesOn: !!(d.forum && d.forum.images_on), myDept: (d.forum && d.forum.my_dept) || null };
     anns = d.announcements || [];
     evals = d.evaluations || { self: [], peer: [] };
     annPhotos = d.announcementPhotos || [];
@@ -391,34 +393,51 @@
     panel.hidden = !forum.cats.length;
     if (!forum.cats.length) return;
     var sel = $('#fc-cat'), keep = sel.value;
-    sel.innerHTML = forum.cats.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('');
+    var opt = function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; };
+    var genCats = forum.cats.filter(function (c) { return c.scope !== 'departmental'; });
+    var depCats = forum.myDept ? forum.cats.filter(function (c) { return c.scope === 'departmental'; }) : [];   // no department: no department space to post in
+    sel.innerHTML = depCats.length ? '<optgroup label="General">' + genCats.map(opt).join('') + '</optgroup><optgroup label="Your department only">' + depCats.map(opt).join('') + '</optgroup>' : genCats.map(opt).join('');
     if (keep) sel.value = keep;
+    deptNote();
     $('#fc-photos').hidden = !forum.imagesOn;
     var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
     var catCls = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return window.SngCatColors ? window.SngCatColors.cls(c || { id: id }) : ''; };
-    /* chips: All, then each category that has at least one post (a filter that would show nothing is not offered) */
+    /* The space switch (General / My Department) and the filter button sit on one row. On wide screens the switch is a button
+       pair like the Announcements / Employee Forum one; on small screens it is a dropdown. The filter button opens the
+       category choices for the space being shown (a category with no posts is not offered). */
+    var scopeOf = {};
+    forum.cats.forEach(function (c) { scopeOf[c.id] = c.scope === 'departmental' ? 'dept' : 'general'; });
+    var hasDept = !!forum.myDept && forum.cats.some(function (c) { return c.scope === 'departmental'; });
+    if (!hasDept) forumScope = 'general';
+    var inScope = forum.threads.filter(function (t) { return (scopeOf[t.category_id] || 'general') === forumScope; });
     var counts = {};
-    forum.threads.forEach(function (t) { counts[t.category_id] = (counts[t.category_id] || 0) + 1; });
+    inScope.forEach(function (t) { counts[t.category_id] = (counts[t.category_id] || 0) + 1; });
     var used = forum.cats.filter(function (c) { return counts[c.id]; });
     if (forumFilter !== 'all' && !counts[forumFilter]) forumFilter = 'all';
+    var canFilter = used.length >= 2;
+    if (!canFilter) ffOpen = false;
     var bar = $('#forum-filter');
-    bar.hidden = used.length < 2;
-    var opts = [['all', 'All', forum.threads.length, '']].concat(used.map(function (c) { return [c.id, c.name, counts[c.id], ' cat ' + catCls(c.id)]; }));
-    var cur = opts.filter(function (t) { return t[0] === forumFilter; })[0] || opts[0];
-    /* wide screens show the chips; small screens show one dropdown (the same choices, coloured like the chosen category) */
-    bar.innerHTML = used.length < 2 ? '' : opts.map(function (t) {
-      return '<button type="button" class="ff' + t[3] + '" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
-    }).join('') + '<span class="ff-selbox' + cur[3] + '"><span class="ff-lab" aria-hidden="true">' + esc(cur[1]) + ' (' + cur[2] + ')</span><select class="ff-sel" id="forum-filter-sel" aria-label="Filter by category">' + opts.map(function (t) {
-      return '<option value="' + esc(t[0]) + '"' + (forumFilter === t[0] ? ' selected' : '') + '>' + esc(t[1]) + ' (' + t[2] + ')</option>';
-    }).join('') + '</select></span>';
-    var shown = forumFilter === 'all' ? forum.threads : forum.threads.filter(function (t) { return t.category_id === forumFilter; });
+    bar.hidden = !hasDept && !canFilter;
+    var scopes = [['general', 'General'], ['dept', 'My Department']];
+    var opts = [['all', 'All', inScope.length, '']].concat(used.map(function (c) { return [c.id, c.name, counts[c.id], ' cat ' + catCls(c.id)]; }));
+    bar.innerHTML = bar.hidden ? '' : '<div class="ffbar' + (hasDept ? '' : ' solo') + '">' + (hasDept
+      ? '<div class="ffseg" role="group" aria-label="Forum space">' + scopes.map(function (s) {
+          return '<button type="button" data-fscope="' + s[0] + '" aria-pressed="' + (forumScope === s[0]) + '">' + s[1] + '</button>';
+        }).join('') + '</div>' +
+        '<span class="ff-selbox"><span class="ff-lab" aria-hidden="true">' + (forumScope === 'dept' ? 'My Department' : 'General') + '</span><select class="ff-sel" id="forum-scope-sel" aria-label="Forum space">' +
+        scopes.map(function (s) { return '<option value="' + s[0] + '"' + (forumScope === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></span>'
+      : '') + (canFilter ? '<button type="button" class="ffbtn' + (forumFilter !== 'all' ? ' on' : '') + '" id="ff-btn" aria-label="Filter by category" aria-haspopup="true" aria-controls="ff-pop" aria-expanded="' + ffOpen + '">' + I('sliders') + '</button>' : '') + '</div>' +
+      (canFilter ? '<div class="ffpop" id="ff-pop" role="group" aria-label="Filter by category"' + (ffOpen ? '' : ' hidden') + '>' + opts.map(function (t) {
+        return '<button type="button" class="ff' + t[3] + '" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
+      }).join('') + '</div>' : '');
+    var shown = forumFilter === 'all' ? inScope : inScope.filter(function (t) { return t.category_id === forumFilter; });
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain ' + catCls(t.category_id) + '">' + esc(catName(t.category_id)) + '</span></div>' +
         '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' + photosHtml(t.images) +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
-    }).join('') : '<div class="none">No discussions yet. Be the first to start one.</div>';
+    }).join('') : '<div class="none">' + (forumScope === 'dept' ? 'No discussions in your department yet. Be the first to start one.' : 'No discussions yet. Be the first to start one.') + '</div>';
     markLong();
   }
   /* "Read more" shows only on a post whose text really is cut off (that depends on the screen width), and flips to "Show less" once opened */
@@ -436,13 +455,29 @@
   window.addEventListener('resize', markLong);
 
   $('#forum-filter').addEventListener('change', function (e) {
-    if (e.target.id === 'forum-filter-sel') { forumFilter = e.target.value; renderForum(); }
+    if (e.target.id === 'forum-scope-sel') { forumScope = e.target.value === 'dept' ? 'dept' : 'general'; forumFilter = 'all'; ffOpen = false; renderForum(); }
   });
+  /* a short line in the post form when the chosen category is department-only */
+  function deptNote() {
+    var c = forum.cats.filter(function (x) { return x.id === $('#fc-cat').value; })[0], n = $('#fc-deptnote');
+    var on = !!c && c.scope === 'departmental';
+    n.hidden = !on;
+    n.textContent = on ? 'Only your department (' + (DEPT_NAME[forum.myDept] || 'your team') + ') will see this. Posting anonymously hides your name, but people in your department may still guess who wrote it.' : '';
+  }
+  $('#fc-cat').addEventListener('change', deptNote);
+  /* a click outside the filter closes its panel. Whether the click was inside is noted first (capture phase), because the
+     row is redrawn by the click and the clicked button is gone by the time this would ask. */
+  var ffInside = false;
+  document.addEventListener('click', function (e) { ffInside = !!e.target.closest('#forum-filter'); }, true);
+  document.addEventListener('click', function () {
+    if (ffOpen && !ffInside) { ffOpen = false; renderForum(); }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ffOpen) { ffOpen = false; renderForum(); } });
 
   async function refreshFeed() {
     var r = await call('GET', '/api/employee-forum?feed=1');
     if (r.status === 401) { show('signin'); return; }
-    if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [], photos: r.data.photos || [], imagesOn: !!r.data.images_on }; renderForum(); }
+    if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [], photos: r.data.photos || [], imagesOn: !!r.data.images_on, myDept: r.data.my_dept || null }; renderForum(); }
   }
 
   function replyHtml(p, photos) {
@@ -507,7 +542,8 @@
     var btn = $('#fc-post');
     btn.disabled = true;
     $('#fc-cancel').disabled = true;
-    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: $('#fc-cat').value, title: title, body: body, anonymous: $('#fc-anon').checked });
+    var sentCat = $('#fc-cat').value;
+    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: sentCat, title: title, body: body, anonymous: $('#fc-anon').checked });
     if (r.status === 401) { btn.disabled = false; $('#fc-cancel').disabled = false; show('signin'); return; }
     if (!r.ok) { btn.disabled = false; $('#fc-cancel').disabled = false; note('#fc-msg', r.data.error || "Couldn't post that."); return; }
     var failedPhotos = photos.length && r.data.id ? await uploadPhotos(r.data.id) : 0;
@@ -519,7 +555,11 @@
     $('#fc-anon').checked = false;
     toast(failedPhotos ? 'Posted, but ' + (failedPhotos === 1 ? 'one photo' : failedPhotos + ' photos') + " didn't upload." : 'Posted.');
     composerOpen(false);
+    // show the space the new post went to, so it is right there
+    var posted = forum.cats.filter(function (x) { return x.id === sentCat; })[0];
+    forumScope = posted && posted.scope === 'departmental' ? 'dept' : 'general';
     forumFilter = 'all';
+    ffOpen = false;
     refreshFeed();
   });
 
@@ -1103,7 +1143,9 @@
       if (mb) { mb.classList.toggle('clamp'); syncMore(mc); }
     }
     else if ((t = e.target.closest('[data-pimg]'))) openPhoto(t.dataset.pimg);
-    else if ((t = e.target.closest('[data-ffilter]'))) { forumFilter = t.dataset.ffilter; renderForum(); }
+    else if ((t = e.target.closest('[data-ffilter]'))) { forumFilter = t.dataset.ffilter; ffOpen = false; renderForum(); }
+    else if ((t = e.target.closest('[data-fscope]'))) { forumScope = t.dataset.fscope === 'dept' ? 'dept' : 'general'; forumFilter = 'all'; ffOpen = false; renderForum(); }
+    else if (e.target.closest('#ff-btn')) { ffOpen = !ffOpen; renderForum(); }
     else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
     else if ((t = e.target.closest('[data-send-reply]'))) sendReply(t.closest('form'));
     else if ((t = e.target.closest('[data-del-thread]'))) sendDelete('thread', t.dataset.delThread);
