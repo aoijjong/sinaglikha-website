@@ -39,7 +39,8 @@
   function css() {
     return LIST.map(function (c) {
       return '.chip.cat-' + c.key + ',.lico.cat-' + c.key + '{background:' + c.bg + ';color:' + c.fg + '}' +
-        '.cat-sw.cat-' + c.key + '{--sw:' + c.bg + ';--sw-ink:' + c.fg + '}';
+        '.cat-sw.cat-' + c.key + '{--sw:' + c.bg + ';--sw-ink:' + c.fg + '}' +
+        '.ff.cat-' + c.key + '{--ff-bg:' + c.bg + ';--ff-fg:' + c.fg + '}';
     }).join('\n');
   }
 

@@ -312,8 +312,8 @@
     if (forumFilter !== 'all' && !counts[forumFilter]) forumFilter = 'all';
     var bar = $('#forum-filter');
     bar.hidden = used.length < 2;
-    bar.innerHTML = used.length < 2 ? '' : [['all', 'All', forum.threads.length]].concat(used.map(function (c) { return [c.id, c.name, counts[c.id]]; })).map(function (t) {
-      return '<button type="button" class="ff" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
+    bar.innerHTML = used.length < 2 ? '' : [['all', 'All', forum.threads.length, '']].concat(used.map(function (c) { return [c.id, c.name, counts[c.id], ' cat ' + catCls(c.id)]; })).map(function (t) {
+      return '<button type="button" class="ff' + t[3] + '" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
     }).join('');
     var shown = forumFilter === 'all' ? forum.threads : forum.threads.filter(function (t) { return t.category_id === forumFilter; });
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
