@@ -213,12 +213,12 @@
 #forum-panel .ffbar{display:flex;align-items:center;gap:10px}
 #forum-panel .ffbar.solo{justify-content:flex-end}
 #forum-panel .ffgrp{flex:1;min-width:0;display:flex;gap:10px}
-#forum-panel .ffs{flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:999px;border:1.5px solid #E8731B;background:#fff;color:#B3470F;font:inherit;font-weight:700;font-size:.88rem;cursor:pointer}
+#forum-panel .ffs{flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:999px;border:1.5px solid #F0C9A4;background:#fff;color:#9A5A2E;font:inherit;font-weight:700;font-size:.88rem;cursor:pointer}
 #forum-panel .ffs .icon{width:18px;height:18px;flex:none}
 #forum-panel .ffs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#forum-panel .ffs[aria-pressed="true"]{background:var(--grad-btn);border-color:transparent;color:#fff;box-shadow:0 10px 20px -10px rgba(206,32,32,.65)}
-@media (hover:hover) and (pointer:fine){#forum-panel .ffs[aria-pressed="false"]:hover{background:#FFF3E6}}
-#forum-panel .ffbtn{flex:none;position:relative;width:44px;height:44px;border-radius:50%;border:1.5px solid #E8731B;background:#fff;color:#B3470F;display:grid;place-items:center;cursor:pointer;padding:0}
+#forum-panel .ffs[aria-pressed="true"]{background:linear-gradient(135deg,#FFE6CC 0%,#FBC98F 100%);border-color:#E8A56B;color:#8A4217;box-shadow:0 8px 16px -12px rgba(200,110,30,.55)}
+@media (hover:hover) and (pointer:fine){#forum-panel .ffs[aria-pressed="false"]:hover{background:#FFF8F0}}
+#forum-panel .ffbtn{flex:none;position:relative;width:44px;height:44px;border-radius:50%;border:1.5px solid #F0C9A4;background:#fff;color:#9A5A2E;display:grid;place-items:center;cursor:pointer;padding:0}
 #forum-panel .ffbtn .icon{width:20px;height:20px}
 #forum-panel .ffbtn[aria-expanded="true"]{background:#FFE9D2}
 #forum-panel .ffbtn.on::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#E8731B;border:2px solid #fff}
