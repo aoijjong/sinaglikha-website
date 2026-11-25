@@ -237,15 +237,19 @@
 .lbx img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
 .lbx button{position:absolute;top:14px;right:14px;width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:26px;line-height:1;cursor:pointer}
 
-/* Employee Forum filter: chips on wide screens, one dropdown on small ones */
-#forum-panel .ff-sel{display:none}
+/* Employee Forum filter: chips on wide screens, one dropdown on small ones.
+   The real <select> must stay at 16px on phones (the site's rule that stops iOS zooming into fields), so it is invisible
+   and laid over a label that can be as small as the other small-screen text; tapping it still opens the phone's own picker. */
+#forum-panel .ff-selbox{display:none}
 @media (max-width:640px){
   #forum-panel #forum-filter .ff{display:none}
   #forum-panel #forum-filter{justify-content:stretch}
-  #forum-panel .ff-sel{display:block;width:100%;appearance:none;-webkit-appearance:none;font:inherit;font-weight:700;font-size:.8rem;text-align:center;text-align-last:center;
-    padding:9px 38px 9px 14px;border-radius:999px;border:1px solid rgba(74,46,34,.14);cursor:pointer;
-    background:#FBE2C0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A4217' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;color:#8A4217}
-  #forum-panel .ff-sel.cat{background-color:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg)}
+  #forum-panel .ff-selbox{display:block;position:relative;width:100%;box-sizing:border-box;text-align:center;padding:9px 38px 9px 14px;border-radius:999px;border:1px solid rgba(74,46,34,.14);
+    font-weight:700;font-size:.8rem;line-height:1.3;background:#FBE2C0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A4217' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;color:#8A4217}
+  #forum-panel .ff-selbox.cat{background-color:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg)}
+  #forum-panel .ff-selbox:focus-within{box-shadow:0 0 0 3px rgba(206,32,32,.18)}
+  #forum-panel .ff-lab{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #forum-panel .ff-sel{display:block;position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;padding:0;border:0;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
 }
 
 /* Employee Forum: "Read more" under a post whose text is cut off */

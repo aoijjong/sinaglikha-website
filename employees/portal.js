@@ -404,9 +404,9 @@
     /* wide screens show the chips; small screens show one dropdown (the same choices, coloured like the chosen category) */
     bar.innerHTML = used.length < 2 ? '' : opts.map(function (t) {
       return '<button type="button" class="ff' + t[3] + '" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
-    }).join('') + '<select class="ff-sel' + cur[3] + '" id="forum-filter-sel" aria-label="Filter by category">' + opts.map(function (t) {
+    }).join('') + '<span class="ff-selbox' + cur[3] + '"><span class="ff-lab" aria-hidden="true">' + esc(cur[1]) + ' (' + cur[2] + ')</span><select class="ff-sel" id="forum-filter-sel" aria-label="Filter by category">' + opts.map(function (t) {
       return '<option value="' + esc(t[0]) + '"' + (forumFilter === t[0] ? ' selected' : '') + '>' + esc(t[1]) + ' (' + t[2] + ')</option>';
-    }).join('') + '</select>';
+    }).join('') + '</select></span>';
     var shown = forumFilter === 'all' ? forum.threads : forum.threads.filter(function (t) { return t.category_id === forumFilter; });
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
