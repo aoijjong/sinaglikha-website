@@ -212,9 +212,11 @@
 #forum-panel #forum-filter{order:0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:14px 16px 8px}
 #forum-panel .ff{border:1px solid rgba(74,46,34,.14);background:#fff;color:var(--muted);font:inherit;font-weight:700;font-size:.84rem;padding:7px 14px;border-radius:999px;cursor:pointer}
 #forum-panel .ff b{font-weight:700;opacity:.7;margin-left:2px}
-#forum-panel .ff[aria-pressed="true"]{background:#2A1A12;border-color:#2A1A12;color:#fff}
+#forum-panel .ff:not(.cat){background:#FBE2C0;border-color:transparent;color:#8A4217}
+#forum-panel .ff:not(.cat)[aria-pressed="true"]{border-color:#C8742E;box-shadow:0 0 0 1px #C8742E}
+#forum-panel .ff:not(.cat)[aria-pressed="false"]{opacity:.85}
 #forum-panel .ff.cat{background:var(--ff-bg);color:var(--ff-fg);border-color:transparent}
 #forum-panel .ff.cat[aria-pressed="true"]{background:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg);box-shadow:0 0 0 1px var(--ff-fg)}
 #forum-panel .ff.cat[aria-pressed="false"]{opacity:.85}
-@media (hover:hover) and (pointer:fine){#forum-panel .ff[aria-pressed="false"]:not(.cat):hover{background:#FBF3E4;color:var(--brown)}#forum-panel .ff.cat[aria-pressed="false"]:hover{opacity:1}}
+@media (hover:hover) and (pointer:fine){#forum-panel .ff:not(.cat)[aria-pressed="false"]:hover{opacity:1}#forum-panel .ff.cat[aria-pressed="false"]:hover{opacity:1}}
 @media (max-width:640px){#forum-panel #forum-filter{padding:12px 12px 6px;gap:6px}#forum-panel .ff{padding:6px 12px;font-size:.8rem}}
