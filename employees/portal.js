@@ -411,11 +411,25 @@
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain ' + catCls(t.category_id) + '">' + esc(catName(t.category_id)) + '</span></div>' +
-        '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' + photosHtml(t.images) +
+        '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' + photosHtml(t.images) +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">No discussions yet. Be the first to start one.</div>';
+    markLong();
   }
+  /* "Read more" shows only on a post whose text really is cut off (that depends on the screen width), and flips to "Show less" once opened */
+  function syncMore(card) {
+    var body = card.querySelector('.post-body'), btn = card.querySelector('.post-more');
+    if (body && btn) btn.textContent = body.classList.contains('clamp') ? 'Read more' : 'Show less';
+  }
+  function markLong() {
+    Array.prototype.forEach.call(document.querySelectorAll('#forum-feed .post-body.clamp'), function (b) {
+      var card = b.closest('.post');
+      if (card) card.classList.toggle('long', b.scrollHeight > b.clientHeight + 1);
+    });
+  }
+  if (typeof ResizeObserver === 'function') new ResizeObserver(markLong).observe($('#forum-feed'));
+  window.addEventListener('resize', markLong);
 
   $('#forum-filter').addEventListener('change', function (e) {
     if (e.target.id === 'forum-filter-sel') { forumFilter = e.target.value; renderForum(); }
@@ -436,9 +450,10 @@
     var card = document.querySelector('[data-thread="' + id + '"]');
     if (!card) return;
     var box = card.querySelector('.replies'), body = card.querySelector('.post-body');
-    if (!box.hidden) { box.hidden = true; body.classList.add('clamp'); return; }
+    if (!box.hidden) { box.hidden = true; body.classList.add('clamp'); syncMore(card); markLong(); return; }
     box.hidden = false;
     body.classList.remove('clamp');
+    syncMore(card);
     box.innerHTML = '<div class="skel" style="width:60%;margin:8px 0"></div>';
     var r = await call('GET', '/api/employee-forum?thread=' + encodeURIComponent(id));
     if (r.status === 401) { show('signin'); return; }
@@ -1079,6 +1094,10 @@
     else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course, !!t.closest('#learn-body'));
     else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
     else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
+    else if ((t = e.target.closest('[data-more]'))) {
+      var mc = t.closest('.post'), mb = mc && mc.querySelector('.post-body');
+      if (mb) { mb.classList.toggle('clamp'); syncMore(mc); }
+    }
     else if ((t = e.target.closest('[data-pimg]'))) openPhoto(t.dataset.pimg);
     else if ((t = e.target.closest('[data-ffilter]'))) { forumFilter = t.dataset.ffilter; renderForum(); }
     else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
