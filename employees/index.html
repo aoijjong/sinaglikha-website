@@ -384,6 +384,12 @@ button.dpill{cursor:pointer}
             </div>
             <label class="sr-only" for="fc-body">Your message</label>
             <textarea id="fc-body" maxlength="2000" rows="3" placeholder="What would you like to share or ask your colleagues?"></textarea>
+            <div class="cmp-photos" id="fc-photos" hidden>
+              <button class="btn btn-ghost btn-sm" type="button" id="fc-photo-btn"><i data-icon="camera"></i>Add photo</button>
+              <input type="file" id="fc-photo" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple hidden>
+              <span class="fine" id="fc-photo-hint">Up to 4 photos</span>
+              <ul class="cmp-thumbs" id="fc-thumbs"></ul>
+            </div>
             <p class="msg bad" id="fc-msg" role="alert" hidden></p>
             <label class="anon-opt" title="Colleagues see &quot;Anon Likhain&quot;. Moderators can still see who wrote it."><input type="checkbox" id="fc-anon"> Post anonymously</label>
             <div class="cmp-foot"><span class="fine">Be kind and keep it work-friendly.</span><span style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" type="button" id="fc-cancel">Cancel</button><button class="btn btn-primary btn-sm" type="submit" id="fc-post"><i data-icon="send"></i>Post</button></span></div>

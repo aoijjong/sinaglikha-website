@@ -209,7 +209,7 @@
     att = d.attendance || { today: '', records: [], unavailable: true };
     recs = d.records || [];
     learn.courses = d.learning || [];
-    forum = { cats: (d.forum && d.forum.categories) || [], threads: (d.forum && d.forum.threads) || [] };
+    forum = { cats: (d.forum && d.forum.categories) || [], threads: (d.forum && d.forum.threads) || [], imagesOn: !!(d.forum && d.forum.images_on) };
     anns = d.announcements || [];
     evals = d.evaluations || { self: [], peer: [] };
     annPhotos = d.announcementPhotos || [];
@@ -296,6 +296,92 @@
     return mine ? IB('trash', 'Delete', del, 'danger') : IB('flag', 'Report', del);
   }
 
+  /* ---------- photos on a discussion ---------- */
+  var PHOTO_MAX = 4, photos = [];   // photos: the shrunken JPEGs chosen for the discussion being written
+  function photosHtml(list) {
+    if (!list || !list.length) return '';
+    return '<div class="post-imgs n' + Math.min(list.length, 4) + '">' + list.slice(0, 4).map(function (u) {
+      return '<button class="pimg" type="button" data-pimg="' + esc(u) + '" aria-label="View photo"><img src="' + esc(u) + '" alt="Photo attached to this post" loading="lazy"></button>';
+    }).join('') + '</div>';
+  }
+  function openPhoto(url) {
+    closePhoto();
+    var box = document.createElement('div');
+    box.className = 'lbx'; box.id = 'lbx'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Photo');
+    var img = document.createElement('img'); img.src = url; img.alt = 'Photo attached to this post';
+    var x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.textContent = '×';
+    box.appendChild(img); box.appendChild(x);
+    box.addEventListener('click', closePhoto);
+    document.body.appendChild(box);
+    x.focus();
+  }
+  function closePhoto() { var b = document.getElementById('lbx'); if (b) b.remove(); }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePhoto(); });
+  /* Redraws the photo onto a canvas and saves it as a JPEG no bigger than 1600 px: this keeps uploads small and drops the
+     hidden camera details (such as the location) that a photo file can carry. */
+  function shrink(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var s = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+        var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { if (b && b.size <= 3 * 1024 * 1024) resolve(b); else reject(new Error('large')); }, 'image/jpeg', 0.82);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('read')); };
+      img.src = url;
+    });
+  }
+  function showThumbs() {
+    $('#fc-thumbs').innerHTML = photos.map(function (p, i) {
+      return '<li><img src="' + esc(p.url) + '" alt="Photo ' + (i + 1) + ' to attach"><button type="button" data-rmphoto="' + i + '" aria-label="Remove photo ' + (i + 1) + '">×</button></li>';
+    }).join('');
+    $('#fc-photo-btn').hidden = photos.length >= PHOTO_MAX;
+    $('#fc-photo-hint').textContent = photos.length ? photos.length + ' of ' + PHOTO_MAX + ' photos' : 'Up to ' + PHOTO_MAX + ' photos';
+  }
+  function clearPhotos() { photos.forEach(function (p) { URL.revokeObjectURL(p.url); }); photos = []; showThumbs(); }
+  $('#fc-photo-btn').addEventListener('click', function () { $('#fc-photo').click(); });
+  $('#fc-photo').addEventListener('change', async function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []), bad = 0;
+    e.target.value = '';
+    note('#fc-msg', '');
+    for (var i = 0; i < files.length; i++) {
+      if (photos.length >= PHOTO_MAX) { bad = -1; break; }
+      if (files[i].size > 25 * 1024 * 1024) { bad++; continue; }
+      try { var b = await shrink(files[i]); photos.push({ blob: b, url: URL.createObjectURL(b) }); } catch (err) { bad++; }
+    }
+    showThumbs();
+    if (bad === -1) note('#fc-msg', 'You can attach up to ' + PHOTO_MAX + ' photos.');
+    else if (bad) note('#fc-msg', bad === 1 ? "One photo couldn't be used. Try a JPG, PNG or WEBP photo." : bad + " photos couldn't be used. Try JPG, PNG or WEBP photos.");
+  });
+  $('#fc-thumbs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-rmphoto]');
+    if (!b) return;
+    var gone = photos.splice(Number(b.dataset.rmphoto), 1)[0];
+    if (gone) URL.revokeObjectURL(gone.url);
+    showThumbs();
+  });
+  /* sends the chosen photos one at a time: reserve a place, upload straight to storage, then confirm it arrived. Returns how many failed. */
+  async function uploadPhotos(threadId) {
+    var failed = 0;
+    for (var i = 0; i < photos.length; i++) {
+      $('#fc-photo-hint').textContent = 'Uploading photo ' + (i + 1) + ' of ' + photos.length + '…';
+      var ok = false, r = await call('POST', '/api/employee-forum', { action: 'image_url', thread_id: threadId, mime: 'image/jpeg', size: photos[i].blob.size });
+      if (r.ok && r.data.upload_url) {
+        try {
+          var fd = new FormData();
+          fd.append('cacheControl', '3600');
+          fd.append('', photos[i].blob);
+          var up = await fetch(r.data.upload_url, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
+          if (up.ok) ok = (await call('POST', '/api/employee-forum', { action: 'image_done', image_id: r.data.image_id })).ok;
+        } catch (e) { ok = false; }
+      }
+      if (!ok) failed++;
+    }
+    return failed;
+  }
+
   function renderForum() {
     var panel = $('#forum-panel');
     panel.hidden = !forum.cats.length;
@@ -303,6 +389,7 @@
     var sel = $('#fc-cat'), keep = sel.value;
     sel.innerHTML = forum.cats.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('');
     if (keep) sel.value = keep;
+    $('#fc-photos').hidden = !forum.imagesOn;
     var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
     var catCls = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return window.SngCatColors ? window.SngCatColors.cls(c || { id: id }) : ''; };
     /* chips: All, then each category that has at least one post (a filter that would show nothing is not offered) */
@@ -319,7 +406,7 @@
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain ' + catCls(t.category_id) + '">' + esc(catName(t.category_id)) + '</span></div>' +
-        '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
+        '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' + photosHtml(t.images) +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">No discussions yet. Be the first to start one.</div>';
@@ -328,7 +415,7 @@
   async function refreshFeed() {
     var r = await call('GET', '/api/employee-forum?feed=1');
     if (r.status === 401) { show('signin'); return; }
-    if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [], photos: r.data.photos || [] }; renderForum(); }
+    if (r.ok) { forum = { cats: r.data.categories || [], threads: r.data.threads || [], photos: r.data.photos || [], imagesOn: !!r.data.images_on }; renderForum(); }
   }
 
   function replyHtml(p, photos) {
@@ -381,7 +468,7 @@
     if (on) $('#fc-title').focus();
   }
   $('#fc-open').addEventListener('click', function () { composerOpen(true); });
-  $('#fc-cancel').addEventListener('click', function () { note('#fc-msg', ''); composerOpen(false); });
+  $('#fc-cancel').addEventListener('click', function () { note('#fc-msg', ''); clearPhotos(); composerOpen(false); });
 
   $('#f-compose').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -391,14 +478,18 @@
     note('#fc-msg', '');
     var btn = $('#fc-post');
     btn.disabled = true;
+    $('#fc-cancel').disabled = true;
     var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: $('#fc-cat').value, title: title, body: body, anonymous: $('#fc-anon').checked });
+    if (r.status === 401) { btn.disabled = false; $('#fc-cancel').disabled = false; show('signin'); return; }
+    if (!r.ok) { btn.disabled = false; $('#fc-cancel').disabled = false; note('#fc-msg', r.data.error || "Couldn't post that."); return; }
+    var failedPhotos = photos.length && r.data.id ? await uploadPhotos(r.data.id) : 0;
     btn.disabled = false;
-    if (r.status === 401) { show('signin'); return; }
-    if (!r.ok) { note('#fc-msg', r.data.error || "Couldn't post that."); return; }
+    $('#fc-cancel').disabled = false;
+    clearPhotos();
     $('#fc-title').value = '';
     $('#fc-body').value = '';
     $('#fc-anon').checked = false;
-    toast('Posted.');
+    toast(failedPhotos ? 'Posted, but ' + (failedPhotos === 1 ? 'one photo' : failedPhotos + ' photos') + " didn't upload." : 'Posted.');
     composerOpen(false);
     forumFilter = 'all';
     refreshFeed();
@@ -979,6 +1070,7 @@
     else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course, !!t.closest('#learn-body'));
     else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
     else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
+    else if ((t = e.target.closest('[data-pimg]'))) openPhoto(t.dataset.pimg);
     else if ((t = e.target.closest('[data-ffilter]'))) { forumFilter = t.dataset.ffilter; renderForum(); }
     else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
     else if ((t = e.target.closest('[data-send-reply]'))) sendReply(t.closest('form'));

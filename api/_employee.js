@@ -428,24 +428,51 @@ function catView(x) {
   return { id: x.id, name: x.name, description: x.description || '', color: /^[a-z]{2,20}$/.test(x.color || '') ? x.color : null };
 }
 
+/* Short-lived links to forum photos (they live in a private bucket). One request signs them all; a path that cannot
+   be signed is simply left out. Returns { path: url }. */
+async function signedImages(paths) {
+  const out = {};
+  if (!paths.length) return out;
+  try {
+    const r = await fetch(`${URL_BASE}/storage/v1/object/sign/forum-images`, {
+      method: 'POST', headers: svc({ 'Content-Type': 'application/json' }), body: JSON.stringify({ expiresIn: 3600, paths }), signal: AbortSignal.timeout(8000)
+    });
+    const d = r.ok ? await r.json() : [];
+    (Array.isArray(d) ? d : []).forEach((x) => {
+      if (!x || !x.signedURL || x.error) return;
+      const full = String(x.signedURL).startsWith('http') ? x.signedURL : `${URL_BASE}/storage/v1${x.signedURL}`;
+      if (full.startsWith(`${URL_BASE}/storage/v1/object/sign/forum-images/`)) out[x.path] = full;
+    });
+  } catch { /* photos are optional: the discussion still shows */ }
+  return out;
+}
+
 async function forumFeed(eid) {
   const c = await rest('GET', 'forum_categories?active=eq.true&select=*&order=position,created_at');
   if (!c.ok || !Array.isArray(c.data) || !c.data.length) return { categories: [], threads: [] };
   const ids = c.data.map((x) => x.id).join(',');
   const threads = list(await rest('GET', `forum_threads?category_id=in.(${ids})&hidden=eq.false&select=*&order=last_post_at.desc&limit=20`));
   const tids = threads.map((x) => x.id);
-  const [p, who, pack] = await Promise.all([
+  const [p, who, pack, im] = await Promise.all([
     tids.length ? rest('GET', `forum_posts?thread_id=in.(${tids.join(',')})&hidden=eq.false&select=thread_id&limit=5000`) : { ok: true, data: [] },
     namesOf(publicIds(threads)),
-    photoPack('employees', publicIds(threads))
+    photoPack('employees', publicIds(threads)),
+    // the photos of these discussions; if supabase/forum_images.sql has not run, this fails and the page hides "Add a photo"
+    rest('GET', tids.length ? `forum_images?thread_id=in.(${tids.join(',')})&confirmed=eq.true&select=thread_id,path&order=created_at.asc&limit=500` : 'forum_images?select=id&limit=1')
   ]);
   const count = {};
   list(p).forEach((x) => { count[x.thread_id] = (count[x.thread_id] || 0) + 1; });
+  const imgs = list(im).filter((x) => x.path && x.thread_id);
+  const urls = await signedImages(imgs.map((x) => x.path));
+  const byThread = {};
+  imgs.forEach((x) => { if (urls[x.path]) (byThread[x.thread_id] = byThread[x.thread_id] || []).push(urls[x.path]); });
   return {
     categories: c.data.map(catView),
     photos: pack.pics,
+    images_on: !!im.ok,
     threads: threads.map((x) => ({
       id: x.id, category_id: x.category_id, title: x.title, body: x.body, locked: x.locked, replies: count[x.id] || 0,
+      images: byThread[x.id] || [],
       ...byline(x, who, pack, eid), created_at: x.created_at, last_post_at: x.last_post_at
     }))
   };
@@ -453,7 +480,7 @@ async function forumFeed(eid) {
 
 module.exports = {
   list, namesOf, photoPack, catView, byline, ANON_NAME, isAnon, publicIds, evaluationForms, deptOf, formFits, DEPTS, questionsOf, qType, isScored, hasOptions, optionsOf, attendanceRecent, learningSummary, forumFeed,
-  ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, manilaDate,
+  ID_RE, CODE_DAYS, ANON, URL_BASE, signUrl, signedImages, manilaDate,
   configured, send, svc, rest, readJson, foreignOrigin, makeToken, hashPin, checkPin, burnTime, sameText,
   normalizeId, normalizeCode, makeCode, showCode, codeHash, pinProblem,
   setSession, clearSession, currentEmployee, ipHash, deviceBlocked, noteAttempt, noteFailure, isLocked,

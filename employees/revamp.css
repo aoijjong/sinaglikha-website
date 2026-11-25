@@ -209,12 +209,30 @@
 @media (max-width:640px){#forum-panel .fw{margin:6px 12px 0;padding:14px;border-radius:18px}}
 
 /* Employee Forum: category filter chips */
-#forum-panel #forum-filter{order:0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:14px 16px 8px}
+#forum-panel #forum-filter{order:2;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:14px 16px 8px}
 #forum-panel .ff{border:1px solid rgba(74,46,34,.14);background:#fff;color:var(--muted);font:inherit;font-weight:700;font-size:.84rem;padding:7px 14px;border-radius:999px;cursor:pointer}
 #forum-panel .ff b{font-weight:700;opacity:.7;margin-left:2px}
-#forum-panel .ff[aria-pressed="true"]{background:#2A1A12;border-color:#2A1A12;color:#fff}
+#forum-panel .ff:not(.cat){background:#FBE2C0;border-color:transparent;color:#8A4217}
+#forum-panel .ff:not(.cat)[aria-pressed="true"]{border-color:#C8742E;box-shadow:0 0 0 1px #C8742E}
+#forum-panel .ff:not(.cat)[aria-pressed="false"]{opacity:.85}
 #forum-panel .ff.cat{background:var(--ff-bg);color:var(--ff-fg);border-color:transparent}
 #forum-panel .ff.cat[aria-pressed="true"]{background:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg);box-shadow:0 0 0 1px var(--ff-fg)}
 #forum-panel .ff.cat[aria-pressed="false"]{opacity:.85}
-@media (hover:hover) and (pointer:fine){#forum-panel .ff[aria-pressed="false"]:not(.cat):hover{background:#FBF3E4;color:var(--brown)}#forum-panel .ff.cat[aria-pressed="false"]:hover{opacity:1}}
+@media (hover:hover) and (pointer:fine){#forum-panel .ff:not(.cat)[aria-pressed="false"]:hover{opacity:1}#forum-panel .ff.cat[aria-pressed="false"]:hover{opacity:1}}
 @media (max-width:640px){#forum-panel #forum-filter{padding:12px 12px 6px;gap:6px}#forum-panel .ff{padding:6px 12px;font-size:.8rem}}
+
+/* Employee Forum: photos on discussions */
+#forum-panel .cmp-photos{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0 4px}
+#forum-panel .cmp-photos .btn .icon{width:16px;height:16px}
+#forum-panel .cmp-thumbs{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0;width:100%}
+#forum-panel .cmp-thumbs li{position:relative;width:72px;height:72px;border-radius:12px;overflow:hidden;background:#F3ECE3}
+#forum-panel .cmp-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+#forum-panel .cmp-thumbs button{position:absolute;top:3px;right:3px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(42,26,18,.78);color:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0}
+#forum-feed .post-imgs{display:grid;gap:6px;margin-top:10px;grid-template-columns:1fr 1fr}
+#forum-feed .post-imgs.n1{grid-template-columns:1fr}
+#forum-feed .pimg{border:0;padding:0;border-radius:14px;overflow:hidden;background:#F3ECE3;cursor:zoom-in;display:block}
+#forum-feed .pimg img{width:100%;height:100%;object-fit:cover;display:block;aspect-ratio:4/3}
+#forum-feed .post-imgs.n1 .pimg img{aspect-ratio:16/10;max-height:360px}
+.lbx{position:fixed;inset:0;z-index:1000;background:rgba(30,18,12,.86);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+.lbx img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
+.lbx button{position:absolute;top:14px;right:14px;width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:26px;line-height:1;cursor:pointer}
