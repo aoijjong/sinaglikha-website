@@ -54,6 +54,10 @@ Optional features that need a SQL file before they work:
 - `forum_optional_title.sql`: lets a discussion in the Employee Forum have no title and no message (both boxes say
   "optional"; the site still requires a title, a message or a photo). Until it runs, the site fills any gap from what
   was written (or "Photo"), so posting never breaks.
+- `comment_images.sql`: up to 3 photos on a forum reply or an announcement comment, stored like discussion photos (private
+  `forum-images` bucket, random names, re-saved as JPEG in the browser). A reply or comment may be a photo on its own.
+  Moderators see the photos in the Senior Manager portal, and deleting a reply, comment or thread removes its files. Needs
+  `forum_images.sql` first (for the bucket). Until it runs, the "Add photo" button is not shown on replies and comments.
 
 - `grievances.sql`: the Grievances system for Legal Compliance (tables, ticket numbers, the access rules, and the
   Grievances card on the Legal Compliance page). Until it runs, nothing shows: employees see no Grievances panel and

@@ -107,8 +107,9 @@
     busy('Loading…');
     var p = await sb.from('forum_posts').select('*').eq('thread_id', id).order('created_at', { ascending: true }).limit(500);
     var shots = await threadPhotos(id);
+    var rshots = await postPhotos((p.data || []).map(function (x) { return x.id; }));
     busy('');
-    F.thread = { t: t, posts: p.data || [], shots: shots };
+    F.thread = { t: t, posts: p.data || [], shots: shots, rshots: rshots };
     render();
   }
   /* The photos attached to a discussion (supabase/forum_images.sql), as short-lived links. Empty if there are none or that script has not run. */
@@ -121,6 +122,33 @@
       return (s.data || []).filter(function (x) { return x && x.signedUrl; }).map(function (x) { return x.signedUrl; });
     } catch (e) { return []; }
   }
+  /* The photos on replies (supabase/comment_images.sql): { reply id: [links] }. Empty if there are none or that script has not run. */
+  async function postPhotos(ids) {
+    var out = {};
+    if (!ids.length) return out;
+    try {
+      var im = await sb.from('forum_post_images').select('post_id,path').in('post_id', ids).eq('confirmed', true).order('created_at', { ascending: true }).limit(200);
+      var rows = im.data || [];
+      if (!rows.length) return out;
+      var s = await sb.storage.from('forum-images').createSignedUrls(rows.map(function (x) { return x.path; }), 3600);
+      var link = {};
+      (s.data || []).forEach(function (x) { if (x && x.signedUrl && x.path) link[x.path] = x.signedUrl; });
+      rows.forEach(function (x) { if (link[x.path]) (out[x.post_id] = out[x.post_id] || []).push(link[x.path]); });
+    } catch (e) { /* photos are optional */ }
+    return out;
+  }
+  function shotsHtml(list) {
+    return list && list.length ? '<span class="lmeta fshots">' + list.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Photo attached to this reply" loading="lazy"></a>'; }).join('') + '</span>' : '';
+  }
+  /* remove photo files from storage before their rows go (deleting a reply or a thread deletes the rows with it) */
+  async function dropReplyFiles(postIds) {
+    try {
+      if (!postIds.length) return;
+      var im = await sb.from('forum_post_images').select('path').in('post_id', postIds).limit(300);
+      var gone = (im.data || []).map(function (x) { return x.path; });
+      if (gone.length) await sb.storage.from('forum-images').remove(gone);
+    } catch (e) { /* photos are optional */ }
+  }
   function renderThread(body) {
     var t = F.thread.t;
     body.innerHTML = '<div class="list-card"><ul class="rows">' +
@@ -130,7 +158,7 @@
       '<div class="lside">' + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '') + '</div></li>' +
       (F.thread.posts.length ? F.thread.posts.map(function (p) {
         return '<li class="lrow" data-post="' + esc(p.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('send') + '</span><span class="ltext"><span class="lname">' + esc(who(p.employee_id)) +
-          '</span><span class="lmeta">' + esc(app.fmtDate(p.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(p.body) + '</span></span></div>' +
+          '</span><span class="lmeta">' + esc(app.fmtDate(p.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(p.body) + '</span>' + shotsHtml((F.thread.rshots || {})[p.id]) + '</span></div>' +
           '<div class="lside">' + (p.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (p.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + '<div class="lacts">' +
           (p.hidden ? IB('eye', 'Show this reply again', { 'data-a': 'post-unhide' }, 'good') : IB('eyeOff', 'Hide this reply', { 'data-a': 'post-hide' })) +
           IB('trash', 'Delete this reply', { 'data-a': 'post-del' }, 'danger') + '</div></div></li>';
@@ -156,6 +184,8 @@
       var im = await sb.from('forum_images').select('path').eq('thread_id', t.id).limit(20);
       var gone = (im.data || []).map(function (x) { return x.path; });
       if (gone.length) await sb.storage.from('forum-images').remove(gone);
+      var ps = await sb.from('forum_posts').select('id').eq('thread_id', t.id).limit(500);
+      await dropReplyFiles((ps.data || []).map(function (x) { return x.id; }));
     } catch (e) { /* photos are optional */ }
     var r = await sb.from('forum_threads').delete().eq('id', t.id).select('id');
     busy('');
@@ -180,6 +210,7 @@
   async function delPost(p) {
     var ok = await ask({ title: 'Delete This Reply?', text: 'It will be permanently deleted.', ok: 'Delete', danger: true });
     if (!ok) return;
+    await dropReplyFiles([p.id]);
     var r = await sb.from('forum_posts').delete().eq('id', p.id).select('id');
     if (r.error || !(r.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
     logAction('forum.post.delete', tname(F.thread.t), { id: p.id });

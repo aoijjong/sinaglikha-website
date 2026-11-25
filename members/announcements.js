@@ -230,6 +230,21 @@
   window.addEventListener('resize', function () { closeAMenu(false); });
 
   /* ---------- the comments on one announcement ---------- */
+  /* The photos on comments (supabase/comment_images.sql): { comment id: [links] }. Empty if there are none or that script has not run. */
+  async function commentPhotos(ids) {
+    var out = {};
+    if (!ids.length) return out;
+    try {
+      var im = await sb.from('announcement_comment_images').select('comment_id,path').in('comment_id', ids).eq('confirmed', true).order('created_at', { ascending: true }).limit(200);
+      var rows = im.data || [];
+      if (!rows.length) return out;
+      var s = await sb.storage.from('forum-images').createSignedUrls(rows.map(function (x) { return x.path; }), 3600);
+      var link = {};
+      (s.data || []).forEach(function (x) { if (x && x.signedUrl && x.path) link[x.path] = x.signedUrl; });
+      rows.forEach(function (x) { if (link[x.path]) (out[x.comment_id] = out[x.comment_id] || []).push(link[x.path]); });
+    } catch (e) { /* photos are optional */ }
+    return out;
+  }
   function drawComments() {
     var a = A.rows.filter(function (x) { return x.id === A.cmFor; })[0], dlg = $('#an-cm');
     if (!a || !dlg) return;
@@ -239,6 +254,7 @@
         var rp = openReports(c.id);
         return '<li class="lrow" data-cid="' + esc(c.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(personOf(c.employee_id)) +
           '</span><span class="lmeta">' + esc(app.fmtDate(c.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(c.body) + '</span>' +
+          ((A.cmShots || {})[c.id] ? '<span class="lmeta fshots">' + A.cmShots[c.id].map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Photo attached to this comment" loading="lazy"></a>'; }).join('') + '</span>' : '') +
           (rp.length ? '<span class="lmeta" style="white-space:normal;color:#B3261E">Reported by ' + rp.map(function (r) { return esc(personOf(r.employee_id)); }).join(', ') + '</span>' : '') + '</span></div>' +
           '<div class="lside">' + (c.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + '<div class="lacts">' +
           (rp.length ? IB('check', 'Mark the reports as dealt with', { 'data-cm': 'resolve' }, 'good') : '') +
@@ -261,8 +277,15 @@
       });
     }
     A.cmFor = a.id;
+    A.cmShots = {};
     drawComments();
     if (!dlg.open) dlg.showModal();
+    // the photos arrive a moment later; draw again once they have
+    commentPhotos(commentsOf(a.id).map(function (c) { return c.id; })).then(function (shots) {
+      if (A.cmFor !== a.id || !Object.keys(shots).length) return;
+      A.cmShots = shots;
+      drawComments();
+    });
   }
   async function commentAct(act, cid) {
     var c = A.comments.filter(function (x) { return x.id === cid; })[0];
@@ -276,6 +299,11 @@
     } else if (act === 'del') {
       var ok = await ask({ title: 'Delete This Comment?', text: 'It will be permanently deleted.', ok: 'Delete', danger: true });
       if (!ok) return;
+      try {   // its photo files go too: the rows disappear with the comment, so remove the files first
+        var im = await sb.from('announcement_comment_images').select('path').eq('comment_id', cid).limit(10);
+        var files = (im.data || []).map(function (x) { return x.path; });
+        if (files.length) await sb.storage.from('forum-images').remove(files);
+      } catch (e) { /* photos are optional */ }
       var d = await sb.from('announcement_comments').delete().eq('id', cid).select('id');
       if (d.error || !(d.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
       A.comments = A.comments.filter(function (x) { return x.id !== cid; });

@@ -16,6 +16,9 @@
   var TINTS = ['#FFE7A8', '#FBD2B0', '#F6C9C0', '#D8E6C4', '#CFE3F1', '#E4D6F0'];
   var PHOTO_OK = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
   var counts = {};      // announcement id -> number of comments
+  var pickers = {};     // announcement id -> the photo picker in that announcement's comment form
+  var imagesOn = false; // are photos on comments switched on (supabase/comment_images.sql has run)
+  var CAM = window.SngIcon ? window.SngIcon('camera') : '';
 
   function esc(s) {
     return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
@@ -86,17 +89,25 @@
     ids.forEach(function (id) { counts[id] = r.data.counts[id] || 0; paintCount(id); });
   }
 
+  function imgsHtml(list) {
+    if (!list || !list.length) return '';
+    return '<div class="rimgs">' + list.slice(0, 3).map(function (u) {
+      return '<button class="pimg" type="button" data-pimg="' + esc(u) + '" aria-label="View photo"><img src="' + esc(u) + '" alt="Photo attached to this comment" loading="lazy"></button>';
+    }).join('') + '</div>';
+  }
   function commentHtml(c, photos) {
     return '<div class="reply" data-cid="' + esc(c.id) + '"><div class="post-top">' + avatar(c.author, photos[c.pic]) +
       '<div class="who"><b>' + esc(c.author) + (c.mine ? ' (you)' : '') + '</b><span>' + esc(window.SngCommentTime ? window.SngCommentTime.stamp(c.created_at) : '') + '</span></div>' +
       (c.mine ? '<button class="pbtn push" type="button" data-cdel="' + esc(c.id) + '" aria-label="Delete your comment" title="Delete">' + TRASH + '</button>'
         : '<button class="pbtn push" type="button" data-crep="' + esc(c.id) + '" aria-label="Report this comment" title="Report">' + FLAG + '</button>') +
-      '</div><p>' + esc(c.body).replace(/\n/g, '<br>') + '</p></div>';
+      '</div>' + (c.body ? '<p>' + esc(c.body).replace(/\n/g, '<br>') + '</p>' : '') + imgsHtml(c.images) + '</div>';
   }
   function formHtml(id) {
     return '<form class="rcmp" data-cform="' + esc(id) + '" novalidate><label class="sr-only" for="ac-' + esc(id) + '">Your comment</label>' +
       '<textarea id="ac-' + esc(id) + '" maxlength="1000" rows="1" placeholder="Write a comment…"></textarea>' +
+      (imagesOn ? '<button class="ib pk-add" type="button" data-pk-add="1" aria-label="Add a photo" data-tip="Add a photo">' + CAM + '</button>' : '') +
       '<button class="btn btn-primary btn-sm ac-send" type="submit" aria-label="Send comment">' + SEND + '<span>Send</span></button></form>' +
+      (imagesOn ? '<ul class="pk-thumbs" data-pk-thumbs="' + esc(id) + '"></ul>' : '') +
       '<p class="msg bad" role="alert" hidden style="margin-top:8px"></p>';
   }
 
@@ -109,9 +120,15 @@
     if (r.status === 401) { location.reload(); return; }
     if (!r.ok) { box.innerHTML = '<p class="fine">' + esc(r.data.error || "Couldn't load the comments.") + '</p>'; return; }
     var photos = r.data.photos || [], list = r.data.comments || [];
+    imagesOn = !!r.data.images_on;
     counts[id] = list.length;
     paintCount(id);
     box.innerHTML = (list.length ? list.map(function (c) { return commentHtml(c, photos); }).join('') : '<p class="fine ac-none">No comments yet. Be the first to comment.</p>') + formHtml(id);
+    delete pickers[id];
+    var add = box.querySelector('[data-pk-add]');
+    if (add && window.SngPhotoTools) {
+      pickers[id] = window.SngPhotoTools.picker({ add: add, thumbs: box.querySelector('[data-pk-thumbs]'), max: 3, onError: function (m) { var el = box.querySelector('p.msg'); el.textContent = m; el.hidden = !m; } });
+    }
   }
   function closeBox(card) {
     card.querySelector(':scope > .ann-cm').hidden = true;
@@ -119,16 +136,31 @@
   }
 
   async function send(form) {
-    var id = form.dataset.cform, ta = form.querySelector('textarea'), msg = form.nextElementSibling, btn = form.querySelector('button');
-    var text = ta.value.trim();
-    if (!text) { msg.textContent = 'Write a comment first.'; msg.hidden = false; return; }
+    var id = form.dataset.cform, ta = form.querySelector('textarea'), msg = form.parentNode.querySelector('p.msg'), btn = form.querySelector('.ac-send');
+    var text = ta.value.trim(), pk = pickers[id], pics = pk ? pk.blobs() : [];
+    if (!text && !pics.length) { msg.textContent = 'Write a comment or add a photo first.'; msg.hidden = false; return; }
     msg.hidden = true;
     btn.disabled = true;
-    var r = await api('POST', '/api/employee-forum?cm=1', { action: 'add', announcement_id: id, body: text });
-    btn.disabled = false;
+    var r = await api('POST', '/api/employee-forum?cm=1', { action: 'add', announcement_id: id, body: text, photos: pics.length });
     if (r.status === 401) { location.reload(); return; }
-    if (!r.ok) { msg.textContent = r.data.error || "Couldn't post that."; msg.hidden = false; return; }
-    toast('Comment posted.');
+    if (!r.ok) { btn.disabled = false; msg.textContent = r.data.error || "Couldn't post that."; msg.hidden = false; return; }
+    var failed = 0;
+    if (pics.length && r.data.id) {
+      failed = await window.SngPhotoTools.upload(pics, function (blob) {
+        return api('POST', '/api/employee-forum?cm=1', { action: 'image_url', comment_id: r.data.id, mime: 'image/jpeg', size: blob.size }).then(function (x) { return x.ok ? x.data : null; });
+      }, function (imageId) { return api('POST', '/api/employee-forum?cm=1', { action: 'image_done', image_id: imageId }).then(function (x) { return x.ok; }); });
+      if (!text && failed === pics.length) {
+        // a photo-only comment whose photos all failed would be empty: take it back and let them try again
+        await api('POST', '/api/employee-forum?cm=1', { action: 'delete', comment_id: r.data.id });
+        btn.disabled = false;
+        msg.textContent = "The photos couldn't be uploaded, so nothing was posted. Try again.";
+        msg.hidden = false;
+        return;
+      }
+    }
+    btn.disabled = false;
+    if (pk) pk.clear();
+    toast(failed ? 'Comment posted, but ' + (failed === 1 ? 'one photo' : failed + ' photos') + " didn't upload." : 'Comment posted.');
     var card = feed.querySelector('article.post[data-aid="' + id + '"]');
     if (card) openBox(card);
   }
