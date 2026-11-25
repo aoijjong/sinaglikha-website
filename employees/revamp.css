@@ -247,3 +247,7 @@
     background:#FBE2C0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A4217' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;color:#8A4217}
   #forum-panel .ff-sel.cat{background-color:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg)}
 }
+
+/* Employee Forum: "Read more" under a post whose text is cut off */
+#forum-feed .post-more{display:none;border:0;background:none;padding:2px 0;margin:2px 0 0;font:inherit;font-weight:700;font-size:.86rem;color:#B3361A;cursor:pointer;align-self:flex-start}
+#forum-feed .post.long .post-more{display:block}
