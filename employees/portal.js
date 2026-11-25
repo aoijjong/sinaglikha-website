@@ -135,7 +135,11 @@
     var x = new Date(d);
     return isNaN(x) ? '' : x.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   }
+  /* When a post was written: the exact Philippine time ("Today, 2:30 PM", "Nov 20, 9:07 AM"), the same as on comments.
+     Only if that helper did not load does it fall back to "5 min ago". */
   function ago(iso) {
+    var exact = window.SngCommentTime ? window.SngCommentTime.stamp(iso) : '';
+    if (exact) return exact;
     var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
     if (s < 60) return 'just now';
     if (s < 3600) return Math.round(s / 60) + ' min ago';
