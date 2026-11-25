@@ -1296,3 +1296,7 @@ body.rd-busy{user-select:none;-webkit-user-select:none;cursor:grabbing}
   #ev-actions:has(> .btn) .ev-dept{flex:1 1 0}
   #ev-actions > .btn{flex:none}
 }
+
+/* photos on a forum discussion, in the moderator view */
+.fshots{display:flex!important;flex-wrap:wrap;gap:8px;margin-top:8px;overflow:visible!important}
+.fshots img{width:88px;height:88px;object-fit:cover;border-radius:12px;display:block;background:#F3ECE3}

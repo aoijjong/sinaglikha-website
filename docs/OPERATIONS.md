@@ -39,6 +39,11 @@ Optional features that need a SQL file before they work:
   existing categories different colours. Until it runs, categories still get varied colours (worked out from their
   id) and the picker still opens; saving a chosen colour is skipped with a message and the rest of the category is
   saved normally.
+- `forum_images.sql`: lets employees attach up to 4 photos (3 MB each) to a new Employee Forum discussion, and lets
+  moderators see them in the Senior Manager portal. Photos sit in the private `forum-images` bucket under random
+  names inside the discussion's folder (nothing says who posted them), and the browser re-saves each one as a plain
+  JPEG, which drops hidden camera details such as the location. Until it runs, the forum works as before and the
+  "Add photo" button is simply not shown.
 
 - `grievances.sql`: the Grievances system for Legal Compliance (tables, ticket numbers, the access rules, and the
   Grievances card on the Legal Compliance page). Until it runs, nothing shows: employees see no Grievances panel and

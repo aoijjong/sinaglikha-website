@@ -98,15 +98,27 @@
     if (!t) return;
     busy('Loading…');
     var p = await sb.from('forum_posts').select('*').eq('thread_id', id).order('created_at', { ascending: true }).limit(500);
+    var shots = await threadPhotos(id);
     busy('');
-    F.thread = { t: t, posts: p.data || [] };
+    F.thread = { t: t, posts: p.data || [], shots: shots };
     render();
+  }
+  /* The photos attached to a discussion (supabase/forum_images.sql), as short-lived links. Empty if there are none or that script has not run. */
+  async function threadPhotos(id) {
+    try {
+      var im = await sb.from('forum_images').select('path').eq('thread_id', id).eq('confirmed', true).order('created_at', { ascending: true }).limit(8);
+      var paths = (im.data || []).map(function (x) { return x.path; });
+      if (!paths.length) return [];
+      var s = await sb.storage.from('forum-images').createSignedUrls(paths, 3600);
+      return (s.data || []).filter(function (x) { return x && x.signedUrl; }).map(function (x) { return x.signedUrl; });
+    } catch (e) { return []; }
   }
   function renderThread(body) {
     var t = F.thread.t;
     body.innerHTML = '<div class="list-card"><ul class="rows">' +
       '<li class="lrow" data-id="' + esc(t.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(t.title) +
-      '</span><span class="lmeta">' + esc(who(t.employee_id) + ' · ' + app.fmtDate(t.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(t.body) + '</span></span></div>' +
+      '</span><span class="lmeta">' + esc(who(t.employee_id) + ' · ' + app.fmtDate(t.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(t.body) + '</span>' +
+      ((F.thread.shots || []).length ? '<span class="lmeta fshots">' + F.thread.shots.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Photo attached to this discussion" loading="lazy"></a>'; }).join('') + '</span>' : '') + '</span></div>' +
       '<div class="lside">' + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '') + '</div></li>' +
       (F.thread.posts.length ? F.thread.posts.map(function (p) {
         return '<li class="lrow" data-post="' + esc(p.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('send') + '</span><span class="ltext"><span class="lname">' + esc(who(p.employee_id)) +
@@ -131,6 +143,12 @@
     var ok = await ask({ title: 'Delete This Thread?', text: '"' + t.title + '" and all of its replies will be permanently deleted.', ok: 'Delete', danger: true });
     if (!ok) return;
     busy('Deleting…');
+    // its photos go too: the rows disappear with the thread, so remove the files first
+    try {
+      var im = await sb.from('forum_images').select('path').eq('thread_id', t.id).limit(20);
+      var gone = (im.data || []).map(function (x) { return x.path; });
+      if (gone.length) await sb.storage.from('forum-images').remove(gone);
+    } catch (e) { /* photos are optional */ }
     var r = await sb.from('forum_threads').delete().eq('id', t.id).select('id');
     busy('');
     if (r.error || !(r.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
