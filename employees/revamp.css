@@ -187,8 +187,23 @@
 @keyframes dpic-shim{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.dpic.loading{animation:none}}
 
-/* optional anonymous posting in the Community forum */
+/* optional anonymous posting in the Employee Forum */
 .anon-opt{display:inline-flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:.88rem;font-weight:600;color:var(--brown);cursor:pointer}
 .anon-opt input{width:18px;height:18px;margin:0;accent-color:#CE2020;cursor:pointer}
 .anon-opt:focus-within{outline:3px solid #CE2020;outline-offset:2px;border-radius:6px}
 .av-sm.anon{background:#DE5A14;color:#fff}
+
+/* Employee Forum: welcome note, collapsible guidelines, thank-you note in the composer */
+#forum-panel .fw{margin:0 20px 14px;padding:14px 16px;border-radius:16px;background:#F7F1E8;color:#5C4A40;font-size:.9rem;line-height:1.5}
+#forum-panel .fw p{margin:0 0 8px}
+#forum-panel .fw .fw-t{font-weight:700;color:#3B2A21;font-size:1rem}
+#forum-panel .fw-g{margin-top:6px;border-top:1px solid #E7DCCB}
+#forum-panel .fw-g summary{cursor:pointer;padding:10px 0 4px;font-weight:600;color:#B3361A;list-style:none}
+#forum-panel .fw-g summary::-webkit-details-marker{display:none}
+#forum-panel .fw-g summary::before{content:"+";display:inline-block;width:18px;font-weight:700}
+#forum-panel .fw-g[open] summary::before{content:"\2212"}
+#forum-panel .fw-gb h3{margin:12px 0 4px;font-size:.9rem;color:#3B2A21}
+#forum-panel .fw-gb ul{margin:0 0 4px;padding-left:20px;list-style:disc}
+#forum-panel .fw-gb li{margin:2px 0}
+#forum-panel .fw-thanks{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#FBF3E4;color:#5C4A40;font-size:.86rem;line-height:1.45}
+@media (max-width:640px){#forum-panel .fw{margin:0 14px 12px;padding:12px 13px}}

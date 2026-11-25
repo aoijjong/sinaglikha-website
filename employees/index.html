@@ -353,11 +353,30 @@ button.dpill{cursor:pointer}
           <button class="feed-more" type="button" id="ann-more" hidden></button>
         </section>
         <section class="panel" id="forum-panel" style="order:4" hidden>
-          <div class="panel-h"><span class="pi"><i data-icon="users"></i></span><h2>Community</h2></div>
+          <div class="panel-h"><span class="pi"><i data-icon="users"></i></span><h2>Employee Forum</h2></div>
+          <div class="fw" id="forum-welcome">
+            <p class="fw-t">Welcome to the Employee Forum! 🙌</p>
+            <p>SINAGLIKHA believes a better workplace begins with listening to one another. Share your thoughts, concerns, suggestions, and ideas here. Every voice matters, and every idea counts.</p>
+            <details class="fw-g">
+              <summary>Forum Guidelines</summary>
+              <div class="fw-gb">
+                <p>To keep this space friendly, respectful, professional, and helpful for everyone, here are a few reminders:</p>
+                <h3>1. Be Respectful</h3>
+                <ul><li>Be kind and respectful when sharing your thoughts and opinions.</li><li>Respect different perspectives and avoid offensive or hurtful comments.</li><li>Keep discussions professional and constructive.</li></ul>
+                <h3>2. Keep Feedback Constructive</h3>
+                <ul><li>Feel free to voice your concerns, share honest opinions, and provide helpful feedback.</li><li>Share suggestions and ideas that can help improve the workplace.</li><li>Avoid spreading rumors, making personal attacks, or sharing unverified information.</li></ul>
+                <h3>3. Choose Your Feedback Type</h3>
+                <ul><li>You may submit feedback anonymously or with your identity, depending on your preference.</li><li>Choose whether your feedback is for the organization as a whole (General Feedback) or for a specific department (Departmental Feedback).</li></ul>
+                <h3>📢 A Gentle Reminder</h3>
+                <p>This Employee Forum is established to encourage open communication and support continuous organizational improvement. While the company values every employee’s feedback, the platform is not intended to replace formal grievance procedures, incident report processes, or other matters managed by Legal Compliance.</p>
+              </div>
+            </details>
+          </div>
           <div class="feed" id="forum-feed"></div>
           <form class="composer" id="f-compose" novalidate>
             <button class="cmp-open" type="button" id="fc-open"><i data-icon="chat"></i><span id="fc-open-t">What’s up?</span></button>
             <div id="fc-fields" hidden>
+            <div class="fw-thanks"><b>Thank you for sharing!</b> Your feedback makes a difference. We appreciate your time, honesty, and willingness to help make our workplace better for everyone. Keep making your voice count! 🙌</div>
             <div class="cmp-row">
               <label class="sr-only" for="fc-cat">Category</label><select id="fc-cat"></select>
               <label class="sr-only" for="fc-title">Title</label><input id="fc-title" type="text" maxlength="120" placeholder="Start a discussion: give it a title" autocomplete="off">

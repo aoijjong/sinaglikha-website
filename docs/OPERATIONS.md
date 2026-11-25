@@ -32,7 +32,7 @@ run on the live project here, so a fresh project can be rebuilt:
 ```
 
 Optional features that need a SQL file before they work:
-- `forum_anonymous.sql`: lets employees post anonymously in the Community forum. Deploying the code first is safe
+- `forum_anonymous.sql`: lets employees post anonymously in the Employee Forum. Deploying the code first is safe
   (the forum works as before and an anonymous post is refused with a clear message). Moderators always see the
   real author, and the portal says so next to the checkbox.
 - `forum_category_colors.sql`: lets Senior Managers pick a label colour for each forum category, and gives the

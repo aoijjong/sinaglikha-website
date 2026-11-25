@@ -2,8 +2,8 @@
   Employee Portal shell. On desktop the dashboard opens on Home and the Quick Access cards lead to the other sections, with a Back to Home
   button on each; the avatar and Sign out stay in the top bar. Phones and tablets get a floating bar at the bottom.
   The dashboard stays one page in portal.js; this file splits it into sections:
-    Home    greeting, Quick Access cards, a "share" bar, and the latest announcements and community posts side by side
-    Feeds   announcements and the community
+    Home    greeting, Quick Access cards, a "share" bar, and the latest announcements and Employee Forum posts side by side
+    Feeds   announcements and the Employee Forum
     My Work attendance, evaluations, learning and compensation records
     Files   the file search and the department folders
   portal.js is only asked for one thing: window.EmpPortal.show, to return to the dashboard from a sub-page.
@@ -36,7 +36,7 @@
   };
   var SEC_IMG = { feeds: ['feeds', 344, 330], work: ['evaluations', 349, 363], files: ['files', 327, 333] };
   var QA = [
-    ['feeds', 'Feeds', 'Announcements and community', 'feeds', '#ann-panel', 'feeds', 'qa-6', 344, 330],
+    ['feeds', 'Feeds', 'Announcements and the Employee Forum', 'feeds', '#ann-panel', 'feeds', 'qa-6', 344, 330],
     ['att', 'Attendance', 'Time in and out', 'attendance', '#att-panel', 'work', 'qa-1', 383, 247],
     ['evl', 'Evaluations', 'Forms to fill in', 'evaluations', '#evl-panel', 'work', 'qa-2', 349, 363],
     ['learn', 'Learning', 'Courses and modules', 'learning', '#learn-panel', 'work', 'qa-3', 358, 303],
@@ -72,7 +72,7 @@
   var share = document.createElement('div');
   share.className = 'hs';
   share.id = 'home-share';
-  share.innerHTML = '<h2>Share something with the team</h2><button class="hs-bar" type="button" data-go="post" aria-label="Write a post in the community">' +
+  share.innerHTML = '<h2>Share something with the team</h2><button class="hs-bar" type="button" data-go="post" aria-label="Write a post in the Employee Forum">' +
     '<span class="hs-t">Write here…</span><span class="hs-btn">' + ICON.send + 'Post now</span></button>';
   var quick = document.createElement('section');
   quick.className = 'qa';
@@ -89,7 +89,7 @@
   head.id = 'sec-head';
   head.innerHTML = '<button class="sec-back" type="button" data-go="home" aria-label="Back to Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>' + ICON.home + '</button>' +
     '<div class="sec-bn"><div class="sec-tx"><h1 id="sec-t"></h1><p id="sec-d"></p></div><img class="sec-img" id="sec-img" alt="" decoding="async"></div>' +
-    '<div class="seg" id="feeds-seg" role="group" aria-label="Show"><button type="button" data-feed="ann">Announcements</button><button type="button" data-feed="forum">Community</button></div>';
+    '<div class="seg" id="feeds-seg" role="group" aria-label="Show"><button type="button" data-feed="ann">Announcements</button><button type="button" data-feed="forum">Employee Forum</button></div>';
   var after = hello || home.firstChild;
   after.after(quick, share, recent, head);
   /* a tap on a page banner plays the hover effect (touch screens have no hover), like the greeting banner on Home */
@@ -119,7 +119,7 @@
       im.src = '../assets/quick/' + si[0] + '.webp';
     }
     Array.prototype.forEach.call($('#feeds-seg').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.feed === feed)); });
-    /* on phones and tablets the Announcements / Community switch sits inside the white box it controls. If that box is
+    /* on phones and tablets the Announcements / Employee Forum switch sits inside the white box it controls. If that box is
        hidden (no categories yet) it stays in the page header, so there is always a way to switch back. */
     var seg = $('#feeds-seg'), box = sec === 'feeds' ? $(feed === 'forum' ? '#forum-panel' : '#ann-panel') : null;
     var dock = box && !box.hidden ? box : head;
@@ -191,7 +191,7 @@
     if (rc) { feed = rc.dataset.recent === 'forum' ? 'forum' : 'ann'; go('feeds'); }
   });
 
-  /* ---- the latest announcements and community posts, side by side on Home ---- */
+  /* ---- the latest announcements and Employee Forum posts, side by side on Home ---- */
   var timer;
   function cards(sel, kind) {
     return [].slice.call(document.querySelectorAll(sel)).slice(0, 3).map(function (p) {
