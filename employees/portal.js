@@ -399,9 +399,14 @@
     if (forumFilter !== 'all' && !counts[forumFilter]) forumFilter = 'all';
     var bar = $('#forum-filter');
     bar.hidden = used.length < 2;
-    bar.innerHTML = used.length < 2 ? '' : [['all', 'All', forum.threads.length, '']].concat(used.map(function (c) { return [c.id, c.name, counts[c.id], ' cat ' + catCls(c.id)]; })).map(function (t) {
+    var opts = [['all', 'All', forum.threads.length, '']].concat(used.map(function (c) { return [c.id, c.name, counts[c.id], ' cat ' + catCls(c.id)]; }));
+    var cur = opts.filter(function (t) { return t[0] === forumFilter; })[0] || opts[0];
+    /* wide screens show the chips; small screens show one dropdown (the same choices, coloured like the chosen category) */
+    bar.innerHTML = used.length < 2 ? '' : opts.map(function (t) {
       return '<button type="button" class="ff' + t[3] + '" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
-    }).join('');
+    }).join('') + '<select class="ff-sel' + cur[3] + '" id="forum-filter-sel" aria-label="Filter by category">' + opts.map(function (t) {
+      return '<option value="' + esc(t[0]) + '"' + (forumFilter === t[0] ? ' selected' : '') + '>' + esc(t[1]) + ' (' + t[2] + ')</option>';
+    }).join('') + '</select>';
     var shown = forumFilter === 'all' ? forum.threads : forum.threads.filter(function (t) { return t.category_id === forumFilter; });
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
@@ -411,6 +416,10 @@
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">No discussions yet. Be the first to start one.</div>';
   }
+
+  $('#forum-filter').addEventListener('change', function (e) {
+    if (e.target.id === 'forum-filter-sel') { forumFilter = e.target.value; renderForum(); }
+  });
 
   async function refreshFeed() {
     var r = await call('GET', '/api/employee-forum?feed=1');
