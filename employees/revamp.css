@@ -209,7 +209,7 @@
 @media (max-width:640px){#forum-panel .fw{margin:6px 12px 0;padding:14px;border-radius:18px}}
 
 /* Employee Forum: category filter chips */
-#forum-panel #forum-filter{order:0;display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px 8px}
+#forum-panel #forum-filter{order:0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:14px 16px 8px}
 #forum-panel .ff{border:1px solid rgba(74,46,34,.14);background:#fff;color:var(--muted);font:inherit;font-weight:700;font-size:.84rem;padding:7px 14px;border-radius:999px;cursor:pointer}
 #forum-panel .ff b{font-weight:700;opacity:.7;margin-left:2px}
 #forum-panel .ff[aria-pressed="true"]{background:#2A1A12;border-color:#2A1A12;color:#fff}
