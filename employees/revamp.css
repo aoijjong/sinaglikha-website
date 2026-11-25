@@ -194,7 +194,7 @@
 .av-sm.anon{background:#DE5A14;color:#fff}
 
 /* Employee Forum: welcome note, collapsible guidelines, thank-you note in the composer */
-#forum-panel .fw{margin:0 24px 18px;padding:22px 26px;border-radius:16px;background:#fff;border:1px solid #E7DCCB;color:#5C4A40;font-size:.9rem;line-height:1.5}
+#forum-panel .fw{margin:8px 16px 0;padding:18px;border-radius:22px;background:#fff;border:1px solid rgba(74,46,34,.1);box-shadow:0 12px 24px -20px rgba(160,80,30,.5);color:#5C4A40;font-size:.9rem;line-height:1.5}
 #forum-panel .fw p{margin:0 0 8px}
 #forum-panel .fw .fw-t{font-weight:700;color:#3B2A21;font-size:1rem}
 #forum-panel .fw-g{margin-top:10px;border-top:1px solid #E7DCCB}
@@ -206,4 +206,4 @@
 #forum-panel .fw-gb ul{margin:0 0 4px;padding-left:20px;list-style:disc}
 #forum-panel .fw-gb li{margin:2px 0}
 #forum-panel .fw-thanks{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#FBF3E4;color:#5C4A40;font-size:.86rem;line-height:1.45}
-@media (max-width:640px){#forum-panel .fw{margin:0 14px 14px;padding:16px 18px}}
+@media (max-width:640px){#forum-panel .fw{margin:6px 12px 0;padding:14px;border-radius:18px}}
