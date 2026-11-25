@@ -209,7 +209,7 @@
 @media (max-width:640px){#forum-panel .fw{margin:6px 12px 0;padding:14px;border-radius:18px}}
 
 /* Employee Forum: the space switch (General / My Department) with a filter button beside it, and the category panel */
-#forum-panel #forum-filter{order:2;padding:14px 16px 8px}
+#forum-panel #forum-filter{order:0;padding:14px 16px 8px}
 #forum-panel .ffbar{display:flex;align-items:center;gap:10px}
 #forum-panel .ffbar.solo{justify-content:flex-end}
 #forum-panel .ffgrp{flex:1;min-width:0;display:flex;gap:10px}
