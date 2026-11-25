@@ -418,14 +418,17 @@
     if (!canFilter) ffOpen = false;
     var bar = $('#forum-filter');
     bar.hidden = !hasDept && !canFilter;
-    var scopes = [['general', 'General'], ['dept', 'My Department']];
+    /* the two spaces: General, and the employee's own department by its real name (with that department's own icon) */
+    var deptRow = DEPTS.filter(function (d) { return d[0] === forum.myDept; })[0];
+    var deptLabel = deptRow ? deptRow[1] : 'My Department';
+    var scopes = [['general', 'General', 'globe'], ['dept', deptLabel, deptRow ? deptRow[2] : 'users']];
     var opts = [['all', 'All', inScope.length, '']].concat(used.map(function (c) { return [c.id, c.name, counts[c.id], ' cat ' + catCls(c.id)]; }));
     bar.innerHTML = bar.hidden ? '' : '<div class="ffbar' + (hasDept ? '' : ' solo') + '">' + (hasDept
-      ? '<div class="ffseg" role="group" aria-label="Forum space">' + scopes.map(function (s) {
-          return '<button type="button" data-fscope="' + s[0] + '" aria-pressed="' + (forumScope === s[0]) + '">' + s[1] + '</button>';
+      ? '<div class="ffgrp" role="group" aria-label="Forum space">' + scopes.map(function (s) {
+          return '<button type="button" class="ffs" data-fscope="' + s[0] + '" aria-pressed="' + (forumScope === s[0]) + '">' + I(s[2]) + '<span>' + esc(s[1]) + '</span></button>';
         }).join('') + '</div>' +
-        '<span class="ff-selbox"><span class="ff-lab" aria-hidden="true">' + (forumScope === 'dept' ? 'My Department' : 'General') + '</span><select class="ff-sel" id="forum-scope-sel" aria-label="Forum space">' +
-        scopes.map(function (s) { return '<option value="' + s[0] + '"' + (forumScope === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></span>'
+        '<span class="ff-selbox"><span class="ff-lab" aria-hidden="true">' + esc(forumScope === 'dept' ? scopes[1][1] : scopes[0][1]) + '</span><select class="ff-sel" id="forum-scope-sel" aria-label="Forum space">' +
+        scopes.map(function (s) { return '<option value="' + s[0] + '"' + (forumScope === s[0] ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('') + '</select></span>'
       : '') + (canFilter ? '<button type="button" class="ffbtn' + (forumFilter !== 'all' ? ' on' : '') + '" id="ff-btn" aria-label="Filter by category" aria-haspopup="true" aria-controls="ff-pop" aria-expanded="' + ffOpen + '">' + I('sliders') + '</button>' : '') + '</div>' +
       (canFilter ? '<div class="ffpop" id="ff-pop" role="group" aria-label="Filter by category"' + (ffOpen ? '' : ' hidden') + '>' + opts.map(function (t) {
         return '<button type="button" class="ff' + t[3] + '" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
