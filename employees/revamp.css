@@ -208,18 +208,48 @@
 #forum-panel .fw-thanks{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#FBF3E4;color:#5C4A40;font-size:.86rem;line-height:1.45}
 @media (max-width:640px){#forum-panel .fw{margin:6px 12px 0;padding:14px;border-radius:18px}}
 
-/* Employee Forum: category filter chips */
-#forum-panel #forum-filter{order:2;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:14px 16px 8px}
-#forum-panel .ff{border:1px solid rgba(74,46,34,.14);background:#fff;color:var(--muted);font:inherit;font-weight:700;font-size:.84rem;padding:7px 14px;border-radius:999px;cursor:pointer}
+/* Employee Forum: the space switch (General / My Department) with a filter button beside it, and the category panel */
+#forum-panel #forum-filter{order:0;padding:14px 16px 8px}
+#forum-panel .ffbar{display:flex;align-items:center;gap:10px}
+#forum-panel .ffbar.solo{justify-content:flex-end}
+#forum-panel .ffgrp{flex:1;min-width:0;display:flex;gap:10px}
+#forum-panel .ffs{flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;border:1.5px solid #F0C9A4;background:#fff;color:#9A5A2E;font:inherit;font-weight:700;font-size:.88rem;cursor:pointer}
+#forum-panel .ffs .icon{width:18px;height:18px;flex:none}
+#forum-panel .ffs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#forum-panel .ffs[aria-pressed="true"]{background:linear-gradient(135deg,#FFE6CC 0%,#FBC98F 100%);border-color:#E8A56B;color:#8A4217;box-shadow:0 8px 16px -12px rgba(200,110,30,.55)}
+@media (hover:hover) and (pointer:fine){#forum-panel .ffs[aria-pressed="false"]:hover{background:#FFF8F0}}
+#forum-panel .ffbtn{flex:none;position:relative;width:44px;height:44px;border-radius:50%;border:1.5px solid #F0C9A4;background:#fff;color:#9A5A2E;display:grid;place-items:center;cursor:pointer;padding:0}
+#forum-panel .ffbtn .icon{width:20px;height:20px}
+#forum-panel .ffbtn[aria-expanded="true"]{border-color:#E8A56B}
+#forum-panel .ffbtn.on::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#E8731B;border:2px solid #fff}
+@media (hover:hover) and (pointer:fine){#forum-panel .ffbtn:hover{background:#FFF3E6}#forum-panel .ffbtn[aria-expanded="true"]:hover{background:#FFF8F0}}
+#forum-panel .ffpop{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:10px;padding:12px;border-radius:14px;border:1px solid rgba(74,46,34,.1);background:#fff;box-shadow:0 12px 24px -20px rgba(160,80,30,.5)}
+#forum-panel .ffpop[hidden]{display:none}
+#forum-panel .ff{border:1px solid rgba(74,46,34,.14);background:#FBE2C0;color:#8A4217;font:inherit;font-weight:700;font-size:.84rem;padding:7px 14px;border-radius:999px;cursor:pointer}
 #forum-panel .ff b{font-weight:700;opacity:.7;margin-left:2px}
-#forum-panel .ff:not(.cat){background:#FBE2C0;border-color:transparent;color:#8A4217}
-#forum-panel .ff:not(.cat)[aria-pressed="true"]{border-color:#C8742E;box-shadow:0 0 0 1px #C8742E}
-#forum-panel .ff:not(.cat)[aria-pressed="false"]{opacity:.85}
-#forum-panel .ff.cat{background:var(--ff-bg);color:var(--ff-fg);border-color:transparent}
-#forum-panel .ff.cat[aria-pressed="true"]{background:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg);box-shadow:0 0 0 1px var(--ff-fg)}
-#forum-panel .ff.cat[aria-pressed="false"]{opacity:.85}
-@media (hover:hover) and (pointer:fine){#forum-panel .ff:not(.cat)[aria-pressed="false"]:hover{opacity:1}#forum-panel .ff.cat[aria-pressed="false"]:hover{opacity:1}}
-@media (max-width:640px){#forum-panel #forum-filter{padding:12px 12px 6px;gap:6px}#forum-panel .ff{padding:6px 12px;font-size:.8rem}}
+#forum-panel .ff[aria-pressed="false"]{opacity:.85;border-color:transparent}
+#forum-panel .ff[aria-pressed="true"]{border-color:#C8742E;box-shadow:0 0 0 1px #C8742E}
+#forum-panel .ff.cat{background:var(--ff-bg);color:var(--ff-fg)}
+#forum-panel .ff.cat[aria-pressed="true"]{border-color:var(--ff-fg);box-shadow:0 0 0 1px var(--ff-fg)}
+@media (hover:hover) and (pointer:fine){#forum-panel .ff[aria-pressed="false"]:hover{opacity:1}}
+/* on small screens the switch becomes a dropdown. The real <select> must stay at 16px on phones (the site's rule that stops
+   iOS zooming into fields), so it is invisible and laid over a label that can be as small as the other small-screen text;
+   tapping it still opens the phone's own picker. */
+#forum-panel .ff-selbox{display:none}
+@media (max-width:640px){
+  #forum-panel #forum-filter{padding:12px 12px 6px}
+  #forum-panel .ffbar{gap:8px}
+  #forum-panel .ffgrp{display:none}
+  #forum-panel .ff-selbox{display:block;position:relative;flex:1;min-width:0;box-sizing:border-box;text-align:center;padding:9px 38px 9px 14px;border-radius:12px;border:1.5px solid #F0C9A4;
+    font-weight:700;font-size:.8rem;line-height:1.3;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239A5A2E' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;color:#9A5A2E}
+  #forum-panel .ff-selbox:focus-within{box-shadow:0 0 0 3px rgba(206,32,32,.18)}
+  #forum-panel .ff-lab{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #forum-panel .ff-sel{display:block;position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;padding:0;border:0;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
+  #forum-panel .ffbtn{width:40px;height:40px}
+  #forum-panel .ff{padding:6px 12px;font-size:.8rem}
+  #forum-panel .ffpop{gap:6px;padding:10px}
+}
+#forum-panel .fc-deptnote{margin:0 0 10px;padding:8px 12px;border-radius:12px;background:#FFF1E0;color:#6B4A2A;line-height:1.4}
 
 /* Employee Forum: photos on discussions */
 #forum-panel .cmp-photos{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0 4px}
@@ -236,21 +266,6 @@
 .lbx{position:fixed;inset:0;z-index:1000;background:rgba(30,18,12,.86);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 .lbx img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
 .lbx button{position:absolute;top:14px;right:14px;width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:26px;line-height:1;cursor:pointer}
-
-/* Employee Forum filter: chips on wide screens, one dropdown on small ones.
-   The real <select> must stay at 16px on phones (the site's rule that stops iOS zooming into fields), so it is invisible
-   and laid over a label that can be as small as the other small-screen text; tapping it still opens the phone's own picker. */
-#forum-panel .ff-selbox{display:none}
-@media (max-width:640px){
-  #forum-panel #forum-filter .ff{display:none}
-  #forum-panel #forum-filter{justify-content:stretch}
-  #forum-panel .ff-selbox{display:block;position:relative;width:100%;box-sizing:border-box;text-align:center;padding:9px 38px 9px 14px;border-radius:999px;border:1px solid rgba(74,46,34,.14);
-    font-weight:700;font-size:.8rem;line-height:1.3;background:#FBE2C0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A4217' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;color:#8A4217}
-  #forum-panel .ff-selbox.cat{background-color:var(--ff-bg);color:var(--ff-fg);border-color:var(--ff-fg)}
-  #forum-panel .ff-selbox:focus-within{box-shadow:0 0 0 3px rgba(206,32,32,.18)}
-  #forum-panel .ff-lab{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #forum-panel .ff-sel{display:block;position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;padding:0;border:0;cursor:pointer;appearance:none;-webkit-appearance:none;font:inherit}
-}
 
 /* Employee Forum: "Read more" under a post whose text is cut off */
 #forum-feed .post-more{display:none;border:0;background:none;padding:2px 0;margin:2px 0 0;font:inherit;font-weight:700;font-size:.86rem;color:#B3361A;cursor:pointer;align-self:flex-start}

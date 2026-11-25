@@ -105,13 +105,20 @@ module.exports = async function handler(req, res) {
       if (!UUID_RE.test(cat)) return E.send(res, 400, { error: 'Bad request.' });
       if (!title) return E.send(res, 400, { error: 'Give your thread a title.' });
       if (!text) return E.send(res, 400, { error: 'Write something in your thread.' });
-      const c = await E.rest('GET', `forum_categories?id=eq.${cat}&active=eq.true&select=id`);
+      let c = await E.rest('GET', `forum_categories?id=eq.${cat}&active=eq.true&select=id,scope`);
+      if (!c.ok && c.status === 400) c = await E.rest('GET', `forum_categories?id=eq.${cat}&active=eq.true&select=id`);   // before forum_departments.sql
       if (!list(c)[0]) return E.send(res, 404, gone);
+      // a department-only category: the discussion is stamped with the poster's own department (from their record, never from the request)
+      let dept = null;
+      if (list(c)[0].scope === 'departmental') {
+        dept = await E.deptOf(eid);
+        if (!dept) return E.send(res, 400, { error: "Your account has no department yet, so you can't post in a department space. Ask your administrator." });
+      }
       if ((await tooFast('forum_threads', eid, FLOOD_MINUTES, FLOOD_POSTS)) || (await tooFast('forum_posts', eid, FLOOD_MINUTES, FLOOD_POSTS))) {
         return E.send(res, 429, { error: 'You are posting very quickly. Wait a few minutes and try again.' });
       }
       const anon = wantsAnon(body);
-      const r = await E.rest('POST', 'forum_threads', Object.assign({ category_id: cat, employee_id: eid, title, body: text }, anon ? { anonymous: true } : {}), 'return=representation');
+      const r = await E.rest('POST', 'forum_threads', Object.assign({ category_id: cat, employee_id: eid, title, body: text }, dept ? { department: dept } : {}, anon ? { anonymous: true } : {}), 'return=representation');
       if (anon && noAnonColumn(r)) return E.send(res, 503, ANON_OFF);
       if (!r.ok || !list(r)[0]) return E.send(res, 500, { error: "Couldn't post that. Try again." });
       return E.send(res, 200, { ok: true, id: r.data[0].id });
@@ -121,8 +128,8 @@ module.exports = async function handler(req, res) {
       const tid = String(body.thread_id || ''), text = clean(body.body, 2000);
       if (!UUID_RE.test(tid)) return E.send(res, 400, { error: 'Bad request.' });
       if (!text) return E.send(res, 400, { error: 'Write a reply first.' });
-      const t = await E.rest('GET', `forum_threads?id=eq.${tid}&hidden=eq.false&select=id,locked,category_id`);
-      const thread = list(t)[0];
+      const seen = await E.visibleThread(eid, tid);
+      const thread = seen && seen.thread;
       if (!thread) return E.send(res, 404, gone);
       if (thread.locked) return E.send(res, 409, { error: 'This thread is locked, so it cannot take new replies.' });
       if ((await tooFast('forum_threads', eid, FLOOD_MINUTES, FLOOD_POSTS)) || (await tooFast('forum_posts', eid, FLOOD_MINUTES, FLOOD_POSTS))) {
@@ -187,6 +194,10 @@ module.exports = async function handler(req, res) {
     if (body.action === 'report') {
       const tid = body.thread_id ? String(body.thread_id) : null, pid = body.post_id ? String(body.post_id) : null;
       if ((!tid && !pid) || (tid && !UUID_RE.test(tid)) || (pid && !UUID_RE.test(pid))) return E.send(res, 400, { error: 'Bad request.' });
+      // you can only report what you can see
+      let rtid = tid;
+      if (pid) rtid = (list(await E.rest('GET', `forum_posts?id=eq.${pid}&hidden=eq.false&select=thread_id`))[0] || {}).thread_id || null;
+      if (!rtid || !(await E.visibleThread(eid, rtid))) return E.send(res, 404, gone);
       if (await tooFast('forum_reports', eid, 60, FLOOD_REPORTS)) return E.send(res, 429, { error: 'You have sent several reports already. A moderator will look at them.' });
       const r = await E.rest('POST', 'forum_reports', { thread_id: tid, post_id: pid, employee_id: eid, reason: clean(body.reason, 300) }, 'return=minimal');
       if (!r.ok) return E.send(res, 500, { error: "Couldn't send that report. Try again." });
@@ -203,12 +214,9 @@ module.exports = async function handler(req, res) {
   if (q.thread !== undefined) {
     const id = String(q.thread);
     if (!UUID_RE.test(id)) return E.send(res, 400, { error: 'Bad request.' });
-    const t = await E.rest('GET', `forum_threads?id=eq.${id}&hidden=eq.false&select=*`);
-    const thread = list(t)[0];
-    if (!thread) return E.send(res, 404, gone);
-    const c = await E.rest('GET', `forum_categories?id=eq.${thread.category_id}&active=eq.true&select=*`);
-    const cat = list(c)[0];
-    if (!cat) return E.send(res, 404, gone);
+    const seen = await E.visibleThread(eid, id);
+    if (!seen) return E.send(res, 404, gone);
+    const thread = seen.thread, cat = seen.cat;
     const p = await E.rest('GET', `forum_posts?thread_id=eq.${id}&hidden=eq.false&select=*&order=created_at.asc&limit=500`);
     const posts = list(p);
     const authors = E.publicIds([thread].concat(posts));
@@ -227,7 +235,8 @@ module.exports = async function handler(req, res) {
     const c = await E.rest('GET', `forum_categories?id=eq.${id}&active=eq.true&select=*`);
     const cat = list(c)[0];
     if (!cat) return E.send(res, 404, gone);
-    const t = await E.rest('GET', `forum_threads?category_id=eq.${id}&hidden=eq.false&select=*&order=last_post_at.desc&limit=100`);
+    if (cat.scope === 'departmental' && !(await E.deptOf(eid))) return E.send(res, 404, gone);
+    const t = await E.threadsGet(`forum_threads?category_id=eq.${id}&hidden=eq.false&select=*&order=last_post_at.desc&limit=100`, await E.deptOf(eid));
     const threads = list(t);
     const ids = threads.map((x) => x.id);
     const p = ids.length ? list(await E.rest('GET', `forum_posts?thread_id=in.(${ids.join(',')})&hidden=eq.false&select=thread_id&limit=5000`)) : [];
@@ -246,7 +255,7 @@ module.exports = async function handler(req, res) {
   const c = await E.rest('GET', 'forum_categories?active=eq.true&select=*&order=position,created_at');
   // Before supabase/phase3.sql has been run the tables don't exist yet: show nothing.
   if (!c.ok || !Array.isArray(c.data)) return E.send(res, 200, { categories: [] });
-  const t = list(await E.rest('GET', 'forum_threads?hidden=eq.false&select=category_id&limit=5000'));
+  const t = list(await E.threadsGet('forum_threads?hidden=eq.false&select=category_id&limit=5000', await E.deptOf(eid)));
   const count = {};
   t.forEach((x) => { count[x.category_id] = (count[x.category_id] || 0) + 1; });
   return E.send(res, 200, { categories: c.data.map((x) => ({ ...E.catView(x), threads: count[x.id] || 0 })) });

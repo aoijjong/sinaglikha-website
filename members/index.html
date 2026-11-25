@@ -917,6 +917,8 @@ dialog[open]{animation:pop .5s var(--ease)}
     <h2 id="fc-title">Forum Category</h2>
     <div class="field"><label for="fc-name">Name</label><input id="fc-name" type="text" maxlength="80" autocomplete="off"></div>
     <div class="field"><label for="fc-desc">Description (Optional)</label><input id="fc-desc" type="text" maxlength="300" autocomplete="off"></div>
+    <div class="field"><label for="fc-scope">Who Can See It</label><select id="fc-scope"><option value="general">Everyone (General)</option><option value="departmental">Each department only (Departmental)</option></select>
+      <p class="fine" id="fc-scope-note" style="margin:6px 0 0">Departmental: employees see and post only in their own department's space. This cannot be changed once the category has discussions.</p></div>
     <div class="field"><span class="lbl" id="fc-col-l">Label Color</span><div class="cat-picks" id="fc-colors" role="radiogroup" aria-labelledby="fc-col-l"></div></div>
     <p class="msg bad" id="fc-err" role="alert" hidden></p>
     <div class="actions">
