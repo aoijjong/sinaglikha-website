@@ -1,4 +1,5 @@
-/* The title of an Employee Forum discussion is optional. The database is stubbed with fetch. */
+/* The title and the message of an Employee Forum discussion are both optional (but not both missing without a photo).
+   The database is stubbed with fetch. */
 process.env.EMPLOYEE_SESSION_SECRET = 'y'.repeat(48);
 process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'sb_secret_test';
@@ -20,7 +21,7 @@ function fakeDb({ titleRequired = false } = {}) {
     if (method === 'POST' && u.includes('/forum_threads')) {
       const body = JSON.parse(opt.body);
       inserts.push(body);
-      if (titleRequired && !body.title) return reply(400, { code: '23514', message: 'new row for relation "forum_threads" violates check constraint "forum_threads_title_check"' });
+      if (titleRequired && (!body.title || !body.body)) return reply(400, { code: '23514', message: 'new row for relation "forum_threads" violates check constraint "forum_threads_title_check"' });
       return reply(201, [Object.assign({ id: 'new1' }, body)]);
     }
     if (u.includes('/employee_secrets')) return reply(200, [{ session_version: 1 }]);
@@ -52,11 +53,29 @@ test('a title, when given, is kept', async () => {
   assert.equal(w[0].title, 'Parking');
 });
 
-test('the message is still required', async () => {
+test('the message is optional too: a title alone is a post', async () => {
   const w = fakeDb();
   const r = await call({ action: 'thread', category_id: CAT, title: 'Only a title', body: '   ' });
-  assert.equal(r.status, 400);
-  assert.equal(w.length, 0);
+  assert.equal(r.status, 200);
+  assert.equal(w[0].title, 'Only a title');
+  assert.equal(w[0].body, '');
+});
+
+test('a photo-only post is allowed when the page says it is sending photos', async () => {
+  const w = fakeDb();
+  const r = await call({ action: 'thread', category_id: CAT, title: '', body: '', photos: 2 });
+  assert.equal(r.status, 200);
+  assert.equal(w[0].title, '');
+  assert.equal(w[0].body, '');
+});
+
+test('but a post with nothing at all is refused: no title, no message, no photos', async () => {
+  const w = fakeDb();
+  for (const extra of [{}, { photos: 0 }, { photos: -1 }, { photos: 9 }, { photos: '2' }, { photos: 1.5 }]) {
+    const r = await call(Object.assign({ action: 'thread', category_id: CAT, title: ' ', body: '  ' }, extra));
+    assert.equal(r.status, 400, JSON.stringify(extra));
+  }
+  assert.equal(w.length, 0, 'nothing was saved');
 });
 
 test('before the SQL is run, the first words of the message stand in as the title, and posting still works', async () => {
@@ -65,10 +84,20 @@ test('before the SQL is run, the first words of the message stand in as the titl
   assert.equal(r.status, 200);
   assert.equal(w.length, 2, 'tried empty, then retried');
   assert.equal(w[1].title, 'Short message here');
+  assert.equal(w[1].body, 'Short message here');
   const long = 'word '.repeat(40);
   const w2 = fakeDb({ titleRequired: true });
   await call({ action: 'thread', category_id: CAT, body: long });
   assert.ok(w2[1].title.length <= 58 && w2[1].title.endsWith('…'), 'long messages are cut: ' + w2[1].title);
+});
+
+test('before the SQL is run, the gaps are filled from what was written, or "Photo"', async () => {
+  const a = fakeDb({ titleRequired: true });
+  assert.equal((await call({ action: 'thread', category_id: CAT, title: 'Only a title', body: '' })).status, 200);
+  assert.deepEqual([a[1].title, a[1].body], ['Only a title', 'Only a title'], 'a title alone');
+  const b = fakeDb({ titleRequired: true });
+  assert.equal((await call({ action: 'thread', category_id: CAT, title: '', body: '', photos: 1 })).status, 200);
+  assert.deepEqual([b[1].title, b[1].body], ['Photo', 'Photo'], 'a photo alone');
 });
 
 test('an empty title is not retried when the failure is something else', async () => {

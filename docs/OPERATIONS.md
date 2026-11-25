@@ -51,8 +51,9 @@ Optional features that need a SQL file before they work:
   Engagement) see every department. A category's scope is locked once it has discussions. Existing categories stay
   General, so nothing changes until you mark one Departmental. Until it runs, every category is General and the
   General / My Department switch is not shown.
-- `forum_optional_title.sql`: lets a discussion in the Employee Forum have no title (the title box says "optional").
-  Until it runs, the site fills the title in from the first words of the message, so posting never breaks.
+- `forum_optional_title.sql`: lets a discussion in the Employee Forum have no title and no message (both boxes say
+  "optional"; the site still requires a title, a message or a photo). Until it runs, the site fills any gap from what
+  was written (or "Photo"), so posting never breaks.
 
 - `grievances.sql`: the Grievances system for Legal Compliance (tables, ticket numbers, the access rules, and the
   Grievances card on the Legal Compliance page). Until it runs, nothing shows: employees see no Grievances panel and

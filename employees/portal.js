@@ -438,7 +438,7 @@
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain ' + catCls(t.category_id) + '">' + esc(catName(t.category_id)) + '</span></div>' +
-        (t.title ? '<h3 class="post-title">' + esc(t.title) + '</h3>' : '') + '<p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' + photosHtml(t.images) +
+        (t.title ? '<h3 class="post-title">' + esc(t.title) + '</h3>' : '') + (t.body ? '<p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' : '') + photosHtml(t.images) +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">' + (forumScope === 'dept' ? 'No discussions in your department yet. Be the first to start one.' : 'No discussions yet. Be the first to start one.') + '</div>';
@@ -493,10 +493,9 @@
     var card = document.querySelector('[data-thread="' + id + '"]');
     if (!card) return;
     var box = card.querySelector('.replies'), body = card.querySelector('.post-body');
-    if (!box.hidden) { box.hidden = true; body.classList.add('clamp'); syncMore(card); markLong(); return; }
+    if (!box.hidden) { box.hidden = true; if (body) { body.classList.add('clamp'); syncMore(card); markLong(); } return; }
     box.hidden = false;
-    body.classList.remove('clamp');
-    syncMore(card);
+    if (body) { body.classList.remove('clamp'); syncMore(card); }
     box.innerHTML = '<div class="skel" style="width:60%;margin:8px 0"></div>';
     var r = await call('GET', '/api/employee-forum?thread=' + encodeURIComponent(id));
     if (r.status === 401) { show('signin'); return; }
@@ -540,17 +539,26 @@
   $('#f-compose').addEventListener('submit', async function (e) {
     e.preventDefault();
     var title = $('#fc-title').value.trim(), body = $('#fc-body').value.trim();
-    if (!body) { note('#fc-msg', 'Write something to share.'); return; }
+    if (!title && !body && !photos.length) { note('#fc-msg', 'Add a title, a message or a photo to post.'); return; }
     if (!$('#fc-cat').value) { note('#fc-msg', "There's no category to post in here yet."); return; }
     note('#fc-msg', '');
     var btn = $('#fc-post');
     btn.disabled = true;
     $('#fc-cancel').disabled = true;
     var sentCat = $('#fc-cat').value;
-    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: sentCat, title: title, body: body, anonymous: $('#fc-anon').checked });
+    var r = await call('POST', '/api/employee-forum', { action: 'thread', category_id: sentCat, title: title, body: body, photos: photos.length, anonymous: $('#fc-anon').checked });
     if (r.status === 401) { btn.disabled = false; $('#fc-cancel').disabled = false; show('signin'); return; }
     if (!r.ok) { btn.disabled = false; $('#fc-cancel').disabled = false; note('#fc-msg', r.data.error || "Couldn't post that."); return; }
     var failedPhotos = photos.length && r.data.id ? await uploadPhotos(r.data.id) : 0;
+    if (!title && !body && failedPhotos === photos.length && r.data.id) {
+      // a photo-only post whose photos all failed would be an empty post: take it back and let them try again
+      await call('POST', '/api/employee-forum', { action: 'delete', thread_id: r.data.id });
+      btn.disabled = false;
+      $('#fc-cancel').disabled = false;
+      $('#fc-photo-hint').textContent = photos.length + ' of ' + PHOTO_MAX + ' photos';
+      note('#fc-msg', "The photos couldn't be uploaded, so nothing was posted. Try again.");
+      return;
+    }
     btn.disabled = false;
     $('#fc-cancel').disabled = false;
     clearPhotos();

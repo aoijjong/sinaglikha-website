@@ -19,12 +19,12 @@
 
   function canModerate() { return state.isAdmin || (state.profile && state.profile.department === 'engagement'); }
   function who(id) { return F.people[id] ? F.people[id].full_name : 'Unknown'; }
-  /* a discussion's name: its title, or (when it has none) the first words of the message */
+  /* a discussion's name: its title, or (when it has none) the first words of the message, or "Photo post" 
   function tname(t) {
     if (!t) return '';
     if (t.title) return t.title;
     var m = String(t.body || '').replace(/\s+/g, ' ').trim();
-    return m.length > 60 ? m.slice(0, 57).trimEnd() + '…' : m;
+    return m.length > 60 ? m.slice(0, 57).trimEnd() + '…' : (m || 'Photo post');
   }
   var DEPT_LABEL = { staffing: 'Staffing and Recruitment', training: 'Training and Development', engagement: 'Employee Engagement', rewards: 'Total Rewards', legal: 'Legal Compliance' };
   function cat(id) { return F.cats.filter(function (c) { return c.id === id; })[0] || null; }
