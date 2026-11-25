@@ -203,7 +203,7 @@
 #forum-panel .fw-g summary::before{content:"+";display:inline-block;width:18px;font-weight:700}
 #forum-panel .fw-g[open] summary::before{content:"\2212"}
 #forum-panel .fw-gb h3{margin:12px 0 4px;font-size:.9rem;color:#3B2A21}
-#forum-panel .fw-gb ul{margin:0 0 4px;padding-left:20px;list-style:disc}
+#forum-panel .fw-gb ul{margin:0 0 4px;padding-left:34px;list-style:disc}
 #forum-panel .fw-gb li{margin:2px 0}
 #forum-panel .fw-thanks{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#FBF3E4;color:#5C4A40;font-size:.86rem;line-height:1.45}
 @media (max-width:640px){#forum-panel .fw{margin:6px 12px 0;padding:14px;border-radius:18px}}
