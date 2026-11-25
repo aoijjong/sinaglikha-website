@@ -29,6 +29,7 @@
   var recs = [];
   var learn = { courses: [], course: null, modules: [], fromList: false };   // fromList: the course was opened from the full list, so Back returns to it
   var forum = { cats: [], threads: [], photos: [] };
+  var forumFilter = 'all'; /* 'all' or a category id: which posts the forum shows */
   var anns = [], annPhotos = [], annShown = 3;
   var esc = function (s) {
     return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
@@ -304,7 +305,18 @@
     if (keep) sel.value = keep;
     var catName = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
     var catCls = function (id) { var c = forum.cats.filter(function (x) { return x.id === id; })[0]; return window.SngCatColors ? window.SngCatColors.cls(c || { id: id }) : ''; };
-    $('#forum-feed').innerHTML = forum.threads.length ? forum.threads.map(function (t) {
+    /* chips: All, then each category that has at least one post (a filter that would show nothing is not offered) */
+    var counts = {};
+    forum.threads.forEach(function (t) { counts[t.category_id] = (counts[t.category_id] || 0) + 1; });
+    var used = forum.cats.filter(function (c) { return counts[c.id]; });
+    if (forumFilter !== 'all' && !counts[forumFilter]) forumFilter = 'all';
+    var bar = $('#forum-filter');
+    bar.hidden = used.length < 2;
+    bar.innerHTML = used.length < 2 ? '' : [['all', 'All', forum.threads.length]].concat(used.map(function (c) { return [c.id, c.name, counts[c.id]]; })).map(function (t) {
+      return '<button type="button" class="ff" data-ffilter="' + esc(t[0]) + '" aria-pressed="' + (forumFilter === t[0]) + '">' + esc(t[1]) + ' <b>' + t[2] + '</b></button>';
+    }).join('');
+    var shown = forumFilter === 'all' ? forum.threads : forum.threads.filter(function (t) { return t.category_id === forumFilter; });
+    $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain ' + catCls(t.category_id) + '">' + esc(catName(t.category_id)) + '</span></div>' +
         '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p>' +
@@ -388,6 +400,7 @@
     $('#fc-anon').checked = false;
     toast('Posted.');
     composerOpen(false);
+    forumFilter = 'all';
     refreshFeed();
   });
 
@@ -966,6 +979,7 @@
     else if ((t = e.target.closest('[data-course]'))) openCourse(t.dataset.course, !!t.closest('#learn-body'));
     else if ((t = e.target.closest('[data-toggle]'))) toggleModule(t.dataset.toggle);
     else if ((t = e.target.closest('[data-module]'))) openUrl('/api/employee-learning?open=' + encodeURIComponent(t.dataset.module));
+    else if ((t = e.target.closest('[data-ffilter]'))) { forumFilter = t.dataset.ffilter; renderForum(); }
     else if ((t = e.target.closest('[data-replies]'))) toggleReplies(t.dataset.replies);
     else if ((t = e.target.closest('[data-send-reply]'))) sendReply(t.closest('form'));
     else if ((t = e.target.closest('[data-del-thread]'))) sendDelete('thread', t.dataset.delThread);
