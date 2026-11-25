@@ -269,7 +269,12 @@
       var noColor = false;
       if ((r.error || !r.data) && withScope.scope) {
         $('#fc-ok').disabled = false;
-        err.textContent = "Couldn't change who can see that. The one-time department update (forum_departments.sql) may not have been run yet, or this category already has discussions.";
+        var why = r.error && r.error.message ? r.error.message : '';
+        err.textContent = /schema cache|scope/i.test(why) && /column|cache/i.test(why)
+          ? "The database hasn't picked up the department update yet. Run: notify pgrst, 'reload schema'; in the Supabase SQL editor, then try again."
+          : /already has discussions/i.test(why)
+            ? 'This category already has discussions, so who can see it cannot be changed.'
+            : "Couldn't change who can see that." + (why ? ' (' + why + ')' : ' You may not have permission, or the department update (forum_departments.sql) has not been run.');
         err.hidden = false;
         return;
       }
