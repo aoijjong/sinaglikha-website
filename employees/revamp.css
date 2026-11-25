@@ -203,7 +203,15 @@
 #forum-panel .fw-g summary::before{content:"+";display:inline-block;width:18px;font-weight:700}
 #forum-panel .fw-g[open] summary::before{content:"\2212"}
 #forum-panel .fw-gb h3{margin:12px 0 4px;font-size:.9rem;color:#3B2A21}
-#forum-panel .fw-gb ul{margin:0 0 4px;padding-left:20px;list-style:disc}
+#forum-panel .fw-gb ul{margin:0 0 4px;padding-left:34px;list-style:disc}
 #forum-panel .fw-gb li{margin:2px 0}
 #forum-panel .fw-thanks{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#FBF3E4;color:#5C4A40;font-size:.86rem;line-height:1.45}
 @media (max-width:640px){#forum-panel .fw{margin:6px 12px 0;padding:14px;border-radius:18px}}
+
+/* Employee Forum: category filter chips */
+#forum-panel #forum-filter{order:2;display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 0}
+#forum-panel .ff{border:1px solid rgba(74,46,34,.14);background:#fff;color:var(--muted);font:inherit;font-weight:700;font-size:.84rem;padding:7px 14px;border-radius:999px;cursor:pointer}
+#forum-panel .ff b{font-weight:700;opacity:.7;margin-left:2px}
+#forum-panel .ff[aria-pressed="true"]{background:#2A1A12;border-color:#2A1A12;color:#fff}
+@media (hover:hover) and (pointer:fine){#forum-panel .ff[aria-pressed="false"]:hover{background:#FBF3E4;color:var(--brown)}}
+@media (max-width:640px){#forum-panel #forum-filter{padding:10px 12px 0;gap:6px}#forum-panel .ff{padding:6px 12px;font-size:.8rem}}
