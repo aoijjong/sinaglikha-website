@@ -6,7 +6,7 @@
   GET  /api/employee-forum                          the open categories, with how many threads each has
   GET  /api/employee-forum?category=<id>            the threads in one category, newest activity first
   GET  /api/employee-forum?thread=<id>              one thread and its replies
-  POST /api/employee-forum  { "action": "thread", "category_id": "...", "title": "...", "body": "...", "anonymous": true? }
+  POST /api/employee-forum  { "action": "thread", "category_id": "...", "title": "..."?, "body": "...", "anonymous": true? }   (the title is optional)
   POST /api/employee-forum  { "action": "reply",  "thread_id": "...", "body": "...", "anonymous": true? }
   POST /api/employee-forum  { "action": "image_url",  "thread_id": "...", "mime": "image/jpeg", "size": 123456 }   reserve a photo place on
                                                     YOUR new discussion and get a one-time upload address (supabase/forum_images.sql)
@@ -103,7 +103,6 @@ module.exports = async function handler(req, res) {
     if (body.action === 'thread') {
       const cat = String(body.category_id || ''), title = clean(body.title, 120), text = clean(body.body, 2000);
       if (!UUID_RE.test(cat)) return E.send(res, 400, { error: 'Bad request.' });
-      if (!title) return E.send(res, 400, { error: 'Give your thread a title.' });
       if (!text) return E.send(res, 400, { error: 'Write something in your thread.' });
       let c = await E.rest('GET', `forum_categories?id=eq.${cat}&active=eq.true&select=id,scope`);
       if (!c.ok && c.status === 400) c = await E.rest('GET', `forum_categories?id=eq.${cat}&active=eq.true&select=id`);   // before forum_departments.sql
@@ -118,7 +117,14 @@ module.exports = async function handler(req, res) {
         return E.send(res, 429, { error: 'You are posting very quickly. Wait a few minutes and try again.' });
       }
       const anon = wantsAnon(body);
-      const r = await E.rest('POST', 'forum_threads', Object.assign({ category_id: cat, employee_id: eid, title, body: text }, dept ? { department: dept } : {}, anon ? { anonymous: true } : {}), 'return=representation');
+      const row = (t) => Object.assign({ category_id: cat, employee_id: eid, title: t, body: text }, dept ? { department: dept } : {}, anon ? { anonymous: true } : {});
+      // The title is optional (supabase/forum_optional_title.sql lets it be empty). Before that SQL has run the database still
+      // wants one, so use the first words of the message instead, so posting never breaks.
+      let r = await E.rest('POST', 'forum_threads', row(title), 'return=representation');
+      if (!title && !r.ok && r.status === 400 && /23514|check constraint|title/i.test(JSON.stringify(r.data || ''))) {
+        const first = text.replace(/\s+/g, ' ');
+        r = await E.rest('POST', 'forum_threads', row(first.length > 60 ? first.slice(0, 57).trimEnd() + '…' : first), 'return=representation');
+      }
       if (anon && noAnonColumn(r)) return E.send(res, 503, ANON_OFF);
       if (!r.ok || !list(r)[0]) return E.send(res, 500, { error: "Couldn't post that. Try again." });
       return E.send(res, 200, { ok: true, id: r.data[0].id });

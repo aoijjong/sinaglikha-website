@@ -438,7 +438,7 @@
     $('#forum-feed').innerHTML = shown.length ? shown.map(function (t) {
       return '<article class="post" data-thread="' + esc(t.id) + '"><div class="post-top">' + avSm(t.author, t.anonymous ? 'anon' : '', forum.photos[t.pic]) + '<div class="who"><b>' + esc(t.author) + (t.mine ? ' (you)' : '') + '</b><span>' + esc(ago(t.created_at)) + '</span></div>' +
         '<span class="chip plain ' + catCls(t.category_id) + '">' + esc(catName(t.category_id)) + '</span></div>' +
-        '<h3 class="post-title">' + esc(t.title) + '</h3><p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' + photosHtml(t.images) +
+        (t.title ? '<h3 class="post-title">' + esc(t.title) + '</h3>' : '') + '<p class="post-body clamp">' + text(t.body) + '</p><button class="post-more" type="button" data-more="' + esc(t.id) + '">Read more</button>' + photosHtml(t.images) +
         '<div class="post-foot"><button class="pbtn" type="button" data-replies="' + esc(t.id) + '">' + I('chat') + '<span>' + t.replies + (t.replies === 1 ? ' comment' : ' comments') + '</span></button>' +
         (t.locked ? '<span class="chip e-none plain">Locked</span>' : '') + modBtn(t.mine, 'thread', t.id) + '</div><div class="replies" hidden></div></article>';
     }).join('') : '<div class="none">' + (forumScope === 'dept' ? 'No discussions in your department yet. Be the first to start one.' : 'No discussions yet. Be the first to start one.') + '</div>';
@@ -540,7 +540,6 @@
   $('#f-compose').addEventListener('submit', async function (e) {
     e.preventDefault();
     var title = $('#fc-title').value.trim(), body = $('#fc-body').value.trim();
-    if (!title) { note('#fc-msg', 'Give your discussion a title.'); return; }
     if (!body) { note('#fc-msg', 'Write something to share.'); return; }
     if (!$('#fc-cat').value) { note('#fc-msg', "There's no category to post in here yet."); return; }
     note('#fc-msg', '');

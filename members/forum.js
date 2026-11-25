@@ -19,6 +19,13 @@
 
   function canModerate() { return state.isAdmin || (state.profile && state.profile.department === 'engagement'); }
   function who(id) { return F.people[id] ? F.people[id].full_name : 'Unknown'; }
+  /* a discussion's name: its title, or (when it has none) the first words of the message */
+  function tname(t) {
+    if (!t) return '';
+    if (t.title) return t.title;
+    var m = String(t.body || '').replace(/\s+/g, ' ').trim();
+    return m.length > 60 ? m.slice(0, 57).trimEnd() + '…' : m;
+  }
   var DEPT_LABEL = { staffing: 'Staffing and Recruitment', training: 'Training and Development', engagement: 'Employee Engagement', rewards: 'Total Rewards', legal: 'Legal Compliance' };
   function cat(id) { return F.cats.filter(function (c) { return c.id === id; })[0] || null; }
   function sortedCats() {
@@ -83,7 +90,7 @@
     var meta = [c ? c.name : 'Unknown category', who(t.employee_id), app.fmtDate(t.created_at)].join(' · ');
     var chips = (t.department ? '<span class="chip t-none" title="Only this department sees it">' + esc(DEPT_LABEL[t.department] || t.department) + '</span>' : '') + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain. You can see the real author.">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '');
     return '<li class="lrow" data-id="' + esc(t.id) + '"><button class="lmain" type="button" data-a="view"><span class="lico">' + I(t.locked ? 'lock' : 'chat') + '</span>' +
-      '<span class="ltext"><span class="lname">' + esc(t.title) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
+      '<span class="ltext"><span class="lname">' + esc(tname(t)) + '</span><span class="lmeta">' + esc(meta) + '</span></span></button>' +
       '<div class="lside">' + chips + '<div class="lacts">' +
       (t.hidden ? IB('eye', 'Show to employees again', { 'data-a': 'unhide' }, 'good') : IB('eyeOff', 'Hide from employees', { 'data-a': 'hide' })) +
       (t.locked ? IB('unlock', 'Unlock: allow replies', { 'data-a': 'unlock' }) : IB('lock', 'Lock: stop new replies', { 'data-a': 'lock' })) +
@@ -117,7 +124,7 @@
   function renderThread(body) {
     var t = F.thread.t;
     body.innerHTML = '<div class="list-card"><ul class="rows">' +
-      '<li class="lrow" data-id="' + esc(t.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(t.title) +
+      '<li class="lrow" data-id="' + esc(t.id) + '"><div class="lmain" style="cursor:default"><span class="lico">' + I('chat') + '</span><span class="ltext"><span class="lname">' + esc(tname(t)) +
       '</span><span class="lmeta">' + esc(who(t.employee_id) + ' · ' + app.fmtDate(t.created_at)) + '</span><span class="lmeta" style="white-space:normal">' + esc(t.body) + '</span>' +
       ((F.thread.shots || []).length ? '<span class="lmeta fshots">' + F.thread.shots.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Photo attached to this discussion" loading="lazy"></a>'; }).join('') + '</span>' : '') + '</span></div>' +
       '<div class="lside">' + (t.anonymous ? '<span class="chip t-none" title="Shown to employees as Anon Likhain">Anonymous</span>' : '') + (t.hidden ? '<span class="chip t-hidden">Hidden</span>' : '') + (t.locked ? '<span class="chip t-locked">Locked</span>' : '') + '</div></li>' +
@@ -136,12 +143,12 @@
     busy('');
     if (r.error || !r.data) { toast("Couldn't save that. You may not have permission.", 'bad'); return; }
     Object.assign(t, fields);
-    logAction('forum.thread.' + verb, t.title, { id: t.id });
+    logAction('forum.thread.' + verb, tname(t), { id: t.id });
     toast(okText, 'ok');
     render();
   }
   async function delThread(t) {
-    var ok = await ask({ title: 'Delete This Thread?', text: '"' + t.title + '" and all of its replies will be permanently deleted.', ok: 'Delete', danger: true });
+    var ok = await ask({ title: 'Delete This Thread?', text: '"' + tname(t) + '" and all of its replies will be permanently deleted.', ok: 'Delete', danger: true });
     if (!ok) return;
     busy('Deleting…');
     // its photos go too: the rows disappear with the thread, so remove the files first
@@ -153,7 +160,7 @@
     var r = await sb.from('forum_threads').delete().eq('id', t.id).select('id');
     busy('');
     if (r.error || !(r.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
-    logAction('forum.thread.delete', t.title, { id: t.id });
+    logAction('forum.thread.delete', tname(t), { id: t.id });
     F.threads = F.threads.filter(function (x) { return x.id !== t.id; });
     F.reports = F.reports.filter(function (x) { return x.thread_id !== t.id; });
     F.thread = null;
@@ -166,7 +173,7 @@
     busy('');
     if (r.error || !r.data) { toast("Couldn't save that.", 'bad'); return; }
     p.hidden = hidden;
-    logAction(hidden ? 'forum.post.hide' : 'forum.post.show', F.thread.t.title, { id: p.id });
+    logAction(hidden ? 'forum.post.hide' : 'forum.post.show', tname(F.thread.t), { id: p.id });
     toast(hidden ? 'Reply hidden from employees.' : 'Reply shown again.', 'ok');
     render();
   }
@@ -175,7 +182,7 @@
     if (!ok) return;
     var r = await sb.from('forum_posts').delete().eq('id', p.id).select('id');
     if (r.error || !(r.data || []).length) { toast("Couldn't delete that.", 'bad'); return; }
-    logAction('forum.post.delete', F.thread.t.title, { id: p.id });
+    logAction('forum.post.delete', tname(F.thread.t), { id: p.id });
     F.thread.posts = F.thread.posts.filter(function (x) { return x.id !== p.id; });
     F.reports = F.reports.filter(function (x) { return x.post_id !== p.id; });
     toast('Reply deleted.', 'ok');
@@ -189,7 +196,7 @@
       var t = r.thread_id ? F.threads.filter(function (x) { return x.id === r.thread_id; })[0] : null;
       var meta = ['Reported by ' + who(r.employee_id), app.fmtDate(r.created_at), r.reason ? 'Reason: ' + r.reason : ''].filter(Boolean).join(' · ');
       return '<li class="lrow" data-report="' + esc(r.id) + '"><button class="lmain" type="button" data-a="report-open"><span class="lico">' + I('flag') + '</span><span class="ltext"><span class="lname">' +
-        esc(r.post_id ? 'A reported reply' : 'Reported thread: ' + (t ? t.title : 'deleted')) + '</span><span class="lmeta" style="white-space:normal">' + esc(meta) + '</span></span></button>' +
+        esc(r.post_id ? 'A reported reply' : 'Reported thread: ' + (t ? tname(t) : 'deleted')) + '</span><span class="lmeta" style="white-space:normal">' + esc(meta) + '</span></span></button>' +
         '<div class="lside"><div class="lacts">' + IB('check', 'Mark as dealt with', { 'data-a': 'resolve' }, 'good') + '</div></div></li>';
     }).join('') + '</ul>' : empty('flag', 'No open reports', 'Reports from employees will appear here.')) + '</div>';
   }
